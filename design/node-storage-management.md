@@ -13,16 +13,19 @@ One of the use-cases for the Local PVs was to provide a way for these storage en
 - Need to associate the required storage to OpenEBS Storage Pods, taking into consideration the capacity, qos and availability requirements 
 - Need immediate notifications on the faults on the storage disks and ability to perform online corrections
 
-One of the primary blocker to using the local PV by Storage Pods is the hard-requirement of a need to restart a pod, whenever new PVs are attached or detached to a Pod.
+One of the primary blocker to using the local PV by Storage Pods is the hard-requirement of the need to restart a pod, whenever new PVs are attached or detached to a Pod. Because of this, local PV is limited to a single disk solution to a given pod.
 
-This has led to most of the storage solution provider to build the capabilities into their solution, which could be abstracted out and used by multiple storage vendors. 
-
-Refer:
-- https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/local-storage-pv.md
+Some of the design discussions in the k8s storage area are listed here:
 - https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/local-storage-pv.md
 - https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/volume-topology-scheduling.md
 - https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/volume-metrics.md
 - https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/raw-block-pv.md
+
+## Goals of this design proposal
+
+- Provide the ability to treat disks attached to the node as k8s objects and allow storage capabilities to be built on top of these objects before being used by the pods
+- Provide a generic way to read the properties of disks, so that the applications above need not know the type of disk underneath
+- Be able to pool the disks to augment the capacity or performance
 
 
 ## Proposal Overview
