@@ -1,36 +1,46 @@
 # Introduction 
 
-Kubernetes adoption for stateful workloads is increasing, along with the need for having hyper-converged storage solutions that can make use of the disks directly attached to the Kubernetes nodes. The current options to manage the disks are either:
-- Use Local PVs that directly expose a disk as a PV to the applications. These are intended for applications that can take care of replication or data protection.
-- Use hyper-converged storage solutions or Container Attached Storage solutions like OpenEBS that consume the underlying disks and provide PVs to workloads that also include capabilities like replication and data-protection (and many more standard storage features). 
+This document presents use-cases, high level design and workflow changes required for using disks attached to the Kubernetes Nodes by Container Attached Storages like OpenEBS. This design includes introducing new add-on component called - node-disk-manager, as well as extending some existing components where applicable like node-problem-detector, node-feature-discovery, etc. 
 
-The Container Attached Storage solutions - provide storage for containers (application workloads) using containers (storage pods).
+## Prerequisites
 
-One of the use-cases for the Local PVs was to provide a way for these storage engines (or storage pods) to consume Local PVs. However, the current scope of the Local PVs is not intended to implement the following additional requirements from the storage pods: 
-- Need to know about the different types of disks (SSDs, NVMe devices, etc.,) available in the Cluster
-- Need to be aware of internal layout in terms of NUMA to help assigning the right cores to the storage containers for faster dedicated access (on the lines of using DPDK/SPDK).
-- Need to determine the physical location of the disks in the cluster in terms of Node, Rack, Data Center/Zone
-- Need to associate the required storage to OpenEBS Storage Pods, taking into consideration the capacity, qos and availability requirements 
-- Need immediate notifications on the faults on the storage disks and ability to perform online corrections
-
-One of the primary blocker to using the local PV by Storage Pods is the hard-requirement of the need to restart a pod, whenever new PVs are attached or detached to a Pod. Because of this, local PV is limited to a single disk solution to a given pod.
-
-Some of the design discussions in the k8s storage area are listed here:
+Design Proposals and components that are related to local disk management:
+- https://github.com/kubernetes-incubator/node-feature-discovery
+- https://github.com/kubernetes/node-problem-detector
 - https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/local-storage-pv.md
+- https://github.com/kubernetes-incubator/external-storage/tree/master/local-volume
 - https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/volume-topology-scheduling.md
 - https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/volume-metrics.md
 - https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/raw-block-pv.md
 
-## Goals of this design proposal
+## Goals
 
 - Provide the ability to treat disks attached to the node as k8s objects and allow storage capabilities to be built on top of these objects before being used by the pods
 - Provide a generic way to read the properties of disks, so that the applications above need not know the type of disk underneath
 - Be able to pool the disks to augment the capacity or performance
 
+## Background
+
+Kubernetes adoption for stateful workloads is increasing, along with the need for having hyper-converged solutions that can make use of the disks directly attached to the Kubernetes nodes. The current options to manage the disks are either:
+- Use Local PVs that directly expose a disk as a PV to the applications. These are intended for applications that can take care of replication or data protection.
+- Use hyper-converged storage solutions or Container Attached Storage solutions like OpenEBS that consume the underlying disks and provide PVs to workloads that also include capabilities like replication and data-protection (and many more standard storage features). 
+
+The Container Attached Storage solutions - provide storage for containers (application workloads) using containers (storage pods).
+
+One of the use-cases for the Local PVs was to provide a way for these container attached storage engines (or storage pods) to consume Local PVs. The details of the proposed workflow are at: https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/local-storage-overview.md#bob-manages-a-distributed-filesystem-which-needs-access-to-all-available-storage-on-each-node
+
+The primary blocker for using local PV by Storage Pods is the hard-requirement of the need to restart a pod, whenever new PVs are attached or detached to a Pod (https://github.com/kubernetes/kubernetes/issues/58569). In addition, there is a need for an operator that: 
+- has to know about the different types of disks (SSDs, NVMe devices, etc.,) available in the Cluster
+- has to be aware of internal layout in terms of NUMA to help assigning the right cores to the storage containers for faster dedicated access (on the lines of using DPDK/SPDK).
+- has to determine the physical location of the disks in the cluster in terms of Node, Rack, Data Center/Zone
+- has to associate the required storage to OpenEBS Storage Pods, taking into consideration the capacity, qos and availability requirements 
+- has to immediately send notifications on the faults on the storage disks and ability to perform online corrections
+
+**node-disk-manager** that is proposed in this design is to lay the foundation for providing such operator as an Kubernetes add-on component, which can be further extended/customized to suite the specific container attached storage solution.
 
 ## Proposal Overview
 
-This proposal introduces a new component called _*node-disk-manager*_ that will automate the management of the disks attached to the node.
+This proposal introduces a new component called _*node-disk-manager*_ that will automate the management of the disks attached to the node. There will be new Custom Resources added to Kubernetes to represent the underlying storage infrastructure like - Disks and StoragePools and their associated Claims - DiskClaim, StoragePoolClaim. 
 
 The disks could be of any type ranging from local disks (ssds or spinning media), NVMe/PCI based or disks coming from external SAN/NAS. A new Kubernetes Custom Resource called - Disk Object will be added that will represent the disks attached to the node.
 
@@ -68,17 +78,11 @@ However with this Local PV approach, any of the following operations will requir
 A storage pod restarts can be expensive in terms of requiring data rebuilding and also introducing additional scenarios for failure combinations that could sometimes result in applications seeing high latencies or sometimes causing the volumes to get into read-only. 
 
 
-## Proposed Solution
+### Using node-disk-manager
 
-No changes to the current approach of accessing the disks by the storage pods as followed by Storage Solutions like OpenEBS, PortWorx, StorageOS, GlusterFS, Rook/Ceph. The storage pods will continue to mount "/dev" directories and get access to the actual disks.
-
-The change is primarily in the orchestration(aka orchestration) of how disks attached to the node are:
-- discovered
-- provisioned
-- monitored
-- assigned to Storage Pools - Aggregate of Disks 
-
-The new work flow with _*node-disk-manager*_ would be:
+The workflow with _*node-disk-manager*_ would be to integrate into current approach of container attached storage solutions where - disks are accessed by mounting a single volume "/dev", while the _*node-disk-manager*_ will provide a generic way to:
+* manage (discover, provision and monitor) disks
+* manage storage pools (aggregate of disks)
 
 - node-disk-manager can be configured to run on all node or select nodes (designated as Storage Nodes) 
 
@@ -107,4 +111,66 @@ The new work flow with _*node-disk-manager*_ would be:
 
 Challenges:
 - The underlying disks used/allocated by Storage Pools should not be assigned by Kubernetes (say via Local Provisioner) to different workloads/pods. Possibly this needs to be addressed by making sure that node-disk-manager doesn't use the disks that are assigned to the directories(like /mnt/localdisks) used by the Local PV Provisioner. 
+
+## Detailed Design
+
+### Installation/Setup
+
+Following CRDs will be installed:
+- [Disk](../crd/disk-crd.yaml)
+- [DiskClaim](../crd/diskclaim-crd.yaml)
+- [StoragePool](../crd/storagepool-crd.yaml)
+- [StoragePoolClaim](../crd/storagepoolclaim-crd.yaml) 
+
+_*node-disk-manager(ndm)*_ will be deployed as DaemonSet on all the storage nodes. The _**ndm**_ will discover all the disks attached to the node where it is running and will create corresponding Disk objects. `kubectl get disks` can be used to list the Disk objects. For example, if two of the nodes in the GKE Cluster had a 25G GPD attached to them, the output for `kubectl get disks -o yaml` is as follows: 
+```
+apiVersion: v1
+items:
+- apiVersion: openebs.io/v1
+  kind: Disk
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"openebs.io/v1","kind":"Disk","metadata":{"annotations":{},"labels":{"kubernetes.io/hostname":"gke-openebs-kmova-default-pool-044afcb8-bmc0"},"name":"disk-3194ccbe-268f-11e8-b467-0ed5f89f718b","namespace":""},"spec":{"capacity":{"storage":"25G"},"details":{"model":"PersistentDisk","serial":"disk-node-bmc0","vendor":"Google"},"path":"/dev/sdb"}}
+    clusterName: ""
+    creationTimestamp: 2018-03-13T07:24:07Z
+    labels:
+      kubernetes.io/hostname: gke-openebs-kmova-default-pool-044afcb8-bmc0
+    name: disk-3194ccbe-268f-11e8-b467-0ed5f89f718b
+    namespace: ""
+    resourceVersion: "12616"
+    selfLink: /apis/openebs.io/v1/disk-3194ccbe-268f-11e8-b467-0ed5f89f718b
+    uid: 841581eb-268f-11e8-9de2-42010aa00050
+  spec:
+    capacity:
+      storage: 25G
+    details:
+      model: PersistentDisk
+      serial: disk-node-bmc0
+      vendor: Google
+    path: /dev/sdb
+- apiVersion: openebs.io/v1
+  kind: Disk
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"openebs.io/v1","kind":"Disk","metadata":{"annotations":{},"labels":{"kubernetes.io/hostname":"gke-openebs-kmova-default-pool-044afcb8-lxh4"},"name":"disk-c9279540-a74a-49e2-833c-e46edd3db74c","namespace":""},"spec":{"capacity":{"storage":"25G"},"details":{"model":"PersistentDisk","serial":"disk-node-lxh4","vendor":"Google"},"path":"/dev/sdb"}}
+    clusterName: ""
+    creationTimestamp: 2018-03-13T07:24:16Z
+    labels:
+      kubernetes.io/hostname: gke-openebs-kmova-default-pool-044afcb8-lxh4
+    name: disk-c9279540-a74a-49e2-833c-e46edd3db74c
+    namespace: ""
+    resourceVersion: "12625"
+    selfLink: /apis/openebs.io/v1/disk-c9279540-a74a-49e2-833c-e46edd3db74c
+    uid: 897b7729-268f-11e8-9de2-42010aa00050
+  spec:
+    capacity:
+      storage: 25G
+    details:
+      model: PersistentDisk
+      serial: disk-node-lxh4
+      vendor: Google
+    path: /dev/sdb
+```
 
