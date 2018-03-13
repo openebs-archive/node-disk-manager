@@ -9,5 +9,5 @@ CODEGEN_PKG=${CODEGEN_PKG:-$(cd ${SCRIPT_ROOT}; ls -d -1 ./vendor/k8s.io/code-ge
 
 vendor/k8s.io/code-generator/generate-groups.sh all \
   github.com/openebs/node-disk-manager/pkg/client github.com/openebs/node-disk-manager/pkg/apis \
-  node-disk-manager:v1alpha1 \
+  ndm:v1alpha1 \
   --go-header-file ${SCRIPT_ROOT}/hack/custom-boilerplate.go.txt
