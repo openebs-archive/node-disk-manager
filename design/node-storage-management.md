@@ -90,10 +90,26 @@ The workflow with _*node-disk-manager*_ would be to integrate into current appro
 
 - On start, the node-disk-manager will discover the disks attached to the node where it is running and will create Disk Object CRs if they were not already present. 
 
-- A Disk Object CR will contain information like:
+- A Disk object CR will contain information like:
   * type
   * resource identifier
   * physical location - node, rack, zone
+  ```
+  apiVersion: openebs.io/v1
+  kind: Disk
+  metadata:
+    labels:
+      kubernetes.io/hostname: gke-openebs-kmova-default-pool-044afcb8-bmc0
+    name: disk-3194ccbe-268f-11e8-b467-0ed5f89f718b
+  spec:
+    capacity:
+      storage: 25G
+    details:
+      model: PersistentDisk
+      serial: disk-node-bmc0
+      vendor: Google
+    path: /dev/sdb
+  ```
 
 - node-disk-manager can also be made to auto-provision disks by using a DiskClaim Object similar to (PVC that uses dynamic provisioners to create a PV). As an example, if the node-disk-manager is running on a Kubernetes Cluster in AWS, it can initiate a request to the underlying AWS to create a EBS and attach to the node. This functionality will be access controlled.
 
@@ -173,4 +189,27 @@ items:
       vendor: Google
     path: /dev/sdb
 ```
+
+
+
+## Feature Implementation Plan
+
+Following is a high level summary of the feature implementation.
+
+### Phase 1
+- Discover the attached disk resources and push them into etcd as Disk custom resources
+- Support for creating a StoragePool (type=ext4) in response to StoragePoolClaim 
+- Support for monitoring disk latencies via mode-sense probes and raising Events
+- Support for monitoring disk errors via node-problem-detector and notifying Events
+- Support for capacity usage metrics per StoragePool that can be consumed by Prometheus
+- Support for iostats metrics per Disk that can be consumed by Prometheus
+
+
+### Phase 2
+- Support for creating a StoragePool (type=cstor) in response to StoragePoolClaim 
+- Support for notifying events to API endpoints
+
+### Future
+- Dynamic Provisioning of disks from external storage in response to DiskClaim custom resource from User.
+- Consider disks that move from one node to another or can be attached to multiple nodes (as is the case with external storage disks)
 
