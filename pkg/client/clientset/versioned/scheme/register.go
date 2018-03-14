@@ -19,7 +19,7 @@ limitations under the License.
 package scheme
 
 import (
-	ndmv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/node-disk-manager/v1alpha1"
+	ndmv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/ndm/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

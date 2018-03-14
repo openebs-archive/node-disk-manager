@@ -27,7 +27,7 @@ import (
 
 	versioned "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
 	internalinterfaces "github.com/openebs/node-disk-manager/pkg/client/informers/externalversions/internalinterfaces"
-	node_disk_manager "github.com/openebs/node-disk-manager/pkg/client/informers/externalversions/node-disk-manager"
+	ndm "github.com/openebs/node-disk-manager/pkg/client/informers/externalversions/ndm"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -125,9 +125,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Ndm() node_disk_manager.Interface
+	Ndm() ndm.Interface
 }
 
-func (f *sharedInformerFactory) Ndm() node_disk_manager.Interface {
-	return node_disk_manager.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Ndm() ndm.Interface {
+	return ndm.New(f, f.namespace, f.tweakListOptions)
 }
