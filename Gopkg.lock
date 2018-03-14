@@ -126,6 +126,12 @@
   revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
 
 [[projects]]
+  name = "github.com/inconshreveable/mousetrap"
+  packages = ["."]
+  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+  version = "v1.0"
+
+[[projects]]
   name = "github.com/json-iterator/go"
   packages = ["."]
   revision = "3353055b2a1a5ae1b6a8dfde887a524e7088f3a2"
@@ -170,6 +176,18 @@
   packages = ["."]
   revision = "5f041e8faa004a95c88a202771f4cc3e991971e6"
   version = "v2.0.1"
+
+[[projects]]
+  name = "github.com/ryanuber/columnize"
+  packages = ["."]
+  revision = "983d3a5fab1bf04d1b412465d2d9f8430e2e917e"
+  version = "v2.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/spf13/cobra"
+  packages = ["."]
+  revision = "c6c44e6fdcc30161c7f4480754da7230d01c06e3"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -233,7 +251,7 @@
   version = "v2.1.1"
 
 [[projects]]
-  branch = "master"
+  branch = "release-1.9"
   name = "k8s.io/api"
   packages = [
     "admissionregistration/v1alpha1",
@@ -265,7 +283,7 @@
     "storage/v1alpha1",
     "storage/v1beta1"
   ]
-  revision = "fd252c3a3e1debf912ff5b80221a31a6a3c24493"
+  revision = "acf347b865f29325eb61f4cd2df11e86e073a5ee"
 
 [[projects]]
   branch = "release-1.9"
@@ -378,6 +396,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1323fe657c615f3e9211677377f3ca473602483036baa068b0d3e07132e159c1"
+  inputs-digest = "2eefdf6e72d89771fcc8aa6251064023bf6f09453470a30936d63d1125974a2c"
   solver-name = "gps-cdcl"
   solver-version = 1

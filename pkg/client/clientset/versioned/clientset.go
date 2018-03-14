@@ -20,7 +20,7 @@ package versioned
 
 import (
 	glog "github.com/golang/glog"
-	ndmv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/node-disk-manager/v1alpha1"
+	ndmv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/ndm/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
