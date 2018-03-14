@@ -20,8 +20,8 @@ package fake
 
 import (
 	clientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
-	ndmv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/node-disk-manager/v1alpha1"
-	fakendmv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/node-disk-manager/v1alpha1/fake"
+	ndmv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/ndm/v1alpha1"
+	fakendmv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/ndm/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
