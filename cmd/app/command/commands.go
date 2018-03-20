@@ -39,6 +39,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	flag.CommandLine.Parse([]string{})
 	cmd.AddCommand(
 		NewCmdBlockDevice(), //Add new command on block device
+		NewCmdStart(), //Add new command to start the ndm controller
 	)
 
 	return cmd, nil
