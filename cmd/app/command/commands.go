@@ -24,8 +24,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NodediskManagerOptions defines a type for the options of NDM
+type NodeDiskManagerOptions struct {
+	KubeConfig string
+}
+
+// AddKubeConfigFlag is used to add a config flag
+func AddKubeConfigFlag(cmd *cobra.Command, value *string) {
+        cmd.Flags().StringVarP(value, "kubeconfig", "", *value,
+	    "Path to a kube config. Only required if out-of-cluster.")
+}
+
 // NewNodeDiskManager creates a new ndm.
 func NewNodeDiskManager() (*cobra.Command, error) {
+	// Define the options for NDM
+	options := NodeDiskManagerOptions{}
+
 	// Create a new command
 	cmd := &cobra.Command{
 		Use:   "ndm",
@@ -34,6 +48,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 			util.CheckErr(RunNodeDiskManager(cmd), util.Fatal)
 		},
 	}
+
 	// add the glog flags
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 	//add flag for /metrics endpoint port and endpoint path
@@ -45,6 +60,10 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 		NewCmdBlockDevice(), //Add new command on block device
 		NewCmdStart(),       //Add new command to start the ndm controller
 	)
+
+	// Define the flags allowed in this command & store each option
+	// provided as a flag, into Options
+	AddKubeConfigFlag(cmd, &options.KubeConfig)
 
 	return cmd, nil
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The OpenEBS Author
+Copyright 2018 OpenEBS Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,31 +17,46 @@ limitations under the License.
 package controller
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/golang/glog"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+
+	clientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
+	"github.com/openebs/node-disk-manager/pkg/signals"
 )
 
-// Run will wait for SIGINT signal and exit if received
-func Run(stopCh <-chan os.Signal) error {
-	glog.Info("Started controller")
-
-	<-stopCh
-
-	glog.Info("Shutting down controller")
-
-	return nil
-}
-
-func Watch() {
+func Watch(kuberconfig string) {
+	masterURL := ""
 	// set up signals so we handle the first shutdown signal gracefully
-	sigCh := make(chan os.Signal, 1)
+	stopCh := signals.SetupSignalHandler()
 
-	signal.Notify(sigCh, syscall.SIGINT)
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		glog.Errorf("failed to get k8s Incluster config. %+v", err)
+		if kuberconfig == "" {
+			glog.Fatalf("kubeconfig is empty")
+		} else {
+			cfg, err = clientcmd.BuildConfigFromFlags(masterURL, kuberconfig)
+			if err != nil {
+				glog.Fatalf("Error building kubeconfig: %s", err.Error())
+			}
+		}
+	}
 
-	if err := Run(sigCh); err != nil {
+	kubeClient, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		glog.Fatalf("Error building kubernetes clientset: %s", err.Error())
+	}
+
+	crdClient, err := clientset.NewForConfig(cfg)
+	if err != nil {
+		glog.Fatalf("Error building sp-spc clientset: %s", err.Error())
+	}
+
+	controller := NewController(kubeClient, crdClient)
+
+	if err = controller.Run(2, stopCh); err != nil {
 		glog.Fatalf("Error running controller: %s", err.Error())
 	}
 }

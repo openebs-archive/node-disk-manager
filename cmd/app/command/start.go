@@ -26,8 +26,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type CmdStartOptions struct {
+        kubeconfig string
+}
+
 //NewCmdStart starts the ndm controller
 func NewCmdStart() *cobra.Command {
+	options := CmdStartOptions{}
 	//var target string
 	getCmd := &cobra.Command{
 		Use:   "start",
@@ -41,7 +46,7 @@ func NewCmdStart() *cobra.Command {
 			metrics.StartingTime = time.Now()
 			// Start HTTP server for /metrics endpoint
 			go server.StartHttpServer()
-			controller.Watch()
+			controller.Watch(options.kubeconfig)
 		},
 	}
 
@@ -50,5 +55,7 @@ func NewCmdStart() *cobra.Command {
 	getCmd.Flags().AddGoFlagSet(goflag.CommandLine)
 	goflag.CommandLine.Parse([]string{})
 
+        getCmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "",
+	                `kubeconfig needs to be specified if out of cluster`)
 	return getCmd
 }

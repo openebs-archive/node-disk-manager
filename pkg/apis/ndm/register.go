@@ -1,5 +1,5 @@
 package ndm
 
 const (
-	GroupName = "node-disk-manager"
+	GroupName = "openebs.io"
 )

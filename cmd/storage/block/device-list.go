@@ -28,8 +28,7 @@ import (
 //ListBlockExec is for running os cmds for block disk and json parsing
 func ListBlockExec(resJsonDecoded *v1.BlockDeviceInfo) error {
 	//list block devices in json format
-	ListBlockCommand := v1.OsCommand{"lsblk", "-J"}
-	res, err := exec.Command(ListBlockCommand.Command, ListBlockCommand.Flag).Output()
+	res, err := exec.Command("lsblk", "-b", "-O", "-J").Output()
 	if err != nil {
 		return err
 	}
