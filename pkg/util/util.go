@@ -17,11 +17,12 @@ limitations under the License.
 package util
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
-
 	"github.com/golang/glog"
 )
 
@@ -101,4 +102,11 @@ func StringToInt32(val string) (*int32, error) {
 func StrToInt32(val string) *int32 {
 	n32, _ := StringToInt32(val)
 	return n32
+}
+
+//get the hash of the string
+func Hash(s string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(s))
+	return hex.EncodeToString(hasher.Sum(nil))
 }
