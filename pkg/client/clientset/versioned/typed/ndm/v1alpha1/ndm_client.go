@@ -27,6 +27,7 @@ import (
 
 type NdmV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	DisksGetter
 	StoragePoolsGetter
 	StoragePoolClaimsGetter
 }
@@ -34,6 +35,10 @@ type NdmV1alpha1Interface interface {
 // NdmV1alpha1Client is used to interact with features provided by the ndm group.
 type NdmV1alpha1Client struct {
 	restClient rest.Interface
+}
+
+func (c *NdmV1alpha1Client) Disks() DiskInterface {
+	return newDisks(c)
 }
 
 func (c *NdmV1alpha1Client) StoragePools() StoragePoolInterface {
