@@ -20,6 +20,7 @@ import (
 	goflag "flag"
 
 	"github.com/openebs/node-disk-manager/cmd/controller"
+	"github.com/openebs/node-disk-manager/cmd/metrics"
 	"github.com/spf13/cobra"
 )
 
@@ -29,8 +30,10 @@ func NewCmdStart() *cobra.Command {
 	getCmd := &cobra.Command{
 		Use:   "start",
 		Short: "Node disk controller",
-		Long: ` watches for ndm custom resources via "ndmctl start" command `,
+		Long:  ` watches for ndm custom resources via "ndmctl start" command `,
 		Run: func(cmd *cobra.Command, args []string) {
+			// Start HTTP server for /metrics endpoint 
+			go metrics.StartHttpServer()
 			controller.Watch()
 		},
 	}
