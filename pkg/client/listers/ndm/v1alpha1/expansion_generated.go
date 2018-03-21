@@ -20,6 +20,10 @@ limitations under the License.
 
 package v1alpha1
 
+// DiskListerExpansion allows custom methods to be added to
+// DiskLister.
+type DiskListerExpansion interface{}
+
 // StoragePoolListerExpansion allows custom methods to be added to
 // StoragePoolLister.
 type StoragePoolListerExpansion interface{}

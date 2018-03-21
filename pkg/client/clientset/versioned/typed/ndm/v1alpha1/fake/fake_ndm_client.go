@@ -28,6 +28,10 @@ type FakeNdmV1alpha1 struct {
 	*testing.Fake
 }
 
+func (c *FakeNdmV1alpha1) Disks() v1alpha1.DiskInterface {
+	return &FakeDisks{c}
+}
+
 func (c *FakeNdmV1alpha1) StoragePools() v1alpha1.StoragePoolInterface {
 	return &FakeStoragePools{c}
 }
