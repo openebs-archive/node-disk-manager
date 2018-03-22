@@ -18,17 +18,18 @@ package command
 
 import (
 	"flag"
+
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/spf13/cobra"
 )
 
-// NewNodeDiskManager creates a new ndmctl.
+// NewNodeDiskManager creates a new ndm.
 func NewNodeDiskManager() (*cobra.Command, error) {
 	// Create a new command
 	cmd := &cobra.Command{
-		Use:   "ndmctl",
-		Short: "ndmctl controls the Node-Disk-Manager ",
+		Use:   "ndm",
+		Short: "ndm controls the Node-Disk-Manager ",
 		Run: func(cmd *cobra.Command, args []string) {
 			util.CheckErr(RunNodeDiskManager(cmd), util.Fatal)
 		},
@@ -39,13 +40,13 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	flag.CommandLine.Parse([]string{})
 	cmd.AddCommand(
 		NewCmdBlockDevice(), //Add new command on block device
-		NewCmdStart(), //Add new command to start the ndm controller
+		NewCmdStart(),       //Add new command to start the ndm controller
 	)
 
 	return cmd, nil
 }
 
-// Run ndmctl
+// Run ndm
 func RunNodeDiskManager(cmd *cobra.Command) error {
 	glog.Infof("Starting node disk manager ...")
 

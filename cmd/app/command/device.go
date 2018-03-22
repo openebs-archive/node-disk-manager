@@ -26,7 +26,7 @@ func NewCmdBlockDevice() *cobra.Command {
 		Use:   "device",
 		Short: "Operations on block devices",
 		Long: `The block devices on the node can be
-		operated using ndmctl`,
+		operated using ndm`,
 	}
 	//New sub command to list block device is added
 	cmd.AddCommand(
