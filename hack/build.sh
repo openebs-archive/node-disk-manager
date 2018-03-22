@@ -36,7 +36,7 @@ mkdir -p bin/
 
 if [ -z "${CTLNAME}" ];
 then
-    CTLNAME="ndmctl"
+    CTLNAME="ndm"
 fi
 
 # If its dev mode, only build for ourself

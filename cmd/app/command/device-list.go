@@ -29,7 +29,7 @@ func NewSubCmdListBlockDevice() *cobra.Command {
 		Use:   "list",
 		Short: "List block devices",
 		Long: `the set of block devices on the node
-		can be listed via 'ndmctl device list' command`,
+		can be listed via 'ndm device list' command`,
 		Run: func(cmd *cobra.Command, args []string) {
 			//resJsonDecoded is the decoded value of block disk
 			var resJsonDecoded v1.BlockDeviceInfo

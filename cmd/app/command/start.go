@@ -29,7 +29,7 @@ func NewCmdStart() *cobra.Command {
 	getCmd := &cobra.Command{
 		Use:   "start",
 		Short: "Node disk controller",
-		Long: ` watches for ndm custom resources via "ndmctl start" command `,
+		Long:  ` watches for ndm custom resources via "ndm start" command `,
 		Run: func(cmd *cobra.Command, args []string) {
 			controller.Watch()
 		},
