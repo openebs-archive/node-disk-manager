@@ -36,6 +36,9 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	}
 	// add the glog flags
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
+	//add flag for /metrics endpoint port and endpoint path
+	cmd.PersistentFlags().String("port", ":9090", "Port to launch HTTP server.")
+	cmd.PersistentFlags().String("metricspath", "/metrics", "Endpointpath to get metrics.")
 
 	flag.CommandLine.Parse([]string{})
 	cmd.AddCommand(

@@ -18,8 +18,11 @@ package command
 
 import (
 	goflag "flag"
+	"time"
 
 	"github.com/openebs/node-disk-manager/cmd/controller"
+	"github.com/openebs/node-disk-manager/pkg/metrics"
+	"github.com/openebs/node-disk-manager/pkg/server"
 	"github.com/spf13/cobra"
 )
 
@@ -31,6 +34,13 @@ func NewCmdStart() *cobra.Command {
 		Short: "Node disk controller",
 		Long:  ` watches for ndm custom resources via "ndm start" command `,
 		Run: func(cmd *cobra.Command, args []string) {
+			port := cmd.Flag("port").Value.String()
+			server.ListenPort = port
+			endpointpath := cmd.Flag("metricspath").Value.String()
+			server.MetricsPath = endpointpath
+			metrics.StartingTime = time.Now()
+			// Start HTTP server for /metrics endpoint
+			go server.StartHttpServer()
 			controller.Watch()
 		},
 	}
