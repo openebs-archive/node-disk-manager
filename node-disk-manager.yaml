@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: node-disk-manager
+spec:
+  template:
+    metadata:
+      labels:
+        app: node-disk-manager
+    spec:
+      # By default the node-disk-manager will be run on all kubernetes nodes
+      # If you would like to limit this to only some nodes, say the nodes 
+      # that have storage attached, you could label those node and use nodeSelector.
+      # Example: Label the storage nodes with - "openebs.io/nodegroup"="storage-node"
+      # kubectl label node <node-name> "openebs.io/nodegroup"="storage-node"
+      #nodeSelector:
+      #  "openebs.io/nodegroup": "storage-node"
+      containers:
+      - name: node-disk-manager
+        command:
+        - /usr/sbin/ndm
+        - start
+        image: openebs/node-disk-manager:latest
+        imagePullPolicy: Always
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: device
+          mountPath: /host/dev
+          mountPropagation: Bidirectional
+        - name: mount
+          mountPath: /host/mnt
+          mountPropagation: Bidirectional
+      volumes:
+      - name: device
+        hostPath:
+          path: /dev
+          type: Directory
+      - name: mount
+        hostPath:
+          path: /mnt
+          type: Directory
+
