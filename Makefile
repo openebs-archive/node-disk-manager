@@ -1,8 +1,11 @@
 # Build the node-disk-manager image.
 
-build: deps clean bootstrap vet fmt test ndm version docker
+build: clean vet fmt ndm version docker
 
 PACKAGES = $(shell go list ./... | grep -v '/vendor/')
+
+# Determine the arch/os
+ARCH:=$(shell go env GOOS)_$(shell go env GOARCH)
 
 # TAG is the tag of the docker image
 TAG?=$(shell git describe --tags --dirty --always)
@@ -66,7 +69,7 @@ deps: header
 
 docker: Dockerfile
 	@echo "--> Building docker image..."
-	@docker build -t "$(IMAGE)" .
+	@docker build -t "$(IMAGE)" --build-arg ARCH=${ARCH} .
 	@echo "--> Build docker image: $(IMAGE)"
 	@echo
 
