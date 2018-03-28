@@ -1,10 +1,10 @@
 # Introduction 
 
-This document presents use-cases, high level design and workflow changes required for using disks attached to the Kubernetes Nodes by Container Attached Storages like OpenEBS. This design includes introducing new add-on component called - node-disk-manager, as well as extending some existing components where applicable like node-problem-detector, node-feature-discovery, etc. 
+This document presents use-cases, high level design and workflow changes required for using disks attached to the Kubernetes Nodes by Container Attached Storages(CAS) like OpenEBS, Longhorn, etc. This design includes introducing new add-on component called - **_node-disk-manager(ndm)_**, as well as extending some existing components where applicable like *node-problem-detector*, *node-feature-discovery*, etc. 
 
 ## Prerequisites
 
-Design Proposals and components that are related to local disk management:
+This design builds on top of the several design proposals(at various stages of implementation) and components related to local disk management in Kubernetes:
 - https://github.com/kubernetes-incubator/node-feature-discovery
 - https://github.com/kubernetes/node-problem-detector
 - https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/local-storage-pv.md
@@ -15,17 +15,19 @@ Design Proposals and components that are related to local disk management:
 
 ## Goals
 
-- Provide the ability to treat disks attached to the node as k8s objects and allow storage capabilities to be built on top of these objects before being used by the pods
-- Provide a generic way to read the properties of disks, so that the applications above need not know the type of disk underneath
-- Be able to pool the disks to augment the capacity or performance
+The primary goal of this design however is to allow CAS Storage Operators (on Custom Controllers) to:
+- access disks attached to the node as Kubernetes Objects (or Custom Resources)
+- access disk properties in a generic way by abstracting the vendor specific implementations
+- allow building predictive error handling capabilities by hooking into management interfaces that publish disk events
+- allow creation of disk pools (StoragePool) to augment the capacity or performance
 
 ## Background
 
 Kubernetes adoption for stateful workloads is increasing, along with the need for having hyper-converged solutions that can make use of the disks directly attached to the Kubernetes nodes. The current options to manage the disks are either:
 - Use Local PVs that directly expose a disk as a PV to the applications. These are intended for applications that can take care of replication or data protection.
-- Use hyper-converged storage solutions or Container Attached Storage solutions like OpenEBS that consume the underlying disks and provide PVs to workloads that also include capabilities like replication and data-protection (and many more standard storage features). 
+- Use CAS (aks hyper-converged storage, container native storage) solutions like OpenEBS that consume the underlying disks and provide PVs to workloads that also include capabilities like replication and data-protection (and many more standard storage features). 
 
-The Container Attached Storage solutions - provide storage for containers (application workloads) using containers (storage pods).
+The CAS solutions - provide storage for containers (application workloads) using containers (storage pods).
 
 One of the use-cases for the Local PVs was to provide a way for these container attached storage engines (or storage pods) to consume Local PVs. The details of the proposed workflow are at: https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/local-storage-overview.md#bob-manages-a-distributed-filesystem-which-needs-access-to-all-available-storage-on-each-node
 
@@ -116,7 +118,7 @@ The workflow with _*node-disk-manager*_ would be to integrate into current appro
 - The User or storage-operators( like OpenEBS provisioner) can use the kube-api/kubectl (like `kubectl get disks`) to get information on all the disks in the Cluster.
 
 - The node-disk-manager, can be used to create StoragePools by taking one or more Disk Objects and putting a storage layer on top of it like ext4, lvm, zfs or spin-up containers like OpenEBS cStor Pool or Ceph OSD (Confirm this), etc., The StoragePool creation can be triggered via an StoragePoolClaim that the user can feed in via kubectl. Examples:
-  * StoragePoolClaim can request for formatting a disk with ext4 and making it available at a certain path. 
+  * StoragePoolClaim can request for formatting a disk with ext4 and making it available at a certain path. The *ndm* will make use of Kubernetes [Mount Propagation](https://kubernetes.io/docs/concepts/storage/volumes/#mount-propagation) feature to expose the path on to the host. 
   * StoragePoolClaim can request for a creation of a cStorPool - which is achieved by creating a cstor pod on top of the disks. The disks to be used by the cstor pod will be passed as configuration parameters, while mounting only "/dev" into cstor pod. To create a cstor pod, the node-disk-manager can call the api of openebs-provisioner. 
 
 - node-disk-manager will monitor for faults on the Disk Objects and send notification to the subscribed listeners (say the openebs-provisioner if the fault was detected on the disk object using by OpenEBS cStor Pool). The monitoring includes information like:
