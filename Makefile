@@ -5,13 +5,15 @@ build: clean vet fmt ndm version docker
 PACKAGES = $(shell go list ./... | grep -v '/vendor/')
 
 # Determine the arch/os
-ARCH:=$(shell go env GOOS)_$(shell go env GOARCH)
+XC_OS?= $(shell go env GOOS)
+XC_ARCH?= $(shell go env GOARCH)
+ARCH:=${XC_OS}_${XC_ARCH}
 
 # TAG is the tag of the docker image
-TAG?=$(shell git describe --tags --dirty --always)
+TAG?=$(shell git describe --tags --always)
 
 # IMAGE is the image name of the node-disk-manager docker image.
-IMAGE:=openebs/node-disk-manager:$(TAG)
+IMAGE:=openebs/node-disk-manager-${XC_ARCH}:${TAG}
 
 # The ubuntu:16.04 image is being used as base image.
 BASEIMAGE:=ubuntu:16.04

@@ -1,6 +1,12 @@
 language: go
 
-go: stable
+go:
+  - 1.9.2
+
+env:
+  global:
+   - ARCH=$(go env GOARCH)
+   - TAG=$(git describe --tags --always)
 
 sudo: required
 
@@ -14,6 +20,13 @@ script:
   - make && make test
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then export REPO=openebs/node-disk-manager;
-     docker login -u "$DNAME" -p "$DPASS" && docker push $REPO; 
+  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
+      export REPO=openebs/node-disk-manager-$ARCH:$TAG;
+      docker login -u "$DNAME" -p "$DPASS";
+      docker push $REPO;
+    fi
+  - if [ -n "$TRAVIS_TAG" ]; then
+      export REPO=openebs/node-disk-manager-$ARCH:$TAG;
+      docker login -u "$DNAME" -p "$DPASS";
+      docker push $REPO;
     fi
