@@ -1,0 +1,17 @@
+#
+# This Dockerfile builds node-disk-manager
+# 
+
+#Set the base image
+FROM @BASEIMAGE@
+
+ARG ARCH
+
+#Copy binary to /usr/sbin/ndm
+COPY bin/${ARCH}/ndm /usr/sbin/ndm
+
+#Expose port 9090
+EXPOSE 9090
+
+#Set the default command
+ENTRYPOINT ["ndm", "start"]

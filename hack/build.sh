@@ -14,7 +14,7 @@ cd "$DIR"
 # Get the git commit
 if [ -f $GOPATH/src/github.com/openebs/node-disk-manager/GITCOMMIT ];
 then
-	GIT_CIMMIT="`cat $GOPATH/src/github.com/openebs/node-disk-manager/GITCOMMIT`"
+	GIT_COMMIT="`cat $GOPATH/src/github.com/openebs/node-disk-manager/GITCOMMIT`"
 else
 	GIT_COMMIT="$(git rev-parse HEAD)"
 fi
@@ -52,7 +52,7 @@ for GOOS in "${XC_OSS[@]}"
 do
     for GOARCH in "${XC_ARCHS[@]}"
     do
-        output_name="bin/$GOOS_$GOARCH/$CTLNAME"
+        output_name="bin/"$GOOS"_"$GOARCH/$CTLNAME
 
         if [ $GOOS = "windows" ]; then
             output_name+='.exe'

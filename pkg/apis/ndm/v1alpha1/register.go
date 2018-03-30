@@ -1,10 +1,10 @@
 package v1alpha1
 
 import (
+	"github.com/openebs/node-disk-manager/pkg/apis/ndm"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"github.com/openebs/node-disk-manager/pkg/apis/ndm"
 )
 
 // SchemeGroupVersion is group version used to register these objects
