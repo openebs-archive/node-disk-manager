@@ -24,8 +24,8 @@ after_success:
       export REPO=openebs/node-disk-manager-$ARCH;
       docker login -u "$DNAME" -p "$DPASS";
       docker push $REPO:$TAG;
-      docker tag $REPO:$TAG $REPO:latest;
-      docker push $REPO:latest;
+      docker tag $REPO:$TAG $REPO:ci;
+      docker push $REPO:ci;
     fi
   - if [ -n "$TRAVIS_TAG" ]; then
       export REPO=openebs/node-disk-manager-$ARCH;
