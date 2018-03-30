@@ -17,23 +17,23 @@ limitations under the License.
 package controller
 
 import (
-	"strconv"
 	"github.com/openebs/node-disk-manager/cmd/storage/block"
 	"github.com/openebs/node-disk-manager/cmd/types/v1"
+	"strconv"
 
 	"github.com/golang/glog"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"github.com/openebs/node-disk-manager/pkg/util"
 
 	apis "github.com/openebs/node-disk-manager/pkg/apis/ndm/v1alpha1"
 	clientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
 )
 
 const (
-	NDMKind = "Disk"
+	NDMKind    = "Disk"
 	NDMVersion = "openebs.io/v1alpha1"
-	NDMPrefix = "disk-"
+	NDMPrefix  = "disk-"
 )
 
 // Controller is the controller implementation for do resources
@@ -49,7 +49,7 @@ func NewController(
 	kubeclientset kubernetes.Interface,
 	clientset clientset.Interface) *Controller {
 
-	controller := &Controller {
+	controller := &Controller{
 		kubeclientset: kubeclientset,
 		clientset:     clientset,
 	}
@@ -127,7 +127,7 @@ func deleteStaleDiskResource(c *Controller, detected v1.BlockDeviceInfo, listDR 
 			uuid = getUid(blk)
 
 			if uuid == item.ObjectMeta.Name {
-				break;
+				break
 			}
 		}
 		if uuid != item.ObjectMeta.Name {
@@ -139,7 +139,7 @@ func deleteStaleDiskResource(c *Controller, detected v1.BlockDeviceInfo, listDR 
 // isDiskReousrceExist checks if disk resource exist in etcd
 func isDiskReousrceExist(uuid string, listDR *apis.DiskList) bool {
 	for _, item := range listDR.Items {
-		if uuid ==  item.ObjectMeta.Name {
+		if uuid == item.ObjectMeta.Name {
 			return true
 		}
 	}
@@ -187,7 +187,7 @@ func pushDiskResources(c *Controller) error {
 
 	listDR, err := c.clientset.NdmV1alpha1().Disks().List(metav1.ListOptions{})
 
-	if  err != nil {
+	if err != nil {
 		return err
 	}
 
