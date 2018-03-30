@@ -88,19 +88,19 @@ type Disk struct {
 
 // DiskSpec is the specification for the disk stored as CRD
 type DiskSpec struct {
-	Path       string `json:"path"`         //disk path (e.g. /dev/sdb)
+	Path     string       `json:"path"`     //disk path (e.g. /dev/sdb)
 	Capacity DiskCapacity `json:"capacity"` //capacity (e.g. size, used)
-	Details DiskDetails `json:"details"`    //disk details (e.g. model, serial)
+	Details  DiskDetails  `json:"details"`  //disk details (e.g. model, serial)
 }
 
 type DiskCapacity struct {
-	Storage   uint64 `json:"storage"`       //disk size in byte
+	Storage uint64 `json:"storage"` //disk size in byte
 }
 
 type DiskDetails struct {
-	Model       string `json:"model"`       //disk model number
-	Serial      string `json:"serial"`      //disk serial number
-	Vendor      string `json:"vendor"`      //disk vendor
+	Model  string `json:"model"`  //disk model number
+	Serial string `json:"serial"` //disk serial number
+	Vendor string `json:"vendor"` //disk vendor
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -113,4 +113,3 @@ type DiskList struct {
 
 	Items []Disk `json:"items"`
 }
-

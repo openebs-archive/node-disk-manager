@@ -30,7 +30,7 @@ var (
 	MetricsPath string = "/metrics"
 )
 
-func init(){
+func init() {
 	prometheus.MustRegister(metrics.Uptime)
 }
 

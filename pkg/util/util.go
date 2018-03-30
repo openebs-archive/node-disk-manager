@@ -20,10 +20,10 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/golang/glog"
 	"os"
 	"strconv"
 	"strings"
-	"github.com/golang/glog"
 )
 
 // truthyValues maps a set of values which are considered as true

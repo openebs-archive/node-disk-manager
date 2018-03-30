@@ -24,7 +24,7 @@ type BlockDeviceInfo struct {
 //Blockdevices has block disk fields
 type Blockdevice struct {
 	Name       string        `json:"name"`               //block device name
-	Kname      string        `json:"kname"`              //internal kernel device nam
+	Kname      string        `json:"kname"`              //internal kernel device name
 	Majmin     string        `json:"maj:min"`            //major and minor block device number
 	Fstype     string        `json:"fstype"`             //filesystem type
 	Mountpoint string        `json:"mountpoint"`         //block device mountpoint
