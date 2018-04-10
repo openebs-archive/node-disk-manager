@@ -2,3 +2,5 @@
 cscope*
 tags
 *.swp
+*.swo
+Dockerfile
