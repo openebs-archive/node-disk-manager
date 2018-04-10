@@ -59,13 +59,7 @@ func NewController(
 
 // getUid will return unique id for the disk block device
 func getUid(blk v1.Blockdevice) string {
-	uuid := NDMPrefix
-	if blk.Wwn != "" {
-		uuid += blk.Wwn
-	} else {
-		uuid += util.Hash(blk.Serial)
-	}
-	return uuid
+	return NDMPrefix + util.Hash(blk.Wwn+blk.Model+blk.Serial+blk.Vendor)
 }
 
 // Run will discover the local disks and push them to the etcd
