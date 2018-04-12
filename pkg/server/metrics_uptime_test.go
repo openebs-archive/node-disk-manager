@@ -37,7 +37,7 @@ func TestMetricsMiddleware(t *testing.T) {
 	server := httptest.NewServer(fakeHandler)
 	resp, err := http.Get(server.URL)
 	if err != nil {
-		t.Log(err.Error)
+		t.Fatal(err)
 	}
 	buf, buferr := ioutil.ReadAll(resp.Body)
 	if buferr != nil {

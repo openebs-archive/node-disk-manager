@@ -60,8 +60,27 @@ header:
 	@echo "----------------------------"
 	@echo
 
+install-e2e-deps:
+	# Assumption: User of this file is a Super user
+	# Assumption: `apt` is present in system
+	# Assumption: `python` is present in system
+	sudo apt install python-pip
+	sudo pip install --upgrade pip
+	sudo pip install pyYAML
+	sudo pip install kubernetes
+	# SNIMissingWarning resolution
+	# sudo pip install ndg-httpsclient
+	# sudo pip install --upgrade ndg-httpsclient
+	# sudo pip install pyopenssl
+	# sudo pip install --upgrade pyopenssl
+	sudo pip install psutil
+
+e2e: install-e2e-deps
+	python e2e/test.py
+
 ndm:
 	@echo '--> Building binary...'
+	@pwd
 	@CTLNAME=${NODE_DISK_MANAGER} sh -c "'$(PWD)/hack/build.sh'"
 	@echo '--> Built binary.'
 	@echo

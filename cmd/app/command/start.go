@@ -27,7 +27,7 @@ import (
 )
 
 type CmdStartOptions struct {
-        kubeconfig string
+	kubeconfig string
 }
 
 //NewCmdStart starts the ndm controller
@@ -55,7 +55,7 @@ func NewCmdStart() *cobra.Command {
 	getCmd.Flags().AddGoFlagSet(goflag.CommandLine)
 	goflag.CommandLine.Parse([]string{})
 
-        getCmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "",
-	                `kubeconfig needs to be specified if out of cluster`)
+	getCmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "",
+		`kubeconfig needs to be specified if out of cluster`)
 	return getCmd
 }

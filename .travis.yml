@@ -7,7 +7,14 @@ env:
   global:
    - ARCH=$(go env GOARCH)
    - TAG=$(git describe --tags --always)
+   - NODE_DISK_MANAGER=ndm
+   - CHANGE_MINIKUBE_NONE_USER=true
+   # For Travis Configuration
+   - TRAVIS_WORKER_LOG_TIMEOUT="30m"
+   - TRAVIS_WORKER_DOCKER_CPUS=4
+   - TRAVIS_WORKER_DOCKER_MEMORY="12G"
 
+dist: xenial
 sudo: required
 
 services:
@@ -15,9 +22,25 @@ services:
 
 install:
   - make bootstrap
+  - sudo apt-get update
+    #  - sudo apt-get install python2.7
+  - if [ "$TRAVIS_BUILD_DIR" != "$GOPATH/src/github.com/openebs/node-disk-manager" ]; then
+      mkdir -p $GOPATH/src/github.com/openebs/;
+      mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/openebs;
+      cd $GOPATH/src/github.com/openebs/node-disk-manager;
+    fi
+  - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/darwin/amd64/kubectl
+  - sudo chmod +x ./kubectl
+  - sudo mv ./kubectl /usr/local/bin/kubectl
+  - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.25.0/minikube-linux-amd64
+  - sudo chmod +x minikube
+  - sudo mv minikube /usr/local/bin/
 
 script:
-  - make && make test
+  - make
+# - make test
+  - sudo minikube start --vm-driver=none --bootstrapper=localkube --kubernetes-version=v1.8.0 --feature-gates=MountPropagation=true
+  - make e2e
 
 after_success:
   - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
@@ -30,6 +53,7 @@ after_success:
   - if [ -n "$TRAVIS_TAG" ]; then
       export REPO=openebs/node-disk-manager-$ARCH;
       docker login -u "$DNAME" -p "$DPASS";
+      docker tag $REPO:$TAG $REPO:$TRAVIS_TAG;
       docker push $REPO:$TRAVIS_TAG;
       docker tag $REPO:$TRAVIS_TAG $REPO:latest;
       docker push $REPO:latest;

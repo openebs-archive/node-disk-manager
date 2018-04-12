@@ -31,8 +31,8 @@ type NodeDiskManagerOptions struct {
 
 // AddKubeConfigFlag is used to add a config flag
 func AddKubeConfigFlag(cmd *cobra.Command, value *string) {
-        cmd.Flags().StringVarP(value, "kubeconfig", "", *value,
-	    "Path to a kube config. Only required if out-of-cluster.")
+	cmd.Flags().StringVarP(value, "kubeconfig", "", *value,
+		"Path to a kube config. Only required if out-of-cluster.")
 }
 
 // NewNodeDiskManager creates a new ndm.
