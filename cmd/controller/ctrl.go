@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"fmt"
 	"github.com/openebs/node-disk-manager/cmd/storage/block"
 	"github.com/openebs/node-disk-manager/cmd/types/v1"
 	"strconv"
@@ -31,13 +32,18 @@ import (
 )
 
 const (
-	NDMKind    = "Disk"
-	NDMVersion = "openebs.io/v1alpha1"
-	NDMPrefix  = "disk-"
+	NDMKind     = "Disk"
+	NDMVersion  = "openebs.io/v1alpha1"
+	NDMPrefix   = "disk-"
+	NDMHostKey  = "kubernetes.io/hostname"
+	NDMActive   = "Active"
+	NDMInactive = "Inactive"
 )
 
 // Controller is the controller implementation for do resources
 type Controller struct {
+	// node name
+	hostname string
 	// kubeclientset is a standard kubernetes clientset
 	kubeclientset kubernetes.Interface
 	// sampleclientset is a clientset for our own API group
@@ -46,10 +52,12 @@ type Controller struct {
 
 // NewController returns a new sample controller
 func NewController(
+	host string,
 	kubeclientset kubernetes.Interface,
 	clientset clientset.Interface) *Controller {
 
 	controller := &Controller{
+		hostname:      host,
 		kubeclientset: kubeclientset,
 		clientset:     clientset,
 	}
@@ -82,23 +90,64 @@ func createDR(dr apis.Disk, c *Controller) {
 	cdr, err := c.clientset.NdmV1alpha1().Disks().Create(drCopy)
 
 	if err != nil {
-		glog.Info("Unable to create disk object in etcd : ", err)
+		/*
+		 * creation failure can be due to the case that resource is already
+		 * there with that uid. This is possible when disk has been moved from
+		 * one node to another in a cluster. So here we just have to change the
+		 * ownership of this disk resource to the current node.
+		 */
+		glog.Info("create failed, trying to update the disk resource : ", err)
+		err := updateDR(dr, nil, c)
+		if err != nil {
+			/*
+			 * updation failure can be due to the fact that old node may have set the status
+			 * to Inactive after updateDr has done the Get call, as resource version will
+			 * change with each update, so we have to try again. Also if other node tries to
+			 * update the resource version after updation is succssful here, the update call
+			 * from that node will fail.
+			 */
+			glog.Info("disk status updated by other node, changing the ownership to this node : ", err)
+			updateDR(dr, nil, c)
+		}
 	} else {
 		glog.Info("Created disk object in etcd : ", cdr.ObjectMeta.Name)
 	}
 }
 
 // updateDR update the Disk resource in etcd
-func updateDR(dr apis.Disk, c *Controller) {
+func updateDR(dr apis.Disk, oldDr *apis.Disk, c *Controller) error {
 	drCopy := dr.DeepCopy()
-	drGot, err := c.clientset.NdmV1alpha1().Disks().Get(drCopy.ObjectMeta.Name, metav1.GetOptions{})
-	drGot.Spec = drCopy.Spec
-	udr, err := c.clientset.NdmV1alpha1().Disks().Update(drGot)
+	if oldDr == nil {
+		drGot, err := c.clientset.NdmV1alpha1().Disks().Get(drCopy.ObjectMeta.Name, metav1.GetOptions{})
+		if err != nil {
+			glog.Info("Unable to get the disk object from etcd : ", err)
+			return err
+		}
+		drCopy.ObjectMeta.ResourceVersion = drGot.ObjectMeta.ResourceVersion
+	} else {
+		drCopy.ObjectMeta.ResourceVersion = oldDr.ObjectMeta.ResourceVersion
+	}
+	udr, err := c.clientset.NdmV1alpha1().Disks().Update(drCopy)
 
 	if err != nil {
 		glog.Info("Unable to update disk object to etcd : ", err)
+		return err
+	}
+
+	glog.Info("Updated disk object to etcd : ", udr.ObjectMeta.Name)
+	return nil
+}
+
+// deactivateDR sets the disk status to inactive in etcd
+func deactivateDR(dr apis.Disk, c *Controller) {
+	drCopy := dr.DeepCopy()
+	drCopy.Status.State = NDMInactive
+	udr, err := c.clientset.NdmV1alpha1().Disks().Update(drCopy)
+
+	if err != nil {
+		glog.Info("Unable to deactivate the disk object in etcd : ", err)
 	} else {
-		glog.Info("Updated disk object to etcd : ", udr.ObjectMeta.Name)
+		glog.Info("Deactivated the disk object : ", udr.ObjectMeta.Name)
 	}
 }
 
@@ -113,8 +162,8 @@ func deleteDR(name string, c *Controller) {
 	}
 }
 
-// deleteStaleDiskResource deletes the stale entry from etcd
-func deleteStaleDiskResource(c *Controller, detected v1.BlockDeviceInfo, listDR *apis.DiskList) {
+// deactivateStaleDiskResource deactivates the stale entry from etcd
+func deactivateStaleDiskResource(c *Controller, detected v1.BlockDeviceInfo, listDR *apis.DiskList) {
 	for _, item := range listDR.Items {
 		var uuid string
 		for _, blk := range detected.Blockdevices {
@@ -125,19 +174,19 @@ func deleteStaleDiskResource(c *Controller, detected v1.BlockDeviceInfo, listDR 
 			}
 		}
 		if uuid != item.ObjectMeta.Name {
-			deleteDR(item.ObjectMeta.Name, c)
+			deactivateDR(item, c)
 		}
 	}
 }
 
-// isDiskReousrceExist checks if disk resource exist in etcd
-func isDiskReousrceExist(uuid string, listDR *apis.DiskList) bool {
+// getExistingResource returns the existing disk resource
+func getExistingResource(uuid string, listDR *apis.DiskList) *apis.Disk {
 	for _, item := range listDR.Items {
 		if uuid == item.ObjectMeta.Name {
-			return true
+			return &item
 		}
 	}
-	return false
+	return nil
 }
 
 // addNewDiskResource add the newly identified disks to the etcd
@@ -145,27 +194,31 @@ func addNewDiskResource(c *Controller, detected v1.BlockDeviceInfo, listDR *apis
 	for _, blk := range detected.Blockdevices {
 		if blk.Type == "disk" {
 			uuid := getUid(blk)
-
-			if isDiskReousrceExist(uuid, listDR) {
-				glog.Info("disk object already exist in etcd : ", blk.Name)
-			} else {
-				glog.Info("pushing disk object to etcd : ", blk.Name)
+			n, err := strconv.ParseInt(blk.Size, 10, 64)
+			if err == nil {
 				obj := apis.DiskSpec{Path: "/dev/" + blk.Name}
-				n, err := strconv.ParseInt(blk.Size, 10, 64)
-				if err == nil {
-					obj.Capacity.Storage = uint64(n)
-					obj.Details.Model = blk.Model
-					obj.Details.Serial = blk.Serial
-					obj.Details.Vendor = blk.Vendor
+				obj.Capacity.Storage = uint64(n)
+				obj.Details.Model = blk.Model
+				obj.Details.Serial = blk.Serial
+				obj.Details.Vendor = blk.Vendor
 
-					dr := apis.Disk{Spec: obj}
-					dr.ObjectMeta.Name = uuid
-					dr.TypeMeta.Kind = NDMKind
-					dr.TypeMeta.APIVersion = NDMVersion
-					createDR(dr, c)
+				dr := apis.Disk{Spec: obj}
+				dr.Status.State = NDMActive
+				dr.ObjectMeta.Name = uuid
+				dr.ObjectMeta.Labels = make(map[string]string)
+				dr.ObjectMeta.Labels[NDMHostKey] = c.hostname
+				dr.TypeMeta.Kind = NDMKind
+				dr.TypeMeta.APIVersion = NDMVersion
+				edr := getExistingResource(uuid, listDR)
+				if edr != nil {
+					glog.Info("disk object already exist in etcd : ", uuid)
+					//TODO: update only if disk properties have changed
+					updateDR(dr, edr, c)
 				} else {
-					glog.Info("error pushing disk object to etcd : ", err)
+					createDR(dr, c)
 				}
+			} else {
+				glog.Info("error pushing disk object to etcd : ", err)
 			}
 		}
 	}
@@ -179,13 +232,16 @@ func pushDiskResources(c *Controller) error {
 		return err
 	}
 
-	listDR, err := c.clientset.NdmV1alpha1().Disks().List(metav1.ListOptions{})
+	label := fmt.Sprintf("kubernetes.io/hostname=%v", c.hostname)
+
+	filter := metav1.ListOptions{LabelSelector: label}
+	listDR, err := c.clientset.NdmV1alpha1().Disks().List(filter)
 
 	if err != nil {
 		return err
 	}
 
-	deleteStaleDiskResource(c, resJsonDecoded, listDR)
+	deactivateStaleDiskResource(c, resJsonDecoded, listDR)
 
 	addNewDiskResource(c, resJsonDecoded, listDR)
 
