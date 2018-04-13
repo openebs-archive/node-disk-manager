@@ -83,7 +83,8 @@ type Disk struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata, omitempty"`
 
-	Spec DiskSpec `json:"spec"`
+	Spec   DiskSpec   `json:"spec"`
+	Status DiskStatus `json:"status"`
 }
 
 // DiskSpec is the specification for the disk stored as CRD
@@ -91,6 +92,10 @@ type DiskSpec struct {
 	Path     string       `json:"path"`     //disk path (e.g. /dev/sdb)
 	Capacity DiskCapacity `json:"capacity"` //capacity (e.g. size, used)
 	Details  DiskDetails  `json:"details"`  //disk details (e.g. model, serial)
+}
+
+type DiskStatus struct {
+	State string `json:"state"` //current state of the disk (Active/Inactive)
 }
 
 type DiskCapacity struct {

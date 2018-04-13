@@ -21,6 +21,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"os"
 
 	clientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
 	"github.com/openebs/node-disk-manager/pkg/signals"
@@ -54,7 +55,12 @@ func Watch(kuberconfig string) {
 		glog.Fatalf("Error building sp-spc clientset: %s", err.Error())
 	}
 
-	controller := NewController(kubeClient, crdClient)
+	host, err := os.Hostname()
+	if err != nil {
+		glog.Fatalf("Error building sp-spc clientset: %s", err.Error())
+	}
+
+	controller := NewController(host, kubeClient, crdClient)
 
 	if err = controller.Run(2, stopCh); err != nil {
 		glog.Fatalf("Error running controller: %s", err.Error())

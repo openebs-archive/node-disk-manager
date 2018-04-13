@@ -1,0 +1,15 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: disks.openebs.io
+spec:
+  group: openebs.io
+  version: v1alpha1
+  scope: Cluster
+  names:
+    plural: disks
+    singular: disk
+    kind: Disk
+    shortNames:
+    - disk
+

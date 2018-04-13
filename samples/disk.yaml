@@ -1,0 +1,17 @@
+apiVersion: openebs.io/v1alpha1
+kind: Disk
+metadata:
+  name: disk-3d8b1efad969208d6bf5971f2c34dd0c
+  labels:
+    "kubernetes.io/hostname": "gke-openebs-user-default-pool-044afcb8-bmc0"
+status:
+  state: Active
+spec:
+  path: /dev/sdt
+  capacity:
+    storage : 26214400
+  details:
+    model: "PersistentDisk"
+    serial: "disk-node-bmc0"
+    vendor: "Google"
+
