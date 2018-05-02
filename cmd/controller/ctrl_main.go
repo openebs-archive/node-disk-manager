@@ -55,8 +55,8 @@ func Watch(kuberconfig string) {
 		glog.Fatalf("Error building sp-spc clientset: %s", err.Error())
 	}
 
-	host, err := os.Hostname()
-	if err != nil {
+	host, ret := os.LookupEnv("NODE_NAME")
+	if ret != true {
 		glog.Fatalf("Error building sp-spc clientset: %s", err.Error())
 	}
 
