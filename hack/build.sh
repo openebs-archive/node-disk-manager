@@ -3,6 +3,7 @@
 # This script builds the application from source for multiple platforms.
 set -e
 
+export CGO_ENABLED=1
 # Get the parent directory of where this script is.
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
@@ -23,7 +24,7 @@ fi
 VERSION="beta"
 
 # Determine the arch/os combos we're building for
-XC_ARCH=${XC_ARCH:-"386 amd64"}
+XC_ARCH=${XC_ARCH:-"amd64"}
 XC_OS=${XC_OS:-"linux"}
 
 XC_ARCHS=(${XC_ARCH// / })

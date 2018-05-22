@@ -1,3 +1,6 @@
+# Specify the name for the binaries
+NODE_DISK_MANAGER=ndm
+
 # Build the node-disk-manager image.
 
 build: clean vet fmt ndm version docker

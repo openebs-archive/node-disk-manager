@@ -27,6 +27,8 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/signals"
 )
 
+// Watch sets up the controller, which in-turn
+// scans the locally attached disks and push them to etcd
 func Watch(kuberconfig string) {
 	masterURL := ""
 	// set up signals so we handle the first shutdown signal gracefully
@@ -47,22 +49,63 @@ func Watch(kuberconfig string) {
 
 	kubeClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		glog.Fatalf("Error building kubernetes clientset: %s", err.Error())
+		glog.Fatalf("Error building kubeclient: %s", err.Error())
 	}
 
 	crdClient, err := clientset.NewForConfig(cfg)
 	if err != nil {
-		glog.Fatalf("Error building sp-spc clientset: %s", err.Error())
+		glog.Fatalf("Error building crd client: %s", err.Error())
 	}
 
 	host, ret := os.LookupEnv("NODE_NAME")
 	if ret != true {
-		glog.Fatalf("Error building sp-spc clientset: %s", err.Error())
+		glog.Fatalf("Error building hostname")
 	}
 
 	controller := NewController(host, kubeClient, crdClient)
 
 	if err = controller.Run(2, stopCh); err != nil {
 		glog.Fatalf("Error running controller: %s", err.Error())
+	}
+}
+
+// DeviceList sets up the controller and calls DevList, which
+// queries all the disk resources for this host from etcd and
+// prints them to the standard output
+func DeviceList(kuberconfig string) {
+	masterURL := ""
+
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		glog.Errorf("failed to get k8s Incluster config. %+v", err)
+		if kuberconfig == "" {
+			glog.Fatalf("kubeconfig is empty")
+		} else {
+			cfg, err = clientcmd.BuildConfigFromFlags(masterURL, kuberconfig)
+			if err != nil {
+				glog.Fatalf("Error building kubeconfig: %s", err.Error())
+			}
+		}
+	}
+
+	kubeClient, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		glog.Fatalf("Error building kubeclient: %s", err.Error())
+	}
+
+	crdClient, err := clientset.NewForConfig(cfg)
+	if err != nil {
+		glog.Fatalf("Error building crd client: %s", err.Error())
+	}
+
+	host, ret := os.LookupEnv("NODE_NAME")
+	if ret != true {
+		glog.Fatalf("Error building hostname")
+	}
+
+	controller := NewController(host, kubeClient, crdClient)
+
+	if err = controller.DevList(); err != nil {
+		glog.Fatalf("Error listing device: %s", err.Error())
 	}
 }
