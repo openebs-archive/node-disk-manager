@@ -15,6 +15,7 @@ services:
 
 install:
   - make bootstrap
+  - sudo apt-get install --yes libudev-dev
 
 script:
   - make && make test

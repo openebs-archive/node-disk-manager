@@ -17,12 +17,13 @@ limitations under the License.
 package controller
 
 import (
+	"errors"
 	"fmt"
-	"github.com/openebs/node-disk-manager/cmd/storage/block"
-	"github.com/openebs/node-disk-manager/cmd/types/v1"
+	"io/ioutil"
 	"strconv"
 
 	"github.com/golang/glog"
+	"github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -66,8 +67,12 @@ func NewController(
 }
 
 // getUid will return unique id for the disk block device
-func getUid(blk v1.Blockdevice) string {
-	return NDMPrefix + util.Hash(blk.Wwn+blk.Model+blk.Serial+blk.Vendor)
+func getUid(device *udev.Udevice) string {
+	return NDMPrefix +
+		util.Hash(device.PropertyValue(udev.UDEV_WWN)+
+			device.PropertyValue(udev.UDEV_MODEL)+
+			device.PropertyValue(udev.UDEV_SERIAL)+
+			device.PropertyValue(udev.UDEV_VENDOR))
 }
 
 // Run will discover the local disks and push them to the etcd
@@ -77,10 +82,31 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	err := pushDiskResources(c)
 	if err != nil {
 		glog.Error("Unable to push disk objects to etcd : ", err)
+		return err
 	}
 	<-stopCh
 	glog.Info("Shutting down the controller")
 
+	return nil
+}
+
+// DevList queries the etcd for the devices on the host
+// and prints them to stdout
+func (c *Controller) DevList() error {
+	label := fmt.Sprintf("kubernetes.io/hostname=%v", c.hostname)
+
+	filter := metav1.ListOptions{LabelSelector: label}
+	listDR, err := c.clientset.NdmV1alpha1().Disks().List(filter)
+
+	if err != nil {
+		return err
+	}
+
+	for _, item := range listDR.Items {
+		fmt.Printf("Path: %v\nSize: %v\nStatus: %v\nModel: %v\nSerial: %v\nVendor: %v\n\n",
+			item.Spec.Path, item.Spec.Capacity.Storage, item.Status.State,
+			item.Spec.Details.Model, item.Spec.Details.Serial, item.Spec.Details.Vendor)
+	}
 	return nil
 }
 
@@ -163,11 +189,11 @@ func deleteDR(name string, c *Controller) {
 }
 
 // deactivateStaleDiskResource deactivates the stale entry from etcd
-func deactivateStaleDiskResource(c *Controller, detected v1.BlockDeviceInfo, listDR *apis.DiskList) {
+func deactivateStaleDiskResource(c *Controller, devices []*udev.Udevice, listDR *apis.DiskList) {
 	for _, item := range listDR.Items {
 		var uuid string
-		for _, blk := range detected.Blockdevices {
-			uuid = getUid(blk)
+		for _, device := range devices {
+			uuid = getUid(device)
 
 			if uuid == item.ObjectMeta.Name {
 				break
@@ -190,17 +216,32 @@ func getExistingResource(uuid string, listDR *apis.DiskList) *apis.Disk {
 }
 
 // addNewDiskResource add the newly identified disks to the etcd
-func addNewDiskResource(c *Controller, detected v1.BlockDeviceInfo, listDR *apis.DiskList) {
-	for _, blk := range detected.Blockdevices {
-		if blk.Type == "disk" {
-			uuid := getUid(blk)
-			n, err := strconv.ParseInt(blk.Size, 10, 64)
+func addNewDiskResource(c *Controller, devices []*udev.Udevice, listDR *apis.DiskList) {
+	for i := range devices {
+		device := devices[i]
+		/*
+		 * filter partitions using Devtype and
+		 * filter unwated devices (e.g CD ROM) using udev property
+		 */
+		if device.Devtype() == udev.UDEV_SYSTEM && device.PropertyValue(udev.UDEV_TYPE) == udev.UDEV_SYSTEM {
+			var sector []byte
+			var sec int64
+			uuid := getUid(device)
+			n, err := strconv.ParseInt(device.SysattrValue("size"), 10, 64)
 			if err == nil {
-				obj := apis.DiskSpec{Path: "/dev/" + blk.Name}
-				obj.Capacity.Storage = uint64(n)
-				obj.Details.Model = blk.Model
-				obj.Details.Serial = blk.Serial
-				obj.Details.Vendor = blk.Vendor
+				// should we use disk smart queries to get the sector size?
+				fname := "/sys" + device.PropertyValue(udev.UDEV_PATH) + "/queue/hw_sector_size"
+				sector, err = ioutil.ReadFile(fname)
+				if err == nil {
+					sec, err = strconv.ParseInt(string(sector[:len(sector)-1]), 10, 64)
+				}
+			}
+			if err == nil {
+				obj := apis.DiskSpec{Path: device.Devnode()}
+				obj.Capacity.Storage = uint64(n * sec)
+				obj.Details.Model = device.PropertyValue(udev.UDEV_MODEL)
+				obj.Details.Serial = device.PropertyValue(udev.UDEV_SERIAL)
+				obj.Details.Vendor = device.PropertyValue(udev.UDEV_VENDOR)
 
 				dr := apis.Disk{Spec: obj}
 				dr.Status.State = NDMActive
@@ -224,12 +265,13 @@ func addNewDiskResource(c *Controller, detected v1.BlockDeviceInfo, listDR *apis
 	}
 }
 
-// pushDiskResources push new disks and deletes stale entries form etcd
+// pushDiskResources push new disks and deactivates the stale entries
 func pushDiskResources(c *Controller) error {
-	var resJsonDecoded v1.BlockDeviceInfo
-	err := block.ListBlockExec(&resJsonDecoded)
-	if err != nil {
-		return err
+	glog.Info("pushDiskResources pushing disk object to etcd")
+
+	udevices := udev.ListDevices()
+	if udevices == nil {
+		return errors.New("error listing attached disk")
 	}
 
 	label := fmt.Sprintf("kubernetes.io/hostname=%v", c.hostname)
@@ -241,9 +283,11 @@ func pushDiskResources(c *Controller) error {
 		return err
 	}
 
-	deactivateStaleDiskResource(c, resJsonDecoded, listDR)
+	deactivateStaleDiskResource(c, udevices, listDR)
 
-	addNewDiskResource(c, resJsonDecoded, listDR)
+	addNewDiskResource(c, udevices, listDR)
+
+	glog.Info("pushDiskResources done pushing disk object to etcd")
 
 	return nil
 }

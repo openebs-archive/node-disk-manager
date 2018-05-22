@@ -20,26 +20,25 @@ spec:
         command:
         - /usr/sbin/ndm
         - start
-        image: openebs/node-disk-manager:latest
+        image: openebs/node-disk-manager-amd64:latest
         imagePullPolicy: Always
         securityContext:
           privileged: true
         volumeMounts:
-        - name: device
-          mountPath: /host/dev
-          mountPropagation: Bidirectional
         - name: mount
           mountPath: /host/mnt
           mountPropagation: Bidirectional
+        - name: udev
+          mountPath: /run/udev
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
       volumes:
-      - name: device
+      - name: udev
         hostPath:
-          path: /dev
+          path: /run/udev
           type: Directory
       - name: mount
         hostPath:
