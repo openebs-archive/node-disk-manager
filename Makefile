@@ -63,6 +63,18 @@ header:
 	@echo "----------------------------"
 	@echo
 
+install-e2e-deps:
+	# Assumption: User of this file is a Super user
+	# Assumption: `apt` is present in system
+	# Assumption: `python` is present in system
+	apt install python-pip
+	pip install --upgrade pip
+	pip install pyYAML
+	pip install kubernetes
+
+e2e: install-e2e-deps
+	python test.py
+
 ndm:
 	@echo '--> Building binary...'
 	@CTLNAME=${NODE_DISK_MANAGER} sh -c "'$(PWD)/hack/build.sh'"
