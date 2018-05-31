@@ -9,7 +9,7 @@ spec:
         app: node-disk-manager
     spec:
       # By default the node-disk-manager will be run on all kubernetes nodes
-      # If you would like to limit this to only some nodes, say the nodes 
+      # If you would like to limit this to only some nodes, say the nodes
       # that have storage attached, you could label those node and use nodeSelector.
       # Example: Label the storage nodes with - "openebs.io/nodegroup"="storage-node"
       # kubectl label node <node-name> "openebs.io/nodegroup"="storage-node"
