@@ -44,3 +44,11 @@ required = [
 [[constraint]]
   name = "github.com/imdario/mergo"
   version = "0.3.2"
+
+[[constraint]]
+  name = "github.com/onsi/ginkgo"
+  version = "v1.5.0"
+
+[[constraint]]
+  name = "github.com/onsi/gomega"
+  version = "v1.4.0"
