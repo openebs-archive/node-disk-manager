@@ -13,8 +13,8 @@ spec:
       # that have storage attached, you could label those node and use nodeSelector.
       # Example: Label the storage nodes with - "openebs.io/nodegroup"="storage-node"
       # kubectl label node <node-name> "openebs.io/nodegroup"="storage-node"
-      #nodeSelector:
-      #  "openebs.io/nodegroup": "storage-node"
+      # nodeSelector:
+      #   "openebs.io/nodegroup": "storage-node"
       containers:
       - name: node-disk-manager
         command:
@@ -25,9 +25,6 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: mount
-          mountPath: /host/mnt
-          mountPropagation: Bidirectional
         - name: udev
           mountPath: /run/udev
         env:
@@ -39,9 +36,5 @@ spec:
       - name: udev
         hostPath:
           path: /run/udev
-          type: Directory
-      - name: mount
-        hostPath:
-          path: /mnt
           type: Directory
 
