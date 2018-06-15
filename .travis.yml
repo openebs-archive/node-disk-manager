@@ -7,18 +7,37 @@ env:
   global:
    - ARCH=$(go env GOARCH)
    - TAG=$(git describe --tags --always)
+   - NODE_DISK_MANAGER=ndm
+   - CHANGE_MINIKUBE_NONE_USER=true
 
 sudo: required
 
 services:
   - docker
 
+addons:
+  apt:
+    update: true
+
 install:
   - make bootstrap
   - sudo apt-get install --yes libudev-dev
+  - if [ "$TRAVIS_BUILD_DIR" != "$GOPATH/src/github.com/openebs/node-disk-manager" ]; then
+      mkdir -p $GOPATH/src/github.com/openebs/;
+      mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/openebs;
+      cd $GOPATH/src/github.com/openebs/node-disk-manager;
+    fi
+  - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.9.4/bin/linux/amd64/kubectl
+  - sudo chmod +x ./kubectl
+  - sudo mv ./kubectl /usr/local/bin/
+  - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.25.0/minikube-linux-amd64
+  - sudo chmod +x minikube
+  - sudo mv minikube /usr/local/bin/
 
 script:
-  - make && make test
+  - make
+  - make test
+  - make integration-test
 
 after_success:
   - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
