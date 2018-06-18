@@ -255,6 +255,12 @@
   version = "v2.0.1"
 
 [[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
@@ -291,12 +297,6 @@
   revision = "54d17b57dd7d4a3aa092476596b3f8a933bde349"
 
 [[projects]]
-  name = "github.com/ryanuber/columnize"
-  packages = ["."]
-  revision = "983d3a5fab1bf04d1b412465d2d9f8430e2e917e"
-  version = "v2.1.0"
-
-[[projects]]
   branch = "master"
   name = "github.com/spf13/cobra"
   packages = ["."]
@@ -307,6 +307,12 @@
   packages = ["."]
   revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   branch = "master"
@@ -581,6 +587,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "245d21064c151b23e146c503150e497746b09fde15ff1340f3839340d1d5d774"
+  inputs-digest = "af4ee7e003d27efb24308034dc921a631f8b97984adbfa4b59783efcee950da4"
   solver-name = "gps-cdcl"
   solver-version = 1
