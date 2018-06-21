@@ -7,8 +7,8 @@ env:
   global:
    - ARCH=$(go env GOARCH)
    - TAG=$(git describe --tags --always)
-   - NODE_DISK_MANAGER=ndm
    - CHANGE_MINIKUBE_NONE_USER=true
+   - CODECOV_TOKEN="d1e39bea-f800-45de-8266-3e9b85e2594a"
 
 sudo: required
 
@@ -55,3 +55,4 @@ after_success:
       docker tag $REPO:$TRAVIS_TAG $REPO:latest;
       docker push $REPO:latest;
     fi
+  - bash <(curl -s https://codecov.io/bash)
