@@ -4,3 +4,4 @@ tags
 *.swp
 *.swo
 Dockerfile
+coverage.txt

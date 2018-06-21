@@ -5,8 +5,6 @@ NODE_DISK_MANAGER=ndm
 
 build: clean vet fmt ndm version docker
 
-PACKAGES = $(shell go list ./... | grep -v '/vendor/' | grep -v 'integration_test')
-
 NODE_DISK_MANAGER?=ndm
 
 # Determine the arch/os
@@ -46,8 +44,8 @@ version:
 	@echo $(VERSION)
 
 test: 	vet fmt
-	@echo "--> Running go test" ;
-	@go test $(PACKAGES)
+	@echo "--> Running go test";
+	$(PWD)/hack/test.sh
 
 # Bootstrap the build by downloading additional tools
 bootstrap:
