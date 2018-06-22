@@ -1,6 +1,6 @@
 # Define the Service Account
 # Define the RBAC rules for the Service Account
-# Launch the node-disk-manager ( daemeon set )
+# Launch the node-disk-manager ( daemon set )
 
 # Create NDM Service Account
 apiVersion: v1
@@ -17,7 +17,7 @@ metadata:
   namespace: default
   name: openebs-ndm-operator
 rules:
-- apiGroups: ["disks.openebs.io"]
+- apiGroups: ["*"]
   resources: ["disks"]
   verbs: ["*"]
 ---
@@ -79,6 +79,7 @@ spec:
       # kubectl label node <node-name> "openebs.io/nodegroup"="storage-node"
       # nodeSelector:
       #   "openebs.io/nodegroup": "storage-node"
+      serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
         command:
