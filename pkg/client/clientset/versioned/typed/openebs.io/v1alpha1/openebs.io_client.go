@@ -19,38 +19,28 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/ndm/v1alpha1"
+	v1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/scheme"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	rest "k8s.io/client-go/rest"
 )
 
-type NdmV1alpha1Interface interface {
+type OpenebsV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	DisksGetter
-	StoragePoolsGetter
-	StoragePoolClaimsGetter
 }
 
-// NdmV1alpha1Client is used to interact with features provided by the ndm group.
-type NdmV1alpha1Client struct {
+// OpenebsV1alpha1Client is used to interact with features provided by the openebs.io group.
+type OpenebsV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *NdmV1alpha1Client) Disks() DiskInterface {
+func (c *OpenebsV1alpha1Client) Disks() DiskInterface {
 	return newDisks(c)
 }
 
-func (c *NdmV1alpha1Client) StoragePools() StoragePoolInterface {
-	return newStoragePools(c)
-}
-
-func (c *NdmV1alpha1Client) StoragePoolClaims() StoragePoolClaimInterface {
-	return newStoragePoolClaims(c)
-}
-
-// NewForConfig creates a new NdmV1alpha1Client for the given config.
-func NewForConfig(c *rest.Config) (*NdmV1alpha1Client, error) {
+// NewForConfig creates a new OpenebsV1alpha1Client for the given config.
+func NewForConfig(c *rest.Config) (*OpenebsV1alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -59,12 +49,12 @@ func NewForConfig(c *rest.Config) (*NdmV1alpha1Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &NdmV1alpha1Client{client}, nil
+	return &OpenebsV1alpha1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new NdmV1alpha1Client for the given config and
+// NewForConfigOrDie creates a new OpenebsV1alpha1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *NdmV1alpha1Client {
+func NewForConfigOrDie(c *rest.Config) *OpenebsV1alpha1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -72,9 +62,9 @@ func NewForConfigOrDie(c *rest.Config) *NdmV1alpha1Client {
 	return client
 }
 
-// New creates a new NdmV1alpha1Client for the given RESTClient.
-func New(c rest.Interface) *NdmV1alpha1Client {
-	return &NdmV1alpha1Client{c}
+// New creates a new OpenebsV1alpha1Client for the given RESTClient.
+func New(c rest.Interface) *OpenebsV1alpha1Client {
+	return &OpenebsV1alpha1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) error {
@@ -92,7 +82,7 @@ func setConfigDefaults(config *rest.Config) error {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *NdmV1alpha1Client) RESTClient() rest.Interface {
+func (c *OpenebsV1alpha1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

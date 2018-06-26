@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/ndm/v1alpha1"
+	v1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
 	scheme "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -52,7 +52,7 @@ type disks struct {
 }
 
 // newDisks returns a Disks
-func newDisks(c *NdmV1alpha1Client) *disks {
+func newDisks(c *OpenebsV1alpha1Client) *disks {
 	return &disks{
 		client: c.RESTClient(),
 	}

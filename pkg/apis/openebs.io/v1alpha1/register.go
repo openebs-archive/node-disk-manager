@@ -1,14 +1,14 @@
 package v1alpha1
 
 import (
-	"github.com/openebs/node-disk-manager/pkg/apis/ndm"
+	openebsio "github.com/openebs/node-disk-manager/pkg/apis/openebs.io"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // SchemeGroupVersion is group version used to register these objects
-var SchemeGroupVersion = schema.GroupVersion{Group: ndm.GroupName, Version: "v1alpha1"}
+var SchemeGroupVersion = schema.GroupVersion{Group: openebsio.GroupName, Version: "v1alpha1"}
 
 // Resource takes an unqualified resource and returns a Group qualified GroupResource
 func Resource(resource string) schema.GroupResource {
@@ -32,10 +32,8 @@ func init() {
 // Adds the list of known types to api.Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&StoragePoolClaim{},
-		&StoragePoolClaimList{},
-		&StoragePool{},
-		&StoragePoolList{},
+		&Disk{},
+		&DiskList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

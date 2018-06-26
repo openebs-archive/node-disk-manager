@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	v1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/ndm/v1alpha1"
+	v1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -30,12 +30,12 @@ import (
 
 // FakeDisks implements DiskInterface
 type FakeDisks struct {
-	Fake *FakeNdmV1alpha1
+	Fake *FakeOpenebsV1alpha1
 }
 
-var disksResource = schema.GroupVersionResource{Group: "ndm", Version: "v1alpha1", Resource: "disks"}
+var disksResource = schema.GroupVersionResource{Group: "openebs.io", Version: "v1alpha1", Resource: "disks"}
 
-var disksKind = schema.GroupVersionKind{Group: "ndm", Version: "v1alpha1", Kind: "Disk"}
+var disksKind = schema.GroupVersionKind{Group: "openebs.io", Version: "v1alpha1", Kind: "Disk"}
 
 // Get takes name of the disk, and returns the corresponding disk object, and an error if there is any.
 func (c *FakeDisks) Get(name string, options v1.GetOptions) (result *v1alpha1.Disk, err error) {
