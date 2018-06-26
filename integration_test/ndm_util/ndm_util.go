@@ -135,7 +135,7 @@ func GetNDMNamespace() string {
 // :return: bool: `true` if log contains no error otherwise return `false`.
 func ValidateNdmLog(log string) bool {
 	// Definition of this function should grow as program grows
-	if strings.Contains(log, "Started the controller") {
+	if strings.Contains(log, "started the controller") {
 		return true
 	}
 	return false
