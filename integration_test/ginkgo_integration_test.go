@@ -38,7 +38,7 @@ var _ = AfterSuite(func() {
 var _ = Describe("Integration Test", func() {
 	// Now as BeforeSuite has run, We shall have a healthy node-disk-manager daemonset
 	When("We check the log", func() {
-		It("has `Started the controller` in the log", func() {
+		It("has `started the controller` in the log", func() {
 			validated, err := ndmutil.GetNDMLogAndValidate()
 
 			Expect(err).NotTo(HaveOccurred())

@@ -20,8 +20,8 @@ package fake
 
 import (
 	clientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
-	ndmv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/ndm/v1alpha1"
-	fakendmv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/ndm/v1alpha1/fake"
+	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/openebs.io/v1alpha1"
+	fakeopenebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/typed/openebs.io/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -62,12 +62,12 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 
 var _ clientset.Interface = &Clientset{}
 
-// NdmV1alpha1 retrieves the NdmV1alpha1Client
-func (c *Clientset) NdmV1alpha1() ndmv1alpha1.NdmV1alpha1Interface {
-	return &fakendmv1alpha1.FakeNdmV1alpha1{Fake: &c.Fake}
+// OpenebsV1alpha1 retrieves the OpenebsV1alpha1Client
+func (c *Clientset) OpenebsV1alpha1() openebsv1alpha1.OpenebsV1alpha1Interface {
+	return &fakeopenebsv1alpha1.FakeOpenebsV1alpha1{Fake: &c.Fake}
 }
 
-// Ndm retrieves the NdmV1alpha1Client
-func (c *Clientset) Ndm() ndmv1alpha1.NdmV1alpha1Interface {
-	return &fakendmv1alpha1.FakeNdmV1alpha1{Fake: &c.Fake}
+// Openebs retrieves the OpenebsV1alpha1Client
+func (c *Clientset) Openebs() openebsv1alpha1.OpenebsV1alpha1Interface {
+	return &fakeopenebsv1alpha1.FakeOpenebsV1alpha1{Fake: &c.Fake}
 }

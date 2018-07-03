@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/openebs/node-disk-manager/cmd/controller"
+	"github.com/openebs/node-disk-manager/cmd/probe"
 	"github.com/openebs/node-disk-manager/pkg/metrics"
 	"github.com/openebs/node-disk-manager/pkg/server"
 	"github.com/spf13/cobra"
@@ -46,7 +47,9 @@ func NewCmdStart() *cobra.Command {
 			metrics.StartingTime = time.Now()
 			// Start HTTP server for /metrics endpoint
 			go server.StartHttpServer()
-			controller.Watch(options.kubeconfig)
+			// Start() invoke all init() of probe package in which all probes are registered themselves.
+			probe.Start()
+			controller.Start(options.kubeconfig)
 		},
 	}
 

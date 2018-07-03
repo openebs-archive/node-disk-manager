@@ -20,10 +20,11 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/golang/glog"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 // truthyValues maps a set of values which are considered as true
@@ -109,4 +110,15 @@ func Hash(s string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(s))
 	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+// Contains is a util function which returns true if one key is present in array
+// else it returns false
+func Contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
