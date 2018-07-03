@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The OpenEBS Author
+Copyright 2018 The OpenEBS Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,26 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server_test
+package metrics
 
-/*
-func TestStartHTTPServer(t *testing.T) {
+import (
+	"testing"
 
-	ErrorMessages := make(chan error)
-	go func() {
-		//Block port 9191 and attempt to start http server at 9191.
-		p1, err := net.Listen("tcp", "localhost:9191")
-		defer p1.Close()
-		if err != nil {
-			t.Log(err)
-		}
-		server.ListenPort = ":9191"
-		ErrorMessages <- server.StartHTTPServer()
-	}()
-	msg := <-ErrorMessages
-	if msg != nil {
-		t.Log("Try to start http server in a port which is busy.")
-		t.Log(msg)
-	}
+	"github.com/stretchr/testify/assert"
+)
+
+func TestProcFilePath(t *testing.T) {
+	paths := []string{procFilePath("somefile"), procFilePath("some/file")}
+	fakePaths := []string{"/proc/somefile", "/proc/some/file"}
+	assert.Equal(t, fakePaths, paths)
 }
-*/

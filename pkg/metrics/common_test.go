@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The OpenEBS Author
+Copyright 2018 The OpenEBS Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,32 +18,15 @@ package metrics
 
 import (
 	"regexp"
-	"time"
+	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/stretchr/testify/assert"
 )
 
-var (
-	// StartingTime is the starting time of ndm.
-	StartingTime time.Time
-	// Uptime is the uptime of ndm.
-	Uptime = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "ndm_uptime_seconds",
-		Help: "Uptime of node disk manager.",
-	})
-	collectorUptimeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "collector", "uptime_seconds"),
-		"Uptime of collector.",
-		[]string{"collector"},
-		nil,
-	)
-)
-
-// NewDiskstatsCollector returns a new Collector exposing disk device stats.
-func NewDiskstatsCollector() (Collector, error) {
+func TestNewDiskstatsCollector(t *testing.T) {
 	var diskLabelNames = []string{"device"}
-
-	return &diskstatsCollector{
+	fakeCollectors := &diskstatsCollector{
 		ignoredDevicesPattern: regexp.MustCompile(ignoredDevices),
 		descs: []typedFactorDesc{
 			{
@@ -111,5 +94,11 @@ func NewDiskstatsCollector() (Collector, error) {
 				), valueType: prometheus.CounterValue,
 			},
 		},
-	}, nil
+	}
+
+	collectors, err := NewDiskstatsCollector()
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, fakeCollectors, collectors)
 }

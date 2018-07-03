@@ -17,15 +17,47 @@ limitations under the License.
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/metrics"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func MetricsMiddleware(prometheusHandler http.Handler) http.Handler {
+// MetricsMiddleware is middleware function to update metrics
+func MetricsMiddleware() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		metrics.Uptime.Set(time.Now().Sub(metrics.StartingTime).Seconds())
-		prometheusHandler.ServeHTTP(w, r)
+		nc, err := metrics.NewNodeCollector()
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(fmt.Sprintf("Couldn't create %s", err)))
+			return
+		}
+
+		registry := prometheus.NewRegistry()
+		err = registry.Register(nc)
+		if err != nil {
+			glog.Errorln("Couldn't register collector:", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(fmt.Sprintf("Couldn't register collector: %s", err)))
+			return
+		}
+
+		gatherers := prometheus.Gatherers{
+			prometheus.DefaultGatherer,
+			registry,
+		}
+		h := promhttp.InstrumentMetricHandler(
+			registry,
+			promhttp.HandlerFor(gatherers,
+				promhttp.HandlerOpts{
+					ErrorHandling: promhttp.ContinueOnError,
+				}),
+		)
+		h.ServeHTTP(w, r)
 	})
 }

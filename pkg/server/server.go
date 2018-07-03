@@ -18,28 +18,43 @@ package server
 
 import (
 	"net/http"
+	"sort"
 
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/metrics"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
-	ListenPort  string = ":9090"
-	MetricsPath string = "/metrics"
+	// ListenPort is the port in which HTTP server is running
+	ListenPort = ":9090"
+	// MetricsPath is the endpoint path of metrics
+	MetricsPath = "/metrics"
 )
 
 func init() {
 	prometheus.MustRegister(metrics.Uptime)
 }
 
-func StartHttpServer() error {
-	http.Handle(MetricsPath, MetricsMiddleware(promhttp.Handler()))
+// StartHTTPServer is function to start HTTP server.
+func StartHTTPServer() error {
+	http.Handle(MetricsPath, MetricsMiddleware())
 	glog.Info("Starting HTTP server at http://localhost" + ListenPort + MetricsPath + " for metrics.")
-	err := http.ListenAndServe(ListenPort, nil)
+	nc, err := metrics.NewNodeCollector()
 	if err != nil {
-		glog.Error(err)
+		return err
+	}
+	glog.Infof("enabled collectors :")
+	collectors := []string{}
+	for n := range nc.Collectors {
+		collectors = append(collectors, n)
+	}
+	sort.Strings(collectors)
+	for _, n := range collectors {
+		glog.Infof(" - %s", n)
+	}
+	err = http.ListenAndServe(ListenPort, nil)
+	if err != nil {
 		return err
 	}
 	return nil

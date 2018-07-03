@@ -16,14 +16,24 @@ limitations under the License.
 
 package server_test
 
-/*
+import (
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"regexp"
+	"testing"
+
+	"github.com/openebs/node-disk-manager/pkg/server"
+)
+
 func TestMetricsMiddleware(t *testing.T) {
 	match := []*regexp.Regexp{
-		regexp.MustCompile(`# HELP Uptime Uptime of node disk manager`),
-		regexp.MustCompile(`# TYPE Uptime gauge`),
-		regexp.MustCompile(`Uptime`),
+		regexp.MustCompile(`# HELP ndm_uptime_seconds Uptime of node disk manager.`),
+		regexp.MustCompile(`# TYPE ndm_uptime_seconds gauge`),
+		regexp.MustCompile(`# HELP ndm_collector_uptime_seconds Uptime of collector.`),
+		regexp.MustCompile(`# TYPE ndm_collector_uptime_seconds gauge`),
 	}
-	fakeHandler := server.MetricsMiddleware(promhttp.Handler())
+	fakeHandler := server.MetricsMiddleware()
 	server := httptest.NewServer(fakeHandler)
 	resp, err := http.Get(server.URL)
 	if err != nil {
@@ -35,12 +45,11 @@ func TestMetricsMiddleware(t *testing.T) {
 	}
 	for _, rexp := range match {
 		if !rexp.Match(buf) {
-			t.Error(rexp)
+			t.Error(rexp, " Not present in response body.")
 		} else {
-			t.Logf(rexp.String() + " Present in response body")
+			t.Logf(rexp.String() + " Present in response body.")
 		}
 	}
 	defer resp.Body.Close()
 	defer server.Close()
 }
-*/
