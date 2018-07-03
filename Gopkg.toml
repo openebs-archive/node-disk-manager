@@ -52,3 +52,6 @@ required = [
 [[constraint]]
   name = "github.com/onsi/gomega"
   version = "v1.4.0"
+[[constraint]]
+  name = "github.com/prometheus/client_golang"
+  branch = "master"
