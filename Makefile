@@ -30,6 +30,8 @@ EXTERNAL_TOOLS=\
 	gopkg.in/alecthomas/gometalinter.v1
 
 vet:
+# composite flag ignores struct literals that do not use the field-keyed syntax.
+Flag: -composites
 	go list ./... | grep -v "./vendor/*" | xargs go vet
 
 fmt:

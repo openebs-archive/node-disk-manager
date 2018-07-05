@@ -22,6 +22,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/cmd/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+	"github.com/openebs/node-disk-manager/pkg/udevevent"
 )
 
 const (
@@ -29,9 +30,6 @@ const (
 	udevProbeState    = defaultEnabled
 	udevProbePriority = 1
 )
-
-// UdevEventMessageChannel channel used to send event message
-var UdevEventMessageChannel = make(chan controller.EventMessage)
 
 func init() {
 	go func() {
@@ -103,6 +101,7 @@ func newUdevProbeForFillDiskDetails(sysPath string) *udevProbe {
 // Start setup udev probe listener and make a single scan of system
 func (up *udevProbe) Start() {
 	go up.listen()
+	go udevevent.Monitor()
 	probeEvent := newUdevProbe(up.controller)
 	probeEvent.scan()
 }
@@ -114,16 +113,16 @@ func (up *udevProbe) scan() error {
 	}
 	diskInfo := make([]*controller.DiskInfo, 0)
 	disksUid := make([]string, 0)
-	err := up.udevEnumerate.UdevEnumerateAddMatchSubsystem(libudevwrapper.UDEV_SUBSYSTEM)
+	err := up.udevEnumerate.AddSubsystemFilter(libudevwrapper.UDEV_SUBSYSTEM)
 	if err != nil {
 		return err
 	}
-	err = up.udevEnumerate.UdevEnumerateScanDevices()
+	err = up.udevEnumerate.ScanDevices()
 	if err != nil {
 		return err
 	}
-	for l := up.udevEnumerate.UdevEnumerateGetListEntry(); l != nil; l = l.UdevListEntryGetNext() {
-		s := l.UdevListEntryGetName()
+	for l := up.udevEnumerate.ListEntry(); l != nil; l = l.GetNextEntry() {
+		s := l.GetName()
 		newUdevice, err := up.udev.NewDeviceFromSysPath(s)
 		if err != nil {
 			continue
@@ -143,7 +142,7 @@ func (up *udevProbe) scan() error {
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,
 	}
-	UdevEventMessageChannel <- eventDetails
+	udevevent.UdevEventMessageChannel <- eventDetails
 	return nil
 }
 
@@ -172,10 +171,12 @@ func (up *udevProbe) listen() {
 	}
 	glog.Info("starting udev probe listener")
 	for {
-		msg := <-UdevEventMessageChannel
+		msg := <-udevevent.UdevEventMessageChannel
 		switch msg.Action {
 		case string(AttachEA):
 			probeEvent.addDiskEvent(msg)
+		case string(DetachEA):
+			probeEvent.deleteDiskEvent(msg)
 		}
 	}
 }

@@ -29,12 +29,27 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestAddDiskEvent(t *testing.T) {
-	mockOsdiskDeails, err := libudevwrapper.MockDiskDetails()
-	if err != nil {
-		t.Fatal(err)
+var (
+	mockuid      = "fake-disk-uid"
+	fakeHostName = "node-name"
+)
+
+func mockEmptyDiskCr() apis.Disk {
+	fakeDr := apis.Disk{}
+	fakeObjectMeta := metav1.ObjectMeta{
+		Labels: make(map[string]string),
+		Name:   mockuid,
 	}
-	fakeHostName := "node-name"
+	fakeTypeMeta := metav1.TypeMeta{
+		Kind:       controller.NDMKind,
+		APIVersion: controller.NDMVersion,
+	}
+	fakeDr.ObjectMeta = fakeObjectMeta
+	fakeDr.TypeMeta = fakeTypeMeta
+	fakeDr.Status.State = controller.NDMActive
+	return fakeDr
+}
+func TestAddDiskEvent(t *testing.T) {
 	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
 	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
@@ -46,71 +61,78 @@ func TestAddDiskEvent(t *testing.T) {
 		Probes:        probes,
 		Mutex:         mutex,
 	}
-	udevprobe := newUdevProbe(fakeController)
-	var pi controller.ProbeInterface = udevprobe
-	newPrgisterProbe := &registerProbe{
-		priority:       1,
-		probeName:      "udev probe",
-		probeState:     true,
-		probeInterface: pi,
-		controller:     fakeController,
-	}
-	newPrgisterProbe.register()
-
 	probeEvent := &ProbeEvent{
 		Controller: fakeController,
 	}
+	// Creating one event message
 	eventmsg := make([]*controller.DiskInfo, 0)
 	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockOsdiskDeails.Uid
-	deviceDetails.ProbeIdentifiers.UdevIdentifier = mockOsdiskDeails.SysPath
+	deviceDetails.ProbeIdentifiers.Uuid = mockuid
 	eventmsg = append(eventmsg, deviceDetails)
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsdiskDeails.Uid, metav1.GetOptions{})
-
-	// creating mock api.Disk to compare
-	fakeCapacity := apis.DiskCapacity{
-		Storage: mockOsdiskDeails.Capacity,
-	}
-	fakeDetails := apis.DiskDetails{
-		Model:  mockOsdiskDeails.Model,
-		Serial: mockOsdiskDeails.Serial,
-		Vendor: mockOsdiskDeails.Vendor,
-	}
-	fakeObj := apis.DiskSpec{
-		Path:     mockOsdiskDeails.DevNode,
-		Capacity: fakeCapacity,
-		Details:  fakeDetails,
-	}
-	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       controller.NDMKind,
-		APIVersion: controller.NDMVersion,
-	}
-	fakeObjectMeta := metav1.ObjectMeta{
-		Labels: make(map[string]string),
-		Name:   mockOsdiskDeails.Uid,
-	}
-	fakeDiskStatus := apis.DiskStatus{
-		State: controller.NDMActive,
-	}
-	fakeDr := apis.Disk{
-		TypeMeta:   fakeTypeMeta,
-		ObjectMeta: fakeObjectMeta,
-		Spec:       fakeObj,
-		Status:     fakeDiskStatus,
-	}
+	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
+	// Create one fake disk resource
+	fakeDr := mockEmptyDiskCr()
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+
 	tests := map[string]struct {
 		actualDisk    apis.Disk
 		expectedDisk  apis.Disk
 		actualError   error
 		expectedError error
 	}{
-		"resouce with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"add event for resouce with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expectedDisk, test.actualDisk)
+			assert.Equal(t, test.expectedError, test.actualError)
+		})
+	}
+}
+
+func TestDeleteDiskEvent(t *testing.T) {
+	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeKubeClient := fake.NewSimpleClientset()
+	probes := make([]*controller.Probe, 0)
+	mutex := &sync.Mutex{}
+	fakeController := &controller.Controller{
+		HostName:      fakeHostName,
+		KubeClientset: fakeKubeClient,
+		Clientset:     fakeNdmClient,
+		Probes:        probes,
+		Mutex:         mutex,
+	}
+	// Create one fake disk resource
+	fakeDr := mockEmptyDiskCr()
+	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeController.CreateDisk(fakeDr)
+
+	probeEvent := &ProbeEvent{
+		Controller: fakeController,
+	}
+	eventmsg := make([]*controller.DiskInfo, 0)
+	deviceDetails := &controller.DiskInfo{}
+	deviceDetails.ProbeIdentifiers.Uuid = mockuid
+	eventmsg = append(eventmsg, deviceDetails)
+	eventDetails := controller.EventMessage{
+		Action:  libudevwrapper.UDEV_ACTION_REMOVE,
+		Devices: eventmsg,
+	}
+	probeEvent.deleteDiskEvent(eventDetails)
+	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
+	fakeDr.Status.State = controller.NDMInactive
+	tests := map[string]struct {
+		actualDisk    apis.Disk
+		expectedDisk  apis.Disk
+		actualError   error
+		expectedError error
+	}{
+		"remove resouce with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

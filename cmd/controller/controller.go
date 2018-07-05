@@ -146,7 +146,7 @@ func DeviceList(kubeconfig string) {
 // If disk resource is present in etcd then it updates that resource else it
 // creates one new reource.
 func (c *Controller) PushDiskResource(uuid string, dr apis.Disk) {
-	cdr := c.getExistingResource(uuid)
+	cdr := c.GetExistingResource(uuid)
 	if cdr != nil {
 		c.UpdateDisk(dr, cdr)
 		return

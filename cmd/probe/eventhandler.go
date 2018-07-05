@@ -53,8 +53,30 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 }
 
 // deleteDiskEvent deactivate disk resource using uuid from etcd
-func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {}
+func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
+	mismatch := false
+	// set mismatch = true when one disk is removed from node and
+	// entry related that disk not present in etcd in that case it
+	// again rescan full system and update etcd accordingly.
+	for _, diskDetails := range msg.Devices {
+		edr := pe.Controller.GetExistingResource(diskDetails.ProbeIdentifiers.Uuid)
+		if edr == nil {
+			mismatch = true
+			continue
+		}
+		pe.Controller.DeactivateDisk(*edr)
+	}
+	if mismatch {
+		pe.initOrErrorEvent()
+	}
+}
 
 // initOrErrorEvent rescan system and update disk resource this is
 // used for initial setup and when any uid mismatch or error occurred.
-func (pe *ProbeEvent) initOrErrorEvent() {}
+func (pe *ProbeEvent) initOrErrorEvent() {
+	udevProbe := newUdevProbe(pe.Controller)
+	err := udevProbe.scan()
+	if err != nil {
+		glog.Error(err)
+	}
+}

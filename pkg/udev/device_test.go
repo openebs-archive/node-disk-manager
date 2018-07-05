@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUdevDeviceGetPropertyValue(t *testing.T) {
+func TestGetPropertyValue(t *testing.T) {
 	diskDetails, err := MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)
@@ -37,11 +37,11 @@ func TestUdevDeviceGetPropertyValue(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer device.UdevDeviceUnref()
-	deviceType := device.UdevDeviceGetPropertyValue(UDEV_TYPE)
+	deviceType := device.GetPropertyValue(UDEV_TYPE)
 	assert.Equal(t, diskDetails.DevType, deviceType)
 }
 
-func TestUdevDeviceGetSysattrValue(t *testing.T) {
+func TestGetSysattrValue(t *testing.T) {
 	diskDetails, err := MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)
@@ -56,11 +56,11 @@ func TestUdevDeviceGetSysattrValue(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer device.UdevDeviceUnref()
-	expectedSize := device.UdevDeviceGetSysattrValue("size")
+	expectedSize := device.GetSysattrValue("size")
 	assert.Equal(t, expectedSize, diskDetails.Size)
 }
 
-func TestUdevDeviceGetDevtype(t *testing.T) {
+func TestGetDevtype(t *testing.T) {
 	diskDetails, err := MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)
@@ -75,10 +75,10 @@ func TestUdevDeviceGetDevtype(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer device.UdevDeviceUnref()
-	assert.Equal(t, diskDetails.DevType, device.UdevDeviceGetDevtype())
+	assert.Equal(t, diskDetails.DevType, device.GetDevtype())
 }
 
-func TestUdevDeviceGetDevnode(t *testing.T) {
+func TestGetDevnode(t *testing.T) {
 	diskDetails, err := MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)
@@ -93,5 +93,23 @@ func TestUdevDeviceGetDevnode(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer device.UdevDeviceUnref()
-	assert.Equal(t, diskDetails.DevNode, device.UdevDeviceGetDevnode())
+	assert.Equal(t, diskDetails.DevNode, device.GetDevnode())
+}
+
+func TestGetAction(t *testing.T) {
+	diskDetails, err := MockDiskDetails()
+	if err != nil {
+		t.Fatal(err)
+	}
+	newUdev, err := NewUdev()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer newUdev.UnrefUdev()
+	device, err := newUdev.NewDeviceFromSysPath(diskDetails.SysPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer device.UdevDeviceUnref()
+	assert.Equal(t, "", device.GetAction())
 }

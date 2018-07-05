@@ -107,9 +107,9 @@ func (c *Controller) listDiskResource() (*apis.DiskList, error) {
 	return listDR, err
 }
 
-// getExistingResource returns the existing disk resource if it is
+// GetExistingResource returns the existing disk resource if it is
 // present in etcd if not it returns nil pointer.
-func (c *Controller) getExistingResource(uuid string) *apis.Disk {
+func (c *Controller) GetExistingResource(uuid string) *apis.Disk {
 	listDR, err := c.listDiskResource()
 	if err != nil {
 		glog.Error(err)

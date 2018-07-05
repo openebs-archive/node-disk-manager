@@ -274,9 +274,9 @@ func TestGetExistingResource(t *testing.T) {
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	fakeController.CreateDisk(newDr)
 
-	cdr1 := fakeController.getExistingResource(fakeDiskUid)
-	cdr2 := fakeController.getExistingResource(newFakeDiskUid)
-	cdr3 := fakeController.getExistingResource("newFakeDiskUid")
+	cdr1 := fakeController.GetExistingResource(fakeDiskUid)
+	cdr2 := fakeController.GetExistingResource(newFakeDiskUid)
+	cdr3 := fakeController.GetExistingResource("newFakeDiskUid")
 	tests := map[string]struct {
 		actualDisk   *apis.Disk
 		expectedDisk *apis.Disk
