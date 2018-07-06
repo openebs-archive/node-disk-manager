@@ -18,7 +18,6 @@ package controller
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"sync"
 
@@ -53,18 +52,11 @@ type Controller struct {
 	Mutex         *sync.Mutex          // Mutex is used to lock and unlock Controller
 }
 
-// newController returns a controller pointer for any error case it will return nil
-func newController(kubeconfig string) (*Controller, error) {
-	masterURL := ""
-	cfg, err := rest.InClusterConfig()
+// NewController returns a controller pointer for any error case it will return nil
+func NewController(kubeconfig string) (*Controller, error) {
+	cfg, err := getCfg(kubeconfig)
 	if err != nil {
-		if kubeconfig == "" {
-			return nil, errors.New("kubeconfig is empty")
-		}
-		cfg, err = clientcmd.BuildConfigFromFlags(masterURL, kubeconfig)
-		if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 	kubeClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
@@ -95,7 +87,7 @@ func newController(kubeconfig string) (*Controller, error) {
 func Start(kubeconfig string) {
 	// set up signals so we handle the first shutdown signal gracefully
 	stopCh := signals.SetupSignalHandler()
-	controller, err := newController(kubeconfig)
+	controller, err := NewController(kubeconfig)
 	if err != nil {
 		glog.Fatal(err)
 	}
@@ -122,23 +114,22 @@ func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
 	return nil
 }
 
-// DeviceList queries all the disk resources for this host from etcd and
-// prints them to the standard output. This function is called when we execute
-// cli command ndm device list.
-func DeviceList(kubeconfig string) {
-	controller, err := newController(kubeconfig)
+// getCfg returns incluster or out cluster config using
+// incluster config or kubeconfig
+func getCfg(kubeconfig string) (*rest.Config, error) {
+	masterURL := ""
+	cfg, err := rest.InClusterConfig()
+	if err == nil {
+		return cfg, err
+	}
+	if kubeconfig == "" {
+		return nil, errors.New("kubeconfig is empty")
+	}
+	cfg, err = clientcmd.BuildConfigFromFlags(masterURL, kubeconfig)
 	if err != nil {
-		glog.Fatal(err)
+		return nil, err
 	}
-	diskList, err := controller.ListDiskResource()
-	if err != nil {
-		glog.Fatalf("error listing device: %s", err.Error())
-	}
-	for _, item := range diskList.Items {
-		fmt.Printf("Path: %v\nSize: %v\nStatus: %v\nModel: %v\nSerial: %v\nVendor: %v\n\n",
-			item.Spec.Path, item.Spec.Capacity.Storage, item.Status.State,
-			item.Spec.Details.Model, item.Spec.Details.Serial, item.Spec.Details.Vendor)
-	}
+	return cfg, err
 }
 
 // DeactivateStaleDiskResource deactivates the stale entry from etcd.
