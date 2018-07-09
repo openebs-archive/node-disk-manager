@@ -41,7 +41,6 @@ type MockOsDiskDetails struct {
 	Serial         string
 	Vendor         string
 	Wwn            string
-	Capacity       uint64
 	Uid            string
 	ByIdDevLinks   []string
 	ByPathDevLinks []string
@@ -55,7 +54,7 @@ func mockDataStructUdev() *C.struct_udev {
 // mockDiskDtail returns os disk details which is used in unit test.
 func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails := MockOsDiskDetails{}
-	osDiskName, err := osDiskName()
+	osDiskName, err := OsDiskName()
 	if err != nil {
 		return diskDetails, err
 	}
@@ -72,10 +71,6 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 		return diskDetails, err
 	}
 	defer device.UdevDeviceUnref()
-	capacity, err := device.getSize()
-	if err != nil {
-		return diskDetails, err
-	}
 	diskDetails.OsDiskName = osDiskName
 	diskDetails.DevType = "disk"
 	diskDetails.DevNode = "/dev/" + osDiskName
@@ -85,7 +80,6 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.Serial = device.GetPropertyValue(UDEV_SERIAL)
 	diskDetails.Vendor = device.GetPropertyValue(UDEV_VENDOR)
 	diskDetails.Wwn = device.GetPropertyValue(UDEV_WWN)
-	diskDetails.Capacity = capacity
 	diskDetails.Uid = device.GetUid()
 	devLinks := device.GetDevLinks()
 	diskDetails.ByIdDevLinks = devLinks[BY_ID_LINK]
@@ -93,8 +87,8 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	return diskDetails, nil
 }
 
-// osDiskName returns os disk name given by kernel
-func osDiskName() (string, error) {
+// OsDiskName returns os disk name given by kernel
+func OsDiskName() (string, error) {
 	var osPartPath string
 	// Read /proc/self/mounts file to get which partition is mounted on / path.
 	file, err := os.Open("/proc/self/mounts")

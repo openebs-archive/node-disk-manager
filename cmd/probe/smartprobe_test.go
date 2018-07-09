@@ -23,89 +23,95 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
 	ndmFakeClientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/fake"
+	smart "github.com/openebs/node-disk-manager/pkg/smart"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func mockOsDiskToAPI() (apis.Disk, error) {
-	mockOsdiskDeails, err := libudevwrapper.MockDiskDetails()
+func mockOsDiskToAPIBySmart() (apis.Disk, error) {
+
+	mockOsdiskDetails, err := smart.MockScsiBasicDiskInfo()
 	if err != nil {
 		return apis.Disk{}, err
 	}
-	fakeDetails := apis.DiskDetails{
-		Model:  mockOsdiskDeails.Model,
-		Serial: mockOsdiskDeails.Serial,
-		Vendor: mockOsdiskDeails.Vendor,
+
+	mockOsdiskDetailsFromUdev, err := libudevwrapper.MockDiskDetails()
+	if err != nil {
+		return apis.Disk{}, err
 	}
+
+	fakeDetails := apis.DiskDetails{
+		SPCVersion:       mockOsdiskDetails.SPCVersion,
+		FirmwareRevision: mockOsdiskDetails.FirmwareRevision,
+	}
+
+	fakeCapacity := apis.DiskCapacity{
+		Storage:           mockOsdiskDetails.Capacity,
+		LogicalSectorSize: mockOsdiskDetails.LBSize,
+	}
+
 	fakeObj := apis.DiskSpec{
-		Path:    mockOsdiskDeails.DevNode,
-		Details: fakeDetails,
+		Capacity: fakeCapacity,
+		Details:  fakeDetails,
 	}
 
 	devLinks := make([]apis.DiskDevLink, 0)
-	if len(mockOsdiskDeails.ByIdDevLinks) != 0 {
-		byIdLinks := apis.DiskDevLink{
-			Kind:  "by-id",
-			Links: mockOsdiskDeails.ByIdDevLinks,
-		}
-		devLinks = append(devLinks, byIdLinks)
-	}
-	if len(mockOsdiskDeails.ByPathDevLinks) != 0 {
-		byPathLinks := apis.DiskDevLink{
-			Kind:  "by-path",
-			Links: mockOsdiskDeails.ByPathDevLinks,
-		}
-		devLinks = append(devLinks, byPathLinks)
-	}
 	fakeObj.DevLinks = devLinks
 
 	fakeTypeMeta := metav1.TypeMeta{
 		Kind:       controller.NDMKind,
 		APIVersion: controller.NDMVersion,
 	}
+
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   mockOsdiskDeails.Uid,
+		Name:   mockOsdiskDetailsFromUdev.Uid,
 	}
+
 	fakeDiskStatus := apis.DiskStatus{
 		State: controller.NDMActive,
 	}
+
 	fakeDr := apis.Disk{
 		TypeMeta:   fakeTypeMeta,
 		ObjectMeta: fakeObjectMeta,
 		Spec:       fakeObj,
 		Status:     fakeDiskStatus,
 	}
+
 	return fakeDr, nil
 }
 
-func TestFillDiskDetails(t *testing.T) {
-	mockOsdiskDeails, err := libudevwrapper.MockDiskDetails()
+func TestFillDiskDetailsBySmart(t *testing.T) {
+	mockOsdiskDetails, err := smart.MockScsiBasicDiskInfo()
 	if err != nil {
 		t.Fatal(err)
 	}
-	uProbe := udevProbe{}
+	sProbe := smartProbe{}
 	actualDiskInfo := controller.NewDiskInfo()
-	actualDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsdiskDeails.SysPath
-	uProbe.FillDiskDetails(actualDiskInfo)
+	actualDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsdiskDetails.DevPath
+	sProbe.FillDiskDetails(actualDiskInfo)
 	expectedDiskInfo := &controller.DiskInfo{}
-	expectedDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsdiskDeails.SysPath
-	expectedDiskInfo.Model = mockOsdiskDeails.Model
-	expectedDiskInfo.Path = mockOsdiskDeails.DevNode
-	expectedDiskInfo.Serial = mockOsdiskDeails.Serial
-	expectedDiskInfo.Vendor = mockOsdiskDeails.Vendor
-	expectedDiskInfo.ByIdDevLinks = mockOsdiskDeails.ByIdDevLinks
-	expectedDiskInfo.ByPathDevLinks = mockOsdiskDeails.ByPathDevLinks
+	expectedDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsdiskDetails.DevPath
+	expectedDiskInfo.Capacity = mockOsdiskDetails.Capacity
+	expectedDiskInfo.FirmwareRevision = mockOsdiskDetails.FirmwareRevision
+	expectedDiskInfo.SPCVersion = mockOsdiskDetails.SPCVersion
+	expectedDiskInfo.LogicalSectorSize = mockOsdiskDetails.LBSize
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
-func TestUdevProbe(t *testing.T) {
-	mockOsdiskDeails, err := libudevwrapper.MockDiskDetails()
+func TestSmartProbe(t *testing.T) {
+	mockOsdiskDetails, err := smart.MockScsiBasicDiskInfo()
 	if err != nil {
 		t.Fatal(err)
 	}
+	mockOsdiskDetailsUsingUdev, err := libudevwrapper.MockDiskDetails()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	fakeHostName := "node-name"
 	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
 	fakeKubeClient := fake.NewSimpleClientset()
@@ -118,38 +124,46 @@ func TestUdevProbe(t *testing.T) {
 		Probes:        probes,
 		Mutex:         mutex,
 	}
-	udevprobe := newUdevProbe(fakeController)
-	var pi controller.ProbeInterface = udevprobe
+
+	smartProbe := newSmartProbe("fakeController")
+	var pi controller.ProbeInterface = smartProbe
+
 	newPrgisterProbe := &registerProbe{
 		priority:       1,
-		probeName:      "udev probe",
+		probeName:      "smart probe",
 		probeState:     true,
 		probeInterface: pi,
 		controller:     fakeController,
 	}
 	newPrgisterProbe.register()
+
 	probeEvent := &ProbeEvent{
 		Controller: fakeController,
 	}
+
 	eventmsg := make([]*controller.DiskInfo, 0)
 	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockOsdiskDeails.Uid
-	deviceDetails.ProbeIdentifiers.UdevIdentifier = mockOsdiskDeails.SysPath
+	deviceDetails.ProbeIdentifiers.Uuid = mockOsdiskDetailsUsingUdev.Uid
+	deviceDetails.ProbeIdentifiers.SmartIdentifier = mockOsdiskDetails.DevPath
 	eventmsg = append(eventmsg, deviceDetails)
+
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsdiskDeails.Uid, metav1.GetOptions{})
+
+	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsdiskDetailsUsingUdev.Uid, metav1.GetOptions{})
 	if err1 != nil {
 		t.Fatal(err1)
 	}
-	fakeDr, err := mockOsDiskToAPI()
+
+	fakeDr, err := mockOsDiskToAPIBySmart()
 	if err != nil {
 		t.Fatal(err)
 	}
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+
 	tests := map[string]struct {
 		actualDisk    apis.Disk
 		expectedDisk  apis.Disk

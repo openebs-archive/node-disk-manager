@@ -133,6 +133,7 @@ func (up *udevProbe) scan() error {
 			deviceDetails := &controller.DiskInfo{}
 			deviceDetails.ProbeIdentifiers.Uuid = uuid
 			deviceDetails.ProbeIdentifiers.UdevIdentifier = newUdevice.GetSyspath()
+			deviceDetails.ProbeIdentifiers.SmartIdentifier = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVNAME)
 			diskInfo = append(diskInfo, deviceDetails)
 		}
 		newUdevice.UdevDeviceUnref()
@@ -155,7 +156,6 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	d.Path = udevDiskDetails.Path
 	d.Serial = udevDiskDetails.Serial
 	d.Vendor = udevDiskDetails.Vendor
-	d.Capacity = udevDiskDetails.Size
 	d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
 	d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
 }

@@ -36,7 +36,7 @@ install:
 
 script:
   - make
-  - make test
+  - sudo -E env "PATH=$PATH" make test
   - make integration-test
 
 after_success:
