@@ -75,6 +75,8 @@ func TestAddDiskEvent(t *testing.T) {
 	}
 	probeEvent.addDiskEvent(eventDetails)
 	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
+	probeEvent.addDiskEvent(eventDetails)
+	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
 	// Create one fake disk resource
 	fakeDr := mockEmptyDiskCr()
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
@@ -85,7 +87,8 @@ func TestAddDiskEvent(t *testing.T) {
 		actualError   error
 		expectedError error
 	}{
-		"add event for resouce with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"add event for resouce with 'fake-disk-uid' uuid for create resource": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"add event for resouce with 'fake-disk-uid' uuid for update resource": {actualDisk: *cdr2, expectedDisk: fakeDr, actualError: err2, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

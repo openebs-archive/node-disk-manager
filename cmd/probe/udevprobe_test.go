@@ -65,7 +65,6 @@ func mockOsDiskToAPI() (apis.Disk, error) {
 		Status:     fakeDiskStatus,
 	}
 	return fakeDr, nil
-	//fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
 }
 
 func TestFillDiskDetails(t *testing.T) {
@@ -128,10 +127,12 @@ func TestUdevProbe(t *testing.T) {
 	}
 	probeEvent.addDiskEvent(eventDetails)
 	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsdiskDeails.Uid, metav1.GetOptions{})
-
+	if err1 != nil {
+		t.Fatal(err1)
+	}
 	fakeDr, err := mockOsDiskToAPI()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
 	tests := map[string]struct {

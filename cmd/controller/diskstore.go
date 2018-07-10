@@ -100,7 +100,7 @@ func (c *Controller) DeleteDisk(name string) {
 
 // ListDiskResource queries the etcd for the devices for the host/node
 // and returns list of disk resources.
-func (c *Controller) listDiskResource() (*apis.DiskList, error) {
+func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
 	label := NDMHostKey + "=" + c.HostName
 	filter := metav1.ListOptions{LabelSelector: label}
 	listDR, err := c.Clientset.OpenebsV1alpha1().Disks().List(filter)
@@ -109,13 +109,8 @@ func (c *Controller) listDiskResource() (*apis.DiskList, error) {
 
 // GetExistingResource returns the existing disk resource if it is
 // present in etcd if not it returns nil pointer.
-func (c *Controller) GetExistingResource(uuid string) *apis.Disk {
-	listDR, err := c.listDiskResource()
-	if err != nil {
-		glog.Error(err)
-		return nil
-	}
-	for _, item := range listDR.Items {
+func (c *Controller) GetExistingResource(listDr *apis.DiskList, uuid string) *apis.Disk {
+	for _, item := range listDr.Items {
 		if uuid == item.ObjectMeta.Name {
 			return &item
 		}

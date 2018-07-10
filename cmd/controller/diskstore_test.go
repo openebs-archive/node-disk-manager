@@ -229,7 +229,7 @@ func TestListDiskResource(t *testing.T) {
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	fakeController.CreateDisk(newDr)
-	listDevice, err := fakeController.listDiskResource()
+	listDevice, err := fakeController.ListDiskResource()
 	typeMeta := metav1.TypeMeta{}
 	listMeta := metav1.ListMeta{}
 	diskList := make([]apis.Disk, 0)
@@ -274,9 +274,13 @@ func TestGetExistingResource(t *testing.T) {
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	fakeController.CreateDisk(newDr)
 
-	cdr1 := fakeController.GetExistingResource(fakeDiskUid)
-	cdr2 := fakeController.GetExistingResource(newFakeDiskUid)
-	cdr3 := fakeController.GetExistingResource("newFakeDiskUid")
+	listDr, err := fakeController.ListDiskResource()
+	if err != nil {
+		t.Fatal(err)
+	}
+	cdr1 := fakeController.GetExistingResource(listDr, fakeDiskUid)
+	cdr2 := fakeController.GetExistingResource(listDr, newFakeDiskUid)
+	cdr3 := fakeController.GetExistingResource(listDr, "newFakeDiskUid")
 	tests := map[string]struct {
 		actualDisk   *apis.Disk
 		expectedDisk *apis.Disk
