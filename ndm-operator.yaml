@@ -79,6 +79,9 @@ spec:
       # kubectl label node <node-name> "openebs.io/nodegroup"="storage-node"
       # nodeSelector:
       #   "openebs.io/nodegroup": "storage-node"
+      # Use host network as container network to monitor udev source using netlink
+      # to detect disk attach and detach events using fd.
+      hostNetwork: true
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager

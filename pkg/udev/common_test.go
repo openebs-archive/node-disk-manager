@@ -100,21 +100,21 @@ func TestIsDisk(t *testing.T) {
 	}
 	defer udevEnumerate.UnrefUdevEnumerate()
 
-	err = udevEnumerate.UdevEnumerateAddMatchSubsystem(UDEV_SUBSYSTEM)
+	err = udevEnumerate.AddSubsystemFilter(UDEV_SUBSYSTEM)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = udevEnumerate.UdevEnumerateScanDevices()
+	err = udevEnumerate.ScanDevices()
 	if err != nil {
 		t.Fatal(err)
 	}
-	for l := udevEnumerate.UdevEnumerateGetListEntry(); l != nil; l = l.UdevListEntryGetNext() {
-		s := l.UdevListEntryGetName()
+	for l := udevEnumerate.ListEntry(); l != nil; l = l.GetNextEntry() {
+		s := l.GetName()
 		newUdevice, err := udev.NewDeviceFromSysPath(s)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if newUdevice.UdevDeviceGetDevtype() == UDEV_SYSTEM && newUdevice.UdevDeviceGetPropertyValue(UDEV_TYPE) == UDEV_SYSTEM {
+		if newUdevice.GetDevtype() == UDEV_SYSTEM && newUdevice.GetPropertyValue(UDEV_TYPE) == UDEV_SYSTEM {
 			assert.Equal(t, true, newUdevice.IsDisk())
 		} else {
 			assert.Equal(t, false, newUdevice.IsDisk())

@@ -40,13 +40,13 @@ func newUdevListEntry(ptr *C.struct_udev_list_entry) (le *UdevListEntry) {
 	return
 }
 
-// UdevListEntryGetNext return UdevListEntry struct if next device present.
-// else it returns nil
-func (le *UdevListEntry) UdevListEntryGetNext() *UdevListEntry {
+// GetNext return UdevListEntry struct if next device present
+// else it returns nil pointer.
+func (le *UdevListEntry) GetNextEntry() *UdevListEntry {
 	return newUdevListEntry(C.udev_list_entry_get_next(le.listEntry))
 }
 
-//UdevListEntryGetName return Udevice syspath.
-func (le *UdevListEntry) UdevListEntryGetName() string {
+// GetName return Udevice syspath.
+func (le *UdevListEntry) GetName() string {
 	return C.GoString(C.udev_list_entry_get_name(le.listEntry))
 }

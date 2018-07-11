@@ -86,10 +86,10 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.DevNode = "/dev/" + osDiskName
 	diskDetails.Size = sizeString
 	diskDetails.SysPath = sysPath
-	diskDetails.Model = device.UdevDeviceGetPropertyValue(UDEV_MODEL)
-	diskDetails.Serial = device.UdevDeviceGetPropertyValue(UDEV_SERIAL)
-	diskDetails.Vendor = device.UdevDeviceGetPropertyValue(UDEV_VENDOR)
-	diskDetails.Wwn = device.UdevDeviceGetPropertyValue(UDEV_WWN)
+	diskDetails.Model = device.GetPropertyValue(UDEV_MODEL)
+	diskDetails.Serial = device.GetPropertyValue(UDEV_SERIAL)
+	diskDetails.Vendor = device.GetPropertyValue(UDEV_VENDOR)
+	diskDetails.Wwn = device.GetPropertyValue(UDEV_WWN)
 	diskDetails.Capacity = size
 	diskDetails.Uid = device.GetUid()
 	return diskDetails, nil

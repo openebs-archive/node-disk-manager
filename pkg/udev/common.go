@@ -74,10 +74,10 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 	if err != nil {
 	}
 	diskDetails := UdevDiskDetails{
-		Model:  device.UdevDeviceGetPropertyValue(UDEV_MODEL),
-		Serial: device.UdevDeviceGetPropertyValue(UDEV_SERIAL),
-		Vendor: device.UdevDeviceGetPropertyValue(UDEV_VENDOR),
-		Path:   device.UdevDeviceGetPropertyValue(UDEV_DEVNAME),
+		Model:  device.GetPropertyValue(UDEV_MODEL),
+		Serial: device.GetPropertyValue(UDEV_SERIAL),
+		Vendor: device.GetPropertyValue(UDEV_VENDOR),
+		Path:   device.GetPropertyValue(UDEV_DEVNAME),
 		Size:   size,
 	}
 	return diskDetails
@@ -86,22 +86,22 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 // GetUid returns unique id for the disk block device
 func (device *UdevDevice) GetUid() string {
 	return NDMPrefix +
-		util.Hash(device.UdevDeviceGetPropertyValue(UDEV_WWN)+
-			device.UdevDeviceGetPropertyValue(UDEV_MODEL)+
-			device.UdevDeviceGetPropertyValue(UDEV_SERIAL)+
-			device.UdevDeviceGetPropertyValue(UDEV_VENDOR))
+		util.Hash(device.GetPropertyValue(UDEV_WWN)+
+			device.GetPropertyValue(UDEV_MODEL)+
+			device.GetPropertyValue(UDEV_SERIAL)+
+			device.GetPropertyValue(UDEV_VENDOR))
 }
 
 // IsDisk returns true if device is a disk
 func (device *UdevDevice) IsDisk() bool {
-	return device.UdevDeviceGetDevtype() == UDEV_SYSTEM && device.UdevDeviceGetPropertyValue(UDEV_TYPE) == UDEV_SYSTEM
+	return device.GetDevtype() == UDEV_SYSTEM && device.GetPropertyValue(UDEV_TYPE) == UDEV_SYSTEM
 }
 
 // GetSyspath returns syspath of a disk using syspath we can fell details
 // in diskInfo struct using udev probe
 func (device *UdevDevice) GetSyspath() string {
-	major := device.UdevDeviceGetPropertyValue(UDEV_MAJOR)
-	minor := device.UdevDeviceGetPropertyValue(UDEV_MINOR)
+	major := device.GetPropertyValue(UDEV_MAJOR)
+	minor := device.GetPropertyValue(UDEV_MINOR)
 	syspath := UDEV_SYSPATH_PREFIX + major + ":" + minor
 	return syspath
 }
@@ -110,12 +110,12 @@ func (device *UdevDevice) GetSyspath() string {
 func (device *UdevDevice) getSize() (uint64, error) {
 	var sector []byte
 	var sec int64
-	n, err := strconv.ParseInt(device.UdevDeviceGetSysattrValue("size"), 10, 64)
+	n, err := strconv.ParseInt(device.GetSysattrValue("size"), 10, 64)
 	if err != nil {
 		return 0, err
 	}
 	// should we use disk smart queries to get the sector size?
-	fname := "/sys" + device.UdevDeviceGetPropertyValue(UDEV_PATH) + "/queue/hw_sector_size"
+	fname := "/sys" + device.GetPropertyValue(UDEV_PATH) + "/queue/hw_sector_size"
 	sector, err = ioutil.ReadFile(fname)
 	if err != nil {
 		return 0, err

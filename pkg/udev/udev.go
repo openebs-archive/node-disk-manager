@@ -77,3 +77,11 @@ func (u *Udev) NewDeviceFromSysPath(sysPath string) (*UdevDevice, error) {
 	defer freeCharPtr(syspath)
 	return newUdevDevice(C.udev_device_new_from_syspath(u.uptr, syspath))
 }
+
+// NewDeviceFromNetlink use newUdeviceMonitor() and use returns UdevMonitor pointer in success
+// The function returns nil on failure it can monitor udev or kernel as source.
+func (u *Udev) NewDeviceFromNetlink(source string) (*UdevMonitor, error) {
+	monitorSources := C.CString(source)
+	defer freeCharPtr(monitorSources)
+	return newUdeviceMonitor(C.udev_monitor_new_from_netlink(u.uptr, monitorSources))
+}

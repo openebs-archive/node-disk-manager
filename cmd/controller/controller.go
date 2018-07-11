@@ -27,7 +27,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/golang/glog"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
 	clientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
 	"github.com/openebs/node-disk-manager/pkg/signals"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -131,7 +130,7 @@ func DeviceList(kubeconfig string) {
 	if err != nil {
 		glog.Fatal(err)
 	}
-	diskList, err := controller.listDiskResource()
+	diskList, err := controller.ListDiskResource()
 	if err != nil {
 		glog.Fatalf("error listing device: %s", err.Error())
 	}
@@ -142,24 +141,12 @@ func DeviceList(kubeconfig string) {
 	}
 }
 
-// PushDiskResource push disk resource to etcd it will use create/update disk.
-// If disk resource is present in etcd then it updates that resource else it
-// creates one new reource.
-func (c *Controller) PushDiskResource(uuid string, dr apis.Disk) {
-	cdr := c.getExistingResource(uuid)
-	if cdr != nil {
-		c.UpdateDisk(dr, cdr)
-		return
-	}
-	c.CreateDisk(dr)
-}
-
 // DeactivateStaleDiskResource deactivates the stale entry from etcd.
 // It gets list of resources which are present in system and queries etcd to get
 // list of active resources. One active resource which is present in etcd not in
 // system that will be marked as inactive.
 func (c *Controller) DeactivateStaleDiskResource(devices []string) {
-	listDR, err := c.listDiskResource()
+	listDR, err := c.ListDiskResource()
 	if err != nil {
 		glog.Error(err)
 		return

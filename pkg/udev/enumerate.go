@@ -30,10 +30,10 @@ type UdevEnumerate struct {
 	ueptr *C.struct_udev_enumerate
 }
 
-// UdevEnumerateAddMatchSubsystem adds filter in UdeviceMon struct.
+// AddSubsystemFilter adds filter in UdeviceMon struct.
 // This filter is efficiently executed inside kernel, and libudev
 // subscribers will usually not be woken up for devices which do not match.
-func (ue *UdevEnumerate) UdevEnumerateAddMatchSubsystem(subSystem string) error {
+func (ue *UdevEnumerate) AddSubsystemFilter(subSystem string) error {
 	subsystem := C.CString(subSystem)
 	defer freeCharPtr(subsystem)
 	ret := C.udev_enumerate_add_match_subsystem(ue.ueptr, subsystem)
@@ -43,8 +43,9 @@ func (ue *UdevEnumerate) UdevEnumerateAddMatchSubsystem(subSystem string) error 
 	return nil
 }
 
-// UdevEnumerateScanDevices scan devices in system
-func (ue *UdevEnumerate) UdevEnumerateScanDevices() error {
+// ScanDevices scan devices in system and returns list
+// of devices present in system
+func (ue *UdevEnumerate) ScanDevices() error {
 	ret := C.udev_enumerate_scan_devices(ue.ueptr)
 	if ret < 0 {
 		return errors.New("unable to scan device list")
@@ -52,8 +53,8 @@ func (ue *UdevEnumerate) UdevEnumerateScanDevices() error {
 	return nil
 }
 
-// UdevEnumerateGetListEntry returns UdevListEntry struct from which wecan get device.
-func (ue *UdevEnumerate) UdevEnumerateGetListEntry() *UdevListEntry {
+// ListEntry returns UdevListEntry struct from which wecan get device.
+func (ue *UdevEnumerate) ListEntry() *UdevListEntry {
 	return newUdevListEntry(C.udev_enumerate_get_list_entry(ue.ueptr))
 }
 

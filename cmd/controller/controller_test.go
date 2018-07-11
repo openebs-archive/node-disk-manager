@@ -26,38 +26,6 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestPushDiskResource(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
-	fakeKubeClient := fake.NewSimpleClientset()
-	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
-	}
-	dr := fakeDr
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
-	fakeController.PushDiskResource(fakeDiskUid, dr)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
-	fakeController.PushDiskResource(fakeDiskUid, dr)
-	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
-
-	tests := map[string]struct {
-		actualDisk    apis.Disk
-		actualError   error
-		expectedDisk  apis.Disk
-		expectedError error
-	}{
-		"push disk resource creates resource": {actualDisk: *cdr1, actualError: err1, expectedDisk: dr, expectedError: nil},
-		"push disk resource updates resource": {actualDisk: *cdr2, actualError: err2, expectedDisk: dr, expectedError: nil},
-	}
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDisk, test.actualDisk)
-			assert.Equal(t, test.expectedError, test.actualError)
-		})
-	}
-}
-
 func TestDeactivateStaleDiskResource(t *testing.T) {
 	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
 	fakeKubeClient := fake.NewSimpleClientset()

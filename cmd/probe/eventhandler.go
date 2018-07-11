@@ -36,25 +36,62 @@ type ProbeEvent struct {
 
 // addDiskEvent fill disk details from different probes and push it to etcd
 func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
+	diskList, err := pe.Controller.ListDiskResource()
+	if err != nil {
+		glog.Error(err)
+		pe.initOrErrorEvent()
+		return
+	}
 	for _, diskDetails := range msg.Devices {
-		func() {
-			glog.Info("processing data for ", diskDetails.ProbeIdentifiers.Uuid)
-			diskDetails.HostName = pe.Controller.HostName
-			diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
-			probes := pe.Controller.ListProbe()
-			for _, probe := range probes {
-				glog.Info("disk details filled by ", probe.ProbeName)
-				probe.FillDiskDetails(diskDetails)
-			}
-			diskApi := diskDetails.ToDisk()
-			pe.Controller.PushDiskResource(diskApi.ObjectMeta.Name, diskApi)
-		}()
+		glog.Info("processing data for ", diskDetails.ProbeIdentifiers.Uuid)
+		diskDetails.HostName = pe.Controller.HostName
+		diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
+		probes := pe.Controller.ListProbe()
+		for _, probe := range probes {
+			glog.Info("disk details filled by ", probe.ProbeName)
+			probe.FillDiskDetails(diskDetails)
+		}
+		diskApi := diskDetails.ToDisk()
+		oldDr := pe.Controller.GetExistingResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
+		if oldDr != nil {
+			pe.Controller.UpdateDisk(diskApi, oldDr)
+			continue
+		}
+		pe.Controller.CreateDisk(diskApi)
 	}
 }
 
 // deleteDiskEvent deactivate disk resource using uuid from etcd
-func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {}
+func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
+	diskList, err := pe.Controller.ListDiskResource()
+	if err != nil {
+		glog.Error(err)
+		pe.initOrErrorEvent()
+		return
+	}
+	mismatch := false
+	// set mismatch = true when one disk is removed from node and
+	// entry related that disk not present in etcd in that case it
+	// again rescan full system and update etcd accordingly.
+	for _, diskDetails := range msg.Devices {
+		oldDr := pe.Controller.GetExistingResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
+		if oldDr == nil {
+			mismatch = true
+			continue
+		}
+		pe.Controller.DeactivateDisk(*oldDr)
+	}
+	if mismatch {
+		pe.initOrErrorEvent()
+	}
+}
 
 // initOrErrorEvent rescan system and update disk resource this is
 // used for initial setup and when any uid mismatch or error occurred.
-func (pe *ProbeEvent) initOrErrorEvent() {}
+func (pe *ProbeEvent) initOrErrorEvent() {
+	udevProbe := newUdevProbe(pe.Controller)
+	err := udevProbe.scan()
+	if err != nil {
+		glog.Error(err)
+	}
+}
