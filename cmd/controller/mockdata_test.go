@@ -42,6 +42,7 @@ var (
 		Path:     "dev/disk-fake-path",
 		Capacity: fakeCapacity,
 		Details:  fakeDetails,
+		DevLinks: make([]apis.DiskDevLink, 0),
 	}
 	fakeTypeMeta = metav1.TypeMeta{
 		Kind:       NDMKind,
@@ -74,6 +75,7 @@ var (
 		Path:     "dev/disk-fake-path-new",
 		Capacity: newFakeCapacity,
 		Details:  newFakeDetails,
+		DevLinks: make([]apis.DiskDevLink, 0),
 	}
 	newFakeTypeMeta = metav1.TypeMeta{
 		Kind:       NDMKind,

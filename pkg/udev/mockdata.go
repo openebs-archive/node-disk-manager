@@ -32,17 +32,19 @@ import (
 
 // MockOsDiskDetails struct contain different attribute of os disk.
 type MockOsDiskDetails struct {
-	OsDiskName string
-	DevType    string
-	DevNode    string
-	Size       string
-	SysPath    string
-	Model      string
-	Serial     string
-	Vendor     string
-	Wwn        string
-	Capacity   uint64
-	Uid        string
+	OsDiskName     string
+	DevType        string
+	DevNode        string
+	Size           string
+	SysPath        string
+	Model          string
+	Serial         string
+	Vendor         string
+	Wwn            string
+	Capacity       uint64
+	Uid            string
+	ByIdDevLinks   []string
+	ByPathDevLinks []string
 }
 
 // mockDataStructUdev returns C udev struct for unit test.
@@ -57,41 +59,37 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	if err != nil {
 		return diskDetails, err
 	}
-	data, err := ioutil.ReadFile("/sys/block/" + osDiskName + "/dev")
+	sysPath, err := getSyspathOfOsDisk(osDiskName)
 	if err != nil {
 		return diskDetails, err
 	}
-	sysPath := "/sys/dev/block/" + strings.TrimSpace(string(data))
-	sizeByte, err := ioutil.ReadFile("/sys/block/" + osDiskName + "/size")
+	size, err := getOsDiskSize(osDiskName)
 	if err != nil {
 		return diskDetails, err
 	}
-	sizeString := strings.TrimSpace(string(sizeByte))
-	newUdev, err := NewUdev()
-	if err != nil {
-		return diskDetails, err
-	}
-	defer newUdev.UnrefUdev()
-	device, err := newUdev.NewDeviceFromSysPath(sysPath)
-	if err != nil {
+	device := getOsDiskUdevDevice(sysPath)
+	if device == nil {
 		return diskDetails, err
 	}
 	defer device.UdevDeviceUnref()
-	size, err := device.getSize()
+	capacity, err := device.getSize()
 	if err != nil {
 		return diskDetails, err
 	}
 	diskDetails.OsDiskName = osDiskName
 	diskDetails.DevType = "disk"
 	diskDetails.DevNode = "/dev/" + osDiskName
-	diskDetails.Size = sizeString
+	diskDetails.Size = size
 	diskDetails.SysPath = sysPath
 	diskDetails.Model = device.GetPropertyValue(UDEV_MODEL)
 	diskDetails.Serial = device.GetPropertyValue(UDEV_SERIAL)
 	diskDetails.Vendor = device.GetPropertyValue(UDEV_VENDOR)
 	diskDetails.Wwn = device.GetPropertyValue(UDEV_WWN)
-	diskDetails.Capacity = size
+	diskDetails.Capacity = capacity
 	diskDetails.Uid = device.GetUid()
+	devLinks := device.GetDevLinks()
+	diskDetails.ByIdDevLinks = devLinks[BY_ID_LINK]
+	diskDetails.ByPathDevLinks = devLinks[BY_PATH_LINK]
 	return diskDetails, nil
 }
 
@@ -137,4 +135,35 @@ func osDiskName() (string, error) {
 	parts = strings.Split(link, "/")
 	osDiskName := parts[len(parts)-1]
 	return osDiskName, nil
+}
+
+// getSyspathOfOsDisk returns syspeth of os disk in success
+func getSyspathOfOsDisk(osDiskName string) (string, error) {
+	data, err := ioutil.ReadFile("/sys/block/" + osDiskName + "/dev")
+	if err != nil {
+		return "", err
+	}
+	return "/sys/dev/block/" + strings.TrimSpace(string(data)), nil
+}
+
+// getOsDiskSize returns size of os disk in success
+func getOsDiskSize(osDiskName string) (string, error) {
+	sizeByte, err := ioutil.ReadFile("/sys/block/" + osDiskName + "/size")
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(sizeByte)), nil
+}
+
+// getOsDiskUdevDevice UdevDevice struct of Os disk
+func getOsDiskUdevDevice(sysPath string) *UdevDevice {
+	udev, err := NewUdev()
+	if err != nil {
+		return nil
+	}
+	device, err := udev.NewDeviceFromSysPath(sysPath)
+	if err != nil {
+		return nil
+	}
+	return device
 }

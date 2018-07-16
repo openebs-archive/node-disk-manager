@@ -16,9 +16,17 @@ limitations under the License.
 
 package controller
 
-import apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
+import (
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // DiskInfo contains details of a disk which can be converted into api.Disk
+// This is one utility struct used by different module like probe, controller
+// also in event message. One DiskInfo struct for each disk is created when
+// one event is generated then each probe fills that disk related data in
+// that struct. At the end it is converted to Disk struct which will push to
+// etcd as a CR of that disk.
 type DiskInfo struct {
 	ProbeIdentifiers ProbeIdentifier // ProbeIdentifiers contains some keys to uniquely identify each disk by probe
 	HostName         string          // HostName contains the node's hostname in which this disk is attached.
@@ -28,6 +36,8 @@ type DiskInfo struct {
 	Serial           string          // Serial is serial no of a disk
 	Vendor           string          // Vendor is vendor of a disk
 	Path             string          // Path is dev path of a disk like /dev/sda
+	ByIdDevLinks     []string        // ByIdDevLinks contains by-id devlinks
+	ByPathDevLinks   []string        // ByPathDevLinks contains by-path devlinks
 }
 
 // ProbeIdentifiers contains some keys to uniquely identify each disk by probe
@@ -46,17 +56,103 @@ func NewDiskInfo() *DiskInfo {
 
 // ToDisk convert diskInfo struct to api.Disk type which will be pushed to etcd
 func (di *DiskInfo) ToDisk() apis.Disk {
-	obj := apis.DiskSpec{Path: di.Path}
-	obj.Capacity.Storage = di.Capacity
-	obj.Details.Model = di.Model
-	obj.Details.Serial = di.Serial
-	obj.Details.Vendor = di.Vendor
-	dr := apis.Disk{Spec: obj}
-	dr.ObjectMeta.Labels = make(map[string]string)
-	dr.ObjectMeta.Name = di.Uuid
-	dr.ObjectMeta.Labels[NDMHostKey] = di.HostName
-	dr.TypeMeta.Kind = NDMKind
-	dr.TypeMeta.APIVersion = NDMVersion
-	dr.Status.State = NDMActive
+	dr := apis.Disk{}
+	dr.Spec = di.getDiskSpec()
+	dr.ObjectMeta = di.getObjectMeta()
+	dr.TypeMeta = di.getTypeMeta()
+	dr.Status = di.getStatus()
 	return dr
+}
+
+// getObjectMeta returns ObjectMeta struct which contains lebels and Name of resource
+// It is used to populate data of Disk struct which is a disk CR.
+func (di *DiskInfo) getObjectMeta() metav1.ObjectMeta {
+	objectMeta := metav1.ObjectMeta{
+		Labels: make(map[string]string),
+		Name:   di.Uuid,
+	}
+	objectMeta.Labels[NDMHostKey] = di.HostName
+	return objectMeta
+}
+
+// getTypeMeta returns TypeMeta struct which contains resource kind and version
+// It is used to populate data of Disk struct which is a disk CR.
+func (di *DiskInfo) getTypeMeta() metav1.TypeMeta {
+	typeMeta := metav1.TypeMeta{
+		Kind:       NDMKind,
+		APIVersion: NDMVersion,
+	}
+	return typeMeta
+}
+
+// getStatus returns DiskStatus struct which contains state of resource
+// It is used to populate data of Disk struct which is a disk CR.
+func (di *DiskInfo) getStatus() apis.DiskStatus {
+	diskStatus := apis.DiskStatus{
+		State: NDMActive,
+	}
+	return diskStatus
+}
+
+// getDiskSpec returns DiskSpec struct which contains info of disk
+// like - static details - (model,serial,vendor ..)
+// capacity - (size,logical sector size ...)
+// devlinks - (by-id , by-path links)
+// It is used to populate data of Disk struct which is a disk CR.
+func (di *DiskInfo) getDiskSpec() apis.DiskSpec {
+	diskSpec := apis.DiskSpec{}
+	diskSpec.Path = di.getPath()
+	diskSpec.Details = di.getDiskDetails()
+	diskSpec.Capacity = di.getDiskCapacity()
+	diskSpec.DevLinks = di.getDiskLinks()
+	return diskSpec
+}
+
+// getPath returns path of the disk like (/dev/sda , /dev/sdb ...)
+// It is used to populate data of Disk struct which is a disk CR.
+func (di *DiskInfo) getPath() string {
+	return di.Path
+}
+
+// getDiskDetails returns DiskDetails struct which contains primary and static info of
+// disk resource like model, serial, vendor .. these data must present for each disk
+// It is used to populate data of Disk struct which is a disk CR.
+func (di *DiskInfo) getDiskDetails() apis.DiskDetails {
+	diskDetails := apis.DiskDetails{}
+	diskDetails.Model = di.Model
+	diskDetails.Serial = di.Serial
+	diskDetails.Vendor = di.Vendor
+	return diskDetails
+}
+
+// getDiskCapacity returns DiskCapacity struct which contains size of disk
+// size contains only total size for now later we will add logical, physical
+// sector size of a disk in this struct.
+// It is used to populate data of Disk struct which is a disk CR.
+func (di *DiskInfo) getDiskCapacity() apis.DiskCapacity {
+	capacity := apis.DiskCapacity{}
+	capacity.Storage = di.Capacity
+	return capacity
+}
+
+// getDiskLinks returns slice of DiskDevLink struct which contains soft links
+// like by-id ,by-path link
+// It is used to populate data of Disk struct which is a disk CR.
+func (di *DiskInfo) getDiskLinks() []apis.DiskDevLink {
+	devLinks := make([]apis.DiskDevLink, 0)
+	if len(di.ByIdDevLinks) != 0 {
+		byIdLinks := apis.DiskDevLink{
+			Kind:  "by-id",
+			Links: di.ByIdDevLinks,
+		}
+		devLinks = append(devLinks, byIdLinks)
+	}
+	if len(di.ByPathDevLinks) != 0 {
+		byPathLinks := apis.DiskDevLink{
+			Kind:  "by-path",
+			Links: di.ByPathDevLinks,
+		}
+		devLinks = append(devLinks, byPathLinks)
+	}
+	return devLinks
 }

@@ -47,6 +47,24 @@ func mockOsDiskToAPI() (apis.Disk, error) {
 		Capacity: fakeCapacity,
 		Details:  fakeDetails,
 	}
+
+	devLinks := make([]apis.DiskDevLink, 0)
+	if len(mockOsdiskDeails.ByIdDevLinks) != 0 {
+		byIdLinks := apis.DiskDevLink{
+			Kind:  "by-id",
+			Links: mockOsdiskDeails.ByIdDevLinks,
+		}
+		devLinks = append(devLinks, byIdLinks)
+	}
+	if len(mockOsdiskDeails.ByPathDevLinks) != 0 {
+		byPathLinks := apis.DiskDevLink{
+			Kind:  "by-path",
+			Links: mockOsdiskDeails.ByPathDevLinks,
+		}
+		devLinks = append(devLinks, byPathLinks)
+	}
+	fakeObj.DevLinks = devLinks
+
 	fakeTypeMeta := metav1.TypeMeta{
 		Kind:       controller.NDMKind,
 		APIVersion: controller.NDMVersion,
@@ -83,6 +101,8 @@ func TestFillDiskDetails(t *testing.T) {
 	expectedDiskInfo.Serial = mockOsdiskDeails.Serial
 	expectedDiskInfo.Vendor = mockOsdiskDeails.Vendor
 	expectedDiskInfo.Capacity = mockOsdiskDeails.Capacity
+	expectedDiskInfo.ByIdDevLinks = mockOsdiskDeails.ByIdDevLinks
+	expectedDiskInfo.ByPathDevLinks = mockOsdiskDeails.ByPathDevLinks
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
