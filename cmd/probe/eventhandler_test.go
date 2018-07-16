@@ -47,6 +47,7 @@ func mockEmptyDiskCr() apis.Disk {
 	fakeDr.ObjectMeta = fakeObjectMeta
 	fakeDr.TypeMeta = fakeTypeMeta
 	fakeDr.Status.State = controller.NDMActive
+	fakeDr.Spec.DevLinks = make([]apis.DiskDevLink, 0)
 	return fakeDr
 }
 func TestAddDiskEvent(t *testing.T) {

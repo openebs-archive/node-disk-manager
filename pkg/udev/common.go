@@ -26,6 +26,7 @@ import "C"
 import (
 	"io/ioutil"
 	"strconv"
+	"strings"
 	"unsafe"
 
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -52,15 +53,20 @@ const (
 	UDEV_SOURCE         = "udev"            // udev source constant
 	UDEV_SYSPATH_PREFIX = "/sys/dev/block/" // udev syspath prefix
 	UDEV_DEVNAME        = "DEVNAME"         // udev attrinute contain disk name given by kernel
+	UDEV_DEVLINKS       = "DEVLINKS"        //udev attrinute contain devlinks of a disk
+	BY_ID_LINK          = "by-id"           // by-path devlink contains this string
+	BY_PATH_LINK        = "by-path"         // by-path devlink contains this string
 )
 
 // UdevDiskDetails struct contain different attribute of disk.
 type UdevDiskDetails struct {
-	Model  string // Model is Model of disk.
-	Serial string // Serial is Serial of a disk.
-	Vendor string // Vendor is Vendor of a disk.
-	Path   string // Path is Path of a disk.
-	Size   uint64 // Size is capacity of disk
+	Model          string   // Model is Model of disk.
+	Serial         string   // Serial is Serial of a disk.
+	Vendor         string   // Vendor is Vendor of a disk.
+	Path           string   // Path is Path of a disk.
+	Size           uint64   // Size is capacity of disk
+	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
+	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
 }
 
 // freeCharPtr frees c pointer
@@ -73,12 +79,15 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 	size, err := device.getSize()
 	if err != nil {
 	}
+	devLinks := device.GetDevLinks()
 	diskDetails := UdevDiskDetails{
-		Model:  device.GetPropertyValue(UDEV_MODEL),
-		Serial: device.GetPropertyValue(UDEV_SERIAL),
-		Vendor: device.GetPropertyValue(UDEV_VENDOR),
-		Path:   device.GetPropertyValue(UDEV_DEVNAME),
-		Size:   size,
+		Model:          device.GetPropertyValue(UDEV_MODEL),
+		Serial:         device.GetPropertyValue(UDEV_SERIAL),
+		Vendor:         device.GetPropertyValue(UDEV_VENDOR),
+		Path:           device.GetPropertyValue(UDEV_DEVNAME),
+		Size:           size,
+		ByIdDevLinks:   devLinks[BY_ID_LINK],
+		ByPathDevLinks: devLinks[BY_PATH_LINK],
 	}
 	return diskDetails
 }
@@ -125,4 +134,24 @@ func (device *UdevDevice) getSize() (uint64, error) {
 		return 0, err
 	}
 	return uint64(n * sec), nil
+}
+
+// GetDevLinks returns syspath of a disk using syspath we can fell details
+// in diskInfo struct using udev probe
+func (device *UdevDevice) GetDevLinks() map[string][]string {
+	devLinkMap := make(map[string][]string)
+	byIdLink := make([]string, 0)
+	byPathLink := make([]string, 0)
+	for _, link := range strings.Split(device.GetPropertyValue(UDEV_DEVLINKS), " ") {
+		parts := strings.Split(link, "/")
+		if util.Contains(parts, BY_ID_LINK) {
+			byIdLink = append(byIdLink, link)
+		}
+		if util.Contains(parts, BY_PATH_LINK) {
+			byPathLink = append(byPathLink, link)
+		}
+	}
+	devLinkMap[BY_ID_LINK] = byIdLink
+	devLinkMap[BY_PATH_LINK] = byPathLink
+	return devLinkMap
 }
