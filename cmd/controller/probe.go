@@ -30,10 +30,10 @@ type EventMessage struct {
 
 // Probe contains name, state and probeinterface
 type Probe struct {
-	Priority   int
-	ProbeName  string
-	ProbeState bool
-	Interface  ProbeInterface
+	Priority  int
+	Name      string
+	State     bool
+	Interface ProbeInterface
 }
 
 // Start implements ProbeInterface's Start()
@@ -79,7 +79,7 @@ func (c *Controller) AddNewProbe(probe *Probe) {
 	probes = append(probes, probe)
 	sort.Sort(sortableProbes(probes))
 	c.Probes = probes
-	glog.Info("configured ", probe.ProbeName)
+	glog.Info("configured ", probe.Name)
 }
 
 // ListProbe returns list of active probe associated with controller object
@@ -88,9 +88,19 @@ func (c *Controller) ListProbe() []*Probe {
 	defer c.Unlock()
 	listProbe := make([]*Probe, 0)
 	for _, probe := range c.Probes {
-		if probe.ProbeState {
+		if probe.State {
 			listProbe = append(listProbe, probe)
 		}
 	}
 	return listProbe
+}
+
+// FillDiskDetails lists registered probes and fills details from each probe
+func (c *Controller) FillDiskDetails(diskDetails *DiskInfo) {
+	diskDetails.HostName = c.HostName
+	diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
+	probes := c.ListProbe()
+	for _, probe := range probes {
+		probe.FillDiskDetails(diskDetails)
+	}
 }

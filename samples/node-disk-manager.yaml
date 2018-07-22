@@ -23,13 +23,15 @@ spec:
         command:
         - /usr/sbin/ndm
         - start
-        image: openebs/node-disk-manager-amd64:latest
+        image: openebs/node-disk-manager-amd64:ci
         imagePullPolicy: Always
         securityContext:
           privileged: true
         volumeMounts:
         - name: udev
           mountPath: /run/udev
+        - name: procmount
+          mountPath: /host/mounts
         env:
         - name: NODE_NAME
           valueFrom:
@@ -40,4 +42,8 @@ spec:
         hostPath:
           path: /run/udev
           type: Directory
-
+      - name: procmount
+      # mount /proc/1/mounts (mount file of process 1 of host) inside container
+      # to read which partition is mounted on / path
+        hostPath:
+          path: /proc/1/mounts

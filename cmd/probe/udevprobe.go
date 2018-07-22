@@ -31,23 +31,22 @@ const (
 	udevProbePriority = 1
 )
 
-func init() {
-	go func() {
-		ctrl := <-controller.ControllerBroadcastChannel
-		if ctrl == nil {
-			glog.Error("unable to configure", udevProbeName)
-			return
-		}
-		var pi controller.ProbeInterface = newUdevProbe(ctrl)
-		newPrgisterProbe := &registerProbe{
-			priority:       udevProbePriority,
-			probeName:      udevProbeName,
-			probeState:     udevProbeState,
-			probeInterface: pi,
-			controller:     ctrl,
-		}
-		newPrgisterProbe.register()
-	}()
+// udevProbeRegister contains registration process of udev probe
+var udevProbeRegister = func() {
+	ctrl := <-controller.ControllerBroadcastChannel
+	if ctrl == nil {
+		glog.Error("unable to configure", udevProbeName)
+		return
+	}
+	var pi controller.ProbeInterface = newUdevProbe(ctrl)
+	newPrgisterProbe := &registerProbe{
+		priority:   udevProbePriority,
+		name:       udevProbeName,
+		state:      udevProbeState,
+		pi:         pi,
+		controller: ctrl,
+	}
+	newPrgisterProbe.register()
 }
 
 // udevProbe contains require variables for scan , populate diskInfo and push

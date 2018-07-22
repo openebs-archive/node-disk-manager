@@ -38,25 +38,23 @@ const (
 )
 
 // init is used to get a controller object and then register itself
-func init() {
-	go func() {
-		// Get a controller object
-		ctrl := <-controller.ControllerBroadcastChannel
-		if ctrl == nil {
-			glog.Error("unable to configure", smartProbeName)
-			return
-		}
-		var pi controller.ProbeInterface = &smartProbe{Controller: ctrl}
-		newPrgisterProbe := &registerProbe{
-			priority:       smartProbePriority,
-			probeName:      smartProbeName,
-			probeState:     smartProbeState,
-			probeInterface: pi,
-			controller:     ctrl,
-		}
-		// Here we register the probe (smart probe in this case)
-		newPrgisterProbe.register()
-	}()
+var smartProbeRegister = func() {
+	// Get a controller object
+	ctrl := <-controller.ControllerBroadcastChannel
+	if ctrl == nil {
+		glog.Error("unable to configure", smartProbeName)
+		return
+	}
+	var pi controller.ProbeInterface = &smartProbe{Controller: ctrl}
+	newPrgisterProbe := &registerProbe{
+		priority:   smartProbePriority,
+		name:       smartProbeName,
+		state:      smartProbeState,
+		pi:         pi,
+		controller: ctrl,
+	}
+	// Here we register the probe (smart probe in this case)
+	newPrgisterProbe.register()
 }
 
 // newSmartProbe returns smartProbe struct which helps populate diskInfo struct
