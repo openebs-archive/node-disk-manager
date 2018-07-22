@@ -26,30 +26,36 @@ const (
 	defaultDisabled = false // use in each probe to make it disable.
 )
 
+// RegisterdProbes contains register function of probes which we want to register
+var RegisterdProbes = []func(){udevProbeRegister, smartProbeRegister}
+
 type registerProbe struct {
-	priority       int
-	probeName      string
-	probeState     bool
-	probeInterface controller.ProbeInterface
-	controller     *controller.Controller
+	priority   int
+	name       string
+	state      bool
+	pi         controller.ProbeInterface
+	controller *controller.Controller
 }
 
-// registerProbe called by init() of each probe it will check for probe status
-// if it is enabled then it will call Start() of that probe.
+// register called by register function of each probe it will check for probe
+// status if it is enabled then it will call Start() of that probe.
 func (rp *registerProbe) register() {
 	newProbe := &controller.Probe{
-		Priority:   rp.priority,
-		ProbeName:  rp.probeName,
-		ProbeState: rp.probeState,
-		Interface:  rp.probeInterface,
+		Priority:  rp.priority,
+		Name:      rp.name,
+		State:     rp.state,
+		Interface: rp.pi,
 	}
 	rp.controller.AddNewProbe(newProbe)
-	if rp.probeState {
-		rp.probeInterface.Start()
+	if rp.state {
+		rp.pi.Start()
 	}
 }
 
-// Start() is called to invoke all init functions of each specific probe.
-func Start() {
-	glog.Info("starting probe")
+// Start() starts registration of probes present in RegisteredProbes
+func Start(registerdProbes []func()) {
+	glog.Info("registering probes")
+	for _, probe := range registerdProbes {
+		probe()
+	}
 }

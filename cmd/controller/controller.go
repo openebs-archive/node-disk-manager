@@ -28,7 +28,6 @@ import (
 	"github.com/golang/glog"
 	clientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
 	"github.com/openebs/node-disk-manager/pkg/signals"
-	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 const (
@@ -48,70 +47,31 @@ type Controller struct {
 	HostName      string               // HostName is host name in which disk is attached
 	KubeClientset kubernetes.Interface // KubeClientset is standard kubernetes clientset
 	Clientset     clientset.Interface  // Clientset is clientset for our own API group
-	Probes        []*Probe             // Probes are the registered probes like udev/smart
 	Mutex         *sync.Mutex          // Mutex is used to lock and unlock Controller
+	Filters       []*Filter            // Filters are the registered filters like os disk filter
+	Probes        []*Probe             // Probes are the registered probes like udev/smart
 }
 
 // NewController returns a controller pointer for any error case it will return nil
 func NewController(kubeconfig string) (*Controller, error) {
+	controller := &Controller{}
 	cfg, err := getCfg(kubeconfig)
 	if err != nil {
 		return nil, err
 	}
-	kubeClient, err := kubernetes.NewForConfig(cfg)
-	if err != nil {
+	if err := controller.setKubeClient(cfg); err != nil {
 		return nil, err
 	}
-	crdClient, err := clientset.NewForConfig(cfg)
-	if err != nil {
+	if err := controller.setClientSet(cfg); err != nil {
 		return nil, err
 	}
-	host, ret := os.LookupEnv("NODE_NAME")
-	if ret != true {
-		return nil, errors.New("error building hostname")
+	if err := controller.setNodeName(); err != nil {
+		return nil, err
 	}
-	mutex := &sync.Mutex{}
-	probes := make([]*Probe, 0)
-	controller := &Controller{
-		HostName:      host,
-		KubeClientset: kubeClient,
-		Clientset:     crdClient,
-		Probes:        probes,
-		Mutex:         mutex,
-	}
+	controller.Filters = make([]*Filter, 0)
+	controller.Probes = make([]*Probe, 0)
+	controller.Mutex = &sync.Mutex{}
 	return controller, nil
-}
-
-// Start scans the locally attached disks and push them to etcd.
-// This function is called when we execute cli command ndm start.
-func Start(kubeconfig string) {
-	// set up signals so we handle the first shutdown signal gracefully
-	stopCh := signals.SetupSignalHandler()
-	controller, err := NewController(kubeconfig)
-	if err != nil {
-		glog.Fatal(err)
-	}
-	if err = controller.run(2, stopCh); err != nil {
-		glog.Fatalf("error running controller: %s", err.Error())
-	}
-}
-
-// run broadcasts controller copy to each probe. We are using one single copy of controller
-// in our application in that controller object each probe registeres themselves and later
-// we can list no of active probe using controller object for that run broadcasts controller
-// copy to each probe.
-func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
-	glog.Info("started the controller")
-	// sending controller object to each probe. Each probe can get a copy of
-	// controller struct anytime only they need to read channel.
-	go func() {
-		for {
-			ControllerBroadcastChannel <- c
-		}
-	}()
-	<-stopCh
-	glog.Info("shutting down the controller")
-	return nil
 }
 
 // getCfg returns incluster or out cluster config using
@@ -132,21 +92,67 @@ func getCfg(kubeconfig string) (*rest.Config, error) {
 	return cfg, err
 }
 
-// DeactivateStaleDiskResource deactivates the stale entry from etcd.
-// It gets list of resources which are present in system and queries etcd to get
-// list of active resources. One active resource which is present in etcd not in
-// system that will be marked as inactive.
-func (c *Controller) DeactivateStaleDiskResource(devices []string) {
-	listDR, err := c.ListDiskResource()
+// setKubeClient set KubeClientset field in Controller struct
+// if it gets kubeClient from cfg else it returns error
+func (c *Controller) setKubeClient(cfg *rest.Config) error {
+	kubeClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		glog.Error(err)
-		return
+		return err
 	}
-	for _, item := range listDR.Items {
-		if !util.Contains(devices, item.ObjectMeta.Name) {
-			c.DeactivateDisk(item)
+	c.KubeClientset = kubeClient
+	return nil
+}
+
+// setClientset set Clientset field in Controller struct
+// if it gets Clientiset from cfg else it returns error
+func (c *Controller) setClientSet(cfg *rest.Config) error {
+	crdClient, err := clientset.NewForConfig(cfg)
+	if err != nil {
+		return err
+	}
+	c.Clientset = crdClient
+	return nil
+}
+
+// setNodeName set HostName field in Controller struct
+// if it gets from env else it returns error
+func (c *Controller) setNodeName() error {
+	host, ret := os.LookupEnv("NODE_NAME")
+	if ret != true {
+		return errors.New("error building hostname")
+	}
+	c.HostName = host
+	return nil
+}
+
+// Start is called when we execute cli command ndm start.
+func (c *Controller) Start() {
+	// set up signals so we handle the first shutdown signal gracefully
+	stopCh := signals.SetupSignalHandler()
+	if err := c.run(2, stopCh); err != nil {
+		glog.Fatalf("error running controller: %s", err.Error())
+	}
+}
+
+// Broadcast Broadcasts controller pointer. We are using one single pointer of controller
+// in our application. In that controller poniter each probe and filter registeres themselves
+// and later we can list no of active probe using controller object.
+func (c *Controller) Broadcast() {
+	// sending controller object to each probe. Each probe can get a copy of
+	// controller struct anytime only they need to read channel.
+	go func() {
+		for {
+			ControllerBroadcastChannel <- c
 		}
-	}
+	}()
+}
+
+// run waits until it gets any interrupt signals
+func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
+	glog.Info("started the controller")
+	<-stopCh
+	glog.Info("shutting down the controller")
+	return nil
 }
 
 // Lock takes a lock on Controller struct

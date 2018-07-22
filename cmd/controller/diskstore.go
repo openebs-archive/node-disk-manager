@@ -19,6 +19,7 @@ package controller
 import (
 	"github.com/golang/glog"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -116,4 +117,35 @@ func (c *Controller) GetExistingResource(listDr *apis.DiskList, uuid string) *ap
 		}
 	}
 	return nil
+}
+
+// DeactivateStaleDiskResource deactivates the stale entry from etcd.
+// It gets list of resources which are present in system and queries etcd to get
+// list of active resources. One active resource which is present in etcd not in
+// system that will be marked as inactive.
+func (c *Controller) DeactivateStaleDiskResource(devices []string) {
+	listDR, err := c.ListDiskResource()
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+	for _, item := range listDR.Items {
+		if !util.Contains(devices, item.ObjectMeta.Name) {
+			c.DeactivateDisk(item)
+		}
+	}
+}
+
+// PushDiskResource is a utility function which checks old disk resource
+// present or not. If it presents in etcd then it updates the resource
+// else it creates one new disk resource in etcd
+func (c *Controller) PushDiskResource(oldDr *apis.Disk, diskDetails *DiskInfo) {
+	diskDetails.HostName = c.HostName
+	diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
+	diskApi := diskDetails.ToDisk()
+	if oldDr != nil {
+		c.UpdateDisk(diskApi, oldDr)
+		return
+	}
+	c.CreateDisk(diskApi)
 }

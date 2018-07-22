@@ -96,6 +96,8 @@ spec:
         volumeMounts:
         - name: udev
           mountPath: /run/udev
+        - name: procmount
+          mountPath: /host/mounts
         env:
         # pass hostname as env variable using downward API to the NDM container
         - name: NODE_NAME
@@ -107,3 +109,8 @@ spec:
         hostPath:
           path: /run/udev
           type: Directory
+      - name: procmount
+      # mount /proc/1/mounts (mount file of process 1 of host) inside container
+      # to read which partition is mounted on / path
+        hostPath:
+          path: /proc/1/mounts

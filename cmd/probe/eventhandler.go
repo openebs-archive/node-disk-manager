@@ -43,21 +43,14 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 		return
 	}
 	for _, diskDetails := range msg.Devices {
-		glog.Info("processing data for ", diskDetails.ProbeIdentifiers.Uuid)
-		diskDetails.HostName = pe.Controller.HostName
-		diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
-		probes := pe.Controller.ListProbe()
-		for _, probe := range probes {
-			glog.Info("disk details filled by ", probe.ProbeName)
-			probe.FillDiskDetails(diskDetails)
-		}
-		diskApi := diskDetails.ToDisk()
-		oldDr := pe.Controller.GetExistingResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
-		if oldDr != nil {
-			pe.Controller.UpdateDisk(diskApi, oldDr)
+		pe.Controller.FillDiskDetails(diskDetails)
+		// if ApplyFilter returns true then we process the event further
+		if !pe.Controller.ApplyFilter(diskDetails) {
 			continue
 		}
-		pe.Controller.CreateDisk(diskApi)
+		glog.Info("processed data for ", diskDetails.ProbeIdentifiers.Uuid)
+		oldDr := pe.Controller.GetExistingResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
+		pe.Controller.PushDiskResource(oldDr, diskDetails)
 	}
 }
 
