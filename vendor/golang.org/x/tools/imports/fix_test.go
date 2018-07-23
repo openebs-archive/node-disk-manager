@@ -6,6 +6,7 @@ package imports
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"go/build"
 	"io/ioutil"
@@ -889,6 +890,169 @@ func main() {
 }
 `,
 	},
+
+	{
+		name: "issue #23709",
+		in: `package main
+
+import (
+	"math" // fun
+)
+
+func main() {
+	x := math.MaxInt64
+	fmt.Println(strings.Join(",", []string{"hi"}), x)
+}`,
+		out: `package main
+
+import (
+	"fmt"
+	"math" // fun
+	"strings"
+)
+
+func main() {
+	x := math.MaxInt64
+	fmt.Println(strings.Join(",", []string{"hi"}), x)
+}
+`,
+	},
+
+	{
+		name: "issue #26246 1",
+		in: `package main
+
+import (
+	_ "io"
+	_ "net/http"
+	_ "net/http/pprof" // install the pprof http handlers
+	_ "strings"
+)
+
+func main() {
+}
+`,
+		out: `package main
+
+import (
+	_ "io"
+	_ "net/http"
+	_ "net/http/pprof" // install the pprof http handlers
+	_ "strings"
+)
+
+func main() {
+}
+`,
+	},
+
+	{
+		name: "issue #26246 2",
+		in: `package main
+
+import (
+	_ "io"
+	_ "net/http/pprof" // install the pprof http handlers
+	_ "net/http"
+	_ "strings"
+)
+
+func main() {
+}
+`,
+		out: `package main
+
+import (
+	_ "io"
+	_ "net/http"
+	_ "net/http/pprof" // install the pprof http handlers
+	_ "strings"
+)
+
+func main() {
+}
+`,
+	},
+
+	{
+		name: "issue #26246 3",
+		in: `package main
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	_ "net/http/pprof" // install the pprof http handlers
+	"strings"
+
+	"github.com/pkg/errors"
+)
+
+func main() {
+	_ = strings.ToUpper("hello")
+	_ = io.EOF
+	var (
+		_ json.Number
+		_ *http.Request
+		_ errors.Frame
+	)
+}
+`,
+		out: `package main
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	_ "net/http/pprof" // install the pprof http handlers
+	"strings"
+
+	"github.com/pkg/errors"
+)
+
+func main() {
+	_ = strings.ToUpper("hello")
+	_ = io.EOF
+	var (
+		_ json.Number
+		_ *http.Request
+		_ errors.Frame
+	)
+}
+`,
+	},
+
+	{
+		name: "issue #26290 1",
+		in: `package p // comment
+
+import "math"
+
+var _ = fmt.Printf
+`,
+		out: `package p // comment
+
+import "fmt"
+
+var _ = fmt.Printf
+`,
+	},
+
+	{
+		name: "issue #26290 2",
+		in: `package p
+
+import "math"
+
+var _ = fmt.Printf
+`,
+		out: `package p
+
+import "fmt"
+
+var _ = fmt.Printf
+`,
+	},
 }
 
 func TestFixImports(t *testing.T) {
@@ -909,7 +1073,7 @@ func TestFixImports(t *testing.T) {
 	defer func() {
 		findImport = old
 	}()
-	findImport = func(pkgName string, symbols map[string]bool, filename string) (string, bool, error) {
+	findImport = func(_ context.Context, pkgName string, symbols map[string]bool, filename string) (string, bool, error) {
 		return simplePkgs[pkgName], pkgName == "str", nil
 	}
 
@@ -926,6 +1090,72 @@ func TestFixImports(t *testing.T) {
 			continue
 		}
 		buf, err := Process(tt.name+".go", []byte(tt.in), options)
+		if err != nil {
+			t.Errorf("error on %q: %v", tt.name, err)
+			continue
+		}
+		if got := string(buf); got != tt.out {
+			t.Errorf("results diff on %q\nGOT:\n%s\nWANT:\n%s\n", tt.name, got, tt.out)
+		}
+	}
+}
+
+func TestProcess_nil_src(t *testing.T) {
+	dir, err := ioutil.TempDir("", "goimports-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+	tests := []struct {
+		name    string
+		in, out string
+	}{
+		{
+			name: "nil-src",
+			in: `package foo
+func bar() {
+fmt.Println("hi")
+}
+`,
+			out: `package foo
+
+import "fmt"
+
+func bar() {
+	fmt.Println("hi")
+}
+`,
+		},
+		{
+			name: "missing package",
+			in: `
+func bar() {
+fmt.Println("hi")
+}
+`,
+			out: `
+import "fmt"
+
+func bar() {
+	fmt.Println("hi")
+}
+`,
+		},
+	}
+
+	options := &Options{
+		TabWidth:  8,
+		TabIndent: true,
+		Comments:  true,
+		Fragment:  true,
+	}
+
+	for _, tt := range tests {
+		filename := filepath.Join(dir, tt.name+".go")
+		if err := ioutil.WriteFile(filename, []byte(tt.in), 0666); err != nil {
+			t.Fatal(err)
+		}
+		buf, err := Process(filename, nil, options)
 		if err != nil {
 			t.Errorf("error on %q: %v", tt.name, err)
 			continue
@@ -1046,6 +1276,32 @@ var (
 
 }
 
+// Test for x/y/v2 convention for package y.
+func TestFixModuleVersion(t *testing.T) {
+	testConfig{}.test(t, func(t *goimportTest) {
+		input := `package p
+
+import (
+	"fmt"
+
+	"foo/v2"
+)
+
+var (
+	_ = fmt.Print
+	_ = foo.Foo
+)
+`
+		buf, err := Process(filepath.Join(t.gopath, "src/mypkg.com/outpkg/toformat.go"), []byte(input), &Options{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := string(buf); got != input {
+			t.Fatalf("results differ\nGOT:\n%s\nWANT:\n%s\n", got, input)
+		}
+	})
+}
+
 // Test for correctly identifying the name of a vendored package when it
 // differs from its directory name. In this test, the import line
 // "mypkg.com/mypkg.v1" would be removed if goimports wasn't able to detect
@@ -1119,7 +1375,7 @@ type Buffer2 struct {}
 		}
 		build.Default.GOROOT = goroot
 
-		got, rename, err := findImportGoPath("bytes", map[string]bool{"Buffer2": true}, "x.go")
+		got, rename, err := findImportGoPath(context.Background(), "bytes", map[string]bool{"Buffer2": true}, "x.go")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1127,7 +1383,7 @@ type Buffer2 struct {}
 			t.Errorf(`findImportGoPath("bytes", Buffer2 ...)=%q, %t, want "%s", false`, got, rename, bytesPkgPath)
 		}
 
-		got, rename, err = findImportGoPath("bytes", map[string]bool{"Missing": true}, "x.go")
+		got, rename, err = findImportGoPath(context.Background(), "bytes", map[string]bool{"Missing": true}, "x.go")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1137,34 +1393,26 @@ type Buffer2 struct {}
 	})
 }
 
-func init() {
-	inTests = true
-}
-
 func withEmptyGoPath(fn func()) {
-	testMu.Lock()
-
-	dirScanMu.Lock()
 	populateIgnoreOnce = sync.Once{}
 	scanGoRootOnce = sync.Once{}
 	scanGoPathOnce = sync.Once{}
 	dirScan = nil
 	ignoredDirs = nil
 	scanGoRootDone = make(chan struct{})
-	dirScanMu.Unlock()
 
 	oldGOPATH := build.Default.GOPATH
 	oldGOROOT := build.Default.GOROOT
+	oldCompiler := build.Default.Compiler
 	build.Default.GOPATH = ""
+	build.Default.Compiler = "gc"
 	testHookScanDir = func(string) {}
-	testMu.Unlock()
 
 	defer func() {
-		testMu.Lock()
 		testHookScanDir = func(string) {}
 		build.Default.GOPATH = oldGOPATH
 		build.Default.GOROOT = oldGOROOT
-		testMu.Unlock()
+		build.Default.Compiler = oldCompiler
 	}()
 
 	fn()
@@ -1180,7 +1428,7 @@ func TestFindImportInternal(t *testing.T) {
 			t.Skip(err)
 		}
 
-		got, rename, err := findImportGoPath("race", map[string]bool{"Acquire": true}, filepath.Join(runtime.GOROOT(), "src/math/x.go"))
+		got, rename, err := findImportGoPath(context.Background(), "race", map[string]bool{"Acquire": true}, filepath.Join(runtime.GOROOT(), "src/math/x.go"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1189,7 +1437,7 @@ func TestFindImportInternal(t *testing.T) {
 		}
 
 		// should not be able to use internal from outside that tree
-		got, rename, err = findImportGoPath("race", map[string]bool{"Acquire": true}, filepath.Join(runtime.GOROOT(), "x.go"))
+		got, rename, err = findImportGoPath(context.Background(), "race", map[string]bool{"Acquire": true}, filepath.Join(runtime.GOROOT(), "x.go"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1229,7 +1477,7 @@ func TestFindImportRandRead(t *testing.T) {
 			for _, sym := range tt.syms {
 				m[sym] = true
 			}
-			got, _, err := findImportGoPath("rand", m, file)
+			got, _, err := findImportGoPath(context.Background(), "rand", m, file)
 			if err != nil {
 				t.Errorf("for %q: %v", tt.syms, err)
 				continue
@@ -1247,7 +1495,7 @@ func TestFindImportVendor(t *testing.T) {
 			"vendor/golang.org/x/net/http2/hpack/huffman.go": "package hpack\nfunc HuffmanDecode() { }\n",
 		},
 	}.test(t, func(t *goimportTest) {
-		got, rename, err := findImportGoPath("hpack", map[string]bool{"HuffmanDecode": true}, filepath.Join(t.goroot, "src/math/x.go"))
+		got, rename, err := findImportGoPath(context.Background(), "hpack", map[string]bool{"HuffmanDecode": true}, filepath.Join(t.goroot, "src/math/x.go"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1443,6 +1691,29 @@ import (
 )
 
 const Y = bar.X
+const _ = runtime.GOOS
+`,
+		},
+		{
+			config: testConfig{
+				gopathFiles: map[string]string{
+					"foo/foo.go":     "package foo \n const X = 1",
+					"foo/bar/bar.go": "package bar \n const X = 1",
+				},
+			},
+			localPrefix: "foo/",
+			src:         "package main \n const Y = bar.X \n const Z = foo.X \n const _ = runtime.GOOS",
+			want: `package main
+
+import (
+	"runtime"
+
+	"foo"
+	"foo/bar"
+)
+
+const Y = bar.X
+const Z = foo.X
 const _ = runtime.GOOS
 `,
 		},
@@ -2090,8 +2361,7 @@ const x = mypkg.Sprintf("%s", "my package")
 
 // end
 `
-
 	if got := string(out); got != want {
-		t.Errorf("Process returned unexpected result.\ngot:\n%v\nwant:\n%v", got, want)
+		t.Errorf("Process returned unexpected result.\ngot:\n%.100v\nwant:\n%.100v", got, want)
 	}
 }

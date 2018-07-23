@@ -649,7 +649,7 @@ func (r *Lexer) Bytes() []byte {
 		return nil
 	}
 	ret := make([]byte, base64.StdEncoding.DecodedLen(len(r.token.byteValue)))
-	len, err := base64.StdEncoding.Decode(ret, r.token.byteValue)
+	n, err := base64.StdEncoding.Decode(ret, r.token.byteValue)
 	if err != nil {
 		r.fatalError = &LexerError{
 			Reason: err.Error(),
@@ -658,7 +658,7 @@ func (r *Lexer) Bytes() []byte {
 	}
 
 	r.consume()
-	return ret[:len]
+	return ret[:n]
 }
 
 // Bool reads a true or false boolean keyword.
@@ -1088,7 +1088,7 @@ func (r *Lexer) JsonNumber() json.Number {
 	}
 	if !r.Ok() {
 		r.errInvalidToken("json.Number")
-		return json.Number("0")
+		return json.Number("")
 	}
 
 	switch r.token.kind {
@@ -1096,9 +1096,12 @@ func (r *Lexer) JsonNumber() json.Number {
 		return json.Number(r.String())
 	case tokenNumber:
 		return json.Number(r.Raw())
+	case tokenNull:
+		r.Null()
+		return json.Number("")
 	default:
 		r.errSyntax()
-		return json.Number("0")
+		return json.Number("")
 	}
 }
 
