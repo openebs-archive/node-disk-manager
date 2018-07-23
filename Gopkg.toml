@@ -52,3 +52,11 @@ required = [
 [[constraint]]
   name = "github.com/onsi/gomega"
   version = "v1.4.0"
+
+[[constraint]]
+  name = "github.com/openebs/CITF"
+  branch = "client-go-6.0.0_api-release-1.9"
+
+[[override]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"
