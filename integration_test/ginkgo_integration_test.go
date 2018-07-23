@@ -2,10 +2,12 @@ package integrationtest
 
 import (
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/openebs/node-disk-manager/integration_test/minikube_adm"
+	"github.com/openebs/CITF/utils/k8s"
+	cr "github.com/openebs/node-disk-manager/integration_test/common_resource"
 	"github.com/openebs/node-disk-manager/integration_test/ndm_util"
 )
 
@@ -15,8 +17,16 @@ func TestIntegrationNDM(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
+	var err error
+
 	// It starts minikube if it is not Running
-	minikubeadm.Setup()
+	cr.CitfInstance.Environment.Setup()
+
+	// if you are using minikube version greater than 0.24.1
+	// then you have to update the K8s config
+	// this extra step will be unsolicited in upcoming changes.
+	cr.CitfInstance.K8S, err = k8s.NewK8S()
+	Expect(err).NotTo(HaveOccurred())
 
 	// It waits till namespace is ready
 	ndmutil.WaitTillDefaultNSisReady()
@@ -24,13 +34,14 @@ var _ = BeforeSuite(func() {
 	// It prepares configuration and Applies the same
 	ndmutil.ReplaceImageInYAMLAndApply()
 
-	// It waits till node-disk-manager is ready
-	ndmutil.WaitTillNDMisUp()
+	// It waits till node-disk-manager is ready or timeout reached
+	err = ndmutil.WaitTillNDMisUpOrTimeout(5 * time.Minute)
+	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterSuite(func() {
 	// It Delete minikube if it is running
-	// It removes residue containers
+	// It stops residue containers
 	// It removes remaining residue files
 	ndmutil.Clean()
 })
