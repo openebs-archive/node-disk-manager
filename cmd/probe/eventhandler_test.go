@@ -30,10 +30,15 @@ import (
 )
 
 var (
-	mockuid      = "fake-disk-uid"
-	fakeHostName = "node-name"
+	mockuid        = "fake-disk-uid"
+	ignoreDiskUuid = "ignore-disk-uuid"
+	fakeHostName   = "node-name"
+	fakeModel      = "fake-disk-model"
+	fakeSerial     = "fake-disk-serial"
+	fakeVendor     = "fake-disk-vendor"
 )
 
+// mockEmptyDiskCr returns empty diskCr
 func mockEmptyDiskCr() apis.Disk {
 	fakeDr := apis.Disk{}
 	fakeObjectMeta := metav1.ObjectMeta{
@@ -50,37 +55,76 @@ func mockEmptyDiskCr() apis.Disk {
 	fakeDr.Spec.DevLinks = make([]apis.DiskDevLink, 0)
 	return fakeDr
 }
+
+type fakeFilter struct{}
+
+func (nf *fakeFilter) Start() {}
+
+func (nf *fakeFilter) Include(fakeDiskInfo *controller.DiskInfo) bool {
+	return false
+}
+
+func (nf *fakeFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
+	return fakeDiskInfo.Uuid != ignoreDiskUuid
+}
+
 func TestAddDiskEvent(t *testing.T) {
 	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
 	fakeKubeClient := fake.NewSimpleClientset()
-	probes := make([]*controller.Probe, 0)
-	mutex := &sync.Mutex{}
 	fakeController := &controller.Controller{
 		HostName:      fakeHostName,
 		KubeClientset: fakeKubeClient,
 		Clientset:     fakeNdmClient,
-		Probes:        probes,
-		Mutex:         mutex,
+		Mutex:         &sync.Mutex{},
+		Filters:       make([]*controller.Filter, 0),
+		Probes:        make([]*controller.Probe, 0),
 	}
+	//add one filter
+	filter := &fakeFilter{}
+	filter1 := &controller.Filter{
+		Name:      "filter1",
+		State:     true,
+		Interface: filter,
+	}
+	fakeController.AddNewFilter(filter1)
+	// add one probe
+	testProbe := &fakeProbe{}
+	probe1 := &controller.Probe{
+		Name:      "probe1",
+		State:     true,
+		Interface: testProbe,
+	}
+	fakeController.AddNewProbe(probe1)
+
 	probeEvent := &ProbeEvent{
 		Controller: fakeController,
 	}
-	// Creating one event message
+	// device-1 details
 	eventmsg := make([]*controller.DiskInfo, 0)
-	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockuid
-	eventmsg = append(eventmsg, deviceDetails)
+	device1Details := &controller.DiskInfo{}
+	device1Details.ProbeIdentifiers.Uuid = mockuid
+	eventmsg = append(eventmsg, device1Details)
+	// device-2 details
+	device2Details := &controller.DiskInfo{}
+	device2Details.ProbeIdentifiers.Uuid = ignoreDiskUuid
+	eventmsg = append(eventmsg, device2Details)
+	// Creating one event message
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
 	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
-	probeEvent.addDiskEvent(eventDetails)
-	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
+	_, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(ignoreDiskUuid, metav1.GetOptions{})
+	if err2 == nil {
+		t.Error("resource with ignoreDiskUuid should not be present in etcd")
+	}
 	// Create one fake disk resource
 	fakeDr := mockEmptyDiskCr()
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeDr.Spec.Details.Model = fakeModel
+	fakeDr.Spec.Details.Serial = fakeSerial
+	fakeDr.Spec.Details.Vendor = fakeVendor
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -88,8 +132,7 @@ func TestAddDiskEvent(t *testing.T) {
 		actualError   error
 		expectedError error
 	}{
-		"add event for resouce with 'fake-disk-uid' uuid for create resource": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
-		"add event for resouce with 'fake-disk-uid' uuid for update resource": {actualDisk: *cdr2, expectedDisk: fakeDr, actualError: err2, expectedError: nil},
+		"resouce with 'fake-disk-uid' uuid for create resource": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

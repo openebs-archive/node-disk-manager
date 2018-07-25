@@ -19,85 +19,98 @@ package probe
 import (
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/openebs/node-disk-manager/cmd/controller"
-	ndmFakeClientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/fake"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
-var messageChannel = make(chan string)
-var message = "This is a message from start method"
-
-type probe1 struct {
-	name string
+type fakeProbe struct {
+	ctrl *controller.Controller
 }
 
-func (p1 *probe1) Start() {
-	messageChannel <- message
-}
+func (p *fakeProbe) Start() {}
 
-func (p1 *probe1) FillDiskDetails(*controller.DiskInfo) {
-	messageChannel <- message
+func (p *fakeProbe) FillDiskDetails(fakeDiskInfo *controller.DiskInfo) {
+	fakeDiskInfo.Model = fakeModel
+	fakeDiskInfo.Serial = fakeSerial
+	fakeDiskInfo.Vendor = fakeVendor
 }
 
 func TestRegisterProbe(t *testing.T) {
-	probes := make([]*controller.Probe, 0)
-	fakeHostName := "fake-host-name"
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
-	fakeKubeClient := fake.NewSimpleClientset()
-	mutex := &sync.Mutex{}
+	expectedProbeList := make([]*controller.Probe, 0)
 	fakeController := &controller.Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
-		Probes:        probes,
-		Mutex:         mutex,
+		Probes: make([]*controller.Probe, 0),
+		Mutex:  &sync.Mutex{},
 	}
 
-	var msg1, msg2 string
-	var i controller.ProbeInterface = &probe1{name: "probe1"}
-	newPrgisterProbe1 := &registerProbe{
-		priority:       1,
-		probeName:      "probe-1",
-		probeState:     true,
-		probeInterface: i,
-		controller:     fakeController,
+	var i controller.ProbeInterface = &fakeProbe{}
+	newPrgisterProbe := &registerProbe{
+		name:       "probe-1",
+		state:      true,
+		pi:         i,
+		controller: fakeController,
 	}
-	go newPrgisterProbe1.register()
-	select {
-	case res := <-messageChannel:
-		msg1 = res
-	case <-time.After(1 * time.Second):
-		msg1 = ""
+	newPrgisterProbe.register()
+	probe := &controller.Probe{
+		Name:      newPrgisterProbe.name,
+		State:     newPrgisterProbe.state,
+		Interface: newPrgisterProbe.pi,
 	}
-
-	newPrgisterProbe2 := &registerProbe{
-		priority:       1,
-		probeName:      "probe-2",
-		probeState:     false,
-		probeInterface: i,
-		controller:     fakeController,
-	}
-	go newPrgisterProbe2.register()
-	select {
-	case res := <-messageChannel:
-		msg2 = res
-	case <-time.After(2 * time.Second):
-		msg2 = ""
-	}
-
+	expectedProbeList = append(expectedProbeList, probe)
 	tests := map[string]struct {
-		actualMessage   string
-		expectedMessage string
+		actualProbeList   []*controller.Probe
+		expectedProbeList []*controller.Probe
 	}{
-		"probe status is enabled so it receives actual message": {actualMessage: msg1, expectedMessage: message},
-		"probe status is disabled so it receives empty message": {actualMessage: msg2, expectedMessage: ""},
+		"add one probe and check if it is present or not": {actualProbeList: fakeController.Probes, expectedProbeList: expectedProbeList},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedMessage, test.actualMessage)
+			assert.Equal(t, test.expectedProbeList, test.actualProbeList)
+		})
+	}
+}
+
+func TestStart(t *testing.T) {
+	expectedProbeList := make([]*controller.Probe, 0)
+	fakeController := &controller.Controller{
+		Probes: make([]*controller.Probe, 0),
+		Mutex:  &sync.Mutex{},
+	}
+	go func() {
+		controller.ControllerBroadcastChannel <- fakeController
+	}()
+	var fakeProbeRegister = func() {
+		ctrl := <-controller.ControllerBroadcastChannel
+		if ctrl == nil {
+			t.Fatal("controller struct should not be nil")
+		}
+		var pi controller.ProbeInterface = &fakeProbe{ctrl: ctrl}
+		newRrgisterProbe := &registerProbe{
+			name:       "fake-probe",
+			state:      defaultEnabled,
+			pi:         pi,
+			controller: ctrl,
+		}
+		newRrgisterProbe.register()
+	}
+	var registerdProbes = []func(){fakeProbeRegister}
+	Start(registerdProbes)
+	var fi controller.ProbeInterface = &fakeProbe{ctrl: fakeController}
+	probe := &controller.Probe{
+		Name:      "fake-probe",
+		State:     defaultEnabled,
+		Interface: fi,
+	}
+	expectedProbeList = append(expectedProbeList, probe)
+	tests := map[string]struct {
+		actualProbeList   []*controller.Probe
+		expectedProbeList []*controller.Probe
+	}{
+		"register one probe and check if it is present or not": {actualProbeList: fakeController.Probes, expectedProbeList: expectedProbeList},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expectedProbeList, test.actualProbeList)
 		})
 	}
 }

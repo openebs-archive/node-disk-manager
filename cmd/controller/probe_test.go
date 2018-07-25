@@ -21,48 +21,44 @@ import (
 	"testing"
 	"time"
 
-	ndmFakeClientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/fake"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/client-go/kubernetes/fake"
+)
+
+const (
+	fakeModel  = "fake-model-number"
+	fakeSerial = "fake-serial-number"
+	fakeVendor = "fake-vendor"
 )
 
 var messageChannel = make(chan string)
 var message = "This is a message from start method"
 
-type newProbe struct{}
+type fakeProbe struct{}
 
-func (np *newProbe) Start() {
+func (np *fakeProbe) Start() {
 	messageChannel <- message
 }
 
-func (np *newProbe) FillDiskDetails(fakeDiskInfo *DiskInfo) {
-	fakeDiskInfo.HostName = fakeHostName
-	fakeDiskInfo.Uuid = fakeObjectMeta.Name
-	fakeDiskInfo.Capacity = fakeCapacity.Storage
-	fakeDiskInfo.Model = fakeDetails.Model
-	fakeDiskInfo.Serial = fakeDetails.Serial
-	fakeDiskInfo.Vendor = fakeDetails.Vendor
-	fakeDiskInfo.Path = fakeObj.Path
+func (np *fakeProbe) FillDiskDetails(fakeDiskInfo *DiskInfo) {
+	fakeDiskInfo.Model = fakeModel
+	fakeDiskInfo.Serial = fakeSerial
+	fakeDiskInfo.Vendor = fakeVendor
 }
 
+//Add one new probe and get the list of the probes and match them
 func TestAddNewProbe(t *testing.T) {
 	probes := make([]*Probe, 0)
 	expectedProbeList := make([]*Probe, 0)
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
-	fakeKubeClient := fake.NewSimpleClientset()
 	mutex := &sync.Mutex{}
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
-		Probes:        probes,
-		Mutex:         mutex,
+		Probes: probes,
+		Mutex:  mutex,
 	}
-	testProbe := &newProbe{}
+	testProbe := &fakeProbe{}
 	probe1 := &Probe{
-		ProbeName:  "probe1",
-		ProbeState: true,
-		Interface:  testProbe,
+		Name:      "probe1",
+		State:     true,
+		Interface: testProbe,
 	}
 	fakeController.AddNewProbe(probe1)
 	expectedProbeList = append(expectedProbeList, probe1)
@@ -79,31 +75,27 @@ func TestAddNewProbe(t *testing.T) {
 	}
 }
 
+//Add some new probes and get the list of the probes and match them
 func TestListProbe(t *testing.T) {
 	probes := make([]*Probe, 0)
 	expectedProbeList := make([]*Probe, 0)
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
-	fakeKubeClient := fake.NewSimpleClientset()
 	mutex := &sync.Mutex{}
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
-		Probes:        probes,
-		Mutex:         mutex,
+		Probes: probes,
+		Mutex:  mutex,
 	}
-	testProbe := &newProbe{}
+	testProbe := &fakeProbe{}
 	probe1 := &Probe{
-		Priority:   2,
-		ProbeName:  "probe1",
-		ProbeState: true,
-		Interface:  testProbe,
+		Priority:  2,
+		Name:      "probe1",
+		State:     true,
+		Interface: testProbe,
 	}
 	probe2 := &Probe{
-		Priority:   1,
-		ProbeName:  "probe2",
-		ProbeState: true,
-		Interface:  testProbe,
+		Priority:  1,
+		Name:      "probe2",
+		State:     true,
+		Interface: testProbe,
 	}
 	fakeController.AddNewProbe(probe1)
 	fakeController.AddNewProbe(probe2)
@@ -122,13 +114,13 @@ func TestListProbe(t *testing.T) {
 	}
 }
 
-func TestSrart(t *testing.T) {
+func TestSrartProbe(t *testing.T) {
 	var msg1 string
-	testProbe := &newProbe{}
+	testProbe := &fakeProbe{}
 	probe1 := &Probe{
-		ProbeName:  "probe1",
-		ProbeState: true,
-		Interface:  testProbe,
+		Name:      "probe1",
+		State:     true,
+		Interface: testProbe,
 	}
 	go probe1.Start()
 	select {
@@ -152,27 +144,61 @@ func TestSrart(t *testing.T) {
 }
 
 func TestFillDiskDetails(t *testing.T) {
-	testProbe := &newProbe{}
+	testProbe := &fakeProbe{}
 	probe1 := &Probe{
-		ProbeName:  "probe1",
-		ProbeState: true,
-		Interface:  testProbe,
+		Name:      "probe1",
+		State:     true,
+		Interface: testProbe,
 	}
-	actualDisk := NewDiskInfo()
-	expectedDisk := NewDiskInfo()
+	actualDisk := &DiskInfo{}
+	expectedDisk := &DiskInfo{}
 	probe1.FillDiskDetails(actualDisk)
-	expectedDisk.HostName = fakeHostName
-	expectedDisk.Uuid = fakeObjectMeta.Name
-	expectedDisk.Capacity = fakeCapacity.Storage
-	expectedDisk.Model = fakeDetails.Model
-	expectedDisk.Serial = fakeDetails.Serial
-	expectedDisk.Vendor = fakeDetails.Vendor
-	expectedDisk.Path = fakeObj.Path
+	expectedDisk.Model = fakeModel
+	expectedDisk.Serial = fakeSerial
+	expectedDisk.Vendor = fakeVendor
 	tests := map[string]struct {
 		actualDisk   DiskInfo
 		expectedDisk DiskInfo
 	}{
-		"comparing message from start method": {actualDisk: *actualDisk, expectedDisk: *expectedDisk},
+		"comparing diskinfo struct after feeling details": {actualDisk: *actualDisk, expectedDisk: *expectedDisk},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expectedDisk, test.actualDisk)
+		})
+	}
+}
+
+func TestFillDetails(t *testing.T) {
+	probes := make([]*Probe, 0)
+	testProbe := &fakeProbe{}
+	probe1 := &Probe{
+		Name:      "probe1",
+		State:     true,
+		Interface: testProbe,
+	}
+	probes = append(probes, probe1)
+	mutex := &sync.Mutex{}
+	fakeController := &Controller{
+		Probes: probes,
+		Mutex:  mutex,
+	}
+
+	// create one fake Disk struct
+	expectedDr := &DiskInfo{}
+	expectedDr.Model = fakeModel
+	expectedDr.Serial = fakeSerial
+	expectedDr.Vendor = fakeVendor
+
+	// create one fake Disk struct
+	actualDr := &DiskInfo{}
+
+	fakeController.FillDiskDetails(actualDr)
+	tests := map[string]struct {
+		actualDisk   *DiskInfo
+		expectedDisk *DiskInfo
+	}{
+		"push resouce with 'fake-disk-uid' uuid for create resource": {actualDisk: expectedDr, expectedDisk: actualDr},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

@@ -116,26 +116,36 @@ func TestSmartProbe(t *testing.T) {
 	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
 	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
+	filters := make([]*controller.Filter, 0)
 	mutex := &sync.Mutex{}
 	fakeController := &controller.Controller{
 		HostName:      fakeHostName,
 		KubeClientset: fakeKubeClient,
 		Clientset:     fakeNdmClient,
-		Probes:        probes,
 		Mutex:         mutex,
+		Probes:        probes,
+		Filters:       filters,
 	}
 
 	smartProbe := newSmartProbe("fakeController")
 	var pi controller.ProbeInterface = smartProbe
 
 	newPrgisterProbe := &registerProbe{
-		priority:       1,
-		probeName:      "smart probe",
-		probeState:     true,
-		probeInterface: pi,
-		controller:     fakeController,
+		priority:   1,
+		name:       "smart probe",
+		state:      true,
+		pi:         pi,
+		controller: fakeController,
 	}
 	newPrgisterProbe.register()
+	//add one filter
+	filter := &alwaysTrueFilter{}
+	filter1 := &controller.Filter{
+		Name:      "filter1",
+		State:     true,
+		Interface: filter,
+	}
+	fakeController.AddNewFilter(filter1)
 
 	probeEvent := &ProbeEvent{
 		Controller: fakeController,

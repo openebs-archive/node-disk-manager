@@ -17,51 +17,59 @@ limitations under the License.
 package controller
 
 import (
+	"errors"
+	"os"
 	"testing"
 
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
-	ndmFakeClientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/fake"
 	"github.com/stretchr/testify/assert"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestDeactivateStaleDiskResource(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
-	fakeKubeClient := fake.NewSimpleClientset()
-	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
-	}
-	// create resource1
-	dr := fakeDr
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
-	fakeController.CreateDisk(dr)
-	// create resource2
-	newDr := newFakeDr
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
-	fakeController.CreateDisk(newDr)
-	//add one resource's uuid so state of the other resource should be inactive.
-	diskList := make([]string, 0)
-	diskList = append(diskList, newFakeDiskUid)
-	fakeController.DeactivateStaleDiskResource(diskList)
-	dr.Status.State = NDMInactive
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
-	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(newFakeDiskUid, metav1.GetOptions{})
+/*
+	set environment variable "NODE_NAME" with some value and setNodeName
+	unset environment variable "NODE_NAME" with some value and setNodeName
+*/
+func TestSetNodeName(t *testing.T) {
+	fakeNodeName := "fake-node-name"
+	ctrl1 := &Controller{}
+	ctrl2 := &Controller{}
+	err1 := ctrl1.setNodeName()
+	os.Setenv("NODE_NAME", fakeNodeName)
+	err2 := ctrl2.setNodeName()
+	expectedErr2 := errors.New("error building hostname")
 	tests := map[string]struct {
-		actualDisk    apis.Disk
-		actualError   error
-		expectedDisk  apis.Disk
-		expectedError error
+		actualController *Controller
+		expectedHostName string
+		actualError      error
+		expectedError    error
 	}{
-		"resource1 present in etcd but not in system": {actualDisk: *cdr1, actualError: err1, expectedDisk: dr, expectedError: nil},
-		"resource2 present in both etcd and systeme":  {actualDisk: *cdr2, actualError: err2, expectedDisk: newDr, expectedError: nil},
+		"call setNodeName when env variable not present": {actualController: ctrl1, actualError: err1, expectedHostName: "", expectedError: expectedErr2},
+		"call setNodeName when env variable present":     {actualController: ctrl2, actualError: err2, expectedHostName: fakeNodeName, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDisk, test.actualDisk)
+			assert.Equal(t, test.expectedHostName, test.actualController.HostName)
 			assert.Equal(t, test.expectedError, test.actualError)
+		})
+	}
+}
+
+/*
+	Broadcast start broadcasting controller pointer in ControllerBroadcastChannel channel
+	In this test case read ControllerBroadcastChannel channel and match controller pointer
+*/
+func TestBroadcast(t *testing.T) {
+	ctrl := &Controller{}
+	ctrl.Broadcast()
+	actualController := <-ControllerBroadcastChannel
+	tests := map[string]struct {
+		actualController   *Controller
+		expectedController *Controller
+	}{
+		"match controller from broadcast channel": {actualController: actualController, expectedController: ctrl},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expectedController, test.actualController)
 		})
 	}
 }

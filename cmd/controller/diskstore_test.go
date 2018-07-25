@@ -26,6 +26,24 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
+// mockEmptyDiskCr returns Disk object with minimum attribues it is used in unit test cases.
+func mockEmptyDiskCr() apis.Disk {
+	fakeDr := apis.Disk{}
+	fakeObjectMeta := metav1.ObjectMeta{
+		Labels: make(map[string]string),
+		Name:   fakeDiskUid,
+	}
+	fakeTypeMeta := metav1.TypeMeta{
+		Kind:       NDMKind,
+		APIVersion: NDMVersion,
+	}
+	fakeDr.ObjectMeta = fakeObjectMeta
+	fakeDr.TypeMeta = fakeTypeMeta
+	fakeDr.Status.State = NDMActive
+	fakeDr.Spec.DevLinks = make([]apis.DiskDevLink, 0)
+	return fakeDr
+}
+
 func TestCreateDisk(t *testing.T) {
 	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
 	fakeKubeClient := fake.NewSimpleClientset()
@@ -292,6 +310,93 @@ func TestGetExistingResource(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			assert.Equal(t, test.expectedDisk, test.actualDisk)
+		})
+	}
+}
+
+/*
+	PushResource take 2 argument one is old disk resource and other is DiskInfo struct
+	if old disk resource is not present it creates one new resource if not then it
+	update that resource with updated DiskInfo
+*/
+func TestPushResource(t *testing.T) {
+	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeKubeClient := fake.NewSimpleClientset()
+	fakeController := &Controller{
+		HostName:      fakeHostName,
+		KubeClientset: fakeKubeClient,
+		Clientset:     fakeNdmClient,
+	}
+
+	// create one DiskInfo struct with mock uuid
+	deviceDetails := &DiskInfo{}
+	deviceDetails.ProbeIdentifiers.Uuid = fakeDiskUid
+
+	// create one fake Disk struct
+	fakeDr := mockEmptyDiskCr()
+	fakeDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+
+	// pass 1st argument as nil then it creates one disk resource
+	fakeController.PushDiskResource(nil, deviceDetails)
+	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
+
+	// pass old disk resource as 1st argument then it updates resource
+	fakeController.PushDiskResource(cdr1, deviceDetails)
+	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
+
+	tests := map[string]struct {
+		actualDisk    apis.Disk
+		expectedDisk  apis.Disk
+		actualError   error
+		expectedError error
+	}{
+		"push resouce with 'fake-disk-uid' uuid for create resource": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"push resouce with 'fake-disk-uid' uuid for update resource": {actualDisk: *cdr2, expectedDisk: fakeDr, actualError: err2, expectedError: nil},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expectedDisk, test.actualDisk)
+			assert.Equal(t, test.expectedError, test.actualError)
+		})
+	}
+}
+
+func TestDeactivateStaleDiskResource(t *testing.T) {
+	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeKubeClient := fake.NewSimpleClientset()
+	fakeController := &Controller{
+		HostName:      fakeHostName,
+		KubeClientset: fakeKubeClient,
+		Clientset:     fakeNdmClient,
+	}
+	// create resource1
+	dr := fakeDr
+	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	fakeController.CreateDisk(dr)
+	// create resource2
+	newDr := newFakeDr
+	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	fakeController.CreateDisk(newDr)
+	//add one resource's uuid so state of the other resource should be inactive.
+	diskList := make([]string, 0)
+	diskList = append(diskList, newFakeDiskUid)
+	fakeController.DeactivateStaleDiskResource(diskList)
+	dr.Status.State = NDMInactive
+	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
+	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(newFakeDiskUid, metav1.GetOptions{})
+	tests := map[string]struct {
+		actualDisk    apis.Disk
+		actualError   error
+		expectedDisk  apis.Disk
+		expectedError error
+	}{
+		"resource1 present in etcd but not in system": {actualDisk: *cdr1, actualError: err1, expectedDisk: dr, expectedError: nil},
+		"resource2 present in both etcd and systeme":  {actualDisk: *cdr2, actualError: err2, expectedDisk: newDr, expectedError: nil},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expectedDisk, test.actualDisk)
+			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
 }
