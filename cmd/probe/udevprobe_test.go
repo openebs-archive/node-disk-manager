@@ -29,6 +29,18 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
+type alwaysTrueFilter struct{}
+
+func (nf *alwaysTrueFilter) Start() {}
+
+func (nf *alwaysTrueFilter) Include(fakeDiskInfo *controller.DiskInfo) bool {
+	return true
+}
+
+func (nf *alwaysTrueFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
+	return true
+}
+
 func mockOsDiskToAPI() (apis.Disk, error) {
 	mockOsdiskDeails, err := libudevwrapper.MockDiskDetails()
 	if err != nil {
@@ -110,24 +122,34 @@ func TestUdevProbe(t *testing.T) {
 	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
 	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
+	filters := make([]*controller.Filter, 0)
 	mutex := &sync.Mutex{}
 	fakeController := &controller.Controller{
 		HostName:      fakeHostName,
 		KubeClientset: fakeKubeClient,
 		Clientset:     fakeNdmClient,
-		Probes:        probes,
 		Mutex:         mutex,
+		Probes:        probes,
+		Filters:       filters,
 	}
 	udevprobe := newUdevProbe(fakeController)
 	var pi controller.ProbeInterface = udevprobe
 	newPrgisterProbe := &registerProbe{
-		priority:       1,
-		probeName:      "udev probe",
-		probeState:     true,
-		probeInterface: pi,
-		controller:     fakeController,
+		priority:   1,
+		name:       "udev probe",
+		state:      true,
+		pi:         pi,
+		controller: fakeController,
 	}
 	newPrgisterProbe.register()
+	//add one filter
+	filter := &alwaysTrueFilter{}
+	filter1 := &controller.Filter{
+		Name:      "filter1",
+		State:     true,
+		Interface: filter,
+	}
+	fakeController.AddNewFilter(filter1)
 	probeEvent := &ProbeEvent{
 		Controller: fakeController,
 	}
@@ -141,10 +163,8 @@ func TestUdevProbe(t *testing.T) {
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
+	fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsdiskDeails.Uid, metav1.GetOptions{})
 	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsdiskDeails.Uid, metav1.GetOptions{})
-	if err1 != nil {
-		t.Fatal(err1)
-	}
 	fakeDr, err := mockOsDiskToAPI()
 	if err != nil {
 		t.Fatal(err)
