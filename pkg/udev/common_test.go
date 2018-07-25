@@ -81,7 +81,6 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 		Serial:         diskDetails.Serial,
 		Vendor:         diskDetails.Vendor,
 		Path:           diskDetails.DevNode,
-		Size:           diskDetails.Capacity,
 		ByIdDevLinks:   diskDetails.ByIdDevLinks,
 		ByPathDevLinks: diskDetails.ByPathDevLinks,
 	}
@@ -97,28 +96,6 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 			assert.Equal(t, test.actualDetails, test.expectedDetails)
 		})
 	}
-}
-
-func TestGetSize(t *testing.T) {
-	diskDetails, err := MockDiskDetails()
-	if err != nil {
-		t.Fatal(err)
-	}
-	newUdev, err := NewUdev()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer newUdev.UnrefUdev()
-	device, err := newUdev.NewDeviceFromSysPath(diskDetails.SysPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer device.UdevDeviceUnref()
-	actualCapacity, err := device.getSize()
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, diskDetails.Capacity, actualCapacity)
 }
 
 /*

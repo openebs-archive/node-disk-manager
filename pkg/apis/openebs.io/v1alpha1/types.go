@@ -32,14 +32,17 @@ type DiskStatus struct {
 }
 
 type DiskCapacity struct {
-	Storage uint64 `json:"storage"` //disk size in byte
+	Storage           uint64 `json:"storage"`           // disk size in bytes
+	LogicalSectorSize uint32 `json:"logicalSectorSize"` // disk logical size in bytes
 }
 
 // DiskDetails contains basic and static info of a disk
 type DiskDetails struct {
-	Model  string `json:"model"`  // Model is model of disk
-	Serial string `json:"serial"` // Serial is serial no of disk
-	Vendor string `json:"vendor"` // Vendor is vendor of disk
+	Model            string `json:"model"`            // Model is model of disk
+	SPCVersion       string `json:"spcVersion"`       // Implemented standards/specifications version such as SPC-1, SPC-2, etc
+	Serial           string `json:"serial"`           // Serial is serial no of disk
+	Vendor           string `json:"vendor"`           // Vendor is vendor of disk
+	FirmwareRevision string `json:"firmwareRevision"` // disk firmware revision
 }
 
 // DiskDevlink holds the maping between type and links like by-id type or by-path type link

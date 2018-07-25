@@ -24,8 +24,6 @@ package udev
 */
 import "C"
 import (
-	"io/ioutil"
-	"strconv"
 	"strings"
 	"unsafe"
 
@@ -67,7 +65,6 @@ type UdevDiskDetails struct {
 	Serial         string   // Serial is Serial of a disk.
 	Vendor         string   // Vendor is Vendor of a disk.
 	Path           string   // Path is Path of a disk.
-	Size           uint64   // Size is capacity of disk
 	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
 }
@@ -79,16 +76,12 @@ func freeCharPtr(s *C.char) {
 
 //DiskInfoFromLibudev returns disk attribute extracted using libudev apicalls.
 func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
-	size, err := device.getSize()
-	if err != nil {
-	}
 	devLinks := device.GetDevLinks()
 	diskDetails := UdevDiskDetails{
 		Model:          device.GetPropertyValue(UDEV_MODEL),
 		Serial:         device.GetPropertyValue(UDEV_SERIAL),
 		Vendor:         device.GetPropertyValue(UDEV_VENDOR),
 		Path:           device.GetPropertyValue(UDEV_DEVNAME),
-		Size:           size,
 		ByIdDevLinks:   devLinks[BY_ID_LINK],
 		ByPathDevLinks: devLinks[BY_PATH_LINK],
 	}
@@ -116,27 +109,6 @@ func (device *UdevDevice) GetSyspath() string {
 	minor := device.GetPropertyValue(UDEV_MINOR)
 	syspath := UDEV_SYSPATH_PREFIX + major + ":" + minor
 	return syspath
-}
-
-// getSize returns size of a disk.
-func (device *UdevDevice) getSize() (uint64, error) {
-	var sector []byte
-	var sec int64
-	n, err := strconv.ParseInt(device.GetSysattrValue("size"), 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	// should we use disk smart queries to get the sector size?
-	fname := "/sys" + device.GetPropertyValue(UDEV_PATH) + "/queue/hw_sector_size"
-	sector, err = ioutil.ReadFile(fname)
-	if err != nil {
-		return 0, err
-	}
-	sec, err = strconv.ParseInt(string(sector[:len(sector)-1]), 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return uint64(n * sec), nil
 }
 
 // GetDevLinks returns syspath of a disk using syspath we can fell details
