@@ -21,7 +21,6 @@ import (
 	"encoding/binary"
 	"testing"
 
-	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -88,7 +87,7 @@ func TestSwapByteOrder(t *testing.T) {
 func TestGetSerialNumber(t *testing.T) {
 	SerialNum := "     WD-WX31AB758S20"
 
-	binary.Read(bytes.NewBuffer(ataCSPage[:]), util.NativeEndian, &d)
+	binary.Read(bytes.NewBuffer(ataCSPage[:]), NativeEndian, &d)
 
 	tests := map[string]struct {
 		expected string
@@ -105,7 +104,7 @@ func TestGetSerialNumber(t *testing.T) {
 func TestGetWWN(t *testing.T) {
 	expectedWWN := "5 0014ee 65d9509df"
 
-	binary.Read(bytes.NewBuffer(ataCSPage[:]), util.NativeEndian, &d)
+	binary.Read(bytes.NewBuffer(ataCSPage[:]), NativeEndian, &d)
 
 	tests := map[string]struct {
 		expected string
@@ -123,7 +122,7 @@ func TestGetSectorSize(t *testing.T) {
 	const PBSize uint32 = 4096
 	const LBSize uint32 = 512
 
-	binary.Read(bytes.NewBuffer(ataCSPage[:]), util.NativeEndian, &d)
+	binary.Read(bytes.NewBuffer(ataCSPage[:]), NativeEndian, &d)
 
 	tests := map[string]struct {
 		expectedPBSize uint32
@@ -143,7 +142,7 @@ func TestGetSectorSize(t *testing.T) {
 func TestGetATAMajorVersion(t *testing.T) {
 	expectedATAMajorVer := "ACS-3"
 
-	binary.Read(bytes.NewBuffer(ataCSPage[:]), util.NativeEndian, &d)
+	binary.Read(bytes.NewBuffer(ataCSPage[:]), NativeEndian, &d)
 
 	tests := map[string]struct {
 		expected string
@@ -161,7 +160,7 @@ func TestGetATAMinorVersion(t *testing.T) {
 
 	expectedATAMinorVer := "ACS-3 revision 5"
 
-	binary.Read(bytes.NewBuffer(ataCSPage[:]), util.NativeEndian, &d)
+	binary.Read(bytes.NewBuffer(ataCSPage[:]), NativeEndian, &d)
 
 	tests := map[string]struct {
 		expected string
@@ -179,7 +178,7 @@ func TestATATransport(t *testing.T) {
 
 	expectedATATransport := "Serial ATA SATA 3.1"
 
-	binary.Read(bytes.NewBuffer(ataCSPage[:]), util.NativeEndian, &d)
+	binary.Read(bytes.NewBuffer(ataCSPage[:]), NativeEndian, &d)
 
 	tests := map[string]struct {
 		expected string
@@ -197,7 +196,7 @@ func TestIdentifySerialATAType(t *testing.T) {
 
 	expectedSerialATAType := "Serial ATA SATA 3.1"
 
-	binary.Read(bytes.NewBuffer(ataCSPage[:]), util.NativeEndian, &d)
+	binary.Read(bytes.NewBuffer(ataCSPage[:]), NativeEndian, &d)
 
 	tests := map[string]struct {
 		expected string

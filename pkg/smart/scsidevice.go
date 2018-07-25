@@ -18,7 +18,6 @@ package smart
 import (
 	"fmt"
 
-	"github.com/openebs/node-disk-manager/pkg/util"
 	"golang.org/x/sys/unix"
 )
 
@@ -125,7 +124,7 @@ func (d *SCSIDev) getAttrValUsingSimpleSCSI(attrName string) (string, error) {
 // getBasicDiskInfo returns all the available basic details for a particular disk device(except smart attr)
 func (d *SCSIDev) getBasicDiskInfo() (DiskAttr, map[string]error) {
 	// Collector will be used to collect errors in a string to error map
-	collector := util.NewErrorCollector()
+	collector := NewErrorCollector()
 	collectedErrors := collector.Error()
 	diskDetails := DiskAttr{}
 

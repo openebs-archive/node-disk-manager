@@ -15,8 +15,6 @@ package smart
 
 import (
 	"fmt"
-
-	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // swapByteOrder swaps the order of every second byte in a byte slice and
@@ -78,7 +76,7 @@ func (d *ATACSPage) getATAMajorVersion() (s string) {
 	}
 	// ATA Major version word is a bitmask, hence we will get the most significant bit
 	// of this word and then do a map lookup
-	majorVer := util.MSignificantBit(uint(d.MajorVer))
+	majorVer := MSignificantBit(uint(d.MajorVer))
 	if s, ok := ataMajorVersions[majorVer]; ok {
 		return s
 	}
@@ -122,7 +120,7 @@ func (d *ATACSPage) IdentifySerialATAType() (s string) {
 	s = "Serial ATA"
 	// Get the most significant bit of the ata transport major word as it is a bitmask
 	// and then get the serial ata transport type based on the value
-	transportMajor := util.MSignificantBit(uint(d.AtaTransportMajor & 0x0fff))
+	transportMajor := MSignificantBit(uint(d.AtaTransportMajor & 0x0fff))
 	// Lookup in the map for the type of serial ata transport based on key
 	if serialATAType, ok := serialATAType[transportMajor]; ok {
 		s += serialATAType

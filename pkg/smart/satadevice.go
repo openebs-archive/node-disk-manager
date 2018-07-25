@@ -19,8 +19,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-
-	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // SATA is a simple wrapper around an embedded SCSIDevice type, which handles sending ATA
@@ -49,7 +47,7 @@ func (d *SATA) ataIdentify() (ATACSPage, error) {
 	if err := d.sendSCSICDB(cdb16[:], &responseBuf); err != nil {
 		return identifyBuf, fmt.Errorf("error in sending SCSICDB 16 for ATA device, Error: %+v", err)
 	}
-	binary.Read(bytes.NewBuffer(responseBuf), util.NativeEndian, &identifyBuf)
+	binary.Read(bytes.NewBuffer(responseBuf), NativeEndian, &identifyBuf)
 	return identifyBuf, nil
 }
 
@@ -118,7 +116,7 @@ func (d *SATA) getAttrValUsingATACSPage(attrName string) (string, error) {
 // getBasicDiskInfo returns all the available basic details for a particular disk device(except smart attr)
 func (d *SATA) getBasicDiskInfo() (DiskAttr, map[string]error) {
 	// Collector will be used to collect errors in a string to error map
-	collector := util.NewErrorCollector()
+	collector := NewErrorCollector()
 	collectedErrors := collector.Error()
 	diskDetails := DiskAttr{}
 

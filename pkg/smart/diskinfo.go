@@ -15,15 +15,13 @@ package smart
 
 import (
 	"fmt"
-
-	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // SCSIBasicDiskInfo returns all the available disk details for a particular disk device
 func (I *Identifier) SCSIBasicDiskInfo() (DiskAttr, map[string]error) {
 	diskDetail := DiskAttr{}
 	// Collector will be used to collect errors in a string to error map
-	collector := util.NewErrorCollector()
+	collector := NewErrorCollector()
 
 	// Before getting disk details, check if the necessary conditions to get
 	// disk details are fulfilled or not such as device path is given or not,

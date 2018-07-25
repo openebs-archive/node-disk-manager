@@ -19,8 +19,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-
-	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // commands used to fetch various informations of a disk from a set of defined
@@ -50,7 +48,7 @@ func (d *SCSIDev) scsiInquiry() (InquiryResponse, error) {
 		return response, err
 	}
 
-	binary.Read(bytes.NewBuffer(respBuf), util.NativeEndian, &response)
+	binary.Read(bytes.NewBuffer(respBuf), NativeEndian, &response)
 
 	return response, nil
 }
