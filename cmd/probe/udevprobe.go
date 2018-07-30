@@ -23,12 +23,17 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/udevevent"
+	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 const (
-	udevProbeName     = "udev probe"
-	udevProbeState    = defaultEnabled
 	udevProbePriority = 1
+	udevConfigKey     = "udev-probe"
+)
+
+var (
+	udevProbeName  = "udev probe"
+	udevProbeState = defaultEnabled
 )
 
 // udevProbeRegister contains registration process of udev probe
@@ -38,15 +43,23 @@ var udevProbeRegister = func() {
 		glog.Error("unable to configure", udevProbeName)
 		return
 	}
-	var pi controller.ProbeInterface = newUdevProbe(ctrl)
-	newPrgisterProbe := &registerProbe{
+	if ctrl.NDMConfig != nil {
+		for _, probeConfig := range ctrl.NDMConfig.ProbeConfigs {
+			if probeConfig.Key == udevConfigKey {
+				udevProbeName = probeConfig.Name
+				udevProbeState = util.CheckTruthy(probeConfig.State)
+				break
+			}
+		}
+	}
+	newRegisterProbe := &registerProbe{
 		priority:   udevProbePriority,
 		name:       udevProbeName,
 		state:      udevProbeState,
-		pi:         pi,
+		pi:         newUdevProbe(ctrl),
 		controller: ctrl,
 	}
-	newPrgisterProbe.register()
+	newRegisterProbe.register()
 }
 
 // udevProbe contains require variables for scan , populate diskInfo and push
@@ -132,7 +145,6 @@ func (up *udevProbe) scan() error {
 			deviceDetails := &controller.DiskInfo{}
 			deviceDetails.ProbeIdentifiers.Uuid = uuid
 			deviceDetails.ProbeIdentifiers.UdevIdentifier = newUdevice.GetSyspath()
-			deviceDetails.ProbeIdentifiers.SmartIdentifier = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVNAME)
 			diskInfo = append(diskInfo, deviceDetails)
 		}
 		newUdevice.UdevDeviceUnref()
@@ -151,6 +163,7 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	udevDevice := newUdevProbeForFillDiskDetails(d.ProbeIdentifiers.UdevIdentifier)
 	udevDiskDetails := udevDevice.udevDevice.DiskInfoFromLibudev()
 	defer udevDevice.free()
+	d.ProbeIdentifiers.SmartIdentifier = udevDiskDetails.Path
 	d.Model = udevDiskDetails.Model
 	d.Path = udevDiskDetails.Path
 	d.Serial = udevDiskDetails.Serial
@@ -164,7 +177,7 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 // this function is blocking function better to use it in a routine.
 func (up *udevProbe) listen() {
 	if up.controller == nil {
-		glog.Error("unable to setup updev probe listener controller object is nil")
+		glog.Error("unable to setup udev probe listener controller object is nil")
 		return
 	}
 	probeEvent := ProbeEvent{

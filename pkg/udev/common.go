@@ -52,8 +52,8 @@ const (
 	UDEV_DEVTYPE        = "DEVTYPE"         // udev attribute to get device device type ie - disk or part
 	UDEV_SOURCE         = "udev"            // udev source constant
 	UDEV_SYSPATH_PREFIX = "/sys/dev/block/" // udev syspath prefix
-	UDEV_DEVNAME        = "DEVNAME"         // udev attrinute contain disk name given by kernel
-	UDEV_DEVLINKS       = "DEVLINKS"        // udev attrinute contain devlinks of a disk
+	UDEV_DEVNAME        = "DEVNAME"         // udev attribute contain disk name given by kernel
+	UDEV_DEVLINKS       = "DEVLINKS"        // udev attribute contain devlinks of a disk
 	BY_ID_LINK          = "by-id"           // by-path devlink contains this string
 	BY_PATH_LINK        = "by-path"         // by-path devlink contains this string
 	LINK_ID_INDEX       = 4                 // this is used to get link index from dev link

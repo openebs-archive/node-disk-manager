@@ -53,7 +53,7 @@ func (ue *UdevEnumerate) ScanDevices() error {
 	return nil
 }
 
-// ListEntry returns UdevListEntry struct from which wecan get device.
+// ListEntry returns UdevListEntry struct from which we can get device.
 func (ue *UdevEnumerate) ListEntry() *UdevListEntry {
 	return newUdevListEntry(C.udev_enumerate_get_list_entry(ue.ueptr))
 }

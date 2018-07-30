@@ -20,6 +20,7 @@ import (
 	"sort"
 
 	"github.com/golang/glog"
+	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // EventMessage struct contains attribute of event message info.
@@ -79,7 +80,7 @@ func (c *Controller) AddNewProbe(probe *Probe) {
 	probes = append(probes, probe)
 	sort.Sort(sortableProbes(probes))
 	c.Probes = probes
-	glog.Info("configured ", probe.Name)
+	glog.Info("configured ", probe.Name, " : state ", util.StateStatus(probe.State))
 }
 
 // ListProbe returns list of active probe associated with controller object
@@ -102,5 +103,6 @@ func (c *Controller) FillDiskDetails(diskDetails *DiskInfo) {
 	probes := c.ListProbe()
 	for _, probe := range probes {
 		probe.FillDiskDetails(diskDetails)
+		glog.Info("details filled by ", probe.Name)
 	}
 }

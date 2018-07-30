@@ -26,8 +26,8 @@ const (
 	defaultDisabled = false // use in each filter to make it disable.
 )
 
-// RegisterdFilters contains register function of filters which we want to register
-var RegisterdFilters = []func(){oSDiskExludeFilterRegister}
+// RegisteredFilters contains register function of filters which we want to register
+var RegisteredFilters = []func(){oSDiskExcludeFilterRegister, vendorFilterRegister}
 
 type registerFilter struct {
 	name       string
@@ -50,10 +50,10 @@ func (rf *registerFilter) register() {
 	}
 }
 
-// Start() starts registration of filters present in RegisteredFilters
-func Start(registerdFilters []func()) {
+// Start starts registration of filters present in RegisteredFilters
+func Start(registeredFilters []func()) {
 	glog.Info("registering filters")
-	for _, filter := range registerdFilters {
+	for _, filter := range registeredFilters {
 		filter()
 	}
 }

@@ -78,7 +78,7 @@ func (m MountUtil) getPartitionName() (string, error) {
 			1st entry is partition or file system 2nd is mount point
 		*/
 		if parts := strings.Split(line, " "); parts[1] == m.MountPoint {
-			// /dev/ by default added with partition name we wnat to get only sda1 / sdc2 ..
+			// /dev/ by default added with partition name we want to get only sda1 / sdc2 ..
 			return strings.Replace(parts[0], "/dev/", "", 1), nil
 		}
 	}

@@ -114,11 +114,31 @@ func Hash(s string) string {
 
 // Contains is a util function which returns true if one key is present in array
 // else it returns false
-func Contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
+func Contains(s []string, k string) bool {
+	for _, e := range s {
+		if e == k {
 			return true
 		}
 	}
 	return false
+}
+
+// ContainsIgnoredCase is a util function which returns true if one key is present
+// in array else it returns false. This function is not case sensitive.
+func ContainsIgnoredCase(s []string, k string) bool {
+	for _, e := range s {
+		if strings.ToLower(e) == strings.ToLower(k) {
+			return true
+		}
+	}
+	return false
+}
+
+// StateStatus returns enable if state is true and disable if state is false
+func StateStatus(state bool) string {
+	var status = map[bool]string{
+		true:  "enable",
+		false: "disable",
+	}
+	return status[state]
 }
