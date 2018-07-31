@@ -36,6 +36,7 @@ const (
 	NDMHostKey  = "kubernetes.io/hostname" // NDMHostKey is host name label prefix.
 	NDMActive   = "Active"                 // NDMActive is constant for active resource status.
 	NDMInactive = "Inactive"               // NDMInactive is constant for inactive resource status.
+	NDMUnknown  = "Unknown"                // NDMUnknown is constant for resource unknown satus.
 )
 
 // ControllerBroadcastChannel is used to send a copy of controller object to each probe.
@@ -153,6 +154,10 @@ func (c *Controller) Broadcast() {
 func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
 	glog.Info("started the controller")
 	<-stopCh
+	glog.Info("changing the state to unknown before shutting down.")
+	// Changing the state to unknown before shutting down. Similar as when one pod is
+	// running and you stopped kubelet it will make pod status unknown.
+	c.MarkDiskStatusToUnknown()
 	glog.Info("shutting down the controller")
 	return nil
 }

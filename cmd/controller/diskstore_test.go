@@ -400,3 +400,34 @@ func TestDeactivateStaleDiskResource(t *testing.T) {
 		})
 	}
 }
+
+func TestMarkDiskStatusToUnknown(t *testing.T) {
+	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeKubeClient := fake.NewSimpleClientset()
+	fakeController := &Controller{
+		HostName:      fakeHostName,
+		KubeClientset: fakeKubeClient,
+		Clientset:     fakeNdmClient,
+	}
+	dr := mockEmptyDiskCr()
+	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	fakeController.CreateDisk(dr)
+
+	fakeController.MarkDiskStatusToUnknown()
+	dr.Status.State = NDMUnknown
+	cdr, err := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
+	tests := map[string]struct {
+		actualDisk    apis.Disk
+		actualError   error
+		expectedDisk  apis.Disk
+		expectedError error
+	}{
+		"DeactivateOwnedDiskResource should make all present resources state inactive": {actualDisk: *cdr, actualError: err, expectedDisk: dr, expectedError: nil},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expectedDisk, test.actualDisk)
+			assert.Equal(t, test.expectedError, test.actualError)
+		})
+	}
+}
