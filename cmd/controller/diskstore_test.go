@@ -26,7 +26,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-// mockEmptyDiskCr returns Disk object with minimum attribues it is used in unit test cases.
+// mockEmptyDiskCr returns Disk object with minimum attributes it is used in unit test cases.
 func mockEmptyDiskCr() apis.Disk {
 	fakeDr := apis.Disk{}
 	fakeObjectMeta := metav1.ObjectMeta{
@@ -178,8 +178,8 @@ func TestDeactivateDisk(t *testing.T) {
 		expectedDisk  apis.Disk
 		expectedError error
 	}{
-		"deactivete dr resource":    {actualDisk: *cdr1, actualError: err1, expectedDisk: dr, expectedError: nil},
-		"deactivete newDr resource": {actualDisk: *cdr2, actualError: err2, expectedDisk: newDr, expectedError: nil},
+		"deactivate dr resource":    {actualDisk: *cdr1, actualError: err1, expectedDisk: dr, expectedError: nil},
+		"deactivate newDr resource": {actualDisk: *cdr2, actualError: err2, expectedDisk: newDr, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -303,9 +303,9 @@ func TestGetExistingResource(t *testing.T) {
 		actualDisk   *apis.Disk
 		expectedDisk *apis.Disk
 	}{
-		"resouce with 'fake-disk-uid' uuid":             {actualDisk: cdr1, expectedDisk: &dr},
-		"resouce with 'new-fake-disk-uid' uuid":         {actualDisk: cdr2, expectedDisk: &newDr},
-		"resouce with invalid uuid not present in etcd": {actualDisk: cdr3, expectedDisk: nil},
+		"resource with 'fake-disk-uid' uuid":             {actualDisk: cdr1, expectedDisk: &dr},
+		"resource with 'new-fake-disk-uid' uuid":         {actualDisk: cdr2, expectedDisk: &newDr},
+		"resource with invalid uuid not present in etcd": {actualDisk: cdr3, expectedDisk: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -350,8 +350,8 @@ func TestPushResource(t *testing.T) {
 		actualError   error
 		expectedError error
 	}{
-		"push resouce with 'fake-disk-uid' uuid for create resource": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
-		"push resouce with 'fake-disk-uid' uuid for update resource": {actualDisk: *cdr2, expectedDisk: fakeDr, actualError: err2, expectedError: nil},
+		"push resource with 'fake-disk-uid' uuid for create resource": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"push resource with 'fake-disk-uid' uuid for update resource": {actualDisk: *cdr2, expectedDisk: fakeDr, actualError: err2, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -391,7 +391,7 @@ func TestDeactivateStaleDiskResource(t *testing.T) {
 		expectedError error
 	}{
 		"resource1 present in etcd but not in system": {actualDisk: *cdr1, actualError: err1, expectedDisk: dr, expectedError: nil},
-		"resource2 present in both etcd and systeme":  {actualDisk: *cdr2, actualError: err2, expectedDisk: newDr, expectedError: nil},
+		"resource2 present in both etcd and system":   {actualDisk: *cdr2, actualError: err2, expectedDisk: newDr, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

@@ -42,32 +42,32 @@ func (nf *alwaysTrueFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
 }
 
 func mockOsDiskToAPI() (apis.Disk, error) {
-	mockOsdiskDeails, err := libudevwrapper.MockDiskDetails()
+	mockOsDiskDetails, err := libudevwrapper.MockDiskDetails()
 	if err != nil {
 		return apis.Disk{}, err
 	}
 	fakeDetails := apis.DiskDetails{
-		Model:  mockOsdiskDeails.Model,
-		Serial: mockOsdiskDeails.Serial,
-		Vendor: mockOsdiskDeails.Vendor,
+		Model:  mockOsDiskDetails.Model,
+		Serial: mockOsDiskDetails.Serial,
+		Vendor: mockOsDiskDetails.Vendor,
 	}
 	fakeObj := apis.DiskSpec{
-		Path:    mockOsdiskDeails.DevNode,
+		Path:    mockOsDiskDetails.DevNode,
 		Details: fakeDetails,
 	}
 
 	devLinks := make([]apis.DiskDevLink, 0)
-	if len(mockOsdiskDeails.ByIdDevLinks) != 0 {
+	if len(mockOsDiskDetails.ByIdDevLinks) != 0 {
 		byIdLinks := apis.DiskDevLink{
 			Kind:  "by-id",
-			Links: mockOsdiskDeails.ByIdDevLinks,
+			Links: mockOsDiskDetails.ByIdDevLinks,
 		}
 		devLinks = append(devLinks, byIdLinks)
 	}
-	if len(mockOsdiskDeails.ByPathDevLinks) != 0 {
+	if len(mockOsDiskDetails.ByPathDevLinks) != 0 {
 		byPathLinks := apis.DiskDevLink{
 			Kind:  "by-path",
-			Links: mockOsdiskDeails.ByPathDevLinks,
+			Links: mockOsDiskDetails.ByPathDevLinks,
 		}
 		devLinks = append(devLinks, byPathLinks)
 	}
@@ -79,7 +79,7 @@ func mockOsDiskToAPI() (apis.Disk, error) {
 	}
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   mockOsdiskDeails.Uid,
+		Name:   mockOsDiskDetails.Uid,
 	}
 	fakeDiskStatus := apis.DiskStatus{
 		State: controller.NDMActive,
@@ -94,27 +94,28 @@ func mockOsDiskToAPI() (apis.Disk, error) {
 }
 
 func TestFillDiskDetails(t *testing.T) {
-	mockOsdiskDeails, err := libudevwrapper.MockDiskDetails()
+	mockOsDiskDetails, err := libudevwrapper.MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)
 	}
 	uProbe := udevProbe{}
 	actualDiskInfo := controller.NewDiskInfo()
-	actualDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsdiskDeails.SysPath
+	actualDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsDiskDetails.SysPath
 	uProbe.FillDiskDetails(actualDiskInfo)
 	expectedDiskInfo := &controller.DiskInfo{}
-	expectedDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsdiskDeails.SysPath
-	expectedDiskInfo.Model = mockOsdiskDeails.Model
-	expectedDiskInfo.Path = mockOsdiskDeails.DevNode
-	expectedDiskInfo.Serial = mockOsdiskDeails.Serial
-	expectedDiskInfo.Vendor = mockOsdiskDeails.Vendor
-	expectedDiskInfo.ByIdDevLinks = mockOsdiskDeails.ByIdDevLinks
-	expectedDiskInfo.ByPathDevLinks = mockOsdiskDeails.ByPathDevLinks
+	expectedDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsDiskDetails.SysPath
+	expectedDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevNode
+	expectedDiskInfo.Model = mockOsDiskDetails.Model
+	expectedDiskInfo.Path = mockOsDiskDetails.DevNode
+	expectedDiskInfo.Serial = mockOsDiskDetails.Serial
+	expectedDiskInfo.Vendor = mockOsDiskDetails.Vendor
+	expectedDiskInfo.ByIdDevLinks = mockOsDiskDetails.ByIdDevLinks
+	expectedDiskInfo.ByPathDevLinks = mockOsDiskDetails.ByPathDevLinks
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
 func TestUdevProbe(t *testing.T) {
-	mockOsdiskDeails, err := libudevwrapper.MockDiskDetails()
+	mockOsDiskDetails, err := libudevwrapper.MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,14 +135,14 @@ func TestUdevProbe(t *testing.T) {
 	}
 	udevprobe := newUdevProbe(fakeController)
 	var pi controller.ProbeInterface = udevprobe
-	newPrgisterProbe := &registerProbe{
+	newRegisterProbe := &registerProbe{
 		priority:   1,
 		name:       "udev probe",
 		state:      true,
 		pi:         pi,
 		controller: fakeController,
 	}
-	newPrgisterProbe.register()
+	newRegisterProbe.register()
 	//add one filter
 	filter := &alwaysTrueFilter{}
 	filter1 := &controller.Filter{
@@ -155,16 +156,16 @@ func TestUdevProbe(t *testing.T) {
 	}
 	eventmsg := make([]*controller.DiskInfo, 0)
 	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockOsdiskDeails.Uid
-	deviceDetails.ProbeIdentifiers.UdevIdentifier = mockOsdiskDeails.SysPath
+	deviceDetails.ProbeIdentifiers.Uuid = mockOsDiskDetails.Uid
+	deviceDetails.ProbeIdentifiers.UdevIdentifier = mockOsDiskDetails.SysPath
 	eventmsg = append(eventmsg, deviceDetails)
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
-	fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsdiskDeails.Uid, metav1.GetOptions{})
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsdiskDeails.Uid, metav1.GetOptions{})
+	fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
+	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
 	fakeDr, err := mockOsDiskToAPI()
 	if err != nil {
 		t.Fatal(err)
@@ -176,7 +177,7 @@ func TestUdevProbe(t *testing.T) {
 		actualError   error
 		expectedError error
 	}{
-		"add event for resouce with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"add event for resource with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

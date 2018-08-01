@@ -47,17 +47,17 @@ func TestRegisterFilter(t *testing.T) {
 		Mutex:   mutex,
 	}
 	var i controller.FilterInterface = &fakeFilter{}
-	newPrgisterFilter := &registerFilter{
+	newRegisterFilter := &registerFilter{
 		name:       "filter-1",
 		state:      true,
 		fi:         i,
 		controller: fakeController,
 	}
-	newPrgisterFilter.register()
+	newRegisterFilter.register()
 	filter := &controller.Filter{
-		Name:      newPrgisterFilter.name,
-		State:     newPrgisterFilter.state,
-		Interface: newPrgisterFilter.fi,
+		Name:      newRegisterFilter.name,
+		State:     newRegisterFilter.state,
+		Interface: newRegisterFilter.fi,
 	}
 	expectedFilterList = append(expectedFilterList, filter)
 	tests := map[string]struct {
@@ -88,16 +88,16 @@ func TestStart(t *testing.T) {
 			t.Fatal("controller struct should not be nil")
 		}
 		var fi controller.FilterInterface = &fakeFilter{ctrl: ctrl}
-		newPrgisterFilter := &registerFilter{
+		newRegisterFilter := &registerFilter{
 			name:       "fake-filter",
 			state:      defaultEnabled,
 			fi:         fi,
 			controller: ctrl,
 		}
-		newPrgisterFilter.register()
+		newRegisterFilter.register()
 	}
-	var registerdFilters = []func(){fakeFilterRegister}
-	Start(registerdFilters)
+	var registeredFilters = []func(){fakeFilterRegister}
+	Start(registeredFilters)
 	var fi controller.FilterInterface = &fakeFilter{ctrl: fakeController}
 	filter := &controller.Filter{
 		Name:      "fake-filter",

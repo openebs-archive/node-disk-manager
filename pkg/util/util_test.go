@@ -151,3 +151,36 @@ func TestContains(t *testing.T) {
 		})
 	}
 }
+
+func TestContainsIgnoredCase(t *testing.T) {
+	diskList := make([]string, 0)
+	diskList = append(diskList, "Key1")
+	diskList = append(diskList, "Key3")
+	tests := map[string]struct {
+		diskName string
+		expected bool
+	}{
+		"giving a key which is not present in slice": {diskName: "keY0", expected: false},
+		"giving a key which is present in slice":     {diskName: "KEy3", expected: true},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expected, ContainsIgnoredCase(diskList, test.diskName))
+		})
+	}
+}
+
+func TestStateStatus(t *testing.T) {
+	tests := map[string]struct {
+		status string
+		state  bool
+	}{
+		"status is enable for true state":   {state: true, status: "enable"},
+		"status is disable for false state": {state: false, status: "disable"},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.status, StateStatus(test.state))
+		})
+	}
+}
