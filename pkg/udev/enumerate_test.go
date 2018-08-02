@@ -35,7 +35,7 @@ func TestAddSubsystemFilter(t *testing.T) {
 	defer newUdevEnumerate.UnrefUdevEnumerate()
 	err = newUdevEnumerate.AddSubsystemFilter("block")
 	if err != nil {
-		t.Error("error should be nil for successfull subsystem filter")
+		t.Error("error should be nil for successful subsystem filter")
 	}
 }
 
@@ -52,10 +52,10 @@ func TestScanDevices(t *testing.T) {
 	defer newUdevEnumerate.UnrefUdevEnumerate()
 	err = newUdevEnumerate.AddSubsystemFilter("block")
 	if err != nil {
-		t.Error("error should be nil for successfull subsystem filter")
+		t.Error("error should be nil for successful subsystem filter")
 	}
 	err = newUdevEnumerate.ScanDevices()
 	if err != nil {
-		t.Error("error should be nil for successfull scan device")
+		t.Error("error should be nil for successful scan device")
 	}
 }

@@ -47,7 +47,7 @@ type DiskInfo struct {
 // These keys are defined here in order to denote the identifier that a particular probe
 // needs in order to identify a particular disk such as device Path for smart probe and
 // syspath for udev probe
-// Defining all the identifiers separately here makes it more clear and readble to know
+// Defining all the identifiers separately here makes it more clear and readable to know
 // the keys or the fields that a particular probe requires to identify each and every disk
 // Uuid here is totally related to udev probe since udev is the only probe to scan disks and
 // as a part of discovery, it assign uuid to each disk and which is copied to uuid field of
@@ -76,7 +76,7 @@ func (di *DiskInfo) ToDisk() apis.Disk {
 	return dr
 }
 
-// getObjectMeta returns ObjectMeta struct which contains lebels and Name of resource
+// getObjectMeta returns ObjectMeta struct which contains labels and Name of resource
 // It is used to populate data of Disk struct which is a disk CR.
 func (di *DiskInfo) getObjectMeta() metav1.ObjectMeta {
 	objectMeta := metav1.ObjectMeta{

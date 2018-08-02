@@ -46,7 +46,7 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	 * updation failure can be due to the fact that old node may have set the status
 	 * to Inactive after updateDr has done the Get call, as resource version will
 	 * change with each update, so we have to try again. Also if other node tries to
-	 * update the resource version after updation is succssful here, the update call
+	 * update the resource version after updation is successful here, the update call
 	 * from that node will fail.
 	 */
 	glog.Info("disk status updated by other node, changing the ownership to this node : ", err)

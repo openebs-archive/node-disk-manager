@@ -114,7 +114,7 @@ func TestListProbe(t *testing.T) {
 	}
 }
 
-func TestSrartProbe(t *testing.T) {
+func TestStartProbe(t *testing.T) {
 	var msg1 string
 	testProbe := &fakeProbe{}
 	probe1 := &Probe{

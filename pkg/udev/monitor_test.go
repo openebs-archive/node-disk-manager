@@ -43,7 +43,7 @@ func TestNewDeviceFromNetlink(t *testing.T) {
 }
 
 func TestAddFilterSubsystem(t *testing.T) {
-	// for successfull AddFilterSubsystem() it should return nil error.
+	// for successful AddFilterSubsystem() it should return nil error.
 	udev, err := NewUdev()
 	if err != nil {
 		t.Error(err)
@@ -58,7 +58,7 @@ func TestAddFilterSubsystem(t *testing.T) {
 }
 
 func TestEnableMonitorReceiving(t *testing.T) {
-	// for successfull EnableMonitorReceiving() it should return nil error.
+	// for successful EnableMonitorReceiving() it should return nil error.
 	// if we free udevMonitor pointer then it should return an error.
 	udev, err := NewUdev()
 	if err != nil {
@@ -80,12 +80,12 @@ func TestEnableMonitorReceiving(t *testing.T) {
 	}
 	udevMonitor1.UdevMonitorUnref()
 	err = udevMonitor1.EnableReceiving()
-	assert.Equal(t, errors.New("unable to enable receving udev"), err)
+	assert.Equal(t, errors.New("unable to enable receiving udev"), err)
 
 }
 
 func TestGetFd(t *testing.T) {
-	// for successfull TestGetFd() it should return nil error
+	// for successful TestGetFd() it should return nil error
 	// and fd value should be greater than 0.
 	udev, err := NewUdev()
 	if err != nil {

@@ -44,17 +44,17 @@ func TestRegisterProbe(t *testing.T) {
 	}
 
 	var i controller.ProbeInterface = &fakeProbe{}
-	newPrgisterProbe := &registerProbe{
+	newRegisterProbe := &registerProbe{
 		name:       "probe-1",
 		state:      true,
 		pi:         i,
 		controller: fakeController,
 	}
-	newPrgisterProbe.register()
+	newRegisterProbe.register()
 	probe := &controller.Probe{
-		Name:      newPrgisterProbe.name,
-		State:     newPrgisterProbe.state,
-		Interface: newPrgisterProbe.pi,
+		Name:      newRegisterProbe.name,
+		State:     newRegisterProbe.state,
+		Interface: newRegisterProbe.pi,
 	}
 	expectedProbeList = append(expectedProbeList, probe)
 	tests := map[string]struct {
@@ -85,16 +85,16 @@ func TestStart(t *testing.T) {
 			t.Fatal("controller struct should not be nil")
 		}
 		var pi controller.ProbeInterface = &fakeProbe{ctrl: ctrl}
-		newRrgisterProbe := &registerProbe{
+		newRegisterProbe := &registerProbe{
 			name:       "fake-probe",
 			state:      defaultEnabled,
 			pi:         pi,
 			controller: ctrl,
 		}
-		newRrgisterProbe.register()
+		newRegisterProbe.register()
 	}
-	var registerdProbes = []func(){fakeProbeRegister}
-	Start(registerdProbes)
+	var registeredProbes = []func(){fakeProbeRegister}
+	Start(registeredProbes)
 	var fi controller.ProbeInterface = &fakeProbe{ctrl: fakeController}
 	probe := &controller.Probe{
 		Name:      "fake-probe",

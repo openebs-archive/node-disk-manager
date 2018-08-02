@@ -70,7 +70,7 @@ func (u *Udev) UnrefUdev() {
 }
 
 // NewDeviceFromSysPath identify the block device currently attached to the system
-// at gitven sysPath and returns that pointer of C udev_device structure. The
+// at given sysPath and returns that pointer of C udev_device structure. The
 // caller can query all(available) the disk properties using returned C udev_device structure.
 func (u *Udev) NewDeviceFromSysPath(sysPath string) (*UdevDevice, error) {
 	syspath := C.CString(sysPath)

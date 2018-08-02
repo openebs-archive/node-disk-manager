@@ -25,11 +25,11 @@ import (
 type EventAction string
 
 const (
-	AttachEA EventAction = libudevwrapper.UDEV_ACTION_ADD    // AttachEA is atach disk event name
+	AttachEA EventAction = libudevwrapper.UDEV_ACTION_ADD    // AttachEA is attach disk event name
 	DetachEA EventAction = libudevwrapper.UDEV_ACTION_REMOVE // DetachEA is detach disk event name
 )
 
-// ProbeEvent staruct contain a copy of controller it will update disk resources
+// ProbeEvent struct contain a copy of controller it will update disk resources
 type ProbeEvent struct {
 	Controller *controller.Controller
 }
@@ -39,10 +39,11 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 	diskList, err := pe.Controller.ListDiskResource()
 	if err != nil {
 		glog.Error(err)
-		pe.initOrErrorEvent()
+		go pe.initOrErrorEvent()
 		return
 	}
 	for _, diskDetails := range msg.Devices {
+		glog.Info("processing details for ", diskDetails.ProbeIdentifiers.Uuid)
 		pe.Controller.FillDiskDetails(diskDetails)
 		// if ApplyFilter returns true then we process the event further
 		if !pe.Controller.ApplyFilter(diskDetails) {
@@ -59,7 +60,7 @@ func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
 	diskList, err := pe.Controller.ListDiskResource()
 	if err != nil {
 		glog.Error(err)
-		pe.initOrErrorEvent()
+		go pe.initOrErrorEvent()
 		return
 	}
 	mismatch := false
@@ -75,7 +76,7 @@ func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
 		pe.Controller.DeactivateDisk(*oldDr)
 	}
 	if mismatch {
-		pe.initOrErrorEvent()
+		go pe.initOrErrorEvent()
 	}
 }
 

@@ -33,11 +33,11 @@ func (f *fakeFilter) Start() {
 }
 
 func (f *fakeFilter) Include(fakeDiskInfo *DiskInfo) bool {
-	return fakeDiskInfo.Uuid == matchDiskUuid
+	return true
 }
 
 func (f *fakeFilter) Exclude(fakeDiskInfo *DiskInfo) bool {
-	return false
+	return fakeDiskInfo.Uuid != matchDiskUuid
 }
 
 //Add one new filter and get the list of the filters and match them
@@ -148,7 +148,7 @@ func TestShouldIgnore(t *testing.T) {
 		actual   bool
 		expected bool
 	}{
-		"comparing return of ApplyFilter": {actual: filter.ApplyFilter(disk), expected: false},
+		"comparing return of ApplyFilter": {actual: filter.ApplyFilter(disk), expected: true},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -157,7 +157,7 @@ func TestShouldIgnore(t *testing.T) {
 	}
 }
 
-func TestShouldProcess(t *testing.T) {
+func TestApplyFilter(t *testing.T) {
 	filters := make([]*Filter, 0)
 	mutex := &sync.Mutex{}
 	fakeController := &Controller{
@@ -179,8 +179,8 @@ func TestShouldProcess(t *testing.T) {
 		actual   bool
 		expected bool
 	}{
-		"comparing return of ApplyFilter for disk1": {actual: fakeController.ApplyFilter(disk1), expected: false},
-		"comparing return of ApplyFilter for disk2": {actual: fakeController.ApplyFilter(disk2), expected: true},
+		"comparing return of ApplyFilter for disk1": {actual: fakeController.ApplyFilter(disk1), expected: true},
+		"comparing return of ApplyFilter for disk2": {actual: fakeController.ApplyFilter(disk2), expected: false},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

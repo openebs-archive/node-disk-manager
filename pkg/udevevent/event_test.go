@@ -60,13 +60,13 @@ func TestProcess(t *testing.T) {
 
 	tests := map[string]struct {
 		actualEvent   *event
-		expextedEvent *event
+		expectedEvent *event
 	}{
-		"match content of one event after process": {actualEvent: actualEvent, expextedEvent: expectedEvent},
+		"match content of one event after process": {actualEvent: actualEvent, expectedEvent: expectedEvent},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expextedEvent, test.actualEvent)
+			assert.Equal(t, test.expectedEvent, test.actualEvent)
 		})
 	}
 }
@@ -81,13 +81,13 @@ func TestSend(t *testing.T) {
 
 	tests := map[string]struct {
 		actualEventMessage   controller.EventMessage
-		expextedEventMessage controller.EventMessage
+		expectedEventMessage controller.EventMessage
 	}{
-		"match content of one event after process": {actualEventMessage: msg, expextedEventMessage: event.eventDetails},
+		"match content of one event after process": {actualEventMessage: msg, expectedEventMessage: event.eventDetails},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expextedEventMessage, test.actualEventMessage)
+			assert.Equal(t, test.expectedEventMessage, test.actualEventMessage)
 		})
 	}
 }

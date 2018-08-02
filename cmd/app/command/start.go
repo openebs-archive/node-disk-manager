@@ -51,10 +51,10 @@ func NewCmdStart() *cobra.Command {
 			// Broadcast starts broadcasting controller pointer. Using this
 			// each probe and filter registers themselves.
 			ctrl.Broadcast()
-			// Start starts registering of filters present in RegisterdFilters
-			filter.Start(filter.RegisterdFilters)
-			// Start starts registering of probes present in RegisterdProbes
-			probe.Start(probe.RegisterdProbes)
+			// Start starts registering of filters present in RegisteredFilters
+			filter.Start(filter.RegisteredFilters)
+			// Start starts registering of probes present in RegisteredProbes
+			probe.Start(probe.RegisteredProbes)
 			port := cmd.Flag("port").Value.String()
 			server.ListenPort = port
 			endpointpath := cmd.Flag("metricspath").Value.String()

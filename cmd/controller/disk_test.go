@@ -120,7 +120,7 @@ func TestGetTypeMeta(t *testing.T) {
 		actualTypeMeta   metav1.TypeMeta
 		expectedTypeMeta metav1.TypeMeta
 	}{
-		"create one mock typeMeta object and comapre it": {actualTypeMeta: fakeDiskInfo.getTypeMeta(), expectedTypeMeta: fakeTypeMeta},
+		"create one mock typeMeta object and compare it": {actualTypeMeta: fakeDiskInfo.getTypeMeta(), expectedTypeMeta: fakeTypeMeta},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -153,7 +153,7 @@ func TestGetObjectMeta(t *testing.T) {
 		actualObjectMeta   metav1.ObjectMeta
 		expectedObjectMeta metav1.ObjectMeta
 	}{
-		"create one mock objectMeta object and comapre it": {actualObjectMeta: fakeDiskInfo.getObjectMeta(), expectedObjectMeta: fakeObjectMeta},
+		"create one mock objectMeta object and compare it": {actualObjectMeta: fakeDiskInfo.getObjectMeta(), expectedObjectMeta: fakeObjectMeta},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -179,7 +179,7 @@ func TestGetStatus(t *testing.T) {
 		actualDiskStatus   apis.DiskStatus
 		expectedDiskStatus apis.DiskStatus
 	}{
-		"create one mock DiskStatus object and comapre it": {actualDiskStatus: fakeDiskInfo.getStatus(), expectedDiskStatus: fakeDiskStatus},
+		"create one mock DiskStatus object and compare it": {actualDiskStatus: fakeDiskInfo.getStatus(), expectedDiskStatus: fakeDiskStatus},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

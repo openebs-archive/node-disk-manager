@@ -18,13 +18,14 @@ package controller
 
 import (
 	"github.com/golang/glog"
+	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // Filter contains name, state and filterInterface
 type Filter struct {
 	Name      string          // Name is the name of the filter
 	State     bool            // State is the State of the filter
-	Interface FilterInterface // Interface contains registerd filter
+	Interface FilterInterface // Interface contains registered filter
 }
 
 /*
@@ -33,7 +34,7 @@ type Filter struct {
 	if any of them returns true then filter doesn't want further process of that event.
 */
 func (f *Filter) ApplyFilter(diskInfo *DiskInfo) bool {
-	return f.Interface.Include(diskInfo) || f.Interface.Exclude(diskInfo)
+	return f.Interface.Include(diskInfo) && f.Interface.Exclude(diskInfo)
 
 }
 
@@ -66,7 +67,7 @@ func (c *Controller) AddNewFilter(filter *Filter) {
 	filters := c.Filters
 	filters = append(filters, filter)
 	c.Filters = filters
-	glog.Info(filter.Name, " applied")
+	glog.Info("configured ", filter.Name, " : state ", util.StateStatus(filter.State))
 }
 
 // ListFilter returns list of active filters associated with controller object
@@ -86,9 +87,10 @@ func (c *Controller) ListFilter() []*Filter {
 // wants to stop further process of the event it returns true else it returns false
 func (c *Controller) ApplyFilter(diskDetails *DiskInfo) bool {
 	for _, filter := range c.ListFilter() {
-		if filter.ApplyFilter(diskDetails) {
-			return true
+		if !filter.ApplyFilter(diskDetails) {
+			glog.Info(diskDetails.Uuid, " ignored by ", filter.Name)
+			return false
 		}
 	}
-	return false
+	return true
 }

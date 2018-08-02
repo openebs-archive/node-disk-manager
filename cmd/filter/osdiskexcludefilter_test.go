@@ -38,14 +38,14 @@ func TestOsDiskFilterRegister(t *testing.T) {
 	go func() {
 		controller.ControllerBroadcastChannel <- fakeController
 	}()
-	oSDiskExludeFilterRegister()
-	var fi controller.FilterInterface = &oSDiskExludeFilter{
+	oSDiskExcludeFilterRegister()
+	var fi controller.FilterInterface = &oSDiskExcludeFilter{
 		controller:     fakeController,
 		excludeDevPath: diskDetails.DevNode,
 	}
 	filter := &controller.Filter{
-		Name:      oSDiskExludeFilterName,
-		State:     oSDiskExludeFilterState,
+		Name:      oSDiskExcludeFilterName,
+		State:     oSDiskExcludeFilterState,
 		Interface: fi,
 	}
 	expectedFilterList = append(expectedFilterList, filter)
@@ -62,19 +62,21 @@ func TestOsDiskFilterRegister(t *testing.T) {
 	}
 }
 
-func TestExclude(t *testing.T) {
-	fakeDiskUuid := "fake-disk-path"
-	fakeOsDiskFilter := oSDiskExludeFilter{excludeDevPath: fakeDiskUuid}
+func TestOsDiskExcludeFilterExclude(t *testing.T) {
+	fakeDiskPath := "fake-disk-path"
+	ignoreDiskPath := "ignore-disk-path"
+	fakeOsDiskFilter := oSDiskExcludeFilter{excludeDevPath: ignoreDiskPath}
 	disk1 := &controller.DiskInfo{}
+	disk1.Path = fakeDiskPath
 	disk2 := &controller.DiskInfo{}
-	disk1.Path = fakeDiskUuid
+	disk2.Path = ignoreDiskPath
 	tests := map[string]struct {
 		disk     *controller.DiskInfo
 		actual   bool
 		expected bool
 	}{
-		"comparing return of Exclude for disk1": {actual: fakeOsDiskFilter.Exclude(disk1), expected: false},
-		"comparing return of Exclude for disk2": {actual: fakeOsDiskFilter.Exclude(disk2), expected: true},
+		"comparing return of Exclude for disk1": {actual: fakeOsDiskFilter.Exclude(disk1), expected: true},
+		"comparing return of Exclude for disk2": {actual: fakeOsDiskFilter.Exclude(disk2), expected: false},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -83,19 +85,21 @@ func TestExclude(t *testing.T) {
 	}
 }
 
-func TestInclude(t *testing.T) {
-	fakeDiskUuid := "fake-disk-path"
-	fakeOsDiskFilter := oSDiskExludeFilter{excludeDevPath: fakeDiskUuid}
+func TestOsDiskExcludeFilterInclude(t *testing.T) {
+	fakeDiskPath := "fake-disk-path"
+	ignoreDiskPath := "ignore-disk-path"
+	fakeOsDiskFilter := oSDiskExcludeFilter{excludeDevPath: ignoreDiskPath}
 	disk1 := &controller.DiskInfo{}
+	disk1.Path = fakeDiskPath
 	disk2 := &controller.DiskInfo{}
-	disk1.Path = fakeDiskUuid
+	disk2.Path = ignoreDiskPath
 	tests := map[string]struct {
 		disk     *controller.DiskInfo
 		actual   bool
 		expected bool
 	}{
-		"comparing return of Include for disk1": {actual: fakeOsDiskFilter.Include(disk1), expected: false},
-		"comparing return of Include for disk2": {actual: fakeOsDiskFilter.Include(disk2), expected: false},
+		"comparing return of Include for disk1": {actual: fakeOsDiskFilter.Include(disk1), expected: true},
+		"comparing return of Include for disk2": {actual: fakeOsDiskFilter.Include(disk2), expected: true},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

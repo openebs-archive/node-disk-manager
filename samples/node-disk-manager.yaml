@@ -28,6 +28,10 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: config
+          mountPath: /host/node-disk-manager.config
+          subPath: node-disk-manager.config
+          readOnly: true
         - name: udev
           mountPath: /run/udev
         - name: procmount
@@ -38,6 +42,9 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
       volumes:
+      - name: config
+        configMap:
+          name: node-disk-manager-config
       - name: udev
         hostPath:
           path: /run/udev

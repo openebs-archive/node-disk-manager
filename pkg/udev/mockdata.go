@@ -51,7 +51,7 @@ func mockDataStructUdev() *C.struct_udev {
 	return C.udev_new()
 }
 
-// mockDiskDtail returns os disk details which is used in unit test.
+// MockDiskDetails returns os disk details which is used in unit test.
 func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails := MockOsDiskDetails{}
 	osDiskName, err := OsDiskName()
@@ -131,7 +131,7 @@ func OsDiskName() (string, error) {
 	return osDiskName, nil
 }
 
-// getSyspathOfOsDisk returns syspeth of os disk in success
+// getSyspathOfOsDisk returns syspath of os disk in success
 func getSyspathOfOsDisk(osDiskName string) (string, error) {
 	data, err := ioutil.ReadFile("/sys/block/" + osDiskName + "/dev")
 	if err != nil {

@@ -32,24 +32,24 @@ import (
 
 func mockOsDiskToAPIBySmart() (apis.Disk, error) {
 
-	mockOsdiskDetails, err := smart.MockScsiBasicDiskInfo()
+	mockOsDiskDetails, err := smart.MockScsiBasicDiskInfo()
 	if err != nil {
 		return apis.Disk{}, err
 	}
 
-	mockOsdiskDetailsFromUdev, err := libudevwrapper.MockDiskDetails()
+	mockOsDiskDetailsFromUdev, err := libudevwrapper.MockDiskDetails()
 	if err != nil {
 		return apis.Disk{}, err
 	}
 
 	fakeDetails := apis.DiskDetails{
-		SPCVersion:       mockOsdiskDetails.SPCVersion,
-		FirmwareRevision: mockOsdiskDetails.FirmwareRevision,
+		SPCVersion:       mockOsDiskDetails.SPCVersion,
+		FirmwareRevision: mockOsDiskDetails.FirmwareRevision,
 	}
 
 	fakeCapacity := apis.DiskCapacity{
-		Storage:           mockOsdiskDetails.Capacity,
-		LogicalSectorSize: mockOsdiskDetails.LBSize,
+		Storage:           mockOsDiskDetails.Capacity,
+		LogicalSectorSize: mockOsDiskDetails.LBSize,
 	}
 
 	fakeObj := apis.DiskSpec{
@@ -67,7 +67,7 @@ func mockOsDiskToAPIBySmart() (apis.Disk, error) {
 
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   mockOsdiskDetailsFromUdev.Uid,
+		Name:   mockOsDiskDetailsFromUdev.Uid,
 	}
 
 	fakeDiskStatus := apis.DiskStatus{
@@ -85,29 +85,29 @@ func mockOsDiskToAPIBySmart() (apis.Disk, error) {
 }
 
 func TestFillDiskDetailsBySmart(t *testing.T) {
-	mockOsdiskDetails, err := smart.MockScsiBasicDiskInfo()
+	mockOsDiskDetails, err := smart.MockScsiBasicDiskInfo()
 	if err != nil {
 		t.Fatal(err)
 	}
 	sProbe := smartProbe{}
 	actualDiskInfo := controller.NewDiskInfo()
-	actualDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsdiskDetails.DevPath
+	actualDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
 	sProbe.FillDiskDetails(actualDiskInfo)
 	expectedDiskInfo := &controller.DiskInfo{}
-	expectedDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsdiskDetails.DevPath
-	expectedDiskInfo.Capacity = mockOsdiskDetails.Capacity
-	expectedDiskInfo.FirmwareRevision = mockOsdiskDetails.FirmwareRevision
-	expectedDiskInfo.SPCVersion = mockOsdiskDetails.SPCVersion
-	expectedDiskInfo.LogicalSectorSize = mockOsdiskDetails.LBSize
+	expectedDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
+	expectedDiskInfo.Capacity = mockOsDiskDetails.Capacity
+	expectedDiskInfo.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
+	expectedDiskInfo.SPCVersion = mockOsDiskDetails.SPCVersion
+	expectedDiskInfo.LogicalSectorSize = mockOsDiskDetails.LBSize
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
 func TestSmartProbe(t *testing.T) {
-	mockOsdiskDetails, err := smart.MockScsiBasicDiskInfo()
+	mockOsDiskDetails, err := smart.MockScsiBasicDiskInfo()
 	if err != nil {
 		t.Fatal(err)
 	}
-	mockOsdiskDetailsUsingUdev, err := libudevwrapper.MockDiskDetails()
+	mockOsDiskDetailsUsingUdev, err := libudevwrapper.MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,14 +130,14 @@ func TestSmartProbe(t *testing.T) {
 	smartProbe := newSmartProbe("fakeController")
 	var pi controller.ProbeInterface = smartProbe
 
-	newPrgisterProbe := &registerProbe{
+	newRegisterProbe := &registerProbe{
 		priority:   1,
 		name:       "smart probe",
 		state:      true,
 		pi:         pi,
 		controller: fakeController,
 	}
-	newPrgisterProbe.register()
+	newRegisterProbe.register()
 	//add one filter
 	filter := &alwaysTrueFilter{}
 	filter1 := &controller.Filter{
@@ -153,8 +153,8 @@ func TestSmartProbe(t *testing.T) {
 
 	eventmsg := make([]*controller.DiskInfo, 0)
 	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockOsdiskDetailsUsingUdev.Uid
-	deviceDetails.ProbeIdentifiers.SmartIdentifier = mockOsdiskDetails.DevPath
+	deviceDetails.ProbeIdentifiers.Uuid = mockOsDiskDetailsUsingUdev.Uid
+	deviceDetails.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
 	eventmsg = append(eventmsg, deviceDetails)
 
 	eventDetails := controller.EventMessage{
@@ -163,7 +163,7 @@ func TestSmartProbe(t *testing.T) {
 	}
 	probeEvent.addDiskEvent(eventDetails)
 
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsdiskDetailsUsingUdev.Uid, metav1.GetOptions{})
+	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetailsUsingUdev.Uid, metav1.GetOptions{})
 	if err1 != nil {
 		t.Fatal(err1)
 	}
@@ -180,7 +180,7 @@ func TestSmartProbe(t *testing.T) {
 		actualError   error
 		expectedError error
 	}{
-		"add event for resouce with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"add event for resource with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

@@ -26,8 +26,8 @@ const (
 	defaultDisabled = false // use in each probe to make it disable.
 )
 
-// RegisterdProbes contains register function of probes which we want to register
-var RegisterdProbes = []func(){udevProbeRegister, smartProbeRegister}
+// RegisteredProbes contains register function of probes which we want to register
+var RegisteredProbes = []func(){smartProbeRegister, udevProbeRegister}
 
 type registerProbe struct {
 	priority   int
@@ -52,10 +52,10 @@ func (rp *registerProbe) register() {
 	}
 }
 
-// Start() starts registration of probes present in RegisteredProbes
-func Start(registerdProbes []func()) {
+// Start starts registration of probes present in RegisteredProbes
+func Start(registeredProbes []func()) {
 	glog.Info("registering probes")
-	for _, probe := range registerdProbes {
+	for _, probe := range registeredProbes {
 		probe()
 	}
 }

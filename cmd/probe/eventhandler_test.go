@@ -61,7 +61,7 @@ type fakeFilter struct{}
 func (nf *fakeFilter) Start() {}
 
 func (nf *fakeFilter) Include(fakeDiskInfo *controller.DiskInfo) bool {
-	return false
+	return true
 }
 
 func (nf *fakeFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
@@ -132,7 +132,7 @@ func TestAddDiskEvent(t *testing.T) {
 		actualError   error
 		expectedError error
 	}{
-		"resouce with 'fake-disk-uid' uuid for create resource": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"resource with 'fake-disk-uid' uuid for create resource": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -179,7 +179,7 @@ func TestDeleteDiskEvent(t *testing.T) {
 		actualError   error
 		expectedError error
 	}{
-		"remove resouce with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"remove resource with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

@@ -20,6 +20,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/cmd/controller"
 	"github.com/openebs/node-disk-manager/pkg/smart"
+	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // smartProbe contains required variables for populating diskInfo
@@ -32,9 +33,13 @@ type smartProbe struct {
 }
 
 const (
-	smartProbeName     = "smart probe"
-	smartProbeState    = defaultEnabled
+	smartConfigKey     = "smart-probe"
 	smartProbePriority = 2
+)
+
+var (
+	smartProbeName  = "smart probe"
+	smartProbeState = defaultEnabled
 )
 
 // init is used to get a controller object and then register itself
@@ -45,16 +50,24 @@ var smartProbeRegister = func() {
 		glog.Error("unable to configure", smartProbeName)
 		return
 	}
-	var pi controller.ProbeInterface = &smartProbe{Controller: ctrl}
-	newPrgisterProbe := &registerProbe{
+	if ctrl.NDMConfig != nil {
+		for _, probeConfig := range ctrl.NDMConfig.ProbeConfigs {
+			if probeConfig.Key == smartConfigKey {
+				smartProbeName = probeConfig.Name
+				smartProbeState = util.CheckTruthy(probeConfig.State)
+				break
+			}
+		}
+	}
+	newRegisterProbe := &registerProbe{
 		priority:   smartProbePriority,
 		name:       smartProbeName,
 		state:      smartProbeState,
-		pi:         pi,
+		pi:         &smartProbe{Controller: ctrl},
 		controller: ctrl,
 	}
 	// Here we register the probe (smart probe in this case)
-	newPrgisterProbe.register()
+	newRegisterProbe.register()
 }
 
 // newSmartProbe returns smartProbe struct which helps populate diskInfo struct

@@ -34,7 +34,7 @@ type UdevMonitor struct {
 }
 
 // newUdevMonitor is a helper function and returns a pointer to a new monitor device.
-// The agrument ptr is a pointer to the underlying C udev_device_monitor structure.
+// The argument ptr is a pointer to the underlying C udev_device_monitor structure.
 // The function returns nil if the pointer passed is NULL.
 func newUdeviceMonitor(ptr *C.struct_udev_monitor) (*UdevMonitor, error) {
 	// If passed a NULL pointer, return nil
@@ -66,7 +66,7 @@ func (um *UdevMonitor) AddSubsystemFilter(key string) error {
 func (um *UdevMonitor) EnableReceiving() error {
 	ret := C.udev_monitor_enable_receiving(um.umptr)
 	if ret < 0 {
-		return errors.New("unable to enable receving udev")
+		return errors.New("unable to enable receiving udev")
 	}
 	return nil
 }

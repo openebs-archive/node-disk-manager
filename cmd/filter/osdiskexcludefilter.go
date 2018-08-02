@@ -23,47 +23,57 @@ import (
 )
 
 const (
-	oSDiskExludeFilterName  = "os disk exlude filter" // filter name
-	oSDiskExludeFilterState = defaultEnabled          // filter state
+	osDiskExcludeFilterKey = "os-disk-exclude-filter"
 )
 
 var (
-	defaultMountFilePath = "/proc/self/mounts"
-	mountPoints          = []string{"/", "/etc/hosts"}
-	hostMountFilePath    = "/host/mounts" // hostMountFilePath is the file path mounted inside container
+	defaultMountFilePath     = "/proc/self/mounts"
+	mountPoints              = []string{"/", "/etc/hosts"}
+	hostMountFilePath        = "/host/mounts"           // hostMountFilePath is the file path mounted inside container
+	oSDiskExcludeFilterName  = "os disk exclude filter" // filter name
+	oSDiskExcludeFilterState = defaultEnabled           // filter state
 )
 
-// oSDiskExludeFilterRegister contains registration process of oSDiskExludeFilter
-var oSDiskExludeFilterRegister = func() {
+// oSDiskExcludeFilterRegister contains registration process of oSDiskExcludeFilter
+var oSDiskExcludeFilterRegister = func() {
 	ctrl := <-controller.ControllerBroadcastChannel
 	if ctrl == nil {
 		return
 	}
+	if ctrl.NDMConfig != nil {
+		for _, filterConfig := range ctrl.NDMConfig.FilterConfigs {
+			if filterConfig.Key == osDiskExcludeFilterKey {
+				oSDiskExcludeFilterName = filterConfig.Name
+				oSDiskExcludeFilterState = util.CheckTruthy(filterConfig.State)
+				break
+			}
+		}
+	}
 	var fi controller.FilterInterface = newNonOsDiskFilter(ctrl)
-	newPrgisterFilter := &registerFilter{
-		name:       oSDiskExludeFilterName,
-		state:      oSDiskExludeFilterState,
+	newRegisterFilter := &registerFilter{
+		name:       oSDiskExcludeFilterName,
+		state:      oSDiskExcludeFilterState,
 		fi:         fi,
 		controller: ctrl,
 	}
-	newPrgisterFilter.register()
+	newRegisterFilter.register()
 }
 
-// oSDiskExludeFilter controller and path of os disk
-type oSDiskExludeFilter struct {
+// oSDiskExcludeFilter controller and path of os disk
+type oSDiskExcludeFilter struct {
 	controller     *controller.Controller
 	excludeDevPath string
 }
 
 // newOsDiskFilter returns new pointer osDiskFilter
-func newNonOsDiskFilter(ctrl *controller.Controller) *oSDiskExludeFilter {
-	return &oSDiskExludeFilter{
+func newNonOsDiskFilter(ctrl *controller.Controller) *oSDiskExcludeFilter {
+	return &oSDiskExcludeFilter{
 		controller: ctrl,
 	}
 }
 
 // Start set os disk devPath in nonOsDiskFilter pointer
-func (odf *oSDiskExludeFilter) Start() {
+func (odf *oSDiskExcludeFilter) Start() {
 	/*
 		process1 check for mentioned mountpoint in host's /proc/1/mounts file
 		host's /proc/1/mounts file mounted inside container it checks for
@@ -92,11 +102,11 @@ func (odf *oSDiskExludeFilter) Start() {
 }
 
 // Include contains nothing by default it returns false
-func (odf *oSDiskExludeFilter) Include(d *controller.DiskInfo) bool {
-	return false
+func (odf *oSDiskExcludeFilter) Include(d *controller.DiskInfo) bool {
+	return true
 }
 
 // Exclude returns true if disk devpath matches with excludeDevPath
-func (odf *oSDiskExludeFilter) Exclude(d *controller.DiskInfo) bool {
+func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
 	return odf.excludeDevPath != d.Path
 }

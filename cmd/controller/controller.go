@@ -44,12 +44,13 @@ var ControllerBroadcastChannel = make(chan *Controller)
 
 // Controller is the controller implementation for do resources
 type Controller struct {
-	HostName      string               // HostName is host name in which disk is attached
-	KubeClientset kubernetes.Interface // KubeClientset is standard kubernetes clientset
-	Clientset     clientset.Interface  // Clientset is clientset for our own API group
-	Mutex         *sync.Mutex          // Mutex is used to lock and unlock Controller
-	Filters       []*Filter            // Filters are the registered filters like os disk filter
-	Probes        []*Probe             // Probes are the registered probes like udev/smart
+	HostName      string                 // HostName is host name in which disk is attached
+	KubeClientset kubernetes.Interface   // KubeClientset is standard kubernetes clientset
+	Clientset     clientset.Interface    // Clientset is clientset for our own API group
+	NDMConfig     *NodeDiskManagerConfig // NDMConfig contains custom config for ndm
+	Mutex         *sync.Mutex            // Mutex is used to lock and unlock Controller
+	Filters       []*Filter              // Filters are the registered filters like os disk filter
+	Probes        []*Probe               // Probes are the registered probes like udev/smart
 }
 
 // NewController returns a controller pointer for any error case it will return nil
@@ -68,6 +69,7 @@ func NewController(kubeconfig string) (*Controller, error) {
 	if err := controller.setNodeName(); err != nil {
 		return nil, err
 	}
+	controller.SetNDMConfig()
 	controller.Filters = make([]*Filter, 0)
 	controller.Probes = make([]*Probe, 0)
 	controller.Mutex = &sync.Mutex{}
@@ -135,7 +137,7 @@ func (c *Controller) Start() {
 }
 
 // Broadcast Broadcasts controller pointer. We are using one single pointer of controller
-// in our application. In that controller poniter each probe and filter registeres themselves
+// in our application. In that controller pointer each probe and filter registers themselves
 // and later we can list no of active probe using controller object.
 func (c *Controller) Broadcast() {
 	// sending controller object to each probe. Each probe can get a copy of
