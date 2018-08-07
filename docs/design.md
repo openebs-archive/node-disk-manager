@@ -16,7 +16,7 @@ This design builds on top of the several design proposals(at various stages of i
 ## Goals
 
 The primary goal of this design however is to allow CAS Storage Operators (on Custom Controllers) to:
-- access disks attached to the node as Kubernetes Objects (or Custom Resources)
+- access disks attached to the node as Kubernetes Custom Resources
 - access disk properties in a generic way by abstracting the vendor specific implementations
 - allow building predictive error handling capabilities by hooking into management interfaces that publish disk events
 - allow creation of disk pools (StoragePool) to augment the capacity or performance
@@ -44,12 +44,12 @@ The primary blocker for using local PV by Storage Pods is the hard-requirement o
 
 This proposal introduces a new component called _*node-disk-manager*_ that will automate the management of the disks attached to the node. There will be new Custom Resources added to Kubernetes to represent the underlying storage infrastructure like - Disks and StoragePools and their associated Claims - DiskClaim, StoragePoolClaim. 
 
-The disks could be of any type ranging from local disks (ssds or spinning media), NVMe/PCI based or disks coming from external SAN/NAS. A new Kubernetes Custom Resource called - Disk Object will be added that will represent the disks attached to the node.
+The disks could be of any type ranging from local disks (ssds or spinning media), NVMe/PCI based or disks coming from external SAN/NAS. A new Kubernetes Custom Resource called - Disk CR will be added that will represent the disks attached to the node.
 
-The node-disk-manager can also help in creating Storage Pools using one or more Disk Objects. The Storage Pools can be of varying types starting from a plain ext4 mounts, lvm, zfs to ceph, glusterfs, cstor pools. 
+The node-disk-manager can also help in creating Storage Pools using one or more Disk CRs. The Storage Pools can be of varying types starting from a plain ext4 mounts, lvm, zfs to ceph, glusterfs, cstor pools. 
 
 node-disk-manager is intended to:
-- be extensible in terms of adding support for different kinds of Disk Objects and Storage Pools. 
+- be extensible in terms of adding support for different kinds of Disk CRs. 
 - act as a bridge to augment the functionality already provided by the kubelet or other infrastructure containers running on the node. For example, node-bot will have to interface with node-problem-detector or heapster etc., 
 - be considered as a Infrastructure Pod (or a daemonset) that runs on each of the Kubernetes node or the functionality could be embedded into other Infrastructure Pods, similar to node-problem-detector. 
 
@@ -88,11 +88,11 @@ The workflow with _*node-disk-manager*_ would be to integrate into current appro
 
 - node-disk-manager can be configured to run on all node or select nodes (designated as Storage Nodes) 
 
-- The operator that installs the node-disk-manager will also insert/create CRDs for Disk Object and StoragePool.
+- The operator that installs the node-disk-manager will also insert/create CRDs for Disk and DiskClaim CRDs
 
-- On start, the node-disk-manager will discover the disks attached to the node where it is running and will create Disk Object CRs if they were not already present. 
+- On start, the node-disk-manager will discover the disks attached to the node where it is running and will create Disk CRs if they were not already present. 
 
-- A Disk object CR will contain information like:
+- A Disk CR will contain information like:
   * type
   * resource identifier
   * physical location - node, rack, zone
@@ -113,15 +113,15 @@ The workflow with _*node-disk-manager*_ would be to integrate into current appro
     path: /dev/sdb
   ```
 
-- node-disk-manager can also be made to auto-provision disks by using a DiskClaim Object similar to (PVC that uses dynamic provisioners to create a PV). As an example, if the node-disk-manager is running on a Kubernetes Cluster in AWS, it can initiate a request to the underlying AWS to create a EBS and attach to the node. This functionality will be access controlled.
+- node-disk-manager can also be made to auto-provision disks by using a DiskClaim CR similar to (PVC that uses dynamic provisioners to create a PV). As an example, if the node-disk-manager is running on a Kubernetes Cluster in AWS, it can initiate a request to the underlying AWS to create a EBS and attach to the node. This functionality will be access controlled.
 
 - The User or storage-operators( like OpenEBS provisioner) can use the kube-api/kubectl (like `kubectl get disks`) to get information on all the disks in the Cluster.
 
-- The node-disk-manager, can be used to create StoragePools by taking one or more Disk Objects and putting a storage layer on top of it like ext4, lvm, zfs or spin-up containers like OpenEBS cStor Pool or Ceph OSD (Confirm this), etc., The StoragePool creation can be triggered via an StoragePoolClaim that the user can feed in via kubectl. Examples:
+- The node-disk-manager, can be used to create StoragePools by taking one or more Disk CRs and putting a storage layer on top of it like ext4, lvm, zfs or spin-up containers like OpenEBS cStor Pool or Ceph OSD (Confirm this), etc., The StoragePool creation can be triggered via an StoragePoolClaim that the user can feed in via kubectl. Examples:
   * StoragePoolClaim can request for formatting a disk with ext4 and making it available at a certain path. The *ndm* will make use of Kubernetes [Mount Propagation](https://kubernetes.io/docs/concepts/storage/volumes/#mount-propagation) feature to expose the path on to the host. 
   * StoragePoolClaim can request for a creation of a cStorPool - which is achieved by creating a cstor pod on top of the disks. The disks to be used by the cstor pod will be passed as configuration parameters, while mounting only "/dev" into cstor pod. To create a cstor pod, the node-disk-manager can call the api of openebs-provisioner. 
 
-- node-disk-manager will monitor for faults on the Disk Objects and send notification to the subscribed listeners (say the openebs-provisioner if the fault was detected on the disk object using by OpenEBS cStor Pool). The monitoring includes information like:
+- node-disk-manager will monitor for faults on the Disk CRs and send notification to the subscribed listeners (say the openebs-provisioner if the fault was detected on the disk using by OpenEBS cStor Pool). The monitoring includes information like:
   * gathering smart statistics of the disk
   * probing for mode-sense data on disks or listening for events generated by the underlying disk (could use integration into node-problem-detector here). 
 
@@ -136,7 +136,7 @@ Following CRDs will be installed:
 - [Disk](../crd/disk-crd.yaml)
 - [DiskClaim](../crd/diskclaim-crd.yaml)
 
-_*node-disk-manager(ndm)*_ will be deployed as DaemonSet on all the storage nodes. The _**ndm**_ will discover all the disks attached to the node where it is running and will create corresponding Disk objects. `kubectl get disks` can be used to list the Disk objects. For example, if two of the nodes in the GKE Cluster had a 25G GPD attached to them, the output for `kubectl get disks -o yaml` is as follows: 
+_*node-disk-manager(ndm)*_ will be deployed as DaemonSet on all the storage nodes. The _**ndm**_ will discover all the disks attached to the node where it is running and will create corresponding Disk CRs. `kubectl get disks` can be used to list the Disk CRs. For example, if two of the nodes in the GKE Cluster had a 25G GPD attached to them, the output for `kubectl get disks -o yaml` is as follows: 
 ```
 apiVersion: v1
 items:

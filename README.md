@@ -35,7 +35,7 @@ with one of the below directions:
 
 * Setup build tools:
   * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
-  * `make bootstrap` installs the required go tools
+  * `make bootstrap` installs the required Go tools
 
 * run `make` in the top directory. It will:
   * Build the binary.
@@ -46,15 +46,15 @@ with one of the below directions:
   * `make integration-test` will launch minikube to run the tests. Make sure that minikube can be executed via `sudo -E minikube start --vm-driver=none`
 
 ## Push Image
-By default travis pushes the docker image to `openebs/node-disk-manager`, with ci as well as commit tags. 
-You can push to your custom registery and modify the ndm-operator.yaml file for your testing. 
+By default travis pushes the docker image to `openebs/node-disk-manager`, with *ci* as well as commit tags. 
+You can push to your custom registry and modify the ndm-operator.yaml file for your testing. 
 
 # License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager?ref=badge_large)
 
 # Inspiration
 * Thanks to [Daniel](https://github.com/dswarbrick) for setting up the go-based [SMART](https://github.com/dswarbrick/smart) library.
-* Thanks to [Humble](https://github.com/humblec), [Jan](https://github.com/jsafrane) and other from [Kubernetes Storage Community](https://github.com/kubernetes-incubator/external-storage/issues/736) for reviewing the approach and evaulating the usecase. 
+* Thanks to [Humble](https://github.com/humblec), [Jan](https://github.com/jsafrane) and other from the [Kubernetes Storage Community](https://github.com/kubernetes-incubator/external-storage/issues/736) for reviewing the approach and evaulating the usecase. 
 
 
 
