@@ -14,7 +14,7 @@ While PVs are well suited for stateful workloads, the Disk objects are aimed tow
 - Predict failures on the Disks, to help with taking preventive actions
 - Allow for dynamically attaching/detaching Disks to a Storage Pod, without requiring a restart
 
-The design and implementation are currently in progress. The design is covered under this [design proposal PR](./design.md)
+The design and implementation are currently in progress. The design is covered under this [design proposal PR](./docs/design.md)
 
 
 # Usage
