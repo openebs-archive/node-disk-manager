@@ -90,7 +90,7 @@ deps: header
 
 docker: Dockerfile
 	@echo "--> Building docker image..."
-	@docker build -t "$(IMAGE)" --build-arg ARCH=${ARCH} .
+	@sudo docker build -t "$(IMAGE)" --build-arg ARCH=${ARCH} .
 	@echo "--> Build docker image: $(IMAGE)"
 	@echo
 
