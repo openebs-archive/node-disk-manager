@@ -1,0 +1,14 @@
+apiVersion: openebs.io/v1
+kind: Disk
+metadata:
+  name: disk-c9279540-a74a-49e2-833c-e46edd3db74c
+  labels:
+    "kubernetes.io/hostname": "gke-openebs-kmova-default-pool-044afcb8-lxh4"
+spec:
+  path: /dev/sdb
+  capacity: 
+    storage : 25G
+  details:
+    model: "PersistentDisk"
+    serial: "disk-node-lxh4"
+    vendor: "Google"
