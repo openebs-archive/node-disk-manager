@@ -106,13 +106,24 @@ The workflow with _*node-disk-manager*_ would be to integrate into current appro
   status:
     state: Active
   spec:
-    path: /dev/sdt
     capacity:
-      storage : 26214400
+      logicalSectorSize: 512
+      storage: 53687091200
     details:
-      model: "PersistentDisk"
-      serial: "disk-node-bmc0"
-      vendor: "Google"
+      firmwareRevision: '1   '
+      model: PersistentDisk
+      serial: disk-2
+      spcVersion: "6"
+      vendor: Google
+    devlinks:
+    - kind: by-id
+      links:
+      - /dev/disk/by-id/scsi-0Google_PersistentDisk_disk-2
+      - /dev/disk/by-id/google-disk-2
+    - kind: by-path
+      links:
+      - /dev/disk/by-path/virtio-pci-0000:00:03.0-scsi-0:0:2:0
+    path: /dev/sdb
   ```
 
 - node-disk-manager can also be made to auto-provision disks by using a DiskClaim CR similar to (PVC that uses dynamic provisioners to create a PV). As an example, if the node-disk-manager is running on a Kubernetes Cluster in AWS, it can initiate a request to the underlying AWS to create a EBS and attach to the node. This functionality will be access controlled.
@@ -135,61 +146,84 @@ Challenges:
 ### Installation/Setup
 
 Following CRDs will be installed:
-- [Disk](../crd/disk-crd.yaml)
-- [DiskClaim](../crd/diskclaim-crd.yaml)
+- [Disk](../samples/crd-disk.yaml)
+- [DiskClaim](../samples/crd-diskclaim.yaml)
 
 _*node-disk-manager(ndm)*_ will be deployed as DaemonSet on all the storage nodes. The _**ndm**_ will discover all the disks attached to the node where it is running and will create corresponding Disk CRs. `kubectl get disks` can be used to list the Disk CRs. For example, if two of the nodes in the GKE Cluster had a 25G GPD attached to them, the output for `kubectl get disks -o yaml` is as follows: 
 ```
 apiVersion: v1
 items:
-- apiVersion: openebs.io/v1
+- apiVersion: openebs.io/v1alpha1
   kind: Disk
   metadata:
-    annotations:
-      kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"openebs.io/v1","kind":"Disk","metadata":{"annotations":{},"labels":{"kubernetes.io/hostname":"gke-openebs-kmova-default-pool-044afcb8-bmc0"},"name":"disk-3194ccbe-268f-11e8-b467-0ed5f89f718b","namespace":""},"spec":{"capacity":{"storage":"25G"},"details":{"model":"PersistentDisk","serial":"disk-node-bmc0","vendor":"Google"},"path":"/dev/sdb"}}
     clusterName: ""
-    creationTimestamp: 2018-03-13T07:24:07Z
+    creationTimestamp: 2018-08-08T11:17:32Z
     labels:
-      kubernetes.io/hostname: gke-openebs-kmova-default-pool-044afcb8-bmc0
-    name: disk-3194ccbe-268f-11e8-b467-0ed5f89f718b
+      kubernetes.io/hostname: gke-kmova-helm-default-pool-e270276c-0gf7
+    name: disk-66a74896b61c60dcdaf7c7a76fde0ebb
     namespace: ""
-    resourceVersion: "12616"
-    selfLink: /apis/openebs.io/v1/disk-3194ccbe-268f-11e8-b467-0ed5f89f718b
-    uid: 841581eb-268f-11e8-9de2-42010aa00050
+    resourceVersion: "26389"
+    selfLink: /apis/openebs.io/v1alpha1/disk-66a74896b61c60dcdaf7c7a76fde0ebb
+    uid: a4c81f50-9afc-11e8-acb0-42010a800034
   spec:
     capacity:
-      storage: 25G
+      logicalSectorSize: 512
+      storage: 53687091200
     details:
+      firmwareRevision: '1   '
       model: PersistentDisk
-      serial: disk-node-bmc0
+      serial: disk-2
+      spcVersion: "6"
       vendor: Google
+    devlinks:
+    - kind: by-id
+      links:
+      - /dev/disk/by-id/scsi-0Google_PersistentDisk_disk-2
+      - /dev/disk/by-id/google-disk-2
+    - kind: by-path
+      links:
+      - /dev/disk/by-path/virtio-pci-0000:00:03.0-scsi-0:0:2:0
     path: /dev/sdb
-- apiVersion: openebs.io/v1
+  status:
+    state: Active
+- apiVersion: openebs.io/v1alpha1
   kind: Disk
   metadata:
-    annotations:
-      kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"openebs.io/v1","kind":"Disk","metadata":{"annotations":{},"labels":{"kubernetes.io/hostname":"gke-openebs-kmova-default-pool-044afcb8-lxh4"},"name":"disk-c9279540-a74a-49e2-833c-e46edd3db74c","namespace":""},"spec":{"capacity":{"storage":"25G"},"details":{"model":"PersistentDisk","serial":"disk-node-lxh4","vendor":"Google"},"path":"/dev/sdb"}}
     clusterName: ""
-    creationTimestamp: 2018-03-13T07:24:16Z
+    creationTimestamp: 2018-08-08T11:21:26Z
     labels:
-      kubernetes.io/hostname: gke-openebs-kmova-default-pool-044afcb8-lxh4
-    name: disk-c9279540-a74a-49e2-833c-e46edd3db74c
+      kubernetes.io/hostname: gke-kmova-helm-default-pool-e270276c-8x4r
+    name: disk-b34b3f97840872da9aa0bac1edc9578a
     namespace: ""
-    resourceVersion: "12625"
-    selfLink: /apis/openebs.io/v1/disk-c9279540-a74a-49e2-833c-e46edd3db74c
-    uid: 897b7729-268f-11e8-9de2-42010aa00050
+    resourceVersion: "26716"
+    selfLink: /apis/openebs.io/v1alpha1/disk-b34b3f97840872da9aa0bac1edc9578a
+    uid: 3052b3d2-9afd-11e8-acb0-42010a800034
   spec:
     capacity:
-      storage: 25G
+      logicalSectorSize: 0
+      storage: 0
     details:
+      firmwareRevision: ""
       model: PersistentDisk
-      serial: disk-node-lxh4
+      serial: disk-3
+      spcVersion: ""
       vendor: Google
+    devlinks:
+    - kind: by-id
+      links:
+      - /dev/disk/by-id/scsi-0Google_PersistentDisk_disk-3
+      - /dev/disk/by-id/google-disk-3
+    - kind: by-path
+      links:
+      - /dev/disk/by-path/virtio-pci-0000:00:03.0-scsi-0:0:2:0
     path: /dev/sdb
+  status:
+    state: Active
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
 ```
-
 
 
 ## Feature Implementation Plan
