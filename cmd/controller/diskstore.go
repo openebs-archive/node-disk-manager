@@ -149,3 +149,20 @@ func (c *Controller) PushDiskResource(oldDr *apis.Disk, diskDetails *DiskInfo) {
 	}
 	c.CreateDisk(diskApi)
 }
+
+// MarkDiskStatusToUnknown makes state of all resources owned by node unknown
+// This will call as a cleanup process before shutting down.
+func (c *Controller) MarkDiskStatusToUnknown() {
+	listDR, err := c.ListDiskResource()
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+	for _, item := range listDR.Items {
+		drCopy := item.DeepCopy()
+		drCopy.Status.State = NDMUnknown
+		if dr, err := c.Clientset.OpenebsV1alpha1().Disks().Update(drCopy); err == nil {
+			glog.Error("updated disk object : ", dr.ObjectMeta.Name)
+		}
+	}
+}
