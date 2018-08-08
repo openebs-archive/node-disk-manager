@@ -12,7 +12,7 @@ metadata:
 data:
   # node-disk-manager-config contains config of available probes and filters.
   # Probes and Filters will initialize with default values if config for that
-  # filter or probe not present in configmap
+  # filter or probe are not present in configmap
 
   # udev-probe is default or primary probe it should be enabled to run ndm
   # filterconfigs contails configs of filters. To provide a group of include
@@ -42,7 +42,7 @@ data:
           "name": "vendor filter",
           "state": "true",
           "include":"",
-          "exclude":""
+          "exclude":"CLOUDBYT,OpenEBS"
         }
       ]
     }
