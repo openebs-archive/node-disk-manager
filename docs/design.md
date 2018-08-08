@@ -50,7 +50,7 @@ The node-disk-manager can also help in creating Storage Pools using one or more 
 
 node-disk-manager is intended to:
 - be extensible in terms of adding support for different kinds of Disk CRs. 
-- act as a bridge to augment the functionality already provided by the kubelet or other infrastructure containers running on the node. For example, node-bot will have to interface with node-problem-detector or heapster etc., 
+- act as a bridge to augment the functionality already provided by the kubelet or other infrastructure containers running on the node. For example, *ndm* will have to interface with node-problem-detector or heapster etc., 
 - be considered as a Infrastructure Pod (or a daemonset) that runs on each of the Kubernetes node or the functionality could be embedded into other Infrastructure Pods, similar to node-problem-detector. 
 
 
@@ -59,7 +59,7 @@ node-disk-manager is intended to:
 ### Using Local PV
 
 Within the Kubernetes, the closest construct that is available to represent a disk is a Local Persistent Volume. A typical flow for using the Local PVs by the Storage Pods could be as follows:
-- Local PV Provisioner is used to create Local PVs representing the disks. The disks that have be used by the Local PV Provisioner have to be mounted into a directory (like /mnt/localdisks) and this location should be passed using a Config Map to the Local PV Provisioner. 
+- Local PV Provisioner is used to create Local PVs representing the disks. The disks that have been used by the Local PV Provisioner have to be mounted into a directory (like /mnt/localdisks) and this location should be passed using a Config Map to the Local PV Provisioner. 
 
 - Modify/extend the provisioner to add the following additional information:
   * PVs will be associated with node,rack information that will be obtained by the labels in the nodes. (TODO Kiran - Find the information on how nodes are associated with rack/zone information)
@@ -97,20 +97,22 @@ The workflow with _*node-disk-manager*_ would be to integrate into current appro
   * resource identifier
   * physical location - node, rack, zone
   ```
-  apiVersion: openebs.io/v1
+  apiVersion: openebs.io/v1alpha1
   kind: Disk
   metadata:
+    name: disk-3d8b1efad969208d6bf5971f2c34dd0c
     labels:
-      kubernetes.io/hostname: gke-openebs-kmova-default-pool-044afcb8-bmc0
-    name: disk-3194ccbe-268f-11e8-b467-0ed5f89f718b
+      "kubernetes.io/hostname": "gke-openebs-user-default-pool-044afcb8-bmc0"
+  status:
+    state: Active
   spec:
+    path: /dev/sdt
     capacity:
-      storage: 25G
+      storage : 26214400
     details:
-      model: PersistentDisk
-      serial: disk-node-bmc0
-      vendor: Google
-    path: /dev/sdb
+      model: "PersistentDisk"
+      serial: "disk-node-bmc0"
+      vendor: "Google"
   ```
 
 - node-disk-manager can also be made to auto-provision disks by using a DiskClaim CR similar to (PVC that uses dynamic provisioners to create a PV). As an example, if the node-disk-manager is running on a Kubernetes Cluster in AWS, it can initiate a request to the underlying AWS to create a EBS and attach to the node. This functionality will be access controlled.
