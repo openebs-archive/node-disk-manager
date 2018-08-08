@@ -46,7 +46,7 @@ with one of the below directions:
   * `make integration-test` will launch minikube to run the tests. Make sure that minikube can be executed via `sudo -E minikube start --vm-driver=none`
 
 ## Push Image
-By default travis pushes the docker image to `openebs/node-disk-manager`, with *ci* as well as commit tags. 
+By default travis pushes the docker image to `openebs/node-disk-manager-amd64`, with *ci* as well as commit tags. 
 You can push to your custom registry and modify the ndm-operator.yaml file for your testing. 
 
 # License
