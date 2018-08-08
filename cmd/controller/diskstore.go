@@ -19,6 +19,7 @@ package controller
 import (
 	"github.com/golang/glog"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -45,7 +46,7 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	 * updation failure can be due to the fact that old node may have set the status
 	 * to Inactive after updateDr has done the Get call, as resource version will
 	 * change with each update, so we have to try again. Also if other node tries to
-	 * update the resource version after updation is succssful here, the update call
+	 * update the resource version after updation is successful here, the update call
 	 * from that node will fail.
 	 */
 	glog.Info("disk status updated by other node, changing the ownership to this node : ", err)
@@ -100,25 +101,68 @@ func (c *Controller) DeleteDisk(name string) {
 
 // ListDiskResource queries the etcd for the devices for the host/node
 // and returns list of disk resources.
-func (c *Controller) listDiskResource() (*apis.DiskList, error) {
+func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
 	label := NDMHostKey + "=" + c.HostName
 	filter := metav1.ListOptions{LabelSelector: label}
 	listDR, err := c.Clientset.OpenebsV1alpha1().Disks().List(filter)
 	return listDR, err
 }
 
-// getExistingResource returns the existing disk resource if it is
+// GetExistingResource returns the existing disk resource if it is
 // present in etcd if not it returns nil pointer.
-func (c *Controller) getExistingResource(uuid string) *apis.Disk {
-	listDR, err := c.listDiskResource()
-	if err != nil {
-		glog.Error(err)
-		return nil
-	}
-	for _, item := range listDR.Items {
+func (c *Controller) GetExistingResource(listDr *apis.DiskList, uuid string) *apis.Disk {
+	for _, item := range listDr.Items {
 		if uuid == item.ObjectMeta.Name {
 			return &item
 		}
 	}
 	return nil
+}
+
+// DeactivateStaleDiskResource deactivates the stale entry from etcd.
+// It gets list of resources which are present in system and queries etcd to get
+// list of active resources. One active resource which is present in etcd not in
+// system that will be marked as inactive.
+func (c *Controller) DeactivateStaleDiskResource(devices []string) {
+	listDR, err := c.ListDiskResource()
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+	for _, item := range listDR.Items {
+		if !util.Contains(devices, item.ObjectMeta.Name) {
+			c.DeactivateDisk(item)
+		}
+	}
+}
+
+// PushDiskResource is a utility function which checks old disk resource
+// present or not. If it presents in etcd then it updates the resource
+// else it creates one new disk resource in etcd
+func (c *Controller) PushDiskResource(oldDr *apis.Disk, diskDetails *DiskInfo) {
+	diskDetails.HostName = c.HostName
+	diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
+	diskApi := diskDetails.ToDisk()
+	if oldDr != nil {
+		c.UpdateDisk(diskApi, oldDr)
+		return
+	}
+	c.CreateDisk(diskApi)
+}
+
+// MarkDiskStatusToUnknown makes state of all resources owned by node unknown
+// This will call as a cleanup process before shutting down.
+func (c *Controller) MarkDiskStatusToUnknown() {
+	listDR, err := c.ListDiskResource()
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+	for _, item := range listDR.Items {
+		drCopy := item.DeepCopy()
+		drCopy.Status.State = NDMUnknown
+		if dr, err := c.Clientset.OpenebsV1alpha1().Disks().Update(drCopy); err == nil {
+			glog.Error("updated disk object : ", dr.ObjectMeta.Name)
+		}
+	}
 }

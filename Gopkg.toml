@@ -55,3 +55,10 @@ required = [
 [[constraint]]
   name = "github.com/prometheus/client_golang"
   branch = "master"
+[[constraint]]
+  name = "github.com/openebs/CITF"
+  branch = "client-go-6.0.0_api-release-1.9"
+
+[[override]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"

@@ -3,7 +3,7 @@ NODE_DISK_MANAGER=ndm
 
 # Build the node-disk-manager image.
 
-build: clean vet fmt ndm version docker
+build: clean vet fmt shellcheck ndm version docker
 
 NODE_DISK_MANAGER?=ndm
 
@@ -30,6 +30,8 @@ EXTERNAL_TOOLS=\
 	gopkg.in/alecthomas/gometalinter.v1
 
 vet:
+# composite flag ignores struct literals that do not use the field-keyed syntax.
+Flag: -composites
 	go list ./... | grep -v "./vendor/*" | xargs go vet
 
 fmt:
@@ -39,6 +41,13 @@ fmt:
 golint:
 	@gometalinter.v1 --install
 	@gometalinter.v1 --vendor --deadline=600s ./...
+
+# shellcheck target for checking shell scripts linting
+shellcheck: getshellcheck
+	find . -type f -name "*.sh" | grep -v "./vendor/*" | xargs /tmp/shellcheck-latest/shellcheck
+
+getshellcheck:
+	wget -c 'https://goo.gl/ZzKHFv' -O - | tar -xvJ -C /tmp/
 
 version:
 	@echo $(VERSION)

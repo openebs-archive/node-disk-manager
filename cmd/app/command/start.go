@@ -18,8 +18,16 @@ package command
 
 import (
 	goflag "flag"
+	"fmt"
+	"os"
 	"time"
 
+<<<<<<< HEAD
+=======
+	"github.com/openebs/node-disk-manager/cmd/controller"
+	"github.com/openebs/node-disk-manager/cmd/filter"
+	"github.com/openebs/node-disk-manager/cmd/probe"
+>>>>>>> 6ec98e31228a076384abbe206d999612ecfd93df
 	"github.com/openebs/node-disk-manager/pkg/metrics"
 	"github.com/openebs/node-disk-manager/pkg/server"
 	"github.com/spf13/cobra"
@@ -38,17 +46,26 @@ func NewCmdStart() *cobra.Command {
 		Short: "Node disk controller",
 		Long:  ` watches for ndm custom resources via "ndm start" command `,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctrl, err := controller.NewController(options.kubeconfig)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			// Broadcast starts broadcasting controller pointer. Using this
+			// each probe and filter registers themselves.
+			ctrl.Broadcast()
+			// Start starts registering of filters present in RegisteredFilters
+			filter.Start(filter.RegisteredFilters)
+			// Start starts registering of probes present in RegisteredProbes
+			probe.Start(probe.RegisteredProbes)
 			port := cmd.Flag("port").Value.String()
 			server.ListenPort = port
 			endpointpath := cmd.Flag("metricspath").Value.String()
 			server.MetricsPath = endpointpath
 			metrics.StartingTime = time.Now()
 			// Start HTTP server for /metrics endpoint
-			server.StartHTTPServer()
-			//go server.StartHTTPServer()
-			// Start() invoke all init() of probe package in which all probes are registered themselves.
-			//probe.Start()
-			//controller.Start(options.kubeconfig)
+			go server.StartHttpServer()
+			ctrl.Start()
 		},
 	}
 

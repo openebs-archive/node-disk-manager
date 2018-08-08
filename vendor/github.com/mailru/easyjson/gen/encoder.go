@@ -137,7 +137,7 @@ func (g *Generator) genTypeEncoderNoCheck(t reflect.Type, in string, tags fieldT
 		iVar := g.uniqueVarName()
 		vVar := g.uniqueVarName()
 
-		if t.Elem().Kind() == reflect.Uint8 {
+		if t.Elem().Kind() == reflect.Uint8 && elem.Name() == "uint8" {
 			fmt.Fprintln(g.out, ws+"out.Base64Bytes("+in+")")
 		} else {
 			if !assumeNonEmpty {
@@ -166,7 +166,7 @@ func (g *Generator) genTypeEncoderNoCheck(t reflect.Type, in string, tags fieldT
 		elem := t.Elem()
 		iVar := g.uniqueVarName()
 
-		if t.Elem().Kind() == reflect.Uint8 {
+		if t.Elem().Kind() == reflect.Uint8 && elem.Name() == "uint8" {
 			fmt.Fprintln(g.out, ws+"out.Base64Bytes("+in+"[:])")
 		} else {
 			fmt.Fprintln(g.out, ws+"out.RawByte('[')")
@@ -175,7 +175,7 @@ func (g *Generator) genTypeEncoderNoCheck(t reflect.Type, in string, tags fieldT
 			fmt.Fprintln(g.out, ws+"    out.RawByte(',')")
 			fmt.Fprintln(g.out, ws+"  }")
 
-			if err := g.genTypeEncoder(elem, in+"["+iVar+"]", tags, indent+1, false); err != nil {
+			if err := g.genTypeEncoder(elem, "("+in+")["+iVar+"]", tags, indent+1, false); err != nil {
 				return err
 			}
 

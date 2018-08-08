@@ -42,32 +42,38 @@ func newUdevDevice(ptr *C.struct_udev_device) (*UdevDevice, error) {
 	return ud, nil
 }
 
-// UdevDeviceGetPropertyValue retrieves the value of a device property
-func (ud *UdevDevice) UdevDeviceGetPropertyValue(key string) string {
+// GetPropertyValue retrieves the value of a device property
+func (ud *UdevDevice) GetPropertyValue(key string) string {
 	k := C.CString(key)
 	defer freeCharPtr(k)
 	return C.GoString(C.udev_device_get_property_value(ud.udptr, k))
 }
 
-// UdevDeviceGetSysattrValue retrieves the content of a sys attribute file
+// GetSysattrValue retrieves the content of a sys attribute file
 // returns an empty string if there is no sys attribute value.
-// The retrieved value is cached in the device.
-// Repeated calls will return the same value and not open the attribute again.
-func (ud *UdevDevice) UdevDeviceGetSysattrValue(sysattr string) string {
+// The retrieved value is cached in the device. Repeated calls
+// will return the same value and not open the attribute again.
+func (ud *UdevDevice) GetSysattrValue(sysattr string) string {
 	k := C.CString(sysattr)
 	defer freeCharPtr(k)
 	return C.GoString(C.udev_device_get_sysattr_value(ud.udptr, k))
 }
 
-// UdevDeviceGetDevtype returns the devtype string of the udev device.
-func (ud *UdevDevice) UdevDeviceGetDevtype() string {
+// GetDevtype returns the devtype string of the udev device.
+func (ud *UdevDevice) GetDevtype() string {
 	return C.GoString(C.udev_device_get_devtype(ud.udptr))
 }
 
-// UdevDeviceGetDevnode returns the device node file name belonging to the udev device.
+// GetDevnode returns the device node file name belonging to the udev device.
 // The path is an absolute path, and starts with the device directory.
-func (ud *UdevDevice) UdevDeviceGetDevnode() string {
+func (ud *UdevDevice) GetDevnode() string {
 	return C.GoString(C.udev_device_get_devnode(ud.udptr))
+}
+
+// GetAction returns device action when it is monitored.
+// It can be add,remove,online,offline,change
+func (ud *UdevDevice) GetAction() string {
+	return C.GoString(C.udev_device_get_action(ud.udptr))
 }
 
 // UdevDeviceUnref frees udev_device structure.

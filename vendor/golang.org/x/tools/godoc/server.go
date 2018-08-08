@@ -88,6 +88,14 @@ func (h *handlerServer) GetPageInfo(abspath, relpath string, mode PageInfoMode, 
 		return ioutil.NopCloser(bytes.NewReader(data)), nil
 	}
 
+	// Make the syscall/js package always visible by default.
+	// It defaults to the host's GOOS/GOARCH, and golang.org's
+	// linux/amd64 means the wasm syscall/js package was blank.
+	// And you can't run godoc on js/wasm anyway, so host defaults
+	// don't make sense here.
+	if goos == "" && goarch == "" && relpath == "syscall/js" {
+		goos, goarch = "js", "wasm"
+	}
 	if goos != "" {
 		ctxt.GOOS = goos
 	}
@@ -321,11 +329,17 @@ func (h *handlerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	info.GoogleCN = googleCN(r)
+	var body []byte
+	if info.Dirname == "/src" {
+		body = applyTemplate(h.p.PackageRootHTML, "packageRootHTML", info)
+	} else {
+		body = applyTemplate(h.p.PackageHTML, "packageHTML", info)
+	}
 	h.p.ServePage(w, Page{
 		Title:    title,
 		Tabtitle: tabtitle,
 		Subtitle: subtitle,
-		Body:     applyTemplate(h.p.PackageHTML, "packageHTML", info),
+		Body:     body,
 		GoogleCN: info.GoogleCN,
 	})
 }

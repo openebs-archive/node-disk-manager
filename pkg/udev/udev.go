@@ -70,10 +70,18 @@ func (u *Udev) UnrefUdev() {
 }
 
 // NewDeviceFromSysPath identify the block device currently attached to the system
-// at gitven sysPath and returns that pointer of C udev_device structure. The
+// at given sysPath and returns that pointer of C udev_device structure. The
 // caller can query all(available) the disk properties using returned C udev_device structure.
 func (u *Udev) NewDeviceFromSysPath(sysPath string) (*UdevDevice, error) {
 	syspath := C.CString(sysPath)
 	defer freeCharPtr(syspath)
 	return newUdevDevice(C.udev_device_new_from_syspath(u.uptr, syspath))
+}
+
+// NewDeviceFromNetlink use newUdeviceMonitor() and use returns UdevMonitor pointer in success
+// The function returns nil on failure it can monitor udev or kernel as source.
+func (u *Udev) NewDeviceFromNetlink(source string) (*UdevMonitor, error) {
+	monitorSources := C.CString(source)
+	defer freeCharPtr(monitorSources)
+	return newUdeviceMonitor(C.udev_monitor_new_from_netlink(u.uptr, monitorSources))
 }

@@ -22,34 +22,44 @@ import (
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/cmd/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+	"github.com/openebs/node-disk-manager/pkg/udevevent"
+	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 const (
-	udevProbeName     = "udev probe"
-	udevProbeState    = defaultEnabled
 	udevProbePriority = 1
+	udevConfigKey     = "udev-probe"
 )
 
-// UdevEventMessageChannel channel used to send event message
-var UdevEventMessageChannel = make(chan controller.EventMessage)
+var (
+	udevProbeName  = "udev probe"
+	udevProbeState = defaultEnabled
+)
 
-func init() {
-	go func() {
-		ctrl := <-controller.ControllerBroadcastChannel
-		if ctrl == nil {
-			glog.Error("unable to configure", udevProbeName)
-			return
+// udevProbeRegister contains registration process of udev probe
+var udevProbeRegister = func() {
+	ctrl := <-controller.ControllerBroadcastChannel
+	if ctrl == nil {
+		glog.Error("unable to configure", udevProbeName)
+		return
+	}
+	if ctrl.NDMConfig != nil {
+		for _, probeConfig := range ctrl.NDMConfig.ProbeConfigs {
+			if probeConfig.Key == udevConfigKey {
+				udevProbeName = probeConfig.Name
+				udevProbeState = util.CheckTruthy(probeConfig.State)
+				break
+			}
 		}
-		var pi controller.ProbeInterface = newUdevProbe(ctrl)
-		newPrgisterProbe := &registerProbe{
-			priority:       udevProbePriority,
-			probeName:      udevProbeName,
-			probeState:     udevProbeState,
-			probeInterface: pi,
-			controller:     ctrl,
-		}
-		newPrgisterProbe.register()
-	}()
+	}
+	newRegisterProbe := &registerProbe{
+		priority:   udevProbePriority,
+		name:       udevProbeName,
+		state:      udevProbeState,
+		pi:         newUdevProbe(ctrl),
+		controller: ctrl,
+	}
+	newRegisterProbe.register()
 }
 
 // udevProbe contains require variables for scan , populate diskInfo and push
@@ -103,6 +113,7 @@ func newUdevProbeForFillDiskDetails(sysPath string) *udevProbe {
 // Start setup udev probe listener and make a single scan of system
 func (up *udevProbe) Start() {
 	go up.listen()
+	go udevevent.Monitor()
 	probeEvent := newUdevProbe(up.controller)
 	probeEvent.scan()
 }
@@ -114,16 +125,16 @@ func (up *udevProbe) scan() error {
 	}
 	diskInfo := make([]*controller.DiskInfo, 0)
 	disksUid := make([]string, 0)
-	err := up.udevEnumerate.UdevEnumerateAddMatchSubsystem(libudevwrapper.UDEV_SUBSYSTEM)
+	err := up.udevEnumerate.AddSubsystemFilter(libudevwrapper.UDEV_SUBSYSTEM)
 	if err != nil {
 		return err
 	}
-	err = up.udevEnumerate.UdevEnumerateScanDevices()
+	err = up.udevEnumerate.ScanDevices()
 	if err != nil {
 		return err
 	}
-	for l := up.udevEnumerate.UdevEnumerateGetListEntry(); l != nil; l = l.UdevListEntryGetNext() {
-		s := l.UdevListEntryGetName()
+	for l := up.udevEnumerate.ListEntry(); l != nil; l = l.GetNextEntry() {
+		s := l.GetName()
 		newUdevice, err := up.udev.NewDeviceFromSysPath(s)
 		if err != nil {
 			continue
@@ -143,7 +154,7 @@ func (up *udevProbe) scan() error {
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,
 	}
-	UdevEventMessageChannel <- eventDetails
+	udevevent.UdevEventMessageChannel <- eventDetails
 	return nil
 }
 
@@ -152,11 +163,13 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	udevDevice := newUdevProbeForFillDiskDetails(d.ProbeIdentifiers.UdevIdentifier)
 	udevDiskDetails := udevDevice.udevDevice.DiskInfoFromLibudev()
 	defer udevDevice.free()
+	d.ProbeIdentifiers.SmartIdentifier = udevDiskDetails.Path
 	d.Model = udevDiskDetails.Model
 	d.Path = udevDiskDetails.Path
 	d.Serial = udevDiskDetails.Serial
 	d.Vendor = udevDiskDetails.Vendor
-	d.Capacity = udevDiskDetails.Size
+	d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
+	d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
 }
 
 // listen listens for event message over UdevEventMessages channel
@@ -164,7 +177,7 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 // this function is blocking function better to use it in a routine.
 func (up *udevProbe) listen() {
 	if up.controller == nil {
-		glog.Error("unable to setup updev probe listener controller object is nil")
+		glog.Error("unable to setup udev probe listener controller object is nil")
 		return
 	}
 	probeEvent := ProbeEvent{
@@ -172,10 +185,12 @@ func (up *udevProbe) listen() {
 	}
 	glog.Info("starting udev probe listener")
 	for {
-		msg := <-UdevEventMessageChannel
+		msg := <-udevevent.UdevEventMessageChannel
 		switch msg.Action {
 		case string(AttachEA):
 			probeEvent.addDiskEvent(msg)
+		case string(DetachEA):
+			probeEvent.deleteDiskEvent(msg)
 		}
 	}
 }

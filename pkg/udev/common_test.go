@@ -17,12 +17,17 @@ limitations under the License.
 package udev
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
 
+/*
+	In this test case we create os disk's UdevDevice object.
+	get the syspath of that disk and compare with mock details
+*/
 func TestGetSyspath(t *testing.T) {
 	diskDetails, err := MockDiskDetails()
 	if err != nil {
@@ -38,9 +43,24 @@ func TestGetSyspath(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer device.UdevDeviceUnref()
-	assert.Equal(t, diskDetails.SysPath, device.GetSyspath())
+	tests := map[string]struct {
+		actualSyspath   string
+		expectedSysPath string
+	}{
+		"compare syspath of os disk": {actualSyspath: device.GetSyspath(), expectedSysPath: diskDetails.SysPath},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.actualSyspath, test.expectedSysPath)
+		})
+	}
 }
 
+/*
+	In this test case we create os disk's UdevDevice object.
+	and get the data what udevProbe can fill and compare it
+	with mock UdevDiskDetails struct
+*/
 func TestDiskInfoFromLibudev(t *testing.T) {
 	diskDetails, err := MockDiskDetails()
 	if err != nil {
@@ -57,16 +77,32 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 	}
 	defer device.UdevDeviceUnref()
 	expectedDiskDetails := UdevDiskDetails{
-		Model:  diskDetails.Model,
-		Serial: diskDetails.Serial,
-		Vendor: diskDetails.Vendor,
-		Path:   diskDetails.DevNode,
-		Size:   diskDetails.Capacity,
+		Model:          diskDetails.Model,
+		Serial:         diskDetails.Serial,
+		Vendor:         diskDetails.Vendor,
+		Path:           diskDetails.DevNode,
+		ByIdDevLinks:   diskDetails.ByIdDevLinks,
+		ByPathDevLinks: diskDetails.ByPathDevLinks,
 	}
 	assert.Equal(t, expectedDiskDetails, device.DiskInfoFromLibudev())
+	tests := map[string]struct {
+		actualDetails   UdevDiskDetails
+		expectedDetails UdevDiskDetails
+	}{
+		"check for details which udev probe can fill": {actualDetails: device.DiskInfoFromLibudev(), expectedDetails: expectedDiskDetails},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.actualDetails, test.expectedDetails)
+		})
+	}
 }
 
-func TestGetSize(t *testing.T) {
+/*
+	In this test case we create os disk's UdevDevice object.
+	as it is a disk it should return true
+*/
+func TestIsDisk(t *testing.T) {
 	diskDetails, err := MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)
@@ -81,48 +117,23 @@ func TestGetSize(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer device.UdevDeviceUnref()
-	actualCapacity, err := device.getSize()
-	if err != nil {
-		t.Fatal(err)
+	tests := map[string]struct {
+		actual   bool
+		expected bool
+	}{
+		"check if os disk is disk or not": {actual: device.IsDisk(), expected: true},
 	}
-	assert.Equal(t, diskDetails.Capacity, actualCapacity)
-}
-
-func TestIsDisk(t *testing.T) {
-	udev, err := NewUdev()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer udev.UnrefUdev()
-	udevEnumerate, err := udev.NewUdevEnumerate()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer udevEnumerate.UnrefUdevEnumerate()
-
-	err = udevEnumerate.UdevEnumerateAddMatchSubsystem(UDEV_SUBSYSTEM)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = udevEnumerate.UdevEnumerateScanDevices()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for l := udevEnumerate.UdevEnumerateGetListEntry(); l != nil; l = l.UdevListEntryGetNext() {
-		s := l.UdevListEntryGetName()
-		newUdevice, err := udev.NewDeviceFromSysPath(s)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if newUdevice.UdevDeviceGetDevtype() == UDEV_SYSTEM && newUdevice.UdevDeviceGetPropertyValue(UDEV_TYPE) == UDEV_SYSTEM {
-			assert.Equal(t, true, newUdevice.IsDisk())
-		} else {
-			assert.Equal(t, false, newUdevice.IsDisk())
-		}
-		newUdevice.UdevDeviceUnref()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.actual, test.expected)
+		})
 	}
 }
 
+/*
+	In this test case we create os disk's UdevDevice object from that we
+	get uuid of os disk. Then we compare it with uuid generation logic.
+*/
 func TestGetUid(t *testing.T) {
 	diskDetails, err := MockDiskDetails()
 	if err != nil {
@@ -139,5 +150,49 @@ func TestGetUid(t *testing.T) {
 	}
 	defer device.UdevDeviceUnref()
 	expectedUid := NDMPrefix + util.Hash(diskDetails.Wwn+diskDetails.Model+diskDetails.Serial+diskDetails.Vendor)
-	assert.Equal(t, expectedUid, device.GetUid())
+	tests := map[string]struct {
+		actualUuid   string
+		expectedUuid string
+	}{
+		"check for os disk uuid": {actualUuid: device.GetUid(), expectedUuid: expectedUid},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.actualUuid, test.expectedUuid)
+		})
+	}
+}
+
+/*
+	Get devlinks and devnode (/dev/sda or /dev/sdb ... ) of os
+	disk, read file path of those devlinks and match with devnode.
+	Each devlink should be valid and file path of those links
+	equal with devnode of os disk.
+*/
+func TestGetDevLinks(t *testing.T) {
+	diskDetails, err := MockDiskDetails()
+	if err != nil {
+		t.Fatal(err)
+	}
+	newUdev, err := NewUdev()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer newUdev.UnrefUdev()
+	device, err := newUdev.NewDeviceFromSysPath(diskDetails.SysPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer device.UdevDeviceUnref()
+	osDiskPath := diskDetails.DevNode
+	var expectedError error
+	for name, links := range device.GetDevLinks() {
+		for _, link := range links {
+			t.Run(name, func(t *testing.T) {
+				path, err := filepath.EvalSymlinks(link)
+				assert.Equal(t, expectedError, err)
+				assert.Equal(t, osDiskPath, path)
+			})
+		}
+	}
 }

@@ -1,7 +1,52 @@
+# Create NDM configmap
 # Define the Service Account
 # Define the RBAC rules for the Service Account
 # Launch the node-disk-manager ( daemon set )
 
+# Create NDM configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-disk-manager-config
+  namespace: default
+data:
+  # node-disk-manager-config contains config of available probes and filters.
+  # Probes and Filters will initialize with default values if config for that
+  # filter or probe not present in configmap
+
+  # udev-probe is default or primary probe it should be enabled to run ndm
+  # filterconfigs contails configs of filters. To provide a group of include
+  # and exclude values add it as , separated string
+  node-disk-manager.config: |
+    {
+      "probeconfigs": [
+        {
+          "key": "udev-probe",
+          "name": "udev probe",
+          "state": "true"
+        },
+        {
+          "key": "smart-probe",
+          "name": "smart probe",
+          "state": "true"
+        }
+      ],
+      "filterconfigs": [
+        {
+          "key": "os-disk-exclude-filter",
+          "name": "os disk exclude filter",
+          "state": "true"
+        },
+        {
+          "key": "vendor-filter",
+          "name": "vendor filter",
+          "state": "true",
+          "include":"",
+          "exclude":""
+        }
+      ]
+    }
+---
 # Create NDM Service Account
 apiVersion: v1
 kind: ServiceAccount
@@ -79,6 +124,9 @@ spec:
       # kubectl label node <node-name> "openebs.io/nodegroup"="storage-node"
       # nodeSelector:
       #   "openebs.io/nodegroup": "storage-node"
+      # Use host network as container network to monitor udev source using netlink
+      # to detect disk attach and detach events using fd.
+      hostNetwork: true
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
@@ -91,8 +139,14 @@ spec:
           privileged: true
         # make udev database available inside container
         volumeMounts:
+        - name: config
+          mountPath: /host/node-disk-manager.config
+          subPath: node-disk-manager.config
+          readOnly: true
         - name: udev
           mountPath: /run/udev
+        - name: procmount
+          mountPath: /host/mounts
         env:
         # pass hostname as env variable using downward API to the NDM container
         - name: NODE_NAME
@@ -100,7 +154,15 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
       volumes:
+      - name: config
+        configMap:
+          name: node-disk-manager-config
       - name: udev
         hostPath:
           path: /run/udev
           type: Directory
+      - name: procmount
+      # mount /proc/1/mounts (mount file of process 1 of host) inside container
+      # to read which partition is mounted on / path
+        hostPath:
+          path: /proc/1/mounts

@@ -22,7 +22,7 @@ import (
 	"testing"
 )
 
-func TestUdevEnumerateAddMatchSubsystem(t *testing.T) {
+func TestAddSubsystemFilter(t *testing.T) {
 	newUdev, err := NewUdev()
 	if err != nil {
 		t.Fatal(err)
@@ -33,13 +33,13 @@ func TestUdevEnumerateAddMatchSubsystem(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer newUdevEnumerate.UnrefUdevEnumerate()
-	err = newUdevEnumerate.UdevEnumerateAddMatchSubsystem("block")
+	err = newUdevEnumerate.AddSubsystemFilter("block")
 	if err != nil {
-		t.Error("error should be nil for successfull subsystem filter")
+		t.Error("error should be nil for successful subsystem filter")
 	}
 }
 
-func TestUdevEnumerateScanDevices(t *testing.T) {
+func TestScanDevices(t *testing.T) {
 	newUdev, err := NewUdev()
 	if err != nil {
 		t.Fatal(err)
@@ -50,12 +50,12 @@ func TestUdevEnumerateScanDevices(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer newUdevEnumerate.UnrefUdevEnumerate()
-	err = newUdevEnumerate.UdevEnumerateAddMatchSubsystem("block")
+	err = newUdevEnumerate.AddSubsystemFilter("block")
 	if err != nil {
-		t.Error("error should be nil for successfull subsystem filter")
+		t.Error("error should be nil for successful subsystem filter")
 	}
-	err = newUdevEnumerate.UdevEnumerateScanDevices()
+	err = newUdevEnumerate.ScanDevices()
 	if err != nil {
-		t.Error("error should be nil for successfull scan device")
+		t.Error("error should be nil for successful scan device")
 	}
 }

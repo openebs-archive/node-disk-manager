@@ -24,8 +24,7 @@ package udev
 */
 import "C"
 import (
-	"io/ioutil"
-	"strconv"
+	"strings"
 	"unsafe"
 
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -38,6 +37,8 @@ const (
 	UDEV_PATH           = "DEVPATH"         // udev attribute to get device path
 	UDEV_WWN            = "ID_WWN"          // udev attribute to get device WWN number
 	UDEV_SERIAL         = "ID_SERIAL_SHORT" // udev attribute to get device serial number
+	UDEV_SERIAL_FULL    = "ID_SERIAL"       // udev attribute to get - separated vendor, model, serial
+	UDEV_BUS            = "ID_BUS"          // udev attribute to get bus name
 	UDEV_MODEL          = "ID_MODEL"        // udev attribute to get device model number
 	UDEV_VENDOR         = "ID_VENDOR"       // udev attribute to get device vendor details
 	UDEV_TYPE           = "ID_TYPE"         // udev attribute to get device type
@@ -51,16 +52,21 @@ const (
 	UDEV_DEVTYPE        = "DEVTYPE"         // udev attribute to get device device type ie - disk or part
 	UDEV_SOURCE         = "udev"            // udev source constant
 	UDEV_SYSPATH_PREFIX = "/sys/dev/block/" // udev syspath prefix
-	UDEV_DEVNAME        = "DEVNAME"         // udev attrinute contain disk name given by kernel
+	UDEV_DEVNAME        = "DEVNAME"         // udev attribute contain disk name given by kernel
+	UDEV_DEVLINKS       = "DEVLINKS"        // udev attribute contain devlinks of a disk
+	BY_ID_LINK          = "by-id"           // by-path devlink contains this string
+	BY_PATH_LINK        = "by-path"         // by-path devlink contains this string
+	LINK_ID_INDEX       = 4                 // this is used to get link index from dev link
 )
 
 // UdevDiskDetails struct contain different attribute of disk.
 type UdevDiskDetails struct {
-	Model  string // Model is Model of disk.
-	Serial string // Serial is Serial of a disk.
-	Vendor string // Vendor is Vendor of a disk.
-	Path   string // Path is Path of a disk.
-	Size   uint64 // Size is capacity of disk
+	Model          string   // Model is Model of disk.
+	Serial         string   // Serial is Serial of a disk.
+	Vendor         string   // Vendor is Vendor of a disk.
+	Path           string   // Path is Path of a disk.
+	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
+	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
 }
 
 // freeCharPtr frees c pointer
@@ -70,15 +76,14 @@ func freeCharPtr(s *C.char) {
 
 //DiskInfoFromLibudev returns disk attribute extracted using libudev apicalls.
 func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
-	size, err := device.getSize()
-	if err != nil {
-	}
+	devLinks := device.GetDevLinks()
 	diskDetails := UdevDiskDetails{
-		Model:  device.UdevDeviceGetPropertyValue(UDEV_MODEL),
-		Serial: device.UdevDeviceGetPropertyValue(UDEV_SERIAL),
-		Vendor: device.UdevDeviceGetPropertyValue(UDEV_VENDOR),
-		Path:   device.UdevDeviceGetPropertyValue(UDEV_DEVNAME),
-		Size:   size,
+		Model:          device.GetPropertyValue(UDEV_MODEL),
+		Serial:         device.GetPropertyValue(UDEV_SERIAL),
+		Vendor:         device.GetPropertyValue(UDEV_VENDOR),
+		Path:           device.GetPropertyValue(UDEV_DEVNAME),
+		ByIdDevLinks:   devLinks[BY_ID_LINK],
+		ByPathDevLinks: devLinks[BY_PATH_LINK],
 	}
 	return diskDetails
 }
@@ -86,43 +91,56 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 // GetUid returns unique id for the disk block device
 func (device *UdevDevice) GetUid() string {
 	return NDMPrefix +
-		util.Hash(device.UdevDeviceGetPropertyValue(UDEV_WWN)+
-			device.UdevDeviceGetPropertyValue(UDEV_MODEL)+
-			device.UdevDeviceGetPropertyValue(UDEV_SERIAL)+
-			device.UdevDeviceGetPropertyValue(UDEV_VENDOR))
+		util.Hash(device.GetPropertyValue(UDEV_WWN)+
+			device.GetPropertyValue(UDEV_MODEL)+
+			device.GetPropertyValue(UDEV_SERIAL)+
+			device.GetPropertyValue(UDEV_VENDOR))
 }
 
 // IsDisk returns true if device is a disk
 func (device *UdevDevice) IsDisk() bool {
-	return device.UdevDeviceGetDevtype() == UDEV_SYSTEM && device.UdevDeviceGetPropertyValue(UDEV_TYPE) == UDEV_SYSTEM
+	return device.GetDevtype() == UDEV_SYSTEM && device.GetPropertyValue(UDEV_TYPE) == UDEV_SYSTEM
 }
 
 // GetSyspath returns syspath of a disk using syspath we can fell details
 // in diskInfo struct using udev probe
 func (device *UdevDevice) GetSyspath() string {
-	major := device.UdevDeviceGetPropertyValue(UDEV_MAJOR)
-	minor := device.UdevDeviceGetPropertyValue(UDEV_MINOR)
+	major := device.GetPropertyValue(UDEV_MAJOR)
+	minor := device.GetPropertyValue(UDEV_MINOR)
 	syspath := UDEV_SYSPATH_PREFIX + major + ":" + minor
 	return syspath
 }
 
-// getSize returns size of a disk.
-func (device *UdevDevice) getSize() (uint64, error) {
-	var sector []byte
-	var sec int64
-	n, err := strconv.ParseInt(device.UdevDeviceGetSysattrValue("size"), 10, 64)
-	if err != nil {
-		return 0, err
+// GetDevLinks returns syspath of a disk using syspath we can fell details
+// in diskInfo struct using udev probe
+func (device *UdevDevice) GetDevLinks() map[string][]string {
+	devLinkMap := make(map[string][]string)
+	byIdLink := make([]string, 0)
+	byPathLink := make([]string, 0)
+	for _, link := range strings.Split(device.GetPropertyValue(UDEV_DEVLINKS), " ") {
+		/*
+			devlink is like - /dev/disk/by-id/scsi-0Google_PersistentDisk_demo-disk
+			parts = ["", "dev", "disk", "by-id", "scsi-0Google_PersistentDisk_demo-disk"]
+			parts[4] contains link index like model or wwn or sysPath (wwn-0x5000c5009e3a8d2b) (ata-ST500LM021-1KJ152_W6HFGR)
+		*/
+		parts := strings.Split(link, "/")
+		if util.Contains(parts, BY_ID_LINK) {
+			/*
+				A default by-id link is observed to be created for all types of disks (physical, virtual and cloud).
+				This link has the format - bus, vendor, model, serial - all appended in the same order. Keeping this
+				link as the first element of array for consistency purposes.
+			*/
+			if strings.HasPrefix(parts[LINK_ID_INDEX], device.GetPropertyValue(UDEV_BUS)) && strings.HasSuffix(parts[LINK_ID_INDEX], device.GetPropertyValue(UDEV_SERIAL_FULL)) {
+				byIdLink = append([]string{link}, byIdLink...)
+			} else {
+				byIdLink = append(byIdLink, link)
+			}
+		}
+		if util.Contains(parts, BY_PATH_LINK) {
+			byPathLink = append(byPathLink, link)
+		}
 	}
-	// should we use disk smart queries to get the sector size?
-	fname := "/sys" + device.UdevDeviceGetPropertyValue(UDEV_PATH) + "/queue/hw_sector_size"
-	sector, err = ioutil.ReadFile(fname)
-	if err != nil {
-		return 0, err
-	}
-	sec, err = strconv.ParseInt(string(sector[:len(sector)-1]), 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return uint64(n * sec), nil
+	devLinkMap[BY_ID_LINK] = byIdLink
+	devLinkMap[BY_PATH_LINK] = byPathLink
+	return devLinkMap
 }
