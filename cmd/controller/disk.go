@@ -41,6 +41,7 @@ type DiskInfo struct {
 	FirmwareRevision  string          // FirmwareRevision is the firmware revision for a disk
 	LogicalSectorSize uint32          // LogicalSectorSize is the Logical size of a disk in bytes
 	SPCVersion        string          // SPCVersion is implemented specifications version i.e. SPC-1, SPC-2, etc
+	DiskType          string          // DiskType represents the type of disk like Disk, Sparse etc.,
 }
 
 // ProbeIdentifier contains some keys to enable probes to uniquely identify each disk.
@@ -63,6 +64,7 @@ type ProbeIdentifier struct {
 // populate some specific fields of DiskInfo struct.
 func NewDiskInfo() *DiskInfo {
 	diskInfo := &DiskInfo{}
+	diskInfo.DiskType = NDMDefaultDiskType
 	return diskInfo
 }
 
@@ -84,6 +86,7 @@ func (di *DiskInfo) getObjectMeta() metav1.ObjectMeta {
 		Name:   di.Uuid,
 	}
 	objectMeta.Labels[NDMHostKey] = di.HostName
+	objectMeta.Labels[NDMDiskTypeKey] = di.DiskType
 	return objectMeta
 }
 

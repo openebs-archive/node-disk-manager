@@ -56,18 +56,21 @@ func TestCreateDisk(t *testing.T) {
 	// create resource1
 	dr1 := fakeDr
 	dr1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr1.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(dr1)
 	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
 
 	// create resource which is already present it should update
 	dr2 := fakeDr
 	dr2.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr2.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(dr2)
 	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
 
 	// create resource2
 	dr3 := newFakeDr
 	dr3.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr3.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(dr3)
 	cdr3, err3 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(newFakeDiskUid, metav1.GetOptions{})
 
@@ -100,6 +103,7 @@ func TestUpdateDisk(t *testing.T) {
 	// update a resource which is not present
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	err := fakeController.UpdateDisk(dr, nil)
 	if err == nil {
 		t.Error("error should not be nil as the resource is not present")
@@ -158,16 +162,19 @@ func TestDeactivateDisk(t *testing.T) {
 	// create one resource and deactivate it.
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(dr)
 	fakeController.DeactivateDisk(dr)
 	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
 	// deactivate one resource which is not present it should return error
 	dr1 := newFakeDr
 	dr1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr1.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.DeactivateDisk(dr1)
 	// create another resource and deactivate it.
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(newDr)
 	fakeController.DeactivateDisk(newDr)
 	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(newFakeDiskUid, metav1.GetOptions{})
@@ -201,6 +208,7 @@ func TestDeleteDisk(t *testing.T) {
 	// create one resource and delete it
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(dr)
 	fakeController.DeleteDisk(fakeDiskUid)
 	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
@@ -209,6 +217,7 @@ func TestDeleteDisk(t *testing.T) {
 	// create another resource and delete it
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(newDr)
 	fakeController.DeleteDisk(newFakeDiskUid)
 	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(newFakeDiskUid, metav1.GetOptions{})
@@ -242,10 +251,12 @@ func TestListDiskResource(t *testing.T) {
 	// create resource1
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(dr)
 	// create resource2
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(newDr)
 	listDevice, err := fakeController.ListDiskResource()
 	typeMeta := metav1.TypeMeta{}
@@ -286,10 +297,12 @@ func TestGetExistingResource(t *testing.T) {
 	// create resource1
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(dr)
 	// create resource2
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(newDr)
 
 	listDr, err := fakeController.ListDiskResource()
@@ -331,10 +344,12 @@ func TestPushResource(t *testing.T) {
 	// create one DiskInfo struct with mock uuid
 	deviceDetails := &DiskInfo{}
 	deviceDetails.ProbeIdentifiers.Uuid = fakeDiskUid
+	deviceDetails.DiskType = NDMDefaultDiskType
 
 	// create one fake Disk struct
 	fakeDr := mockEmptyDiskCr()
 	fakeDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 
 	// pass 1st argument as nil then it creates one disk resource
 	fakeController.PushDiskResource(nil, deviceDetails)
@@ -372,10 +387,12 @@ func TestDeactivateStaleDiskResource(t *testing.T) {
 	// create resource1
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(dr)
 	// create resource2
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(newDr)
 	//add one resource's uuid so state of the other resource should be inactive.
 	diskList := make([]string, 0)
@@ -411,6 +428,7 @@ func TestMarkDiskStatusToUnknown(t *testing.T) {
 	}
 	dr := mockEmptyDiskCr()
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeController.CreateDisk(dr)
 
 	fakeController.MarkDiskStatusToUnknown()

@@ -109,6 +109,7 @@ func TestFillDiskDetails(t *testing.T) {
 	expectedDiskInfo.Path = mockOsDiskDetails.DevNode
 	expectedDiskInfo.Serial = mockOsDiskDetails.Serial
 	expectedDiskInfo.Vendor = mockOsDiskDetails.Vendor
+	expectedDiskInfo.DiskType = "disk"
 	expectedDiskInfo.ByIdDevLinks = mockOsDiskDetails.ByIdDevLinks
 	expectedDiskInfo.ByPathDevLinks = mockOsDiskDetails.ByPathDevLinks
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
@@ -171,6 +172,7 @@ func TestUdevProbe(t *testing.T) {
 		t.Fatal(err)
 	}
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = "disk"
 	tests := map[string]struct {
 		actualDisk    apis.Disk
 		expectedDisk  apis.Disk
