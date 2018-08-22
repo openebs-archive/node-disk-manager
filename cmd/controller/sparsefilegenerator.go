@@ -47,7 +47,8 @@ const (
 	ENV_SPARSE_FILE_COUNT = "SPARSE_FILE_COUNT"
 
 	SPARSE_FILE_NAME          = "ndm-sparse.img"
-	SPARSE_FILE_DEFAULT_SIZE  = "1073741824"
+	SPARSE_FILE_DEFAULT_SIZE  = int64(1073741824)
+	SPARSE_FILE_MIN_SIZE      = int64(1073741824)
 	SPARSE_FILE_DEFAULT_COUNT = "1"
 
 	SPARSE_DISKTYPE    = "sparse"
@@ -98,13 +99,19 @@ func GetSparseFileSize() int64 {
 
 	sparseFileSizeStr := os.Getenv(ENV_SPARSE_FILE_SIZE)
 	if len(sparseFileSizeStr) < 1 {
-		sparseFileSizeStr = SPARSE_FILE_DEFAULT_SIZE
+		glog.Info("No size was specified. Using default size: ", fmt.Sprint(SPARSE_FILE_DEFAULT_SIZE))
+		return SPARSE_FILE_DEFAULT_SIZE
 	}
 
 	sparseFileSize, econv := strconv.ParseInt(sparseFileSizeStr, 10, 64)
 	if econv != nil {
 		glog.Info("Error converting sparse file size:  ", sparseFileSizeStr)
 		return 0
+	}
+
+	if sparseFileSize < SPARSE_FILE_MIN_SIZE {
+		glog.Info(fmt.Sprint(sparseFileSizeStr), " is less than minimum required. Setting the size to:  ", fmt.Sprint(SPARSE_FILE_MIN_SIZE))
+		return SPARSE_FILE_MIN_SIZE
 	}
 
 	return sparseFileSize
@@ -176,7 +183,7 @@ func (c *Controller) MarkSparseDiskStateActive(sparseFile string, sparseFileSize
 	diskDetails.Capacity = uint64(sparseFileInfo.Size())
 
 	//If a Disk CR already exits, update it. If not create a new one.
+	glog.Info("Updating the Disk CR for Sparse Disk: ", diskDetails.Uuid)
 	c.CreateDisk(diskDetails.ToDisk())
 
-	glog.Info("Created Disk CR for Sparse Disk: ", diskDetails.Uuid)
 }

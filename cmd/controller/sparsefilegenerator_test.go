@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestGetSparseFileDir verifies that a valid sparse file directory
@@ -79,18 +79,17 @@ func TestGetSparseFileCount(t *testing.T) {
 //  If no value is set, default size is returned.
 func TestGetSparseFileSize(t *testing.T) {
 
-	defaultSize, econv := strconv.ParseInt(SPARSE_FILE_DEFAULT_SIZE, 10, 64)
-	if econv != nil {
-		defaultSize = int64(0)
-	}
+	defaultSize := SPARSE_FILE_DEFAULT_SIZE
+	minSize := SPARSE_FILE_MIN_SIZE
 
 	tests := map[string]struct {
 		envFileSize  string
 		expectedSize int64
 	}{
-		"When size is not set":     {envFileSize: "", expectedSize: defaultSize},
-		"When valid size is set":   {envFileSize: "1000", expectedSize: int64(1000)},
-		"When invalid size is set": {envFileSize: "z", expectedSize: 0},
+		"When size is not set":           {envFileSize: "", expectedSize: defaultSize},
+		"When valid size is set":         {envFileSize: "2000000000", expectedSize: int64(2000000000)},
+		"When less than min size is set": {envFileSize: "100", expectedSize: minSize},
+		"When invalid size is set":       {envFileSize: "z", expectedSize: 0},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -110,26 +109,26 @@ func TestCheckAndCreateSparseFile(t *testing.T) {
 	testFileSize1 := int64(2000)
 
 	tests := map[string]struct {
-		fileName	string
-		fileSize	int64
-		expectedSize	int64
+		fileName     string
+		fileSize     int64
+		expectedSize int64
 	}{
-		"Create New File"	: {
-				fileName: testFile, 
-				fileSize: testFileSize,
-				expectedSize: testFileSize,
-					},
-		"Reuse Existing File"	: {
-				fileName: testFile, 
-				fileSize: testFileSize1,
-				expectedSize: testFileSize,
-					},
+		"Create New File": {
+			fileName:     testFile,
+			fileSize:     testFileSize,
+			expectedSize: testFileSize,
+		},
+		"Reuse Existing File": {
+			fileName:     testFile,
+			fileSize:     testFileSize1,
+			expectedSize: testFileSize,
+		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			err := CheckAndCreateSparseFile( test.fileName, test.fileSize )
+			err := CheckAndCreateSparseFile(test.fileName, test.fileSize)
 			assert.Equal(t, nil, err)
-			if  err != nil  {
+			if err != nil {
 				aFileInfo, errF := util.SparseFileInfo(test.fileName)
 				assert.Equal(t, nil, errF)
 				if errF != nil {
@@ -139,5 +138,5 @@ func TestCheckAndCreateSparseFile(t *testing.T) {
 		})
 	}
 
-	util.SparseFileDelete( testFile )
+	util.SparseFileDelete(testFile)
 }

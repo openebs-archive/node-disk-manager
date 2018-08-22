@@ -26,11 +26,11 @@ func TestSparseFileCreate(t *testing.T) {
 	tests := map[string]struct {
 		path string
 		size int64
-		err  bool 
+		err  bool
 	}{
-		"Create a sparse file": {path: "/tmp/test.img", size: 1024, err : false},
-		"Retry with same file": {path: "/tmp/test.img", size: 1024, err : false},
-		"Fail to create sub-dir file" : {path: "/tmp/0/test.img", size: 1024, err : true},
+		"Create a sparse file":        {path: "/tmp/test.img", size: 1024, err: false},
+		"Retry with same file":        {path: "/tmp/test.img", size: 1024, err: false},
+		"Fail to create sub-dir file": {path: "/tmp/0/test.img", size: 1024, err: true},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -44,7 +44,7 @@ func TestSparseFileDelete(t *testing.T) {
 	tests := map[string]struct {
 		path string
 	}{
-		"Delete the sparse file "      : {path: "/tmp/test.img"},
+		"Delete the sparse file ":       {path: "/tmp/test.img"},
 		"Retry Delete on deleted file ": {path: "/tmp/test.img"},
 	}
 	for name, test := range tests {
@@ -55,33 +55,31 @@ func TestSparseFileDelete(t *testing.T) {
 	}
 }
 
-
 func TestSparseFileInfo(t *testing.T) {
 
 	testFile := "/tmp/test.img"
-        testFileSize := int64(1024)
+	testFileSize := int64(1024)
 
-	_ = SparseFileCreate( testFile, testFileSize )
+	_ = SparseFileCreate(testFile, testFileSize)
 
 	tests := map[string]struct {
 		path string
 		size int64
-		err  bool 
+		err  bool
 	}{
-		"Valid FileInfo": {path: testFile, err : false},
-		"Invalid FileInfo": {path: "invalid", err : true},
+		"Valid FileInfo":   {path: testFile, err: false},
+		"Invalid FileInfo": {path: "invalid", err: true},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			info, infoErr := SparseFileInfo( test.path )
-			if  infoErr == nil {
-				assert.Equal(t, testFileSize, info.Size() )
+			info, infoErr := SparseFileInfo(test.path)
+			if infoErr == nil {
+				assert.Equal(t, testFileSize, info.Size())
 			}
 			assert.Equal(t, test.err, infoErr != nil)
 		})
 	}
 
-	_ = SparseFileDelete( testFile )
+	_ = SparseFileDelete(testFile)
 }
-
