@@ -99,6 +99,7 @@ func (c *Controller) ListProbe() []*Probe {
 // FillDiskDetails lists registered probes and fills details from each probe
 func (c *Controller) FillDiskDetails(diskDetails *DiskInfo) {
 	diskDetails.HostName = c.HostName
+	diskDetails.DiskType = NDMDefaultDiskType
 	diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
 	probes := c.ListProbe()
 	for _, probe := range probes {

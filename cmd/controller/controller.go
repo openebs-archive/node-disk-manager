@@ -31,12 +31,17 @@ import (
 )
 
 const (
-	NDMKind     = "Disk"                   // NDMKind is the CR kind.
-	NDMVersion  = "openebs.io/v1alpha1"    // NDMVersion is the CR version.
-	NDMHostKey  = "kubernetes.io/hostname" // NDMHostKey is host name label prefix.
-	NDMActive   = "Active"                 // NDMActive is constant for active resource status.
-	NDMInactive = "Inactive"               // NDMInactive is constant for inactive resource status.
-	NDMUnknown  = "Unknown"                // NDMUnknown is constant for resource unknown satus.
+	NDMKind        = "Disk"                   // NDMKind is the CR kind.
+	NDMVersion     = "openebs.io/v1alpha1"    // NDMVersion is the CR version.
+	NDMHostKey     = "kubernetes.io/hostname" // NDMHostKey is host name label prefix.
+	NDMActive      = "Active"                 // NDMActive is constant for active resource status.
+	NDMInactive    = "Inactive"               // NDMInactive is constant for inactive resource status.
+	NDMUnknown     = "Unknown"                // NDMUnknown is constant for resource unknown satus.
+	NDMDiskTypeKey = "ndm.io/disk-type"       // NDMDiskTypeKey specifies the type of disk
+)
+
+const (
+	NDMDefaultDiskType = "disk" // NDMDefaultDiskType will be used to initialize the disk type
 )
 
 // ControllerBroadcastChannel is used to send a copy of controller object to each probe.
@@ -130,6 +135,7 @@ func (c *Controller) setNodeName() error {
 
 // Start is called when we execute cli command ndm start.
 func (c *Controller) Start() {
+	c.InitializeSparseFiles()
 	// set up signals so we handle the first shutdown signal gracefully
 	stopCh := signals.SetupSignalHandler()
 	if err := c.run(2, stopCh); err != nil {

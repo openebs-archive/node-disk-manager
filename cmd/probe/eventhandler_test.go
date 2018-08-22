@@ -36,6 +36,7 @@ var (
 	fakeModel      = "fake-disk-model"
 	fakeSerial     = "fake-disk-serial"
 	fakeVendor     = "fake-disk-vendor"
+	fakeDiskType   = "disk"
 )
 
 // mockEmptyDiskCr returns empty diskCr
@@ -122,6 +123,7 @@ func TestAddDiskEvent(t *testing.T) {
 	// Create one fake disk resource
 	fakeDr := mockEmptyDiskCr()
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = fakeDiskType
 	fakeDr.Spec.Details.Model = fakeModel
 	fakeDr.Spec.Details.Serial = fakeSerial
 	fakeDr.Spec.Details.Vendor = fakeVendor
@@ -157,6 +159,7 @@ func TestDeleteDiskEvent(t *testing.T) {
 	// Create one fake disk resource
 	fakeDr := mockEmptyDiskCr()
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = fakeDiskType
 	fakeController.CreateDisk(fakeDr)
 
 	probeEvent := &ProbeEvent{

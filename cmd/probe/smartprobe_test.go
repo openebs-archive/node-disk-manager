@@ -99,6 +99,7 @@ func TestFillDiskDetailsBySmart(t *testing.T) {
 	expectedDiskInfo.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
 	expectedDiskInfo.SPCVersion = mockOsDiskDetails.SPCVersion
 	expectedDiskInfo.LogicalSectorSize = mockOsDiskDetails.LBSize
+	expectedDiskInfo.DiskType = "disk"
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
@@ -173,6 +174,7 @@ func TestSmartProbe(t *testing.T) {
 		t.Fatal(err)
 	}
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = "disk"
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk

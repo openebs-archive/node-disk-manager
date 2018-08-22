@@ -189,6 +189,7 @@ func TestFillDetails(t *testing.T) {
 	expectedDr.Model = fakeModel
 	expectedDr.Serial = fakeSerial
 	expectedDr.Vendor = fakeVendor
+	expectedDr.DiskType = NDMDefaultDiskType
 
 	// create one fake Disk struct
 	actualDr := &DiskInfo{}
@@ -198,7 +199,7 @@ func TestFillDetails(t *testing.T) {
 		actualDisk   *DiskInfo
 		expectedDisk *DiskInfo
 	}{
-		"push resouce with 'fake-disk-uid' uuid for create resource": {actualDisk: expectedDr, expectedDisk: actualDr},
+		"push resouce with 'fake-disk-uid' uuid for create resource": {actualDisk: actualDr, expectedDisk: expectedDr},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
