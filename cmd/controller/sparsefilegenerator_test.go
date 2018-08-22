@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // TestGetSparseFileDir verifies that a valid sparse file directory
@@ -98,4 +99,45 @@ func TestGetSparseFileSize(t *testing.T) {
 		})
 	}
 
+}
+
+// TestCheckAndCreateSparseFile verifies that a sparse file is created
+//  only when it doesn't already exist.
+func TestCheckAndCreateSparseFile(t *testing.T) {
+
+	testFile := "/tmp/test.img"
+	testFileSize := int64(1000)
+	testFileSize1 := int64(2000)
+
+	tests := map[string]struct {
+		fileName	string
+		fileSize	int64
+		expectedSize	int64
+	}{
+		"Create New File"	: {
+				fileName: testFile, 
+				fileSize: testFileSize,
+				expectedSize: testFileSize,
+					},
+		"Reuse Existing File"	: {
+				fileName: testFile, 
+				fileSize: testFileSize1,
+				expectedSize: testFileSize,
+					},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			err := CheckAndCreateSparseFile( test.fileName, test.fileSize )
+			assert.Equal(t, nil, err)
+			if  err != nil  {
+				aFileInfo, errF := util.SparseFileInfo(test.fileName)
+				assert.Equal(t, nil, errF)
+				if errF != nil {
+					assert.Equal(t, test.expectedSize, aFileInfo.Size())
+				}
+			}
+		})
+	}
+
+	util.SparseFileDelete( testFile )
 }

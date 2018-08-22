@@ -26,14 +26,16 @@ func TestSparseFileCreate(t *testing.T) {
 	tests := map[string]struct {
 		path string
 		size int64
+		err  bool 
 	}{
-		"Create a sparse file of 1G - test-1g.img": {path: "/tmp/test-1g.img", size: 1073741824},
-		"Retry with same file":                     {path: "/tmp/test-1g.img", size: 1073741824},
+		"Create a sparse file": {path: "/tmp/test.img", size: 1024, err : false},
+		"Retry with same file": {path: "/tmp/test.img", size: 1024, err : false},
+		"Fail to create sub-dir file" : {path: "/tmp/0/test.img", size: 1024, err : true},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			err := SparseFileCreate(test.path, test.size)
-			assert.Equal(t, nil, err)
+			createErr := SparseFileCreate(test.path, test.size)
+			assert.Equal(t, test.err, createErr != nil)
 		})
 	}
 }
@@ -42,8 +44,8 @@ func TestSparseFileDelete(t *testing.T) {
 	tests := map[string]struct {
 		path string
 	}{
-		"Delete the sparse file of 1G -test-1g.img":       {path: "/tmp/test-1g.img"},
-		"Retry Delete on deleted file of 1G -test-1g.img": {path: "/tmp/test-1g.img"},
+		"Delete the sparse file "      : {path: "/tmp/test.img"},
+		"Retry Delete on deleted file ": {path: "/tmp/test.img"},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -52,3 +54,34 @@ func TestSparseFileDelete(t *testing.T) {
 		})
 	}
 }
+
+
+func TestSparseFileInfo(t *testing.T) {
+
+	testFile := "/tmp/test.img"
+        testFileSize := int64(1024)
+
+	_ = SparseFileCreate( testFile, testFileSize )
+
+	tests := map[string]struct {
+		path string
+		size int64
+		err  bool 
+	}{
+		"Valid FileInfo": {path: testFile, err : false},
+		"Invalid FileInfo": {path: "invalid", err : true},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			info, infoErr := SparseFileInfo( test.path )
+			if  infoErr == nil {
+				assert.Equal(t, testFileSize, info.Size() )
+			}
+			assert.Equal(t, test.err, infoErr != nil)
+		})
+	}
+
+	_ = SparseFileDelete( testFile )
+}
+
