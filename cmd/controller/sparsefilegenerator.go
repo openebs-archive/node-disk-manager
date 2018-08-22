@@ -139,6 +139,8 @@ func (c *Controller) InitializeSparseFiles() {
 func CheckAndCreateSparseFile(sparseFile string, sparseFileSize int64) error {
 	sparseFileInfo, err := util.SparseFileInfo(sparseFile)
 	if err != nil {
+		glog.Info("Check for existing file returned error: ", err)
+		glog.Info("Creating a new Sparse file: ", sparseFile)
 		err = util.SparseFileCreate(sparseFile, sparseFileSize)
 	} else {
 		glog.Info("Sparse file already exists: ", sparseFileInfo.Name())
@@ -176,5 +178,5 @@ func (c *Controller) MarkSparseDiskStateActive(sparseFile string, sparseFileSize
 	//If a Disk CR already exits, update it. If not create a new one.
 	c.CreateDisk(diskDetails.ToDisk())
 
-	glog.Info("Created Disk CR for Sprase Disk: ", diskDetails.Uuid)
+	glog.Info("Created Disk CR for Sparse Disk: ", diskDetails.Uuid)
 }
