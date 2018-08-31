@@ -24,6 +24,7 @@ package udev
 */
 import "C"
 import (
+	"os"
 	"strings"
 	"unsafe"
 
@@ -90,16 +91,34 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 
 // GetUid returns unique id for the disk block device
 func (device *UdevDevice) GetUid() string {
-	return NDMPrefix +
-		util.Hash(device.GetPropertyValue(UDEV_WWN)+
-			device.GetPropertyValue(UDEV_MODEL)+
-			device.GetPropertyValue(UDEV_SERIAL)+
-			device.GetPropertyValue(UDEV_VENDOR))
+	uid := device.GetPropertyValue(UDEV_WWN) +
+		device.GetPropertyValue(UDEV_MODEL) +
+		device.GetPropertyValue(UDEV_SERIAL) +
+		device.GetPropertyValue(UDEV_VENDOR)
+
+	idtype := device.GetPropertyValue(UDEV_TYPE)
+
+	model := device.GetPropertyValue(UDEV_MODEL)
+
+	// Virtual disks either have no attributes or they all have
+	// the same attributes. Adding hostname in uid so that disks from different
+	// nodes can be differentiated. Also, putting devpath in uid so that disks
+	// from the same node also can be differentiated.
+	// 	On Gke, we have the ID_TYPE property, but still disks will have
+	// same attributes. We have to put a special check to handle it and process
+	// it like a Virtual disk.
+	if len(idtype) == 0 || model == "EphemeralDisk" {
+		// as hostNetwork is true, os.Hostname will give you the node's Hostname
+		host, _ := os.Hostname()
+		uid += host + device.GetPropertyValue(UDEV_DEVNAME)
+	}
+
+	return NDMPrefix + util.Hash(uid)
 }
 
 // IsDisk returns true if device is a disk
 func (device *UdevDevice) IsDisk() bool {
-	return device.GetDevtype() == UDEV_SYSTEM && device.GetPropertyValue(UDEV_TYPE) == UDEV_SYSTEM
+	return device.GetDevtype() == UDEV_SYSTEM
 }
 
 // GetSyspath returns syspath of a disk using syspath we can fell details
