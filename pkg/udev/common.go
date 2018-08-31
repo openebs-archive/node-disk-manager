@@ -98,11 +98,16 @@ func (device *UdevDevice) GetUid() string {
 
 	idtype := device.GetPropertyValue(UDEV_TYPE)
 
-	// virtual disks either have no attributes or they all have
+	model := device.GetPropertyValue(UDEV_MODEL)
+
+	// Virtual disks either have no attributes or they all have
 	// the same attributes. Adding hostname in uid so that disks from different
 	// nodes can be differentiated. Also, putting devpath in uid so that disks
 	// from the same node also can be differentiated.
-	if len(idtype) == 0 {
+	// 	On Gke, we have the ID_TYPE property, but still disks will have
+	// same attributes. We have to put a special check to handle it and process
+	// it like a Virtual disk.
+	if len(idtype) == 0 || model == "EphemeralDisk" {
 		// as hostNetwork is true, os.Hostname will give you the node's Hostname
 		host, _ := os.Hostname()
 		uid += host + device.GetPropertyValue(UDEV_DEVNAME)
