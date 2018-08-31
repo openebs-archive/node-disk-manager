@@ -27,7 +27,10 @@ const (
 )
 
 // RegisteredFilters contains register function of filters which we want to register
-var RegisteredFilters = []func(){oSDiskExcludeFilterRegister, vendorFilterRegister}
+var RegisteredFilters = []func(){
+	oSDiskExcludeFilterRegister,
+	vendorFilterRegister,
+	pathFilterRegister}
 
 type registerFilter struct {
 	name       string

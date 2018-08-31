@@ -134,6 +134,18 @@ func ContainsIgnoredCase(s []string, k string) bool {
 	return false
 }
 
+// MatchIgnoredCase is a util function which returns true if any of the keys
+// are present as a string in given string - s
+// This function is not case sensitive.
+func MatchIgnoredCase(keys []string, s string) bool {
+	for _, k := range keys {
+		if strings.Contains(strings.ToLower(s), strings.ToLower(k)) {
+			return true
+		}
+	}
+	return false
+}
+
 // StateStatus returns enable if state is true and disable if state is false
 func StateStatus(state bool) string {
 	var status = map[bool]string{
