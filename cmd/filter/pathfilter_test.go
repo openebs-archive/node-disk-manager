@@ -38,7 +38,7 @@ func TestPathFilterRegister(t *testing.T) {
 	var fi controller.FilterInterface = &pathFilter{
 		controller:   fakeController,
 		includePaths: make([]string, 0),
-		excludePaths: make([]string, 0),
+		excludePaths: []string{"loop"},
 	}
 	filter := &controller.Filter{
 		Name:      pathFilterName,

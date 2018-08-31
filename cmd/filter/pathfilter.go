@@ -31,7 +31,7 @@ var (
 	pathFilterName  = "path filter"  // filter device paths
 	pathFilterState = defaultEnabled // filter state
 	includePaths    = ""
-	excludePaths    = ""
+	excludePaths    = "loop"
 )
 
 // pathFilterRegister contains registration process of PathFilter
