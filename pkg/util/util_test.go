@@ -173,12 +173,13 @@ func TestContainsIgnoredCase(t *testing.T) {
 func TestMatchIgnoredCase(t *testing.T) {
 	mkList := make([]string, 0)
 	mkList = append(mkList, "loop")
-	mkList = append(mkList, "feedback")
+	mkList = append(mkList, "/dev/sr0")
 	tests := map[string]struct {
 		diskPath string
 		expected bool
 	}{
 		"diskPath contains one of the keys ": {diskPath: "/dev/loop0", expected: true},
+		"diskPath matches complete key":      {diskPath: "/dev/sr0", expected: true},
 		"diskPath does not match any keys":   {diskPath: "/dev/sdb", expected: false},
 	}
 	for name, test := range tests {
