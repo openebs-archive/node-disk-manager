@@ -43,6 +43,13 @@ data:
           "state": "true",
           "include":"",
           "exclude":"CLOUDBYT,OpenEBS"
+        },
+        {
+          "key": "path-filter",
+          "name": "path filter",
+          "state": "true",
+          "include":"",
+          "exclude":"loop"
         }
       ]
     }

@@ -134,42 +134,6 @@ func TestCheckErr(t *testing.T) {
 	CheckErr(nil, handlerFunc)
 }
 
-func TestContains(t *testing.T) {
-	diskList := make([]string, 0)
-	diskList = append(diskList, "Key1")
-	diskList = append(diskList, "Key3")
-	tests := map[string]struct {
-		diskName string
-		expected bool
-	}{
-		"giving a key which is not present in slice": {diskName: "Key0", expected: false},
-		"giving a key which is present in slice":     {diskName: "Key3", expected: true},
-	}
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expected, Contains(diskList, test.diskName))
-		})
-	}
-}
-
-func TestContainsIgnoredCase(t *testing.T) {
-	diskList := make([]string, 0)
-	diskList = append(diskList, "Key1")
-	diskList = append(diskList, "Key3")
-	tests := map[string]struct {
-		diskName string
-		expected bool
-	}{
-		"giving a key which is not present in slice": {diskName: "keY0", expected: false},
-		"giving a key which is present in slice":     {diskName: "KEy3", expected: true},
-	}
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expected, ContainsIgnoredCase(diskList, test.diskName))
-		})
-	}
-}
-
 func TestStateStatus(t *testing.T) {
 	tests := map[string]struct {
 		status string
