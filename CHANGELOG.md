@@ -1,5 +1,5 @@
 
-n.n.n / 2018-09-01
+v0.1.0-RC3 / 2018-09-01
 ==================
 
   * support configuring filters based on disk path patterns. Example:
@@ -24,6 +24,7 @@ v0.1.0-RC1 / 2018-08-08
   * filter os disk while creating disk cr
   * support probing via mod pages to fetch basic disk attributes
   * order devlinks to place by-id links as the first link in Disk DR
+  * detect and process disk add/remove events; create or update status
   * add devlinks to disk cr
   * add hostname as a label to Disk CR
   * support probing the disks using udev and remove lsblk based discovery

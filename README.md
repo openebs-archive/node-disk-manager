@@ -14,10 +14,11 @@ While PVs are well suited for stateful workloads, the Disk objects are aimed tow
 - Predict failures on the Disks, to help with taking preventive actions
 - Allow for dynamically attaching/detaching Disks to a Storage Pod, without requiring a restart
 
-The design and implementation are currently in progress. The design is covered under this [design proposal PR](./docs/design.md)
-
+The design and implementation are currently in progress. The design is covered under this [design proposal](./docs/design.md)
 
 # Usage
+A detailed usage documentation is maintained in the [wiki](https://github.com/openebs/node-disk-manager/wiki)
+
 ## Start Node Disk Manager DaemonSet
 * Edit [ndm-operator.yaml](./ndm-operator.yaml) to fit your environment: Set the `namespace`, `serviceAccount`, configure filters in the `node-disk-manager-config-map`.
 * Switch to Cluster Admin context and create the DaemonSet with `kubectl create -f ndm-operator.yaml`
