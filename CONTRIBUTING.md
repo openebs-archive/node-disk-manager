@@ -28,7 +28,7 @@ NDM is an Apache 2.0 Licensed project and all your commits should be signed with
   - For code changes, add tests relevant to the fixed bug or new feature. 
   - Pass the compile and tests - includes spell checks, formatting, etc.
   - Commit header (first line) should convey what changed
-  - Commit body should include details such as why the changes are required and how the proposed changes
+  - Commit body should include details such as why the changes are required and how the proposed changes help
   - DCO Signed 
 * If your PR is not getting reviewed or you need a specific person to review it, please reach out to the OpenEBS Contributors. See [OpenEBS Community](https://github.com/openebs/openebs/tree/master/community)
 
