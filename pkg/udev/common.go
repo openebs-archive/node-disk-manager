@@ -107,7 +107,10 @@ func (device *UdevDevice) GetUid() string {
 	// 	On Gke, we have the ID_TYPE property, but still disks will have
 	// same attributes. We have to put a special check to handle it and process
 	// it like a Virtual disk.
-	if len(idtype) == 0 || model == "EphemeralDisk" {
+	localDiskModels := make([]string, 0)
+	localDiskModels = append(localDiskModels, "EphemeralDisk")
+	localDiskModels = append(localDiskModels, "Virtual_disk")
+	if len(idtype) == 0 || util.Contains(localDiskModels, model) {
 		// as hostNetwork is true, os.Hostname will give you the node's Hostname
 		host, _ := os.Hostname()
 		uid += host + device.GetPropertyValue(UDEV_DEVNAME)
