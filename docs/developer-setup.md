@@ -36,6 +36,7 @@ git remote set-url --push upstream no_push
 # Confirm that your remotes make sense:
 git remote -v
 ```
+> **Note:** If your `GOPATH` has more than one (`:` separated) paths in it, then you should use *one of your go path* instead of `$GOPATH` in the commands mentioned here. This statement holds throughout this document.
 
 Install the build dependencies.
   * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
