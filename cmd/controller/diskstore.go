@@ -124,13 +124,14 @@ func (c *Controller) GetExistingResource(listDr *apis.DiskList, uuid string) *ap
 // list of active resources. One active resource which is present in etcd not in
 // system that will be marked as inactive.
 func (c *Controller) DeactivateStaleDiskResource(devices []string) {
+	listDisks := append(devices, GetActiveSparseDisksUuids(c.HostName)...)
 	listDR, err := c.ListDiskResource()
 	if err != nil {
 		glog.Error(err)
 		return
 	}
 	for _, item := range listDR.Items {
-		if !util.Contains(devices, item.ObjectMeta.Name) {
+		if !util.Contains(listDisks, item.ObjectMeta.Name) {
 			c.DeactivateDisk(item)
 		}
 	}

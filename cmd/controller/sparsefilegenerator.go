@@ -17,6 +17,9 @@ limitations under the License.
 package controller
 
 import (
+	"io/ioutil"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
@@ -159,6 +162,25 @@ func CheckAndCreateSparseFile(sparseFile string, sparseFileSize int64) error {
 //  disk on a given node.
 func GetSparseDiskUuid(hostname string, sparseFile string) string {
 	return SPARSE_DISK_PREFIX + util.Hash(hostname+sparseFile)
+}
+
+// GetActiveSparseDisksUuids returns UUIDs for the sparse
+// disks present in a given node.
+func GetActiveSparseDisksUuids(hostname string) []string {
+	sparseFileLocation := GetSparseFileDir()
+	sparseUuids := make([]string, 0)
+	files, err := ioutil.ReadDir(sparseFileLocation)
+	if err != nil {
+		glog.Error("Failed to read sperse file names : ", err)
+		return sparseUuids
+	}
+	for _, file := range files {
+		if strings.HasSuffix(file.Name(), SPARSE_FILE_NAME) {
+			fileName := path.Join(sparseFileLocation, file.Name())
+			sparseUuids = append(sparseUuids, GetSparseDiskUuid(hostname, fileName))
+		}
+	}
+	return sparseUuids
 }
 
 // MarkSparseDiskStateActive will either create a Disk CR if it doesn't exist, or it will
