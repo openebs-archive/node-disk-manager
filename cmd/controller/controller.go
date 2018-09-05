@@ -20,6 +20,7 @@ import (
 	"errors"
 	"os"
 	"sync"
+	"time"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -42,6 +43,11 @@ const (
 
 const (
 	NDMDefaultDiskType = "disk" // NDMDefaultDiskType will be used to initialize the disk type
+)
+
+const (
+	// CRDRetryInterval is used if CRD is not present.
+	CRDRetryInterval = 10 * time.Second
 )
 
 // ControllerBroadcastChannel is used to send a copy of controller object to each probe.
@@ -79,6 +85,10 @@ func NewController(kubeconfig string) (*Controller, error) {
 	controller.Filters = make([]*Filter, 0)
 	controller.Probes = make([]*Probe, 0)
 	controller.Mutex = &sync.Mutex{}
+
+	//Wait for Disk CRD to be loaded
+	controller.WaitForDiskCRD()
+
 	return controller, nil
 }
 
@@ -131,6 +141,21 @@ func (c *Controller) setNodeName() error {
 	}
 	c.HostName = host
 	return nil
+}
+
+// WaitForDiskCRD will block till the CRDs are loaded
+// into Kubernetes
+func (c *Controller) WaitForDiskCRD() {
+	for {
+		_, err := c.ListDiskResource()
+		if err != nil {
+			glog.Errorf("Disk CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
+			time.Sleep(CRDRetryInterval)
+			continue
+		}
+		glog.Info("Disk CRD is available")
+		break
+	}
 }
 
 // Start is called when we execute cli command ndm start.
