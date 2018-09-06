@@ -35,7 +35,8 @@ data:
         {
           "key": "os-disk-exclude-filter",
           "name": "os disk exclude filter",
-          "state": "true"
+          "state": "true",
+          "exclude": "/,/etc/hosts,/boot"
         },
         {
           "key": "vendor-filter",
