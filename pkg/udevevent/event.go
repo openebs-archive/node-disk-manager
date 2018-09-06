@@ -25,12 +25,14 @@ import (
 // event contains EventMessage struct
 type event struct {
 	eventDetails controller.EventMessage
+	controller   *controller.Controller
 }
 
 //newEvent returns a copy of event struct
-func newEvent() *event {
+func newEvent(ctrl *controller.Controller) *event {
 	event := &event{
 		eventDetails: controller.EventMessage{},
+		controller:   ctrl,
 	}
 	return event
 }
@@ -39,7 +41,7 @@ func newEvent() *event {
 func (e *event) process(device *libudevwrapper.UdevDevice) {
 	defer device.UdevDeviceUnref()
 	diskInfo := make([]*controller.DiskInfo, 0)
-	uuid := device.GetUid()
+	uuid := e.controller.GenerateUuid(device)
 	action := device.GetAction()
 	glog.Info("processing new event for ", uuid, " action type ", action)
 	deviceDetails := &controller.DiskInfo{}

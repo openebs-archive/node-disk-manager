@@ -29,6 +29,7 @@ var ConfigFilePath = "/host/node-disk-manager.config"
 
 // NodeDiskManagerConfig contains congigs of probes and filters
 type NodeDiskManagerConfig struct {
+	Data          Data           `json:"data"`          //Data contains additional info which is not generic for probe or filter
 	ProbeConfigs  []ProbeConfig  `json:"probeconfigs"`  // ProbeConfigs contains configs of Probes
 	FilterConfigs []FilterConfig `json:"filterconfigs"` // FilterConfigs contains configs of Filters
 }
@@ -47,6 +48,10 @@ type FilterConfig struct {
 	State   string `json:"state"`   // State is state of Filter
 	Include string `json:"include"` // Include contains , separated values which we want to include for filter
 	Exclude string `json:"exclude"` // Exclude contains , separated values which we want to exclude for filter
+}
+
+type Data struct {
+	LocalDiskModels string `json:"localdiskmodels"` // LocalDiskModels contains models of virtual/localdisks
 }
 
 // SetNDMConfig sets config for probes and filters which user provides via configmap. If

@@ -24,7 +24,6 @@ package udev
 */
 import "C"
 import (
-	"os"
 	"strings"
 	"unsafe"
 
@@ -66,6 +65,8 @@ type UdevDiskDetails struct {
 	Serial         string   // Serial is Serial of a disk.
 	Vendor         string   // Vendor is Vendor of a disk.
 	Path           string   // Path is Path of a disk.
+	Wwn            string   // Wwn is Wwn number of the disk.
+	Type           string   // Type is type of the device it is the ID_TYPE value of udev quarry
 	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
 }
@@ -83,40 +84,12 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 		Serial:         device.GetPropertyValue(UDEV_SERIAL),
 		Vendor:         device.GetPropertyValue(UDEV_VENDOR),
 		Path:           device.GetPropertyValue(UDEV_DEVNAME),
+		Wwn:            device.GetPropertyValue(UDEV_WWN),
+		Type:           device.GetPropertyValue(UDEV_TYPE),
 		ByIdDevLinks:   devLinks[BY_ID_LINK],
 		ByPathDevLinks: devLinks[BY_PATH_LINK],
 	}
 	return diskDetails
-}
-
-// GetUid returns unique id for the disk block device
-func (device *UdevDevice) GetUid() string {
-	uid := device.GetPropertyValue(UDEV_WWN) +
-		device.GetPropertyValue(UDEV_MODEL) +
-		device.GetPropertyValue(UDEV_SERIAL) +
-		device.GetPropertyValue(UDEV_VENDOR)
-
-	idtype := device.GetPropertyValue(UDEV_TYPE)
-
-	model := device.GetPropertyValue(UDEV_MODEL)
-
-	// Virtual disks either have no attributes or they all have
-	// the same attributes. Adding hostname in uid so that disks from different
-	// nodes can be differentiated. Also, putting devpath in uid so that disks
-	// from the same node also can be differentiated.
-	// 	On Gke, we have the ID_TYPE property, but still disks will have
-	// same attributes. We have to put a special check to handle it and process
-	// it like a Virtual disk.
-	localDiskModels := make([]string, 0)
-	localDiskModels = append(localDiskModels, "EphemeralDisk")
-	localDiskModels = append(localDiskModels, "Virtual_disk")
-	if len(idtype) == 0 || util.Contains(localDiskModels, model) {
-		// as hostNetwork is true, os.Hostname will give you the node's Hostname
-		host, _ := os.Hostname()
-		uid += host + device.GetPropertyValue(UDEV_DEVNAME)
-	}
-
-	return NDMPrefix + util.Hash(uid)
 }
 
 // IsDisk returns true if device is a disk

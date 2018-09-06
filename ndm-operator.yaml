@@ -18,6 +18,10 @@ data:
   # filterconfigs contails configs of filters. To provide a group of include
   # and exclude values add it as , separated string
   node-disk-manager.config: |
+    data:
+      localdiskmodels:
+        - EphemeralDisk
+        - Virtual_disk
     probeconfigs:
       - key: udev-probe
         name: udev probe
@@ -43,7 +47,6 @@ data:
         state: true
         include: ""
         exclude: loop
-
 ---
 # Create NDM Service Account
 apiVersion: v1

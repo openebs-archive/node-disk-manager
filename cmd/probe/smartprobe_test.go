@@ -41,6 +41,15 @@ func mockOsDiskToAPIBySmart() (apis.Disk, error) {
 	if err != nil {
 		return apis.Disk{}, err
 	}
+	ctrl := &controller.Controller{}
+	udev, err := libudevwrapper.NewUdev()
+	if err != nil {
+		return apis.Disk{}, err
+	}
+	device, err := udev.NewDeviceFromSysPath(mockOsDiskDetailsFromUdev.SysPath)
+	if err != nil {
+		return apis.Disk{}, err
+	}
 
 	fakeDetails := apis.DiskDetails{
 		Compliance:       mockOsDiskDetails.Compliance,
@@ -67,7 +76,7 @@ func mockOsDiskToAPIBySmart() (apis.Disk, error) {
 
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   mockOsDiskDetailsFromUdev.Uid,
+		Name:   ctrl.GenerateUuid(device),
 	}
 
 	fakeDiskStatus := apis.DiskStatus{
@@ -112,6 +121,14 @@ func TestSmartProbe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	udev, err := libudevwrapper.NewUdev()
+	if err != nil {
+		t.Fatal(err)
+	}
+	device, err := udev.NewDeviceFromSysPath(mockOsDiskDetailsUsingUdev.SysPath)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	fakeHostName := "node-name"
 	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
@@ -127,6 +144,7 @@ func TestSmartProbe(t *testing.T) {
 		Probes:        probes,
 		Filters:       filters,
 	}
+	mockUuid := fakeController.GenerateUuid(device)
 
 	smartProbe := newSmartProbe("fakeController")
 	var pi controller.ProbeInterface = smartProbe
@@ -154,7 +172,7 @@ func TestSmartProbe(t *testing.T) {
 
 	eventmsg := make([]*controller.DiskInfo, 0)
 	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockOsDiskDetailsUsingUdev.Uid
+	deviceDetails.ProbeIdentifiers.Uuid = mockUuid
 	deviceDetails.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
 	eventmsg = append(eventmsg, deviceDetails)
 
@@ -164,7 +182,7 @@ func TestSmartProbe(t *testing.T) {
 	}
 	probeEvent.addDiskEvent(eventDetails)
 
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetailsUsingUdev.Uid, metav1.GetOptions{})
+	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockUuid, metav1.GetOptions{})
 	if err1 != nil {
 		t.Fatal(err1)
 	}

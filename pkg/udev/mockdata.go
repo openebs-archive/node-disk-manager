@@ -41,7 +41,6 @@ type MockOsDiskDetails struct {
 	Serial         string
 	Vendor         string
 	Wwn            string
-	Uid            string
 	ByIdDevLinks   []string
 	ByPathDevLinks []string
 }
@@ -80,7 +79,6 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.Serial = device.GetPropertyValue(UDEV_SERIAL)
 	diskDetails.Vendor = device.GetPropertyValue(UDEV_VENDOR)
 	diskDetails.Wwn = device.GetPropertyValue(UDEV_WWN)
-	diskDetails.Uid = device.GetUid()
 	devLinks := device.GetDevLinks()
 	diskDetails.ByIdDevLinks = devLinks[BY_ID_LINK]
 	diskDetails.ByPathDevLinks = devLinks[BY_PATH_LINK]

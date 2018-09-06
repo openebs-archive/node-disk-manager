@@ -20,7 +20,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -81,6 +80,8 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 		Serial:         diskDetails.Serial,
 		Vendor:         diskDetails.Vendor,
 		Path:           diskDetails.DevNode,
+		Wwn:            diskDetails.Wwn,
+		Type:           diskDetails.DevType,
 		ByIdDevLinks:   diskDetails.ByIdDevLinks,
 		ByPathDevLinks: diskDetails.ByPathDevLinks,
 	}
@@ -126,39 +127,6 @@ func TestIsDisk(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			assert.Equal(t, test.actual, test.expected)
-		})
-	}
-}
-
-/*
-	In this test case we create os disk's UdevDevice object from that we
-	get uuid of os disk. Then we compare it with uuid generation logic.
-*/
-func TestGetUid(t *testing.T) {
-	diskDetails, err := MockDiskDetails()
-	if err != nil {
-		t.Fatal(err)
-	}
-	newUdev, err := NewUdev()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer newUdev.UnrefUdev()
-	device, err := newUdev.NewDeviceFromSysPath(diskDetails.SysPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer device.UdevDeviceUnref()
-	expectedUid := NDMPrefix + util.Hash(diskDetails.Wwn+diskDetails.Model+diskDetails.Serial+diskDetails.Vendor)
-	tests := map[string]struct {
-		actualUuid   string
-		expectedUuid string
-	}{
-		"check for os disk uuid": {actualUuid: device.GetUid(), expectedUuid: expectedUid},
-	}
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.actualUuid, test.expectedUuid)
 		})
 	}
 }

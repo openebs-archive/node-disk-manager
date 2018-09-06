@@ -18,9 +18,15 @@ package udevevent
 
 import (
 	"testing"
+
+	"github.com/openebs/node-disk-manager/cmd/controller"
 )
 
 func TestNewMonitor(t *testing.T) {
+	fakeController := &controller.Controller{}
+	go func() {
+		controller.ControllerBroadcastChannel <- fakeController
+	}()
 	monitor, err := newMonitor()
 	if err != nil {
 		t.Error(err)
@@ -35,6 +41,10 @@ func TestNewMonitor(t *testing.T) {
 }
 
 func TestSetup(t *testing.T) {
+	fakeController := &controller.Controller{}
+	go func() {
+		controller.ControllerBroadcastChannel <- fakeController
+	}()
 	monitor, err := newMonitor()
 	if err != nil {
 		t.Error(err)

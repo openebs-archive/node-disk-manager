@@ -33,6 +33,7 @@ var UdevEventMessageChannel = make(chan controller.EventMessage)
 type monitor struct {
 	udev        *libudevwrapper.Udev
 	udevMonitor *libudevwrapper.UdevMonitor
+	controller  *controller.Controller
 }
 
 // newMonitor returns monitor struct in success
@@ -54,9 +55,14 @@ func newMonitor() (*monitor, error) {
 	if err != nil {
 		return nil, err
 	}
+	ctrl := <-controller.ControllerBroadcastChannel
+	if ctrl == nil {
+		return nil, errors.New("unable to get controller")
+	}
 	monitor := &monitor{
 		udev:        udev,
 		udevMonitor: udevMonitor,
+		controller:  ctrl,
 	}
 	return monitor, nil
 }
@@ -97,7 +103,7 @@ func (m *monitor) process(fd int) error {
 		device.UdevDeviceUnref()
 		return nil
 	}
-	event := newEvent()
+	event := newEvent(m.controller)
 	event.process(device)
 	event.send()
 	return nil

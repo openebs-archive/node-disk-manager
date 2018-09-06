@@ -46,6 +46,15 @@ func mockOsDiskToAPI() (apis.Disk, error) {
 	if err != nil {
 		return apis.Disk{}, err
 	}
+	ctrl := &controller.Controller{}
+	udev, err := libudevwrapper.NewUdev()
+	if err != nil {
+		return apis.Disk{}, err
+	}
+	device, err := udev.NewDeviceFromSysPath(mockOsDiskDetails.SysPath)
+	if err != nil {
+		return apis.Disk{}, err
+	}
 	fakeDetails := apis.DiskDetails{
 		Model:  mockOsDiskDetails.Model,
 		Serial: mockOsDiskDetails.Serial,
@@ -79,7 +88,7 @@ func mockOsDiskToAPI() (apis.Disk, error) {
 	}
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   mockOsDiskDetails.Uid,
+		Name:   ctrl.GenerateUuid(device),
 	}
 	fakeDiskStatus := apis.DiskStatus{
 		State: controller.NDMActive,
@@ -121,6 +130,14 @@ func TestUdevProbe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	udev, err := libudevwrapper.NewUdev()
+	if err != nil {
+		t.Fatal(err)
+	}
+	device, err := udev.NewDeviceFromSysPath(mockOsDiskDetails.SysPath)
+	if err != nil {
+		t.Fatal(err)
+	}
 	fakeHostName := "node-name"
 	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
 	fakeKubeClient := fake.NewSimpleClientset()
@@ -135,6 +152,7 @@ func TestUdevProbe(t *testing.T) {
 		Probes:        probes,
 		Filters:       filters,
 	}
+	mockUuid := fakeController.GenerateUuid(device)
 	udevprobe := newUdevProbe(fakeController)
 	var pi controller.ProbeInterface = udevprobe
 	newRegisterProbe := &registerProbe{
@@ -158,7 +176,7 @@ func TestUdevProbe(t *testing.T) {
 	}
 	eventmsg := make([]*controller.DiskInfo, 0)
 	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockOsDiskDetails.Uid
+	deviceDetails.ProbeIdentifiers.Uuid = mockUuid
 	deviceDetails.ProbeIdentifiers.UdevIdentifier = mockOsDiskDetails.SysPath
 	eventmsg = append(eventmsg, deviceDetails)
 	eventDetails := controller.EventMessage{
@@ -166,8 +184,8 @@ func TestUdevProbe(t *testing.T) {
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
-	fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
+	fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockUuid, metav1.GetOptions{})
+	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockUuid, metav1.GetOptions{})
 	fakeDr, err := mockOsDiskToAPI()
 	if err != nil {
 		t.Fatal(err)

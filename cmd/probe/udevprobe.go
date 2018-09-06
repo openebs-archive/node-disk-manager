@@ -140,7 +140,7 @@ func (up *udevProbe) scan() error {
 			continue
 		}
 		if newUdevice.IsDisk() {
-			uuid := newUdevice.GetUid()
+			uuid := up.controller.GenerateUuid(newUdevice)
 			disksUid = append(disksUid, uuid)
 			deviceDetails := &controller.DiskInfo{}
 			deviceDetails.ProbeIdentifiers.Uuid = uuid

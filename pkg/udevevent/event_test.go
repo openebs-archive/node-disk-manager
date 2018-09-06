@@ -25,14 +25,16 @@ import (
 )
 
 func TestNewEvent(t *testing.T) {
-	event := newEvent()
+	ctrl := &controller.Controller{}
+	event := newEvent(ctrl)
 	if event == nil {
 		t.Error("event pointer should not be nil")
 	}
 }
 
 func TestProcess(t *testing.T) {
-	actualEvent := newEvent()
+	ctrl := &controller.Controller{}
+	actualEvent := newEvent(ctrl)
 	osDiskDetails, err := libudevwrapper.MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)
@@ -45,17 +47,16 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	actualEvent.process(device)
-
 	// creating mock event
-	expectedEvent := newEvent()
+	expectedEvent := newEvent(ctrl)
 	diskInfo := make([]*controller.DiskInfo, 0)
 	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = osDiskDetails.Uid
+	deviceDetails.ProbeIdentifiers.Uuid = ctrl.GenerateUuid(device)
 	deviceDetails.ProbeIdentifiers.UdevIdentifier = osDiskDetails.SysPath
 	diskInfo = append(diskInfo, deviceDetails)
 	expectedEvent.eventDetails.Action = ""
 	expectedEvent.eventDetails.Devices = diskInfo
+	actualEvent.process(device)
 	assert.Equal(t, expectedEvent, actualEvent)
 
 	tests := map[string]struct {
@@ -72,7 +73,8 @@ func TestProcess(t *testing.T) {
 }
 
 func TestSend(t *testing.T) {
-	event := newEvent()
+	ctrl := &controller.Controller{}
+	event := newEvent(ctrl)
 	if event == nil {
 		t.Error("event pointer should not be nil")
 	}
