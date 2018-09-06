@@ -17,6 +17,8 @@ limitations under the License.
 package filter
 
 import (
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/cmd/controller"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -45,6 +47,7 @@ var oSDiskExcludeFilterRegister = func() {
 			if filterConfig.Key == osDiskExcludeFilterKey {
 				oSDiskExcludeFilterName = filterConfig.Name
 				oSDiskExcludeFilterState = util.CheckTruthy(filterConfig.State)
+				mountPoints = strings.Split(filterConfig.Exclude, ",")
 				break
 			}
 		}
