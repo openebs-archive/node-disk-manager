@@ -33,7 +33,7 @@ const (
 
 // Constants being used by switch case for returning disk details
 const (
-	SPCVersion         = "SPCVersion"
+	Compliance         = "Compliance"
 	Vendor             = "Vendor"
 	Capacity           = "Capacity"
 	LogicalSectorSize  = "LogicalSectorSize"
@@ -148,7 +148,7 @@ var serialATAType = map[int]string{
 
 // ScsiInqAttr is the list of attributes fetched by SCSI Inquiry command
 var ScsiInqAttr = map[string]bool{
-	SPCVersion:   true,
+	Compliance:   true,
 	Vendor:       true,
 	SerialNumber: true,
 	ModelNumber:  true,
@@ -249,7 +249,7 @@ type DiskAttr struct {
 
 // BasicDiskAttr is the structure being used for returning basic disk details
 type BasicDiskAttr struct {
-	SPCVersion       string
+	Compliance       string
 	Vendor           string
 	ModelNumber      string
 	SerialNumber     string

@@ -57,7 +57,10 @@ func (d *SCSIDev) scsiInquiry() (InquiryResponse, error) {
 // command using Inquiry response struct
 func (inquiry InquiryResponse) getValue() map[string]string {
 	InqRespMap := make(map[string]string)
-	InqRespMap[SPCVersion] = fmt.Sprintf("%.d", inquiry.Version)
+
+	SPCVersionValue := fmt.Sprintf("%.d", (inquiry.Version - 0x02))
+
+	InqRespMap[Compliance] = "SPC-" + SPCVersionValue
 	InqRespMap[Vendor] = fmt.Sprintf("%.8s", inquiry.VendorID)
 	InqRespMap[ModelNumber] = fmt.Sprintf("%.16s", inquiry.ProductID)
 	InqRespMap[FirmwareRev] = fmt.Sprintf("%.4s", inquiry.ProductRev)

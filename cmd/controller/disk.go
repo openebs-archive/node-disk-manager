@@ -40,7 +40,7 @@ type DiskInfo struct {
 	ByPathDevLinks    []string        // ByPathDevLinks contains by-path devlinks
 	FirmwareRevision  string          // FirmwareRevision is the firmware revision for a disk
 	LogicalSectorSize uint32          // LogicalSectorSize is the Logical size of a disk in bytes
-	SPCVersion        string          // SPCVersion is implemented specifications version i.e. SPC-1, SPC-2, etc
+	Compliance        string          // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
 	DiskType          string          // DiskType represents the type of disk like Disk, Sparse etc.,
 }
 
@@ -138,7 +138,7 @@ func (di *DiskInfo) getDiskDetails() apis.DiskDetails {
 	diskDetails.Serial = di.Serial
 	diskDetails.Vendor = di.Vendor
 	diskDetails.FirmwareRevision = di.FirmwareRevision
-	diskDetails.SPCVersion = di.SPCVersion
+	diskDetails.Compliance = di.Compliance
 	return diskDetails
 }
 

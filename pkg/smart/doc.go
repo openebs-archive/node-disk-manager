@@ -68,7 +68,7 @@ func main() {
 	}
 
 	fmt.Printf("Vendor :%s \n",deviceBasicSCSIInfo.Vendor)
-	fmt.Printf("SPCVersion :%s \n",deviceBasicSCSIInfo.SPCVersion)
+	fmt.Printf("Compliance :%s \n",deviceBasicSCSIInfo.Compliance)
 	fmt.Printf("FirmwareRevision :%s \n",deviceBasicSCSIInfo.FirmwareRevision)
 	fmt.Printf("Capacity :%d \n",deviceBasicSCSIInfo.Capacity)
 }

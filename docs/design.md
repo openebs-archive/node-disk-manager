@@ -113,7 +113,7 @@ The workflow with _*node-disk-manager*_ would be to integrate into current appro
       firmwareRevision: '1   '
       model: PersistentDisk
       serial: disk-2
-      spcVersion: "6"
+      compliance: "SPC-4"
       vendor: Google
     devlinks:
     - kind: by-id
@@ -173,7 +173,7 @@ items:
       firmwareRevision: '1   '
       model: PersistentDisk
       serial: disk-2
-      spcVersion: "6"
+      compliance: "SPC-4"
       vendor: Google
     devlinks:
     - kind: by-id
@@ -206,7 +206,7 @@ items:
       firmwareRevision: ""
       model: PersistentDisk
       serial: disk-3
-      spcVersion: ""
+      compliance: ""
       vendor: Google
     devlinks:
     - kind: by-id
