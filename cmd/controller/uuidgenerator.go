@@ -39,9 +39,11 @@ func (c *Controller) GenerateUuid(device *libudevwrapper.UdevDevice) string {
 	// 	On Gke, we have the ID_TYPE property, but still disks will have
 	// same attributes. We have to put a special check to handle it and process
 	// it like a Virtual disk.
-	localDiskModels := strings.Split(models, ",")
+	localDiskModels := make([]string, 0)
 	if c.NDMConfig != nil {
 		localDiskModels = strings.Split(c.NDMConfig.Data.LocalDiskModels, ",")
+	} else {
+		localDiskModels = strings.Split(models, ",")
 	}
 	if len(idtype) == 0 || util.Contains(localDiskModels, model) {
 		uid += c.HostName + deviceDetails.Path

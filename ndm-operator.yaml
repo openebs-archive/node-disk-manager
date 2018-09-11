@@ -19,9 +19,7 @@ data:
   # and exclude values add it as , separated string
   node-disk-manager.config: |
     data:
-      localdiskmodels:
-        - EphemeralDisk
-        - Virtual_disk
+      localdiskmodels:"EphemeralDisk,Virtual_disk"
     probeconfigs:
       - key: udev-probe
         name: udev probe
