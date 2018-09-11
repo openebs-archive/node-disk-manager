@@ -14,13 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server_test
+package server
 
 import (
 	"net"
 	"testing"
-
-	"github.com/openebs/node-disk-manager/pkg/server"
 )
 
 func TestStartHttpServer(t *testing.T) {
@@ -28,16 +26,14 @@ func TestStartHttpServer(t *testing.T) {
 	ErrorMessages := make(chan error)
 	go func() {
 		//Block port 9090 and attempt to start http server at 9090.
-		p1, err := net.Listen("tcp", "localhost:9090")
-		defer p1.Close()
-		if err != nil {
-			t.Log(err)
+		if p1, err := net.Listen("tcp", "localhost:9090"); err == nil {
+			defer p1.Close()
 		}
-		ErrorMessages <- server.StartHttpServer()
+		ErrorMessages <- StartHttpServer()
 	}()
 	msg := <-ErrorMessages
 	if msg != nil {
-		t.Log("Try to start http server in a port which is busy.")
+		t.Log("Trying to start http server in a port which is busy.")
 		t.Log(msg)
 	}
 }
