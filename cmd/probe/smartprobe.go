@@ -100,7 +100,7 @@ func (sp *smartProbe) FillDiskDetails(d *controller.DiskInfo) {
 		glog.Error(err)
 	}
 
-	d.SPCVersion = deviceBasicSCSIInfo.SPCVersion
+	d.Compliance = deviceBasicSCSIInfo.Compliance
 	d.FirmwareRevision = deviceBasicSCSIInfo.FirmwareRevision
 	d.Capacity = deviceBasicSCSIInfo.Capacity
 	d.LogicalSectorSize = deviceBasicSCSIInfo.LBSize

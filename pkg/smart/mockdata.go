@@ -19,7 +19,7 @@ package smart
 import "github.com/openebs/node-disk-manager/pkg/udev"
 
 type MockOsDiskDetails struct {
-	SPCVersion       string
+	Compliance       string
 	FirmwareRevision string
 	Capacity         uint64
 	LBSize           uint32
@@ -42,7 +42,7 @@ func (d *SCSIDev) getCommonSCSIDetails(cDetail MockOsDiskDetails) (MockOsDiskDet
 	if err != nil {
 		return cDetail, err
 	}
-	cDetail.SPCVersion = InqRes.getValue()[SPCVersion]
+	cDetail.Compliance = InqRes.getValue()[Compliance]
 	cDetail.FirmwareRevision = InqRes.getValue()[FirmwareRev]
 
 	// Scsi readDeviceCapacity command to get the capacity of a disk

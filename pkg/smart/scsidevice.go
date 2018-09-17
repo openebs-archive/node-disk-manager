@@ -157,7 +157,7 @@ func (d *SCSIDev) fillDiskInfoUsingSI(diskDetails DiskAttr) (DiskAttr, error) {
 	if err != nil {
 		return diskDetails, err
 	}
-	diskDetails.SPCVersion = InqRes.getValue()[SPCVersion]
+	diskDetails.Compliance = InqRes.getValue()[Compliance]
 	diskDetails.Vendor = InqRes.getValue()[Vendor]
 	diskDetails.ModelNumber = InqRes.getValue()[ModelNumber]
 	diskDetails.FirmwareRevision = InqRes.getValue()[FirmwareRev]
