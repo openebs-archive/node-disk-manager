@@ -73,7 +73,7 @@ func (d *SCSIDev) runSCSIGen(header *sgIOHeader) error {
 	return nil
 }
 
-// Error returns error string of error occured while sending SGIO(scsi generic ioctl)
+// Error returns error string of error occurred while sending SGIO(scsi generic ioctl)
 // to a scsi device using the sgIOErr format
 func (s sgIOErr) Error() string {
 	return fmt.Sprintf("SCSI status: %#02x, host status: %#02x, driver status: %#02x",
