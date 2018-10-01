@@ -23,6 +23,8 @@ import (
 )
 
 var (
+	// StartingTime represents
+	// the starting of time
 	StartingTime time.Time
 	Uptime       = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "Uptime",
