@@ -24,13 +24,17 @@ import (
 )
 
 func TestFD_SET(t *testing.T) {
+	fdSet1, fdSet2, fdSet128 := syscall.FdSet{}, syscall.FdSet{}, syscall.FdSet{}
+	fdSet1.Bits[0] = 1
+	fdSet2.Bits[0] = 2
+	fdSet128.Bits[0] = 128
 	tests := map[string]struct {
 		x        int
 		expected syscall.FdSet
 	}{
-		"fd set test for fd value 0": {x: 0, expected: syscall.FdSet{[32]int32{1}}},
-		"fd set test for fd value 1": {x: 1, expected: syscall.FdSet{[32]int32{2}}},
-		"fd set test for fd value 7": {x: 7, expected: syscall.FdSet{[32]int32{128}}},
+		"fd set test for fd value 0": {x: 0, expected: fdSet1},
+		"fd set test for fd value 1": {x: 1, expected: fdSet2},
+		"fd set test for fd value 7": {x: 7, expected: fdSet128},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
