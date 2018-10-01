@@ -22,7 +22,7 @@ import (
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 )
 
-// EventAction global variable to store eventAction
+// EventAction global type to store eventAction
 type EventAction string
 
 const (
