@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NodediskManagerOptions defines a type for the options of NDM
+// NodeDiskManagerOptions defines a type for the options of NDM
 type NodeDiskManagerOptions struct {
 	KubeConfig string
 }
@@ -68,7 +68,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	return cmd, nil
 }
 
-// Run ndm
+// RunNodeDiskManager starts the node disk manager
 func RunNodeDiskManager(cmd *cobra.Command) error {
 	glog.Infof("Starting node disk manager ...")
 
