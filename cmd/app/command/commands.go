@@ -68,7 +68,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	return cmd, nil
 }
 
-// RunNodeDiskManager starts the node disk manager
+// RunNodeDiskManager starts ndm process
 func RunNodeDiskManager(cmd *cobra.Command) error {
 	glog.Infof("Starting node disk manager ...")
 
