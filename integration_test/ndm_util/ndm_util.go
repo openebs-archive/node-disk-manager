@@ -148,7 +148,7 @@ func ValidateNdmLog(log string) bool {
 }
 
 // GetNDMLogAndValidateFor extracts log of supplied pod of node-disk-manager and then validate
-// return the validation status and error occured during process
+// return the validation status and error occurred during process
 func GetNDMLogAndValidateFor(ndmPod *core_v1.Pod) (bool, error) {
 	// log if debug is enabled
 	logger.PrintfDebugMessage("checking logs for pod %q in namespace %q", ndmPod.Name, ndmPod.Namespace)
@@ -179,7 +179,7 @@ func GetNDMLogAndValidateFor(ndmPod *core_v1.Pod) (bool, error) {
 }
 
 // GetNDMLogAndValidate extracts log of node-disk-manager and then validate
-// return the validation status and error occured during process
+// return the validation status and error occurred during process
 func GetNDMLogAndValidate() (bool, error) {
 	// Getting the log
 	ndmPods, err := k8sutil.GetNdmPods()
@@ -604,7 +604,7 @@ func Clean() {
 	fmt.Println("Checking minikube status...")
 	minikubeStatus, err := cr.CitfInstance.Environment.Status()
 	if err != nil {
-		fmt.Printf("Error occured while checking status of minikube. Error: %+v\n", err)
+		fmt.Printf("Error occurred while checking status of minikube. Error: %+v\n", err)
 	}
 	if state, ok := minikubeStatus["minikube"]; ok && (state == "Running" || state == "Stopped") {
 		fmt.Println("Deleting minikube...")
@@ -620,7 +620,7 @@ func Clean() {
 	fmt.Println("Removing docker containers...")
 	err = cr.CitfInstance.Docker.Teardown()
 	if err != nil {
-		fmt.Printf("Error occured when deleting containers. Error: %+v\n", err)
+		fmt.Printf("Error occurred when deleting containers. Error: %+v\n", err)
 	}
 
 	fmt.Printf("Removing %q...\n", GetNDMTestConfigurationFileName())
@@ -629,7 +629,7 @@ func Clean() {
 	} else {
 		err = os.Remove(GetNDMTestConfigurationFilePath())
 		if err != nil {
-			fmt.Printf("Error occured while removing NDM's temporary configuration file. Error: %+v\n", err)
+			fmt.Printf("Error occurred while removing NDM's temporary configuration file. Error: %+v\n", err)
 		} else {
 			fmt.Printf("%q removed.\n", GetNDMTestConfigurationFilePath())
 		}
