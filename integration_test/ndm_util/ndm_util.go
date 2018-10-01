@@ -477,14 +477,14 @@ func WaitTillDefaultNSisReady() {
 			}
 		} else {
 			fmt.Printf("Try - %d: Error getting namespaces. Error: %+v\n", i, err)
-			time.Sleep(WaitTimeUnit)
+			time.Sleep(waitTimeUnit)
 			continue
 		}
 
 		// If namespace is not even created
 		if reflect.DeepEqual(ndmNS, core_v1.Namespace{}) {
 			fmt.Printf("Try - %d: Waiting as Namespace %q has not been created yet.\n", i, GetNDMNamespace())
-			time.Sleep(WaitTimeUnit)
+			time.Sleep(waitTimeUnit)
 			continue
 		}
 
@@ -496,9 +496,9 @@ func WaitTillDefaultNSisReady() {
 
 	// Final Check
 	if reflect.DeepEqual(ndmNS, core_v1.Namespace{}) {
-		glog.Fatalf("Namespace %q didn't came up in %v", GetNDMNamespace(), time.Duration(MaxTry)*WaitTimeUnit)
+		glog.Fatalf("Namespace %q didn't came up in %v", GetNDMNamespace(), time.Duration(MaxTry)*waitTimeUnit)
 	} else if !cr.CitfInstance.K8S.IsNSinGoodPhase(ndmNS) {
-		glog.Fatalf("Namespace %q is still in bad phase: %q after %v", GetNDMNamespace(), ndmNS.Status.Phase, time.Duration(MaxTry)*WaitTimeUnit)
+		glog.Fatalf("Namespace %q is still in bad phase: %q after %v", GetNDMNamespace(), ndmNS.Status.Phase, time.Duration(MaxTry)*waitTimeUnit)
 	}
 	fmt.Printf("Namespace %q is ready\n", ndmNS.Name)
 }
