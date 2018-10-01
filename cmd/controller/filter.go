@@ -28,10 +28,10 @@ type Filter struct {
 	Interface FilterInterface // Interface contains registered filter
 }
 
-/*
-	ApplyFilter returns true if both any of include() or exclude() returns true.
-	We are having two types of filter function one is inclusion and exclusion type
-	if any of them returns true then filter doesn't want further process of that event.
+/*ApplyFilter returns true if both any of include() or exclude() returns true.
+We are having two types of filter function one is inclusion and exclusion type
+if any of them returns true then filter doesn't want further process of that
+event.
 */
 func (f *Filter) ApplyFilter(diskInfo *DiskInfo) bool {
 	return f.Interface.Include(diskInfo) && f.Interface.Exclude(diskInfo)
@@ -49,11 +49,10 @@ type FilterInterface interface {
 	Filters
 }
 
-/*
-	Filters contains Include() and Exclude() filter method. There
-	will be some preset value of include and exclude if passing DiskInfo
-	matches with include value then it returns true if passing DiskINfo
-	does not match with exclude value then it returns false
+/*Filters contains Include() and Exclude() filter method. There
+will be some preset value of include and exclude if passing DiskInfo matches
+with include value then it returns true if passing DiskINfo does not match with
+exclude value then it returns false
 */
 type Filters interface {
 	Include(*DiskInfo) bool // Include returns True if passing DiskInfo matches with include value
