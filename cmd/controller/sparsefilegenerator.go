@@ -47,7 +47,8 @@ On Shutdown, the status of the sparse file Disk CR will be marked as Unknown.
 const (
 	/*ENV_SPARSE_FILE_DIR - if it specified as a environment variable,
 	a Sparse file with specified size (SPARSE_FILE_SIZE) will
-	be created and an associated Disk CR will be added to Kubernetes.*/
+	be created inside specified directory (ENV_SPARSE_FILE_DIR)
+	and an associated Disk CR will be added to Kubernetes.*/
 	ENV_SPARSE_FILE_DIR   = "SPARSE_FILE_DIR"
 	ENV_SPARSE_FILE_SIZE  = "SPARSE_FILE_SIZE"
 	ENV_SPARSE_FILE_COUNT = "SPARSE_FILE_COUNT"
