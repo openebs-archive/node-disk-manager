@@ -40,8 +40,7 @@ func newUdevListEntry(ptr *C.struct_udev_list_entry) (le *UdevListEntry) {
 	return
 }
 
-// GetNext return UdevListEntry struct if next device present
-// else it returns nil pointer.
+// GetNextEntry returns UdevListEntry struct if next device is present else it returns nil pointer.
 func (le *UdevListEntry) GetNextEntry() *UdevListEntry {
 	return newUdevListEntry(C.udev_list_entry_get_next(le.listEntry))
 }
