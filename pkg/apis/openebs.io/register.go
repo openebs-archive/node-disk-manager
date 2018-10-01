@@ -1,6 +1,6 @@
 package openebsio
 
 const (
-	// Use openebs.io as a GroupName 
+	// GroupName is the constant used for SchemeGroupVersion later
 	GroupName = "openebs.io"
 )
