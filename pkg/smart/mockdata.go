@@ -18,6 +18,7 @@ package smart
 
 import "github.com/openebs/node-disk-manager/pkg/udev"
 
+//MockOsDiskDetails struct contains the basic details of the disk
 type MockOsDiskDetails struct {
 	Compliance       string
 	FirmwareRevision string
