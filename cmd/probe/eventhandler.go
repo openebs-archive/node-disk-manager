@@ -22,11 +22,14 @@ import (
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 )
 
+// EventAction global variable to store eventAction
 type EventAction string
 
 const (
-	AttachEA EventAction = libudevwrapper.UDEV_ACTION_ADD    // AttachEA is attach disk event name
-	DetachEA EventAction = libudevwrapper.UDEV_ACTION_REMOVE // DetachEA is detach disk event name
+	// AttachEA is attach disk event name
+	AttachEA EventAction = libudevwrapper.UDEV_ACTION_ADD
+	// DetachEA is detach disk event name
+	DetachEA EventAction = libudevwrapper.UDEV_ACTION_REMOVE
 )
 
 // ProbeEvent struct contain a copy of controller it will update disk resources
