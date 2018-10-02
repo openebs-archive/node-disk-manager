@@ -23,14 +23,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func fdGetArray() []syscall.FdSet {
+	results := make([]syscall.FdSet, 0)
+	fd1, fd2, fd6, fd128 := syscall.FdSet{}, syscall.FdSet{}, syscall.FdSet{}, syscall.FdSet{}
+	fd1.Bits[0] = 1
+	fd2.Bits[0] = 2
+	fd6.Bits[0] = 6
+	fd128.Bits[0] = 128
+	results = append(results, fd1, fd2, fd6, fd128)
+
+	return results
+}
+
 func TestFD_SET(t *testing.T) {
 	tests := map[string]struct {
 		x        int
 		expected syscall.FdSet
 	}{
-		"fd set test for fd value 0": {x: 0, expected: syscall.FdSet{[16]int64{1}}},
-		"fd set test for fd value 1": {x: 1, expected: syscall.FdSet{[16]int64{2}}},
-		"fd set test for fd value 7": {x: 7, expected: syscall.FdSet{[16]int64{128}}},
+		"fd set test for fd value 0": {x: 0, expected: fdGetArray()[0]},
+		"fd set test for fd value 1": {x: 1, expected: fdGetArray()[1]},
+		"fd set test for fd value 7": {x: 7, expected: fdGetArray()[3]},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -47,11 +59,11 @@ func TestFD_ISSET(t *testing.T) {
 		fdset    syscall.FdSet
 		expected bool
 	}{
-		"set 0 and check with 2^0": {x: 0, fdset: syscall.FdSet{[16]int64{1}}, expected: true},
-		"set 1 and check with 2^1": {x: 1, fdset: syscall.FdSet{[16]int64{2}}, expected: true},
-		"set 7 and check with 2^7": {x: 7, fdset: syscall.FdSet{[16]int64{128}}, expected: true},
-		"set 4 and check with 6":   {x: 4, fdset: syscall.FdSet{[16]int64{6}}, expected: false},
-		"set 2 and check with 2":   {x: 2, fdset: syscall.FdSet{[16]int64{2}}, expected: false},
+		"set 0 and check with 2^0": {x: 0, fdset: fdGetArray()[0], expected: true},
+		"set 1 and check with 2^1": {x: 1, fdset: fdGetArray()[1], expected: true},
+		"set 7 and check with 2^7": {x: 7, fdset: fdGetArray()[3], expected: true},
+		"set 4 and check with 6":   {x: 4, fdset: fdGetArray()[2], expected: false},
+		"set 2 and check with 2":   {x: 2, fdset: fdGetArray()[1], expected: false},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -66,9 +78,9 @@ func TestFD_ZERO(t *testing.T) {
 		x        int
 		expected syscall.FdSet
 	}{
-		"fd zero test for fdset value {[16]int64{1}}":   {x: 0, expected: syscall.FdSet{[16]int64{1}}},
-		"fd zero test for fdset value {[16]int64{2}}":   {x: 1, expected: syscall.FdSet{[16]int64{2}}},
-		"fd zero test for fdset value {[16]int64{128}}": {x: 7, expected: syscall.FdSet{[16]int64{128}}},
+		"fd zero test for fdset value {[16]int64{1}}":   {x: 0, expected: fdGetArray()[0]},
+		"fd zero test for fdset value {[16]int64{2}}":   {x: 1, expected: fdGetArray()[1]},
+		"fd zero test for fdset value {[16]int64{128}}": {x: 7, expected: fdGetArray()[3]},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
