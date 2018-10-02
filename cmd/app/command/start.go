@@ -30,7 +30,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//CmdStartOptions options for start command
 type CmdStartOptions struct {
 	kubeconfig string
 }
