@@ -37,7 +37,7 @@ type CDB6 [6]byte
 // CDB10 is a slice of 10 byte
 type CDB10 [10]byte
 
-//CDB16 is a slice of 16 byte
+// CDB16 is a slice of 16 byte
 type CDB16 [16]byte
 
 // getLBSize returns the logical block size of a SCSI device
