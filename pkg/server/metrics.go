@@ -23,9 +23,10 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/metrics"
 )
 
+//MetricsMiddleware is middleware for prometheus
 func MetricsMiddleware(prometheusHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		metrics.Uptime.Set(time.Now().Sub(metrics.StartingTime).Seconds())
+		metrics.Uptime.Set(time.Since(metrics.StartingTime).Seconds())
 		prometheusHandler.ServeHTTP(w, r)
 	})
 }

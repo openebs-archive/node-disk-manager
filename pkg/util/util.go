@@ -105,7 +105,7 @@ func StrToInt32(val string) *int32 {
 	return n32
 }
 
-//get the hash of the string
+// Hash retrieves an encoded string using the md5 encrypt
 func Hash(s string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(s))

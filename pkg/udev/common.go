@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	NDMPrefix           = "disk-"
+	NDMPrefix           = "disk-"           // NDMPrefix used as disk's uuid prefix
 	UDEV_SUBSYSTEM      = "block"           // udev to filter this device type
 	UDEV_SYSTEM         = "disk"            // used to filter devices other than disk which udev tracks (eg. CD ROM)
 	UDEV_PATH           = "DEVPATH"         // udev attribute to get device path

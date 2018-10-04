@@ -32,17 +32,25 @@ import (
 )
 
 const (
-	NDMKind        = "Disk"                   // NDMKind is the CR kind.
-	NDMVersion     = "openebs.io/v1alpha1"    // NDMVersion is the CR version.
-	NDMHostKey     = "kubernetes.io/hostname" // NDMHostKey is host name label prefix.
-	NDMActive      = "Active"                 // NDMActive is constant for active resource status.
-	NDMInactive    = "Inactive"               // NDMInactive is constant for inactive resource status.
-	NDMUnknown     = "Unknown"                // NDMUnknown is constant for resource unknown satus.
-	NDMDiskTypeKey = "ndm.io/disk-type"       // NDMDiskTypeKey specifies the type of disk
+	// NDMKind is the CR kind.
+	NDMKind = "Disk"
+	// NDMVersion is the CR version.
+	NDMVersion = "openebs.io/v1alpha1"
+	// NDMHostKey is host name label prefix.
+	NDMHostKey = "kubernetes.io/hostname"
+	// NDMActive is constant for active resource status.
+	NDMActive = "Active"
+	// NDMInactive is constant for inactive resource status.
+	NDMInactive = "Inactive"
+	// NDMUnknown is constant for resource unknown satus.
+	NDMUnknown = "Unknown"
+	// NDMDiskTypeKey specifies the type of disk.
+	NDMDiskTypeKey = "ndm.io/disk-type"
 )
 
 const (
-	NDMDefaultDiskType = "disk" // NDMDefaultDiskType will be used to initialize the disk type
+	// NDMDefaultDiskType will be used to initialize the disk type.
+	NDMDefaultDiskType = "disk"
 )
 
 const (
