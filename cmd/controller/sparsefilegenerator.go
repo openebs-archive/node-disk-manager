@@ -45,16 +45,26 @@ On Shutdown, the status of the sparse file Disk CR will be marked as Unknown.
 */
 
 const (
-	ENV_SPARSE_FILE_DIR   = "SPARSE_FILE_DIR"
-	ENV_SPARSE_FILE_SIZE  = "SPARSE_FILE_SIZE"
+	// ENV_SPARSE_FILE_DIR defines a sparse directory
+	ENV_SPARSE_FILE_DIR = "SPARSE_FILE_DIR"
+	// ENV_SPARSE_FILE_SIZE defines the sparse size
+	ENV_SPARSE_FILE_SIZE = "SPARSE_FILE_SIZE"
+	// ENV_SPARSE_FILE_COUNT defines the number of sparse files to be created
 	ENV_SPARSE_FILE_COUNT = "SPARSE_FILE_COUNT"
 
-	SPARSE_FILE_NAME          = "ndm-sparse.img"
-	SPARSE_FILE_DEFAULT_SIZE  = int64(1073741824)
-	SPARSE_FILE_MIN_SIZE      = int64(1073741824)
+	// SPARSE_FILE_NAME is the name of the sparse file
+	SPARSE_FILE_NAME = "ndm-sparse.img"
+
+	// SPARSE_FILE_DEFAULT_SIZE is the default file size
+	SPARSE_FILE_DEFAULT_SIZE = int64(1073741824)
+	// SPARSE_FILE_MIN_SIZE is the minimum file size
+	SPARSE_FILE_MIN_SIZE = int64(1073741824)
+	// SPARSE_FILE_DEFAULT_COUNT defines the default sparse count files
 	SPARSE_FILE_DEFAULT_COUNT = "1"
 
-	SPARSE_DISKTYPE    = "sparse"
+	// SPARSE_DISKTYPE is a sparse disk type
+	SPARSE_DISKTYPE = "sparse"
+	// SPARSE_DISK_PREFIX defines the prefix for the sparse disk
 	SPARSE_DISK_PREFIX = "sparse-"
 )
 
