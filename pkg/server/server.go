@@ -26,8 +26,7 @@ import (
 )
 
 var (
-	// ListenPort defines the port
-	// in which the app listens to
+	// ListenPort defines the port in which the server listens to
 	ListenPort  string = ":9090"
 	MetricsPath string = "/metrics"
 )
