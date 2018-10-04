@@ -23,6 +23,7 @@ import (
 )
 
 var (
+	// StartingTime represents the starting time of ndm process
 	StartingTime time.Time
 	Uptime       = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "Uptime",
