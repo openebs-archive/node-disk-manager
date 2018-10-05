@@ -35,11 +35,8 @@ func init() {
 	prometheus.MustRegister(metrics.Uptime)
 }
 
-// StartHttpServer
-// boots up the server
-// that runs on the specified port.
-// Returns an error if there is
-// no connection established
+// StartHttpServer boots up the server that runs on the specified port.
+// Returns an error if there is no connection established.
 func StartHttpServer() error {
 	http.Handle(MetricsPath, MetricsMiddleware(promhttp.Handler()))
 	glog.Info("Starting HTTP server at http://localhost" + ListenPort + MetricsPath + " for metrics.")
