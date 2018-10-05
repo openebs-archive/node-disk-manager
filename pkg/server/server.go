@@ -35,7 +35,8 @@ func init() {
 	prometheus.MustRegister(metrics.Uptime)
 }
 
-// StartHttpServer boots up the server
+// StartHttpServer
+// boots up the server
 // that runs on the specified port.
 // Returns an error if there is
 // no connection established
