@@ -30,8 +30,14 @@ const (
 
 // SCSI Command Descriptor Block types are the various type of scsi cdbs which are used
 // to specify the various parameters or data required to send a particular scsi command
+
+// CDB6 is an array of 6 byte
 type CDB6 [6]byte
+
+// CDB10 is an array of 10 byte
 type CDB10 [10]byte
+
+// CDB16 is an array of 16 byte
 type CDB16 [16]byte
 
 // getLBSize returns the logical block size of a SCSI device
