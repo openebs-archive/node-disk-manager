@@ -40,7 +40,7 @@ func TestGetSparseFileDir(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			os.Setenv(ENV_SPARSE_FILE_DIR, test.envSparseDir)
+			os.Setenv(EnvSparseFileDir, test.envSparseDir)
 			assert.Equal(t, test.expectedPath, GetSparseFileDir())
 		})
 	}
@@ -52,7 +52,7 @@ func TestGetSparseFileDir(t *testing.T) {
 //  If no value is set, default count is returned.
 func TestGetSparseFileCount(t *testing.T) {
 
-	defaultCount, econv := strconv.Atoi(SPARSE_FILE_DEFAULT_COUNT)
+	defaultCount, econv := strconv.Atoi(SparseFileDefaultCount)
 	if econv != nil {
 		defaultCount = 0
 	}
@@ -67,7 +67,7 @@ func TestGetSparseFileCount(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			os.Setenv(ENV_SPARSE_FILE_COUNT, test.envFileCount)
+			os.Setenv(EnvSparseFileCount, test.envFileCount)
 			assert.Equal(t, test.expectedCount, GetSparseFileCount())
 		})
 	}
@@ -79,8 +79,8 @@ func TestGetSparseFileCount(t *testing.T) {
 //  If no value is set, default size is returned.
 func TestGetSparseFileSize(t *testing.T) {
 
-	defaultSize := SPARSE_FILE_DEFAULT_SIZE
-	minSize := SPARSE_FILE_MIN_SIZE
+	defaultSize := SparseFileDefaultSize
+	minSize := SparseFileMinSize
 
 	tests := map[string]struct {
 		envFileSize  string
@@ -93,7 +93,7 @@ func TestGetSparseFileSize(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			os.Setenv(ENV_SPARSE_FILE_SIZE, test.envFileSize)
+			os.Setenv(EnvSparseFileSize, test.envFileSize)
 			assert.Equal(t, test.expectedSize, GetSparseFileSize())
 		})
 	}
@@ -162,9 +162,9 @@ func TestGetActiveSparseDisksUuids(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			os.Setenv(ENV_SPARSE_FILE_DIR, test.sparseFileDir)
+			os.Setenv(EnvSparseFileDir, test.sparseFileDir)
 			assert.Equal(t, test.expectedSparseDiskUuids, GetActiveSparseDisksUuids("instance-1"))
-			os.Unsetenv(ENV_SPARSE_FILE_DIR)
+			os.Unsetenv(EnvSparseFileDir)
 		})
 	}
 }

@@ -35,34 +35,46 @@ proto typing solutions built using node-disk-manager(NDM).  Sparse files
 will be created if NDM is provided with the location where sparse files
 should be located.
 
-On Startup, if a sparse directory (SPARSE_FILE_DIR) is specified as a
-environment variable, a Sparse file with specified size (SPARSE_FILE_SIZE) will
+On Startup, if a sparse directory (EnvSparseFileDir) is specified as a
+environment variable, a Sparse file with specified size (EnvSparseFileSize) will
 be created and an associated Disk CR will be added to Kubernetes. By default
 only one sparse file will be created which can be changed by passing the desired
-number of sparse files required via the environment variable SPARSE_FILE_COUNT.
+number of sparse files required via the environment variable EnvSparseFileCount.
 
 On Shutdown, the status of the sparse file Disk CR will be marked as Unknown.
 */
 
 const (
-	ENV_SPARSE_FILE_DIR   = "SPARSE_FILE_DIR"
-	ENV_SPARSE_FILE_SIZE  = "SPARSE_FILE_SIZE"
-	ENV_SPARSE_FILE_COUNT = "SPARSE_FILE_COUNT"
+	/*EnvSparseFileDir - if it specified as a environment variable,
+	a Sparse file with specified size (EnvSparseFileSize) will
+	be created inside specified directory (EnvSparseFileDir)
+	and an associated Disk CR will be added to Kubernetes.*/
+	EnvSparseFileDir = "SPARSE_FILE_DIR"
+	//EnvSparseFileSize define the size of created Sparse file
+	EnvSparseFileSize = "SPARSE_FILE_SIZE"
+	//EnvSparseFileCount is quantity of created Sparse files
+	EnvSparseFileCount = "SPARSE_FILE_COUNT"
 
-	SPARSE_FILE_NAME          = "ndm-sparse.img"
-	SPARSE_FILE_DEFAULT_SIZE  = int64(1073741824)
-	SPARSE_FILE_MIN_SIZE      = int64(1073741824)
-	SPARSE_FILE_DEFAULT_COUNT = "1"
+	//SparseFileName is a name of Sparse file
+	SparseFileName = "ndm-sparse.img"
+	//SparseFileDefaultSize is a Sparse file default size
+	SparseFileDefaultSize = int64(1073741824)
+	//SparseFileMinSize is a Sparse file min size
+	SparseFileMinSize = int64(1073741824)
+	//SparseFileDefaultCount is a default quantity of Sparse files
+	SparseFileDefaultCount = "1"
 
-	SPARSE_DISKTYPE    = "sparse"
-	SPARSE_DISK_PREFIX = "sparse-"
+	//SparseDiskType is a Sparse disk type
+	SparseDiskType = "sparse"
+	//SparseDiskPrefix is a Sparse disk prefix
+	SparseDiskPrefix = "sparse-"
 )
 
 // GetSparseFileDir returns the full path to the sparse
 //  file directory on the node.
 func GetSparseFileDir() string {
 
-	sparseFileDir := os.Getenv(ENV_SPARSE_FILE_DIR)
+	sparseFileDir := os.Getenv(EnvSparseFileDir)
 
 	if len(sparseFileDir) < 1 {
 		return ""
@@ -81,10 +93,10 @@ func GetSparseFileDir() string {
 //  created by NDM. Returns 0, if invalid count is specified.
 func GetSparseFileCount() int {
 
-	sparseFileCountStr := os.Getenv(ENV_SPARSE_FILE_COUNT)
+	sparseFileCountStr := os.Getenv(EnvSparseFileCount)
 
 	if len(sparseFileCountStr) < 1 {
-		sparseFileCountStr = SPARSE_FILE_DEFAULT_COUNT
+		sparseFileCountStr = SparseFileDefaultCount
 	}
 
 	sparseFileCount, econv := strconv.Atoi(sparseFileCountStr)
@@ -100,10 +112,10 @@ func GetSparseFileCount() int {
 //  created by NDM. Returns 0, if invalid size is specified.
 func GetSparseFileSize() int64 {
 
-	sparseFileSizeStr := os.Getenv(ENV_SPARSE_FILE_SIZE)
+	sparseFileSizeStr := os.Getenv(EnvSparseFileSize)
 	if len(sparseFileSizeStr) < 1 {
-		glog.Info("No size was specified. Using default size: ", fmt.Sprint(SPARSE_FILE_DEFAULT_SIZE))
-		return SPARSE_FILE_DEFAULT_SIZE
+		glog.Info("No size was specified. Using default size: ", fmt.Sprint(SparseFileDefaultSize))
+		return SparseFileDefaultSize
 	}
 
 	sparseFileSize, econv := strconv.ParseInt(sparseFileSizeStr, 10, 64)
@@ -112,9 +124,9 @@ func GetSparseFileSize() int64 {
 		return 0
 	}
 
-	if sparseFileSize < SPARSE_FILE_MIN_SIZE {
-		glog.Info(fmt.Sprint(sparseFileSizeStr), " is less than minimum required. Setting the size to:  ", fmt.Sprint(SPARSE_FILE_MIN_SIZE))
-		return SPARSE_FILE_MIN_SIZE
+	if sparseFileSize < SparseFileMinSize {
+		glog.Info(fmt.Sprint(sparseFileSizeStr), " is less than minimum required. Setting the size to:  ", fmt.Sprint(SparseFileMinSize))
+		return SparseFileMinSize
 	}
 
 	return sparseFileSize
@@ -133,7 +145,7 @@ func (c *Controller) InitializeSparseFiles() {
 	}
 
 	for i := 0; i < sparseFileCount; i++ {
-		sparseFile := path.Join(sparseFileDir, fmt.Sprint(i)+"-"+SPARSE_FILE_NAME)
+		sparseFile := path.Join(sparseFileDir, fmt.Sprint(i)+"-"+SparseFileName)
 		err := CheckAndCreateSparseFile(sparseFile, sparseFileSize)
 		if err != nil {
 			glog.Info("Error creating sparse file: ", sparseFile, "Error: ", err)
@@ -158,10 +170,10 @@ func CheckAndCreateSparseFile(sparseFile string, sparseFileSize int64) error {
 	return err
 }
 
-// GetSparseDiskUuid returns a fixed UUID for the sparse
+// GetSparseDiskUUID returns a fixed UUID for the sparse
 //  disk on a given node.
-func GetSparseDiskUuid(hostname string, sparseFile string) string {
-	return SPARSE_DISK_PREFIX + util.Hash(hostname+sparseFile)
+func GetSparseDiskUUID(hostname string, sparseFile string) string {
+	return SparseDiskPrefix + util.Hash(hostname+sparseFile)
 }
 
 // GetActiveSparseDisksUuids returns UUIDs for the sparse
@@ -175,9 +187,9 @@ func GetActiveSparseDisksUuids(hostname string) []string {
 		return sparseUuids
 	}
 	for _, file := range files {
-		if strings.HasSuffix(file.Name(), SPARSE_FILE_NAME) {
+		if strings.HasSuffix(file.Name(), SparseFileName) {
 			fileName := path.Join(sparseFileLocation, file.Name())
-			sparseUuids = append(sparseUuids, GetSparseDiskUuid(hostname, fileName))
+			sparseUuids = append(sparseUuids, GetSparseDiskUUID(hostname, fileName))
 		}
 	}
 	return sparseUuids
@@ -189,10 +201,10 @@ func GetActiveSparseDisksUuids(hostname string) []string {
 func (c *Controller) MarkSparseDiskStateActive(sparseFile string, sparseFileSize int64) {
 	// Fill in the details of the sparse disk
 	diskDetails := NewDiskInfo()
-	diskDetails.Uuid = GetSparseDiskUuid(c.HostName, sparseFile)
+	diskDetails.Uuid = GetSparseDiskUUID(c.HostName, sparseFile)
 	diskDetails.HostName = c.HostName
 
-	diskDetails.DiskType = SPARSE_DISKTYPE
+	diskDetails.DiskType = SparseDiskType
 	diskDetails.Path = sparseFile
 
 	sparseFileInfo, err := util.SparseFileInfo(sparseFile)
