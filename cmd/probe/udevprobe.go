@@ -170,6 +170,7 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	d.Vendor = udevDiskDetails.Vendor
 	d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
 	d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
+	d.Size = udevDiskDetails.Size
 }
 
 // listen listens for event message over UdevEventMessages channel
