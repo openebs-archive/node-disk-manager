@@ -38,7 +38,7 @@ var (
 var ebsProbeRegister = func() {
 	ctrl := <-controller.ControllerBroadcastChannel
 	if ctrl == nil {
-		glog.Error("unable to configure", udevProbeName)
+		glog.Error("unable to configure", ebsProbeName)
 		return
 	}
 	if ctrl.NDMConfig != nil {
@@ -74,21 +74,24 @@ func (ep *ebsProbe) Start() {}
 
 // fillDiskDetails fill the capacity of the disk
 func (ep *ebsProbe) FillDiskDetails(d *controller.DiskInfo) {
-	sysPath := d.ProbeIdentifiers.UdevIdentifier
-	blockSize, err := strconv.ParseInt(d.Size, 10, 64)
-	if err != nil {
-		glog.Error("unable to parse the block size ", err)
-		return
+
+	if d.Capacity == 0 {
+		sysPath := d.ProbeIdentifiers.UdevIdentifier
+		blockSize, err := strconv.ParseInt(d.Size, 10, 64)
+		if err != nil {
+			glog.Error("unable to parse the block size ", err)
+			return
+		}
+		b, err := ioutil.ReadFile(sysPath + "/queue/hw_sector_size")
+		if err != nil {
+			glog.Error("unable to read sector size", err)
+			return
+		}
+		sectorSize, err := strconv.ParseInt(string(b), 10, 64)
+		if err != nil {
+			glog.Error("unable to parse the sector size", err)
+			return
+		}
+		d.Capacity = uint64(blockSize * sectorSize)
 	}
-	b, err := ioutil.ReadFile(sysPath + "/queue/hw_sector_size")
-	if err != nil {
-		glog.Error("unable to read sector size", err)
-		return
-	}
-	sectorSize, err := strconv.ParseInt(string(b), 10, 64)
-	if err != nil {
-		glog.Error("unable to parse the sector size", err)
-		return
-	}
-	d.Capacity = uint64(blockSize * sectorSize)
 }
