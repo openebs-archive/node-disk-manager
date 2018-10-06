@@ -46,7 +46,7 @@ moveCompiled(){
         cp "${F}" "${MAIN_GOPATH[*]}"/bin/
     done
 
-    echo "Moved all the compiled things successfully to :${MAIN_GOPATH[*]}/bin/"
+    echo "Moved all the compiled things successfully to:${MAIN_GOPATH[*]}/bin/"
 }
 
 # Build
@@ -72,7 +72,7 @@ build(){
     echo "Successfully built: ${CTLNAME}"
 }
 
-# Main script starts here .......
+# Main script starts here ..........
 export CGO_ENABLED=1
 
 # Get the parent directory of where this script is.
@@ -103,7 +103,7 @@ XC_OS=${XC_OS:-"linux"}
 XC_ARCHS=("${XC_ARCH// / }")
 XC_OSS=("${XC_OS// / }")
 
-echo "==> Removing old bin contents..."
+echo "==> Removing old bin contents....."
 deleteOldContents
 
 # If its dev mode, only build for ourself
