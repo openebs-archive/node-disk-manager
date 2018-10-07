@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEbsFillDisk(t *testing.T) {
+func TestCapacityProbeFillDisk(t *testing.T) {
 	probe := &capacityProbe{}
 	disk := &controller.DiskInfo{}
 	tempSysPath := "/tmp"

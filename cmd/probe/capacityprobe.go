@@ -61,7 +61,7 @@ var capacityProbeRegister = func() {
 	newRegistryProbe.register()
 }
 
-// ebs probe populate aws ebs info
+// capacityProbe fills the capacity of the disk
 type capacityProbe struct {
 }
 
@@ -69,29 +69,31 @@ func newCapacityProbe() *capacityProbe {
 	return &capacityProbe{}
 }
 
-// Just to fullfill the interface
-func (ep *capacityProbe) Start() {}
+// It is part of probe interface. Hence, empty implementation.
+func (cp *capacityProbe) Start() {}
 
-// fillDiskDetails fill the capacity of the disk
-func (ep *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
+// FillDiskDetails updates the capacity of the disk , if the capacity is
+// not populated.
+func (cp *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
 
-	if d.Capacity == 0 {
-		sysPath := d.ProbeIdentifiers.UdevIdentifier
-		blockSize, err := strconv.ParseInt(d.Size, 10, 64)
-		if err != nil {
-			glog.Error("unable to parse the block size ", err)
-			return
-		}
-		b, err := ioutil.ReadFile(sysPath + "/queue/hw_sector_size")
-		if err != nil {
-			glog.Error("unable to read sector size", err)
-			return
-		}
-		sectorSize, err := strconv.ParseInt(string(b), 10, 64)
-		if err != nil {
-			glog.Error("unable to parse the sector size", err)
-			return
-		}
-		d.Capacity = uint64(blockSize * sectorSize)
+	if d.Capacity != 0 {
+		return
 	}
+	sysPath := d.ProbeIdentifiers.UdevIdentifier
+	blockSize, err := strconv.ParseInt(d.Size, 10, 64)
+	if err != nil {
+		glog.Error("unable to parse the block size ", err)
+		return
+	}
+	b, err := ioutil.ReadFile(sysPath + "/queue/hw_sector_size")
+	if err != nil {
+		glog.Error("unable to read sector size", err)
+		return
+	}
+	sectorSize, err := strconv.ParseInt(string(b), 10, 64)
+	if err != nil {
+		glog.Error("unable to parse the sector size", err)
+		return
+	}
+	d.Capacity = uint64(blockSize * sectorSize)
 }
