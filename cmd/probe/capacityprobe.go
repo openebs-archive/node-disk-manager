@@ -44,8 +44,8 @@ var capacityProbeRegister = func() {
 	if ctrl.NDMConfig != nil {
 		for _, probeConfig := range ctrl.NDMConfig.ProbeConfigs {
 			if probeConfig.Key == capacityConfigKey {
-				smartProbeName = probeConfig.Name
-				smartProbeState = util.CheckTruthy(probeConfig.State)
+				capacityProbeName = probeConfig.Name
+				capacityProbeState = util.CheckTruthy(probeConfig.State)
 				break
 			}
 		}
