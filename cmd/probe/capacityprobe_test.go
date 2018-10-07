@@ -26,7 +26,7 @@ import (
 )
 
 func TestEbsFillDisk(t *testing.T) {
-	probe := &ebsProbe{}
+	probe := &capacityProbe{}
 	disk := &controller.DiskInfo{}
 	tempSysPath := "/tmp"
 	os.MkdirAll(tempSysPath+"/queue", 0700)

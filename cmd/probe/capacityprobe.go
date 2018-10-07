@@ -26,24 +26,24 @@ import (
 )
 
 const (
-	ebsProbePriority = 3
-	ebsConfigKey     = "ebs"
+	capacityProbePriority = 3
+	capacityConfigKey     = "capacity-probe"
 )
 
 var (
-	ebsProbeName  = "AWS EBS Probe"
-	ebsProbeState = defaultEnabled
+	capacityProbeName  = "capacity probe"
+	capacityProbeState = defaultEnabled
 )
 
-var ebsProbeRegister = func() {
+var capacityProbeRegister = func() {
 	ctrl := <-controller.ControllerBroadcastChannel
 	if ctrl == nil {
-		glog.Error("unable to configure", ebsProbeName)
+		glog.Error("unable to configure", capacityProbeName)
 		return
 	}
 	if ctrl.NDMConfig != nil {
 		for _, probeConfig := range ctrl.NDMConfig.ProbeConfigs {
-			if probeConfig.Key == ebsConfigKey {
+			if probeConfig.Key == capacityConfigKey {
 				smartProbeName = probeConfig.Name
 				smartProbeState = util.CheckTruthy(probeConfig.State)
 				break
@@ -52,28 +52,28 @@ var ebsProbeRegister = func() {
 	}
 
 	newRegistryProbe := &registerProbe{
-		priority:   ebsProbePriority,
-		name:       ebsProbeName,
-		state:      ebsProbeState,
-		pi:         newEbsProbe(),
+		priority:   capacityProbePriority,
+		name:       capacityProbeName,
+		state:      capacityProbeState,
+		pi:         newCapacityProbe(),
 		controller: ctrl,
 	}
 	newRegistryProbe.register()
 }
 
 // ebs probe populate aws ebs info
-type ebsProbe struct {
+type capacityProbe struct {
 }
 
-func newEbsProbe() *ebsProbe {
-	return &ebsProbe{}
+func newCapacityProbe() *capacityProbe {
+	return &capacityProbe{}
 }
 
 // Just to fullfill the interface
-func (ep *ebsProbe) Start() {}
+func (ep *capacityProbe) Start() {}
 
 // fillDiskDetails fill the capacity of the disk
-func (ep *ebsProbe) FillDiskDetails(d *controller.DiskInfo) {
+func (ep *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
 
 	if d.Capacity == 0 {
 		sysPath := d.ProbeIdentifiers.UdevIdentifier

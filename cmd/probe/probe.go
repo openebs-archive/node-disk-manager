@@ -30,7 +30,7 @@ const (
 var RegisteredProbes = []func(){
 	smartProbeRegister,
 	udevProbeRegister,
-	ebsProbeRegister}
+	capacityProbeRegister}
 
 type registerProbe struct {
 	priority   int
