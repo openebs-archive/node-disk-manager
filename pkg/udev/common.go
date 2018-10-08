@@ -69,7 +69,7 @@ type UdevDiskDetails struct {
 	Path           string   // Path is Path of a disk.
 	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
-	Size           string   // Size contains number of block/sector in a disk.
+	NoOfBlocks     string   // NoOfBlocks contains number of block/sector in a disk.
 }
 
 // freeCharPtr frees c pointer
@@ -87,7 +87,7 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 		Path:           device.GetPropertyValue(UDEV_DEVNAME),
 		ByIdDevLinks:   devLinks[BY_ID_LINK],
 		ByPathDevLinks: devLinks[BY_PATH_LINK],
-		Size:           device.GetSysattrValue(UDEV_SIZE),
+		NoOfBlocks:     device.GetSysattrValue(UDEV_SIZE),
 	}
 	return diskDetails
 }

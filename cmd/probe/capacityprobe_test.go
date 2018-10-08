@@ -38,7 +38,7 @@ func TestCapacityProbeFillDisk(t *testing.T) {
 	file.Write([]byte("10"))
 
 	disk.ProbeIdentifiers.UdevIdentifier = tempSysPath
-	disk.Size = strconv.Itoa(10)
+	disk.NoOfBlocks = strconv.Itoa(10)
 	probe.FillDiskDetails(disk)
 	assert.Equal(t, disk.Capacity, uint64(100))
 }

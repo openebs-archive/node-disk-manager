@@ -80,7 +80,7 @@ func (cp *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
 		return
 	}
 	sysPath := d.ProbeIdentifiers.UdevIdentifier
-	blockSize, err := strconv.ParseInt(d.Size, 10, 64)
+	blockSize, err := strconv.ParseInt(d.NoOfBlocks, 10, 64)
 	if err != nil {
 		glog.Error("unable to parse the block size ", err)
 		return
