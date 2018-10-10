@@ -19,6 +19,7 @@ package probe
 import (
 	"io/ioutil"
 	"strconv"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/cmd/controller"
@@ -80,20 +81,29 @@ func (cp *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
 		return
 	}
 	sysPath := d.ProbeIdentifiers.UdevIdentifier
-	blockSize, err := strconv.ParseInt(d.NoOfBlocks, 10, 64)
+	b, err := ioutil.ReadFile(sysPath + "/size")
 	if err != nil {
 		glog.Error("unable to parse the block size ", err)
 		return
 	}
-	b, err := ioutil.ReadFile(sysPath + "/queue/hw_sector_size")
+	blockSize, err := strconv.ParseInt(strings.TrimSuffix(string(b), "\n"), 10, 64)
+	if err != nil {
+		glog.Error("unable to parse the block size", err)
+		return
+	}
+	b, err = ioutil.ReadFile(sysPath + "/queue/hw_sector_size")
 	if err != nil {
 		glog.Error("unable to read sector size", err)
 		return
 	}
-	sectorSize, err := strconv.ParseInt(string(b), 10, 64)
+	sectorSize, err := strconv.ParseInt(strings.TrimSuffix(string(b), "\n"), 10, 64)
 	if err != nil {
 		glog.Error("unable to parse the sector size", err)
 		return
 	}
 	d.Capacity = uint64(blockSize * sectorSize)
+
+	if d.LogicalSectorSize == 0 {
+		d.LogicalSectorSize = uint32(sectorSize)
+	}
 }

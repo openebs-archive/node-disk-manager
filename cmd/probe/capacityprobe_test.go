@@ -18,7 +18,6 @@ package probe
 
 import (
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/openebs/node-disk-manager/cmd/controller"
@@ -36,9 +35,15 @@ func TestCapacityProbeFillDisk(t *testing.T) {
 		return
 	}
 	file.Write([]byte("10"))
+	file, err = os.Create(tempSysPath + "/size")
+	if err != nil {
+		t.Fatalf("unable to write file to %s %v", tempSysPath, err)
+		return
+	}
+	file.Write([]byte("10"))
 
 	disk.ProbeIdentifiers.UdevIdentifier = tempSysPath
-	disk.NoOfBlocks = strconv.Itoa(10)
+
 	probe.FillDiskDetails(disk)
 	assert.Equal(t, disk.Capacity, uint64(100))
 }

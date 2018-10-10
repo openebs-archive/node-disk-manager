@@ -58,7 +58,6 @@ const (
 	BY_ID_LINK          = "by-id"           // by-path devlink contains this string
 	BY_PATH_LINK        = "by-path"         // by-path devlink contains this string
 	LINK_ID_INDEX       = 4                 // this is used to get link index from dev link
-	UDEV_SIZE           = "SIZE"            // udev attribute to get number of block/sector in disk
 )
 
 // UdevDiskDetails struct contain different attribute of disk.
@@ -69,7 +68,6 @@ type UdevDiskDetails struct {
 	Path           string   // Path is Path of a disk.
 	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
-	NoOfBlocks     string   // NoOfBlocks contains number of block/sector in a disk.
 }
 
 // freeCharPtr frees c pointer
@@ -87,7 +85,6 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 		Path:           device.GetPropertyValue(UDEV_DEVNAME),
 		ByIdDevLinks:   devLinks[BY_ID_LINK],
 		ByPathDevLinks: devLinks[BY_PATH_LINK],
-		NoOfBlocks:     device.GetSysattrValue(UDEV_SIZE),
 	}
 	return diskDetails
 }

@@ -42,7 +42,6 @@ type DiskInfo struct {
 	LogicalSectorSize uint32          // LogicalSectorSize is the Logical size of a disk in bytes
 	Compliance        string          // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
 	DiskType          string          // DiskType represents the type of disk like Disk, Sparse etc.,
-	NoOfBlocks        string          // NoOfBlocks contains number of block/sector in a disk
 }
 
 // ProbeIdentifier contains some keys to enable probes to uniquely identify each disk.
