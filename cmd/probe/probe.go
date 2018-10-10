@@ -27,7 +27,10 @@ const (
 )
 
 // RegisteredProbes contains register function of probes which we want to register
-var RegisteredProbes = []func(){smartProbeRegister, udevProbeRegister}
+var RegisteredProbes = []func(){
+	smartProbeRegister,
+	udevProbeRegister,
+	capacityProbeRegister}
 
 type registerProbe struct {
 	priority   int
