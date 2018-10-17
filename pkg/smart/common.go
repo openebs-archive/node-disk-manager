@@ -59,23 +59,79 @@ func detectSCSIType(name string) (Dev, error) {
 	return &device, nil
 }
 
-// readDeviceCapacity sends a SCSI READ CAPACITY(16) command to a device and
-// returns the capacity in bytes.
-func (d *SCSIDev) readDeviceCapacity() (uint64, error) {
-	respBuf := make([]byte, 8)
+// sendReadCap10 is used to send a SCSIReadCapacity10 scsi command to
+// get logical block address and logical size of a disk
+func (d *SCSIDev) sendReadCap10() (uint32, uint32, error) {
+	respBuf10 := make([]byte, 8) // respBuf for read capacity(10) scsi cmd
 
-	// Use cdb16 to send a scsi read capacity command
-	cdb := CDB16{SCSIReadCapacity}
+	// Populate the CDB10 required fields to send SCSIReadCapacity10 command
+	cdb10 := CDB16{SCSIReadCapacity10}
 
-	// If sending scsi read capacity scsi command fails then return disk capacity
-	// value 0 with error
-	if err := d.sendSCSICDB(cdb[:], &respBuf); err != nil {
-		return 0, err
+	// If sending scsi read capacity(10) command fails then return disk LBA
+	// and LB Size value 0 with error
+	if err := d.sendSCSICDB(cdb10[:], &respBuf10); err != nil {
+		return 0, 0, err
 	}
 
-	lastLBA := binary.BigEndian.Uint32(respBuf[0:])          // max. addressable LBA
-	LBsize := binary.BigEndian.Uint32(respBuf[4:])           // logical block size
-	DeviceCapacity := (uint64(lastLBA) + 1) * uint64(LBsize) // calculate capacity
+	lastLBA := binary.BigEndian.Uint32(respBuf10[0:]) // max. addressable LBA
+	LBsize := binary.BigEndian.Uint32(respBuf10[4:])  // logical block size
+
+	return lastLBA, LBsize, nil
+}
+
+// sendReadCap16 is used to send a SCSIReadCapacity16 scsi command to
+// get logical block address and logical size of a disk
+func (d *SCSIDev) sendReadCap16() (uint64, uint32, error) {
+	respBuf16 := make([]byte, 32) // respBuf for read capacity(16) scsi cmd
+
+	// Populate the CDB16 required fields to send SCSIReadCapacity16 command
+	cdb16 := CDB16{SCSIReadCapacity16}
+	cdb16[0] = SCSIReadCapacity16 // opcode for readCapacity(16) command
+	cdb16[1] = SAReadCapacity16   // service action for readCapacity(16) command
+
+	// If sending scsi read capacity(16) command fails then return disk LBA
+	// and LB Size value 0 with error
+	if err := d.sendSCSICDB(cdb16[:], &respBuf16); err != nil {
+		return 0, 0, err
+	}
+	// longlastLBA will have the logical block size for the disk fetched
+	// by sending SCSIReadCapacity16 command
+	longlastLBA := binary.BigEndian.Uint64(respBuf16[0:]) // max. addressable LBA
+	LBsize := binary.BigEndian.Uint32(respBuf16[8:])      // logical block size
+
+	return longlastLBA, LBsize, nil
+}
+
+// readDeviceCapacity sends a SCSIReadCapacity10 or SCSIReadCapacity16 or both command
+// to a device and returns the capacity in bytes.
+func (d *SCSIDev) readDeviceCapacity() (uint64, error) {
+
+	// DeviceCapacity will have the total capacity of a disk
+	var DeviceCapacity uint64
+
+	// First send a readcapacity10 command to get the disk logical block
+	// address and logical size
+	readCap10LBA, readCap10LBSize, err := d.sendReadCap10()
+	if err != nil {
+		return DeviceCapacity, err
+	}
+
+	// Check if the readCap10LBA size has reached the maximum value(0xffffffff) or not.
+	// If it is equal to 0xffffffff(4294967295), then try SCSIReadCapacity16 command
+	// to get the logical block address and logical size of the disk.
+	if readCap10LBA != 4294967295 {
+		// SCSIReadCapacity10 succeeded
+		DeviceCapacity = (uint64(readCap10LBA) + 1) * uint64(readCap10LBSize)
+	} else {
+		// Since the logical block address(LBA) reported by SCSIReadCapacity10 has exceeded
+		// the maximum limit, we will try SCSIReadCapacity16 to fetch the logical block address
+		// and logical size of the disk.
+		readCap16LBA, readCap16LBSize, err := d.sendReadCap16()
+		if err != nil {
+			return DeviceCapacity, err
+		}
+		DeviceCapacity = (readCap16LBA + 1) * uint64(readCap16LBSize)
+	}
 
 	return DeviceCapacity, nil
 
