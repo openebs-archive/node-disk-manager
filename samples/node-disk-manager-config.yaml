@@ -11,31 +11,19 @@ data:
   # filterconfigs contails configs of filters. To provide a group of include
   # and exclude values add it as , separated string
   node-disk-manager.config: |
-    {
-      "probeconfigs": [
-        {
-          "key": "udev-probe",
-          "name": "udev probe",
-          "state": "true"
-        },
-        {
-          "key": "smart-probe",
-          "name": "smart probe",
-          "state": "true"
-        }
-      ],
-      "filterconfigs": [
-        {
-          "key": "os-disk-exclude-filter",
-          "name": "os disk exclude filter",
-          "state": "true"
-        },
-        {
-          "key": "vendor-filter",
-          "name": "vendor filter",
-          "state": "true",
-          "include":"",
-          "exclude":""
-        }
-      ]
-    }
+    probeconfigs:
+      - key: udev-probe
+        name: udev probe
+        state: true
+      - key: smart-probe
+        name: smart probe
+        state: true
+    filterconfigs:
+      - key: os-disk-exclude-filter
+        name: os disk exclude filter
+        state: true
+      - key: vendor-filter
+        name: vendor filter
+        state: true
+        include: ""
+        exclude: ""
