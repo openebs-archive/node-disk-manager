@@ -17,10 +17,13 @@ package smart
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 )
+
+var errReadCapacityOverflow = errors.New("READ CAPACITY (10) overflow")
 
 // detectBusType detects the type of bus such as SCSI,Nvme,etc based on the device path given
 func detectBusType(dname string) string {
@@ -59,13 +62,24 @@ func detectSCSIType(name string) (Dev, error) {
 	return &device, nil
 }
 
-// readDeviceCapacity sends a SCSI READ CAPACITY(16) command to a device and
-// returns the capacity in bytes.
+// readDeviceCapacity sends a SCSI READ CAPACITY(10) command to a device and
+// returns the capacity in bytes. If this command fails due to a capacity
+// overflow, it retries a SCSI READ CAPACITY(16) command.
 func (d *SCSIDev) readDeviceCapacity() (uint64, error) {
+	if DeviceCapacity, err := d.readDeviceCapacity10(); err == errReadCapacityOverflow {
+		return d.readDeviceCapacity16()
+	} else {
+		return DeviceCapacity, err
+	}
+}
+
+// readDeviceCapacity10 sends a SCSI READ CAPACITY(10) command to a device and
+// returns the capacity in bytes.
+func (d *SCSIDev) readDeviceCapacity10() (uint64, error) {
 	respBuf := make([]byte, 8)
 
-	// Use cdb16 to send a scsi read capacity command
-	cdb := CDB16{SCSIReadCapacity}
+	// Use cdb10 to send a scsi read capacity command
+	cdb := CDB10{SCSIReadCapacity10}
 
 	// If sending scsi read capacity scsi command fails then return disk capacity
 	// value 0 with error
@@ -77,8 +91,35 @@ func (d *SCSIDev) readDeviceCapacity() (uint64, error) {
 	LBsize := binary.BigEndian.Uint32(respBuf[4:])           // logical block size
 	DeviceCapacity := (uint64(lastLBA) + 1) * uint64(LBsize) // calculate capacity
 
-	return DeviceCapacity, nil
+	// The returned lastLBA will be 0xffffffff if the value exceeds the
+	// maximum representable value.
+	if lastLBA == 0xffffffff {
+		return 0, errReadCapacityOverflow
+	}
 
+	return DeviceCapacity, nil
+}
+
+// readDeviceCapacity16 sends a SCSI READ CAPACITY(16) command to a device and
+// returns the capacity in bytes.
+func (d *SCSIDev) readDeviceCapacity16() (uint64, error) {
+	respBuf := make([]byte, 32)
+
+	// Use cdb16 to send a scsi read capacity command
+	cdb := CDB16{SCSIReadCapacity16, SCSIReadCapacityServiceAction}
+	binary.BigEndian.PutUint32(cdb[10:], uint32(len(respBuf)))
+
+	// If sending scsi read capacity scsi command fails then return disk capacity
+	// value 0 with error
+	if err := d.sendSCSICDB(cdb[:], &respBuf); err != nil {
+		return 0, err
+	}
+
+	lastLBA := binary.BigEndian.Uint64(respBuf[0:])  // max. addressable LBA
+	LBsize := binary.BigEndian.Uint32(respBuf[8:])   // logical block size
+	DeviceCapacity := (lastLBA + 1) * uint64(LBsize) // calculate capacity
+
+	return DeviceCapacity, nil
 }
 
 // isSatisfyCondition checks if the necessary conditions are met or not before getting
