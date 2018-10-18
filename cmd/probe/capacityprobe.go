@@ -106,4 +106,5 @@ func (cp *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
 	if d.LogicalSectorSize == 0 {
 		d.LogicalSectorSize = uint32(sectorSize)
 	}
+	glog.Infof("Capacity probe successfully filled the disk details for disk having uuid, %+v", d.Uuid)
 }

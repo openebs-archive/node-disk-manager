@@ -16,16 +16,17 @@ limitations under the License.
 package smart
 
 import (
-	"encoding/binary"
 	"fmt"
 	"unsafe"
 )
 
 // SCSI commands being used
 const (
-	SCSIModeSense    = 0x1a // mode sense command
-	SCSIReadCapacity = 0x25 // read capacity command
-	SCSIATAPassThru  = 0x85 // ata passthru command
+	SCSIModeSense      = 0x1a // mode sense command
+	SCSIReadCapacity10 = 0x25 // read capacity(10) command
+	SCSIReadCapacity16 = 0x9e // read capacity(16) command
+	SAReadCapacity16   = 0x10 // service action for read capacity(16)
+	SCSIATAPassThru    = 0x85 // ata passthru command
 )
 
 // SCSI Command Descriptor Block types are the various type of scsi cdbs which are used
@@ -42,19 +43,33 @@ type CDB16 [16]byte
 
 // getLBSize returns the logical block size of a SCSI device
 func (d *SCSIDev) getLBSize() (uint32, error) {
-	response := make([]byte, 8)
-	// Use cdb16 to send a scsi read capacity command to get the
-	// logical block size
-	cdb := CDB16{SCSIReadCapacity}
+	// LBSize is the logical block size of a disk
+	var LBSize uint32
 
-	// If sending scsi read capacity scsi command fails then return
-	// logical size value 0 with error
-	if err := d.sendSCSICDB(cdb[:], &response); err != nil {
+	// First send a readcapacity10 command to get the disk logical size
+	readCap10LBA, readCap10LBSize, err := d.sendReadCap10()
+	if err != nil {
 		return 0, err
 	}
-	LBsize := binary.BigEndian.Uint32(response[4:]) // logical block size
 
-	return LBsize, nil
+	// Check if the readCap10LBA size has reached the maximum value(0xffffffff) or not.
+	// If it is equal to 0xffffffff(4294967295), then try SCSIReadCapacity16 command
+	// to logical size of the disk.
+	if readCap10LBA != 4294967295 {
+		// SCSIReadCapacity10 succeeded
+		LBSize = readCap10LBSize
+	} else {
+		// Since the logical block address(LBA) reported by SCSIReadCapacity10 has exceeded
+		// the maximum limit, we will try SCSIReadCapacity16 to fetch the
+		// logical size of the disk.
+		_, readCap16LBSize, err := d.sendReadCap16()
+		if err != nil {
+			return 0, err
+		}
+		LBSize = readCap16LBSize
+	}
+
+	return LBSize, nil
 }
 
 // runSCSIGen executes SCSI generic commands i.e sgIO commands

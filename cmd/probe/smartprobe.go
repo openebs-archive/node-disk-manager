@@ -97,7 +97,7 @@ func (sp *smartProbe) FillDiskDetails(d *controller.DiskInfo) {
 	smartProbe := newSmartProbe(d.ProbeIdentifiers.SmartIdentifier)
 	deviceBasicSCSIInfo, err := smartProbe.SmartIdentifier.SCSIBasicDiskInfo()
 	if len(err) != 0 {
-		glog.Error(err)
+		glog.Errorf("Smart Probe is unable to fill all the disk details for disk uuid, %+v. Error: %+v", d.Uuid, err)
 	}
 
 	d.Compliance = deviceBasicSCSIInfo.Compliance
