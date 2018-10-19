@@ -632,3 +632,60 @@ func Clean() {
 		}
 	}
 }
+
+// SetIncludePath is used to set the include section in
+// path filter of NDMConfig
+func (c *ConfigMap) SetIncludePath(deviceList ...string) {
+	for index, element := range c.FilterConfigs {
+		if element.Key == "path-filter" {
+			c.FilterConfigs[index].Include = strings.Join(deviceList, ",")
+			c.FilterConfigs[index].Exclude = ""
+		}
+	}
+}
+
+// SetExcludePath is used to set the exclude section in
+// path filter of NDMConfig
+func (c *ConfigMap) SetExcludePath(deviceList ...string) {
+	for index, element := range c.FilterConfigs {
+		if element.Key == "path-filter" {
+			c.FilterConfigs[index].Exclude = strings.Join(deviceList, ",")
+			c.FilterConfigs[index].Include = ""
+		}
+	}
+}
+
+// SetPathFilter is used to change the state of
+// path filter in NDMConfig
+func (c *ConfigMap) SetPathFilter(state string) {
+	for index, element := range c.FilterConfigs {
+		if element.Key == "path-filter" {
+			c.FilterConfigs[index].State = state
+		}
+	}
+}
+
+// MatchNDMDeviceList is used to match the NDM devices and device
+// paths specified as string. Both include and exclude can be
+// matched using by changing the pathType bool. pathType `true`
+// means exclude filter will be checked and pathType `false`
+// means include filter will be checked.
+func MatchNDMDeviceList(pathType bool, devicePaths ...string) (bool, error) {
+	ndmPods, err := k8sutil.GetNdmPods()
+	if err != nil {
+		return false, err
+	}
+
+	for _, ndmPod := range ndmPods {
+		deviceList, err := GetNDMDeviceListOutputFromThePod(&ndmPod)
+		if err != nil {
+			return false, err
+		}
+		for _, devicePath := range devicePaths {
+			if _, ok := deviceList[devicePath]; ok && pathType {
+				return false, nil
+			}
+		}
+	}
+	return true, nil
+}

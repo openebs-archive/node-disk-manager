@@ -129,7 +129,7 @@ spec:
         - /usr/sbin/ndm
         - start
         image: openebs/node-disk-manager-amd64:ci
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
         # make udev database available inside container
