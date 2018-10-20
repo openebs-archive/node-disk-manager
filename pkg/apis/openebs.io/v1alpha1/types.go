@@ -26,11 +26,12 @@ type DiskSpec struct {
 	Details  DiskDetails   `json:"details"`            //Details contains static attributes (model, serial ..)
 	DevLinks []DiskDevLink `json:"devlinks,omitempty"` //DevLinks contains soft links of one disk
 }
-
+//DiskStatus gives the status of the disk (Active/Inactive)
 type DiskStatus struct {
-	State string `json:"state"` //current state of the disk (Active/Inactive)
+	State string `json:"state"` //status either (Active/Inactive)
 }
 
+//DiskCapacity gives disk size in bytes and also logical size of bytes
 type DiskCapacity struct {
 	Storage           uint64 `json:"storage"`           // disk size in bytes
 	LogicalSectorSize uint32 `json:"logicalSectorSize"` // disk logical size in bytes
@@ -45,7 +46,7 @@ type DiskDetails struct {
 	FirmwareRevision string `json:"firmwareRevision"` // disk firmware revision
 }
 
-// DiskDevlink holds the maping between type and links like by-id type or by-path type link
+// DiskDevLink holds the maping between type and links either (by-id type / by-path type)
 type DiskDevLink struct {
 	Kind  string   `json:"kind,omitempty"`  // Kind is the type of link like by-id or by-path.
 	Links []string `json:"links,omitempty"` // Links are the soft links of Type type
