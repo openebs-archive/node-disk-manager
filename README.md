@@ -35,7 +35,7 @@ with one of the below directions:
   * `cd $GOPATH/src/github.com/openebs && go get github.com/openebs/node-disk-manager`
 
 * Setup build tools:
-  * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
+  * By default, node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
   * `make bootstrap` installs the required Go tools
 
 * run `make` in the top directory. It will:
