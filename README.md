@@ -55,7 +55,7 @@ You can push to your custom registry and modify the ndm-operator.yaml file for y
 
 # Inspiration
 * Thanks to [Daniel](https://github.com/dswarbrick) for setting up the go-based [SMART](https://github.com/dswarbrick/smart) library.
-* Thanks to [Humble](https://github.com/humblec), [Jan](https://github.com/jsafrane) and other from the [Kubernetes Storage Community](https://github.com/kubernetes-incubator/external-storage/issues/736) for reviewing the approach and evaulating the usecase. 
+* Thanks to [Humble](https://github.com/humblec), [Jan](https://github.com/jsafrane) and other from the [Kubernetes Storage Community](https://github.com/kubernetes-incubator/external-storage/issues/736) for reviewing the approach and evaluating the usecase. 
 
 
 
