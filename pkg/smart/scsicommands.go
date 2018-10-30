@@ -23,23 +23,28 @@ import (
 
 // SCSI commands being used
 const (
-	SCSIModeSense                 = 0x1a // mode sense command
-	SCSIReadCapacity10            = 0x25 // read capacity (10) command
-	SCSIReadCapacity16            = 0x9e // read capacity (16) command
-	SCSIReadCapacityServiceAction = 0x10 // read capacity (16) service action
-	SCSIATAPassThru               = 0x85 // ata passthru command
+	SCSIModeSense                = 0x1a // mode sense command
+	SCSIReadCapacity10           = 0x25 // read capacity (10) command
+	SCSIReadCapacity16           = 0x9e // read capacity (16) command
+	SCSIReadCapacitySA           = 0x10 // read capacity (16) service action
+	SCSIReportSupportedOpCodes   = 0xa3 // report supported op codes
+	SCSIReportSupportedOpCodesSA = 0x0c // report supported op codes service action
+	SCSIATAPassThru              = 0x85 // ata passthru command
 )
 
 // SCSI Command Descriptor Block types are the various type of scsi cdbs which are used
 // to specify the various parameters or data required to send a particular scsi command
 
-// CDB6 is an array of 6 byte
+// CDB6 is an array of 6 bytes
 type CDB6 [6]byte
 
-// CDB10 is an array of 10 byte
+// CDB10 is an array of 10 bytes
 type CDB10 [10]byte
 
-// CDB16 is an array of 16 byte
+// CDB12 is an array of 10 bytes
+type CDB12 [12]byte
+
+// CDB16 is an array of 16 bytes
 type CDB16 [16]byte
 
 // getLBSize returns the logical block size of a SCSI device
