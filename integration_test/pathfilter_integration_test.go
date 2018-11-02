@@ -17,10 +17,6 @@ var _ = Describe("Path filter integration Test", func() {
 
 	var configMap ndmutil.ConfigMap
 
-	AfterEach(func() {
-		ndmutil.Clean()
-	})
-
 	When("Path filter is disabled", func() {
 		configMap.SetPathFilter("false")
 
