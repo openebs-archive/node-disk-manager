@@ -4,14 +4,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_test/ndm_util"
-	"testing"
 	"time"
 )
-
-func TestIntegrationNDMPathFilter(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Integration Test Suite")
-}
 
 var _ = Describe("Path filter integration Test", func() {
 
