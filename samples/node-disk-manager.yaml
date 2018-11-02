@@ -24,7 +24,7 @@ spec:
         - /usr/sbin/ndm
         - start
         image: openebs/node-disk-manager-amd64:ci
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         securityContext:
           privileged: true
         volumeMounts:
