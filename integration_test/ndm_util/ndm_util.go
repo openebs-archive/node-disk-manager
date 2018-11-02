@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	"github.com/openebs/CITF/utils/k8s"
 	logutil "github.com/openebs/CITF/utils/log"
 	strutil "github.com/openebs/CITF/utils/string"
 	sysutil "github.com/openebs/CITF/utils/system"
@@ -688,4 +689,26 @@ func MatchNDMDeviceList(pathType bool, devicePaths ...string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+// InitMinikube initializes minikube and
+// waits till the default namespace is ready
+func InitMinikube() error {
+	var err error
+
+	// It starts minikube if it is not running.
+	cr.CitfInstance.Environment.Setup()
+
+	// if you are using minikube version greater than 0.24.1
+	// then you have to update the K8s config
+	// this extra step will be unsolicited in upcoming changes.
+	cr.CitfInstance.K8S, err = k8s.NewK8S()
+
+	if err != nil {
+		return err
+	}
+
+	// It waits till namespace is ready
+	WaitTillDefaultNSisReady()
+	return nil
 }

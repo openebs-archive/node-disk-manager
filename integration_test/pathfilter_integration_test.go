@@ -10,13 +10,18 @@ import (
 var _ = Describe("Path filter integration Test", func() {
 
 	var configMap ndmutil.ConfigMap
+	var err error
 
 	When("Path filter is disabled", func() {
+		err = ndmutil.InitMinikube()
+		Expect(err).NotTo(HaveOccurred())
+
+		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
 		configMap.SetPathFilter("false")
 
 		ndmutil.ReplaceAndApplyConfig(configMap)
 		// It waits till node-disk-manager is ready or timeout reached
-		err := ndmutil.WaitTillNDMisUpOrTimeout(5 * time.Minute)
+		err = ndmutil.WaitTillNDMisUpOrTimeout(5 * time.Minute)
 		Expect(err).NotTo(HaveOccurred())
 
 		It("has matching disks inside node and the host", func() {
@@ -29,6 +34,9 @@ var _ = Describe("Path filter integration Test", func() {
 	})
 
 	When("A device is included", func() {
+		err = ndmutil.InitMinikube()
+		Expect(err).NotTo(HaveOccurred())
+
 		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
 		configMap.SetIncludePath("/dev/sda")
 		ndmutil.ReplaceAndApplyConfig(configMap)
@@ -45,6 +53,9 @@ var _ = Describe("Path filter integration Test", func() {
 	})
 
 	When("A device is excluded", func() {
+		err = ndmutil.InitMinikube()
+		Expect(err).NotTo(HaveOccurred())
+
 		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
 		configMap.SetExcludePath("/dev/sda")
 		ndmutil.ReplaceAndApplyConfig(configMap)
@@ -61,6 +72,9 @@ var _ = Describe("Path filter integration Test", func() {
 	})
 
 	When(" 2 devices are included ", func() {
+		err = ndmutil.InitMinikube()
+		Expect(err).NotTo(HaveOccurred())
+
 		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
 		configMap.SetIncludePath("/dev/sda", "/dev/vda")
 		ndmutil.ReplaceAndApplyConfig(configMap)
@@ -77,6 +91,9 @@ var _ = Describe("Path filter integration Test", func() {
 	})
 
 	When(" 2 devices are excluded ", func() {
+		err = ndmutil.InitMinikube()
+		Expect(err).NotTo(HaveOccurred())
+
 		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
 		configMap.SetExcludePath("/dev/sda", "/dev/vda")
 		ndmutil.ReplaceAndApplyConfig(configMap)
