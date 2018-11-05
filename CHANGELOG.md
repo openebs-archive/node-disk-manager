@@ -1,4 +1,16 @@
 
+
+v0.2.0 / 2018-10-25
+=======================
+
+  * fix readDeviceCapacity method to handle disks > 2TB
+  * add probe to determine capacity when udev doesn't support size
+  * add configurable filter to determine os disk via config map
+  * refactor config map to use yaml format
+  * refactor to push docker images to quay repo along with docker 
+  * refactor to fix lint warnings in several files
+  * add selectable github issue templates
+
 v0.1.0-RC3 / 2018-09-01
 ==================
 

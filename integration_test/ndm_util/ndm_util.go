@@ -39,6 +39,8 @@ const (
 	NdmTestYAMLName = "NDM_Test_" + NdmYAML
 	// NdmNamespace is the namespace of the node-disk-manager
 	NdmNamespace = core_v1.NamespaceDefault
+	// NdmTag is the default image tag used by the build scripts
+	NdmTag = "ci"
 )
 
 var (
@@ -118,12 +120,7 @@ func GetDockerImageTag() string {
 		return strings.TrimSpace(tag)
 	}
 
-	tag, err := sysutil.ExecCommand("git describe --tags --always")
-	if err != nil {
-		fmt.Printf("Error while getting docker tag name. Error: %+v\n", err)
-		return ""
-	}
-	return strings.TrimSpace(tag)
+	return NdmTag
 }
 
 // GetNDMNamespace returns value of the constant NdmNamespace
