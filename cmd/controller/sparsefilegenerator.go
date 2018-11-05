@@ -45,28 +45,30 @@ On Shutdown, the status of the sparse file Disk CR will be marked as Unknown.
 */
 
 const (
-	/*EnvSparseFileDir - if it specified as a environment variable,
-	a Sparse file with specified size (EnvSparseFileSize) will
+  
+	/*EnvSparseFileDir - defines a sparse directory
+  if it is specified as a environment variable,
+	a sparse file with specified size (EnvSparseFileSize) will
 	be created inside specified directory (EnvSparseFileDir)
 	and an associated Disk CR will be added to Kubernetes.*/
 	EnvSparseFileDir = "SPARSE_FILE_DIR"
-	//EnvSparseFileSize define the size of created Sparse file
+	//EnvSparseFileSize define the size of created sparse file
 	EnvSparseFileSize = "SPARSE_FILE_SIZE"
-	//EnvSparseFileCount is quantity of created Sparse files
+	//EnvSparseFileCount defines the number of sparse files to be created
 	EnvSparseFileCount = "SPARSE_FILE_COUNT"
 
 	//SparseFileName is a name of Sparse file
 	SparseFileName = "ndm-sparse.img"
-	//SparseFileDefaultSize is a Sparse file default size
+	//SparseFileDefaultSize defines the default sparse file default size
 	SparseFileDefaultSize = int64(1073741824)
-	//SparseFileMinSize is a Sparse file min size
+	//SparseFileMinSize defines the minimum size for sparse file
 	SparseFileMinSize = int64(1073741824)
-	//SparseFileDefaultCount is a default quantity of Sparse files
+	//SparseFileDefaultCount defines the default sparse count files
 	SparseFileDefaultCount = "1"
 
-	//SparseDiskType is a Sparse disk type
+	//SparseDiskType defines sparse disk type
 	SparseDiskType = "sparse"
-	//SparseDiskPrefix is a Sparse disk prefix
+	//SparseDiskPrefix defines the prefix for the sparse disk
 	SparseDiskPrefix = "sparse-"
 )
 
