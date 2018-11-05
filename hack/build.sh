@@ -46,7 +46,7 @@ moveCompiled(){
         cp "${F}" "${MAIN_GOPATH[*]}"/bin/
     done
 
-    echo "Moved all the compiled things successfully to:${MAIN_GOPATH[*]}/bin/"
+    echo "Moved all the compiled things successfully to :${MAIN_GOPATH[*]}/bin/"
 }
 
 # Build

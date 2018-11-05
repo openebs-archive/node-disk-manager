@@ -6,7 +6,7 @@ go:
 env:
   global:
    - ARCH=$(go env GOARCH)
-   - TAG=$(git describe --tags --always)
+   - TAG="ci"
    - CHANGE_MINIKUBE_NONE_USER=true
    - CODECOV_TOKEN="d1e39bea-f800-45de-8266-3e9b85e2594a"
 
@@ -44,19 +44,5 @@ script:
   - make integration-test
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
-      export REPO=openebs/node-disk-manager-$ARCH;
-      docker login -u "$DNAME" -p "$DPASS";
-      docker push $REPO:$TAG;
-      docker tag $REPO:$TAG $REPO:ci;
-      docker push $REPO:ci;
-    fi
-  - if [ -n "$TRAVIS_TAG" ]; then
-      export REPO=openebs/node-disk-manager-$ARCH;
-      docker login -u "$DNAME" -p "$DPASS";
-      docker tag $REPO:$TAG $REPO:$TRAVIS_TAG;
-      docker push $REPO:$TRAVIS_TAG;
-      docker tag $REPO:$TRAVIS_TAG $REPO:latest;
-      docker push $REPO:latest;
-    fi
+  - DIMAGE=openebs/node-disk-manager-$ARCH ./hack/push;
   - bash <(curl -s https://codecov.io/bash)

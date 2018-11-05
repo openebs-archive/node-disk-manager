@@ -23,9 +23,11 @@ import (
 
 // SCSI commands being used
 const (
-	SCSIModeSense    = 0x1a // mode sense command
-	SCSIReadCapacity = 0x25 // read capacity command
-	SCSIATAPassThru  = 0x85 // ata passthru command
+	SCSIModeSense                 = 0x1a // mode sense command
+	SCSIReadCapacity10            = 0x25 // read capacity (10) command
+	SCSIReadCapacity16            = 0x9e // read capacity (16) command
+	SCSIReadCapacityServiceAction = 0x10 // read capacity (16) service action
+	SCSIATAPassThru               = 0x85 // ata passthru command
 )
 
 // SCSI Command Descriptor Block types are the various type of scsi cdbs which are used
@@ -43,9 +45,9 @@ type CDB16 [16]byte
 // getLBSize returns the logical block size of a SCSI device
 func (d *SCSIDev) getLBSize() (uint32, error) {
 	response := make([]byte, 8)
-	// Use cdb16 to send a scsi read capacity command to get the
+	// Use cdb10 to send a scsi read capacity command to get the
 	// logical block size
-	cdb := CDB16{SCSIReadCapacity}
+	cdb := CDB10{SCSIReadCapacity10}
 
 	// If sending scsi read capacity scsi command fails then return
 	// logical size value 0 with error

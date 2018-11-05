@@ -61,7 +61,7 @@ func TestNewUdevEnumerate(t *testing.T) {
 		t.Fatal(err)
 	}
 	devenu1.UnrefUdevEnumerate()
-	dev2, err := newUdev(nil)
+	dev2, _ := newUdev(nil)
 	if dev2 != nil {
 		t.Fatal("udev object should be nil for null pointer")
 	}
@@ -85,10 +85,9 @@ func TestNewDeviceFromSysPath(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	device2, err := udev.NewDeviceFromSysPath(diskDetails.SysPath)
+	device2, _ := udev.NewDeviceFromSysPath(diskDetails.SysPath)
 	if device2 != nil {
 		assert.Equal(t, diskDetails.SysPath, device2.GetSyspath())
 		defer device2.UdevDeviceUnref()
 	}
-
 }

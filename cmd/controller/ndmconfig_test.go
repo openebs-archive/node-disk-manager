@@ -95,3 +95,42 @@ func TestSetNDMConfig(t *testing.T) {
 	os.Remove(fakeConfigFilePath)
 	ConfigFilePath = defaultConfigFilePath
 }
+
+func TestController_SetNDMConfig_yaml(t *testing.T) {
+	fakeConfigFilePath := "/tmp/fakendm-yaml.config"
+	writeTestYaml(t, fakeConfigFilePath)
+	defer os.Remove(fakeConfigFilePath)
+
+	ConfigFilePath = fakeConfigFilePath
+
+	ctrl := &Controller{}
+	ctrl.SetNDMConfig()
+
+	assert.NotNil(t, ctrl.NDMConfig)
+
+	assert.Len(t, ctrl.NDMConfig.ProbeConfigs, 1)
+	expectedProbeConfig := ProbeConfig{Key: "udev-probe", Name: "udev probe", State: "true"}
+	assert.Equal(t, expectedProbeConfig, ctrl.NDMConfig.ProbeConfigs[0])
+
+	assert.Len(t, ctrl.NDMConfig.FilterConfigs, 1)
+	expectedFilterConfig := FilterConfig{Key: "os-disk-exclude-filter", Name: "os disk exclude filter", State: "true", Include: "", Exclude: "/,/etc/hosts,/boot"}
+	assert.Equal(t, expectedFilterConfig, ctrl.NDMConfig.FilterConfigs[0])
+}
+
+func writeTestYaml(t *testing.T, fpath string) {
+	data := `
+probeconfigs:
+  - key: udev-probe
+    name: udev probe
+    state: true
+filterconfigs:
+  - key: os-disk-exclude-filter
+    name: os disk exclude filter
+    state: true
+    include: ""
+    exclude: /,/etc/hosts,/boot
+`
+
+	err := ioutil.WriteFile(fpath, []byte(data), 0644)
+	assert.NoError(t, err)
+}

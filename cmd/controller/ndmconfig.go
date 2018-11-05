@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
 )
 
@@ -57,11 +58,18 @@ func (c *Controller) SetNDMConfig() {
 		glog.Error("unable to set ndm config : ", err)
 		return
 	}
+
 	var ndmConfig NodeDiskManagerConfig
-	if err := json.Unmarshal(data, &ndmConfig); err != nil {
+	if json.Valid(data) {
+		err = json.Unmarshal(data, &ndmConfig)
+	} else {
+		err = yaml.Unmarshal(data, &ndmConfig)
+	}
+	if err != nil {
 		c.NDMConfig = nil
 		glog.Error("unable to set ndm config : ", err)
 		return
 	}
+
 	c.NDMConfig = &ndmConfig
 }
