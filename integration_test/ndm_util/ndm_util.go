@@ -659,18 +659,20 @@ func MatchNDMDeviceList(pathType bool, devicePaths ...string) (bool, error) {
 	return true, nil
 }
 
-// InitMinikube initializes minikube and
+// InitEnvironment initializes minikube and
 // waits till the default namespace is ready
-func InitMinikube() error {
+func InitEnvironment() error {
 	var err error
 
 	// It starts minikube if it is not running.
 	cr.CitfInstance.Environment.Setup()
 
-	// if you are using minikube version greater than 0.24.1
-	// then you have to update the K8s config
-	// this extra step will be unsolicited in upcoming changes.
 	cr.CitfInstance.K8S, err = k8s.NewK8S()
+
+	if cr.CitfInstance.K8S.Config == nil ||
+		cr.CitfInstance.K8S.Clientset == nil {
+		return errors.New("nil k8s Config/ClientSet")
+	}
 
 	if err != nil {
 		return err

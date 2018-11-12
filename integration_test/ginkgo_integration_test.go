@@ -17,7 +17,7 @@ func TestIntegrationNDM(t *testing.T) {
 var _ = BeforeSuite(func() {
 	var err error
 
-	err = ndmutil.InitMinikube()
+	err = ndmutil.InitEnvironment()
 	Expect(err).NotTo(HaveOccurred())
 
 	// It prepares configuration and Applies the same

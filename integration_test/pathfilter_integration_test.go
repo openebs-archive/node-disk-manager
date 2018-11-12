@@ -13,7 +13,7 @@ var _ = Describe("Path filter integration Test", func() {
 	var err error
 
 	When("Path filter is disabled", func() {
-		err = ndmutil.InitMinikube()
+		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
 		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
@@ -34,7 +34,7 @@ var _ = Describe("Path filter integration Test", func() {
 	})
 
 	When("A device is included", func() {
-		err = ndmutil.InitMinikube()
+		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
 		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
@@ -53,7 +53,7 @@ var _ = Describe("Path filter integration Test", func() {
 	})
 
 	When("A device is excluded", func() {
-		err = ndmutil.InitMinikube()
+		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
 		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
@@ -72,7 +72,7 @@ var _ = Describe("Path filter integration Test", func() {
 	})
 
 	When(" 2 devices are included ", func() {
-		err = ndmutil.InitMinikube()
+		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
 		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
@@ -91,7 +91,7 @@ var _ = Describe("Path filter integration Test", func() {
 	})
 
 	When(" 2 devices are excluded ", func() {
-		err = ndmutil.InitMinikube()
+		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
 		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
