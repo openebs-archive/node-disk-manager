@@ -9,17 +9,17 @@ import (
 
 var _ = Describe("Path filter integration Test", func() {
 
-	var configMap ndmutil.ConfigMap
+	var configMapPatch ndmutil.ConfigMapPatch
 	var err error
 
 	When("Path filter is disabled", func() {
 		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
-		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
-		configMap.SetPathFilter("false")
+		configMapPatch = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
+		configMapPatch.SetPathFilter("false")
 
-		ndmutil.ReplaceAndApplyConfig(configMap)
+		ndmutil.ReplaceAndApplyConfig(configMapPatch)
 		// It waits till node-disk-manager is ready or timeout reached
 		err = ndmutil.WaitTillNDMisUpOrTimeout(5 * time.Minute)
 		Expect(err).NotTo(HaveOccurred())
@@ -37,9 +37,9 @@ var _ = Describe("Path filter integration Test", func() {
 		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
-		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
-		configMap.SetIncludePath("/dev/sda")
-		ndmutil.ReplaceAndApplyConfig(configMap)
+		configMapPatch = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
+		configMapPatch.SetIncludePath("/dev/sda")
+		ndmutil.ReplaceAndApplyConfig(configMapPatch)
 		// It waits till node-disk-manager is ready or timeout reached
 		err := ndmutil.WaitTillNDMisUpOrTimeout(5 * time.Minute)
 		Expect(err).NotTo(HaveOccurred())
@@ -56,9 +56,9 @@ var _ = Describe("Path filter integration Test", func() {
 		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
-		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
-		configMap.SetExcludePath("/dev/sda")
-		ndmutil.ReplaceAndApplyConfig(configMap)
+		configMapPatch = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
+		configMapPatch.SetExcludePath("/dev/sda")
+		ndmutil.ReplaceAndApplyConfig(configMapPatch)
 		// It waits till node-disk-manager is ready or timeout reached
 		err := ndmutil.WaitTillNDMisUpOrTimeout(5 * time.Minute)
 		Expect(err).NotTo(HaveOccurred())
@@ -75,9 +75,9 @@ var _ = Describe("Path filter integration Test", func() {
 		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
-		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
-		configMap.SetIncludePath("/dev/sda", "/dev/vda")
-		ndmutil.ReplaceAndApplyConfig(configMap)
+		configMapPatch = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
+		configMapPatch.SetIncludePath("/dev/sda", "/dev/vda")
+		ndmutil.ReplaceAndApplyConfig(configMapPatch)
 		// It waits till node-disk-manager is ready or timeout reached
 		err := ndmutil.WaitTillNDMisUpOrTimeout(5 * time.Minute)
 		Expect(err).NotTo(HaveOccurred())
@@ -94,9 +94,9 @@ var _ = Describe("Path filter integration Test", func() {
 		err = ndmutil.InitEnvironment()
 		Expect(err).NotTo(HaveOccurred())
 
-		configMap = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
-		configMap.SetExcludePath("/dev/sda", "/dev/vda")
-		ndmutil.ReplaceAndApplyConfig(configMap)
+		configMapPatch = ndmutil.GetNDMConfig(ndmutil.GetNDMOperatorFilePath())
+		configMapPatch.SetExcludePath("/dev/sda", "/dev/vda")
+		ndmutil.ReplaceAndApplyConfig(configMapPatch)
 		// It waits till node-disk-manager is ready or timeout reached
 		err := ndmutil.WaitTillNDMisUpOrTimeout(5 * time.Minute)
 		Expect(err).NotTo(HaveOccurred())
