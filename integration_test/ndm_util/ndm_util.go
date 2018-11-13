@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	"github.com/openebs/CITF/utils/k8s"
 	logutil "github.com/openebs/CITF/utils/log"
 	strutil "github.com/openebs/CITF/utils/string"
 	sysutil "github.com/openebs/CITF/utils/system"
@@ -631,4 +632,56 @@ func Clean() {
 			fmt.Printf("%q removed.\n", GetNDMTestConfigurationFilePath())
 		}
 	}
+}
+
+// MatchNDMDeviceList is used to match the NDM devices and device
+// paths specified as string. Both include and exclude can be
+// matched using by changing the checkExcludeFilter bool. checkExcludeFilter `true`
+// means exclude filter will be checked and checkExcludeFilter `false`
+// means include filter will be checked.
+func MatchNDMDeviceList(checkExcludeFilter bool, devicePaths ...string) (bool, error) {
+	ndmPods, err := k8sutil.GetNdmPods()
+	if err != nil {
+		return false, err
+	}
+
+	for _, ndmPod := range ndmPods {
+		deviceList, err := GetNDMDeviceListOutputFromThePod(&ndmPod)
+		if err != nil {
+			return false, err
+		}
+		for _, devicePath := range devicePaths {
+			if _, ok := deviceList[devicePath]; ok && checkExcludeFilter {
+				return false, nil
+			}
+		}
+	}
+	return true, nil
+}
+
+// InitEnvironment initializes minikube and
+// waits till the default namespace is ready
+func InitEnvironment() error {
+	var err error
+
+	// It starts minikube if it is not running.
+	cr.CitfInstance.Environment.Setup()
+
+	cr.CitfInstance.K8S, err = k8s.NewK8S()
+
+	if err != nil {
+		return err
+	}
+
+	if cr.CitfInstance.K8S.Config == nil {
+		return errors.New("k8s Config is nil")
+	}
+
+	if cr.CitfInstance.K8S.Clientset == nil {
+		return errors.New("k8s ClientSet is nil")
+	}
+
+	// It waits till namespace is ready
+	WaitTillDefaultNSisReady()
+	return nil
 }

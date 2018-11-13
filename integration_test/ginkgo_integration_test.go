@@ -6,8 +6,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/openebs/CITF/utils/k8s"
-	cr "github.com/openebs/node-disk-manager/integration_test/common_resource"
 	"github.com/openebs/node-disk-manager/integration_test/ndm_util"
 )
 
@@ -19,17 +17,8 @@ func TestIntegrationNDM(t *testing.T) {
 var _ = BeforeSuite(func() {
 	var err error
 
-	// It starts minikube if it is not Running
-	cr.CitfInstance.Environment.Setup()
-
-	// if you are using minikube version greater than 0.24.1
-	// then you have to update the K8s config
-	// this extra step will be unsolicited in upcoming changes.
-	cr.CitfInstance.K8S, err = k8s.NewK8S()
+	err = ndmutil.InitEnvironment()
 	Expect(err).NotTo(HaveOccurred())
-
-	// It waits till namespace is ready
-	ndmutil.WaitTillDefaultNSisReady()
 
 	// It prepares configuration and Applies the same
 	ndmutil.ReplaceImageInYAMLAndApply()
