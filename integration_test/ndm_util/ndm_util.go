@@ -673,9 +673,12 @@ func InitEnvironment() error {
 		return err
 	}
 
-	if cr.CitfInstance.K8S.Config == nil ||
-		cr.CitfInstance.K8S.Clientset == nil {
-		return errors.New("nil k8s Config/ClientSet")
+	if cr.CitfInstance.K8S.Config == nil {
+		return errors.New("k8s Config is nil")
+	}
+
+	if cr.CitfInstance.K8S.Clientset == nil {
+		return errors.New("k8s ClientSet is nil")
 	}
 
 	// It waits till namespace is ready
