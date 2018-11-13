@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var _ = Describe("Path filter integration Test", func() {
+var _ = Describe("NDM Path filter integration test", func() {
 
 	var configMapPatch ndmutil.ConfigMapPatch
 	var err error
