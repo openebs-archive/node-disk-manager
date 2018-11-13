@@ -636,10 +636,10 @@ func Clean() {
 
 // MatchNDMDeviceList is used to match the NDM devices and device
 // paths specified as string. Both include and exclude can be
-// matched using by changing the pathType bool. pathType `true`
-// means exclude filter will be checked and pathType `false`
+// matched using by changing the pathType bool. checkExcludeFilter `true`
+// means exclude filter will be checked and checkExcludeFilter `false`
 // means include filter will be checked.
-func MatchNDMDeviceList(pathType bool, devicePaths ...string) (bool, error) {
+func MatchNDMDeviceList(checkExcludeFilter bool, devicePaths ...string) (bool, error) {
 	ndmPods, err := k8sutil.GetNdmPods()
 	if err != nil {
 		return false, err
@@ -651,7 +651,7 @@ func MatchNDMDeviceList(pathType bool, devicePaths ...string) (bool, error) {
 			return false, err
 		}
 		for _, devicePath := range devicePaths {
-			if _, ok := deviceList[devicePath]; ok && pathType {
+			if _, ok := deviceList[devicePath]; ok && checkExcludeFilter {
 				return false, nil
 			}
 		}
