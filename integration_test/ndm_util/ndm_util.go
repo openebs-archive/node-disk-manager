@@ -636,7 +636,7 @@ func Clean() {
 
 // MatchNDMDeviceList is used to match the NDM devices and device
 // paths specified as string. Both include and exclude can be
-// matched using by changing the pathType bool. checkExcludeFilter `true`
+// matched using by changing the checkExcludeFilter bool. checkExcludeFilter `true`
 // means exclude filter will be checked and checkExcludeFilter `false`
 // means include filter will be checked.
 func MatchNDMDeviceList(checkExcludeFilter bool, devicePaths ...string) (bool, error) {
