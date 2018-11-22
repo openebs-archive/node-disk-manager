@@ -164,6 +164,7 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	udevDiskDetails := udevDevice.udevDevice.DiskInfoFromLibudev()
 	defer udevDevice.free()
 	d.ProbeIdentifiers.SmartIdentifier = udevDiskDetails.Path
+	d.ProbeIdentifiers.SeachestIdentifier = udevDiskDetails.Path
 	d.Model = udevDiskDetails.Model
 	d.Path = udevDiskDetails.Path
 	d.Serial = udevDiskDetails.Serial

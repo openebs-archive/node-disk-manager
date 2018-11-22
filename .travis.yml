@@ -33,6 +33,17 @@ install:
   - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.25.0/minikube-linux-amd64
   - sudo chmod +x minikube
   - sudo mv minikube /usr/local/bin/
+  # we need openSeaChest repo to build node-disk-manager
+  - pushd .
+  - cd ..
+  - git clone --recursive https://github.com/openebs/openSeaChest.git 
+  - cd openSeaChest/Make/gcc 
+  - make release
+  - cd ../../
+  - sudo cp opensea-common/Make/gcc/lib/libopensea-common.a /usr/lib 
+  - sudo cp opensea-operations/Make/gcc/lib/libopensea-operations.a /usr/lib 
+  - sudo cp opensea-transport/Make/gcc/lib/libopensea-transport.a /usr/lib
+  - popd 
 
 script:
   - make
