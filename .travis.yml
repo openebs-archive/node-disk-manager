@@ -22,9 +22,7 @@ addons:
 
 install:
   - make bootstrap
-  - sudo add-apt-repository ppa:sbates --yes
-  - sudo apt-get update
-  - sudo apt-get install --yes libudev-dev nvme-cli
+  - sudo apt-get install --yes libudev-dev
   - if [ "$TRAVIS_BUILD_DIR" != "$GOPATH/src/github.com/openebs/node-disk-manager" ]; then
       mkdir -p $GOPATH/src/github.com/openebs/;
       mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/openebs;
