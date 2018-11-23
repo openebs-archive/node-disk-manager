@@ -105,6 +105,7 @@ func TestFillDiskDetails(t *testing.T) {
 	expectedDiskInfo := &controller.DiskInfo{}
 	expectedDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsDiskDetails.SysPath
 	expectedDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevNode
+	expectedDiskInfo.ProbeIdentifiers.SeachestIdentifier = mockOsDiskDetails.DevNode
 	expectedDiskInfo.Model = mockOsDiskDetails.Model
 	expectedDiskInfo.Path = mockOsDiskDetails.DevNode
 	expectedDiskInfo.Serial = mockOsDiskDetails.Serial
