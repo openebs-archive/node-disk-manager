@@ -42,6 +42,7 @@ script:
   # a particular scsi device, sudo or root permissions are required.
   - sudo -E env "PATH=$PATH" make test
   - make integration-test
+  - kubectl describe pod
 
 after_success:
   - DIMAGE=openebs/node-disk-manager-$ARCH ./hack/push;

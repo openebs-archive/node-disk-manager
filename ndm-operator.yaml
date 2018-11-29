@@ -125,8 +125,6 @@ spec:
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
-        command:
-        - entrypoint.sh
         image: openebs/node-disk-manager-amd64:ci
         imagePullPolicy: Always
         securityContext:
