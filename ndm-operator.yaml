@@ -126,7 +126,7 @@ spec:
       containers:
       - name: node-disk-manager
         command:
-        - /usr/local/bin/entrypoint.sh
+        - entrypoint.sh
         image: openebs/node-disk-manager-amd64:ci
         imagePullPolicy: Always
         securityContext:
