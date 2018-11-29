@@ -14,4 +14,4 @@ COPY ./hack/entrypoint.sh /usr/local/bin
 EXPOSE 9090
 
 #Set the default command
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
