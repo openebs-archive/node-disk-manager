@@ -126,8 +126,7 @@ spec:
       containers:
       - name: node-disk-manager
         command:
-        - /usr/sbin/ndm
-        - start
+        - entrypoint.sh
         image: openebs/node-disk-manager-amd64:ci
         imagePullPolicy: Always
         securityContext:
@@ -144,6 +143,8 @@ spec:
           mountPath: /host/mounts
         - name: sparsepath
           mountPath: /var/openebs
+        - name: ndm
+          mountPath: /var/ndm
         env:
         # pass hostname as env variable using downward API to the NDM container
         - name: NODE_NAME
@@ -176,3 +177,6 @@ spec:
       - name: sparsepath
         hostPath:
           path: /var/openebs
+      - name: ndm 
+        hostPath:
+          path: /var/ndm
