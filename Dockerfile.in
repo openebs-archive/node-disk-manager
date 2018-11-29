@@ -9,7 +9,7 @@ ARG ARCH
 
 #Copy binary to /usr/sbin/ndm
 COPY bin/${ARCH}/ndm /usr/sbin/ndm
-COPY entrypoint.sh /usr/local/bin
+COPY ./hack/entrypoint.sh /usr/local/bin
 #Expose port 9090
 EXPOSE 9090
 
