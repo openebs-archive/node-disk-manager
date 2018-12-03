@@ -35,22 +35,62 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
+	"github.com/golang/glog"
 )
+
+// Seachest errors are converted to string using this function
+func SeachestErrors(err int) string {
+	seachestErrorSting := []string {
+		"Success",
+		"Failed",
+		"Not Supported",
+		"Cmd Failure",
+		"In-progress",
+		"Aborted",
+		"Bad Parameter",
+		"Memory Allocation Failed",
+		"Cmd Passthrough Failed",
+		"Library Mistmatch",
+		"Device Forzen",
+		"Permission Denied",
+		"File Open Error",
+		"Incomplete RFTRS",
+		"Cmd Time-out",
+		"Warning - Not all device enumerated",
+		"Invalid Checksum",
+		"Cmd not Available",
+		"Cmd Blocked",
+		"Cmd Interrupted",
+		"Unknown",
+         }
+         return seachestErrorSting[err]
+}
 
 // Identifier (devPath such as /dev/sda,etc) is an identifier for seachest probe
 type Identifier struct {
 	DevPath string
 }
 
-func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, C.int) {
+func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, int) {
 
 	var device C.tDevice
 	var Drive C.driveInformationSAS_SATA
 	str := C.CString(I.DevPath)
 	defer C.free(unsafe.Pointer(str))
 
-	err := C.get_Device(str, &device)
-	err = C.get_SCSI_Drive_Information(&device, &Drive)
+	err := int(C.get_Device(str, &device))
+	if err != 0 {
+		glog.Error("Unable to get device info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
+		return nil, err
+	}
+
+	err = int(C.get_SCSI_Drive_Information(&device, &Drive))
+	if err != 0 {
+		glog.Error("Unable to get derive info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
+		return nil, err
+	}
+
+	//Added for cross verification, can be removed later on.
 	C.print_SAS_Sata_Device_Information(&Drive)
 
 	return &Drive, err

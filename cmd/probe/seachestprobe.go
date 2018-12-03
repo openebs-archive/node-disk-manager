@@ -96,7 +96,7 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 	seachestProbe := newSeachestProbe(d.ProbeIdentifiers.SeachestIdentifier)
 	driveInfo, err := seachestProbe.SeachestIdentifier.SeachestBasicDiskInfo()
 	if err != 0 {
-		glog.Error(err)
+		return
 	}
 
 	if d.Path == "" {
