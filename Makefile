@@ -26,10 +26,9 @@ EXTERNAL_TOOLS=\
 	github.com/golang/dep/cmd/dep \
 	gopkg.in/alecthomas/gometalinter.v1
 
+# -composite: avoid "literal copies lock value from fakePtr"
 vet:
-# composite flag ignores struct literals that do not use the field-keyed syntax.
-Flag: -composites
-	go list ./... | grep -v "./vendor/*" | xargs go vet
+	go list ./... | grep -v "./vendor/*" | xargs go vet -composites
 
 fmt:
 	find . -type f -name "*.go" | grep -v "./vendor/*" | xargs gofmt -s -w -l
