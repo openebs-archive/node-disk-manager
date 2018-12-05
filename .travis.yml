@@ -37,7 +37,7 @@ install:
   # we need openSeaChest repo to build node-disk-manager
   - pushd .
   - cd ..
-  - git clone --recursive https://github.com/openebs/openSeaChest.git 
+  - git clone --recursive --branch Release-18.10 https://github.com/openebs/openSeaChest.git
   - cd openSeaChest/Make/gcc 
   - make release
   - cd ../../

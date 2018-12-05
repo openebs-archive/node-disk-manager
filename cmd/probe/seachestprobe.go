@@ -145,7 +145,7 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 	}
 
 	if d.DiskType == "" {
-		d.DiskType = seachestProbe.SeachestIdentifier.GetDiskType(driveInfo)
+		d.DiskType = seachestProbe.SeachestIdentifier.IsRotational(driveInfo)
 		glog.Infof("Disk: %s DiskType:%s filled by seachest.", d.Path, d.DiskType)
 	}
 }

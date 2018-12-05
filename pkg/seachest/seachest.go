@@ -147,10 +147,14 @@ func (I *Identifier) GetLogicalSectorSize(driveInfo *C.driveInformationSAS_SATA)
 	return ((uint32)(driveInfo.logicalSectorSize))
 }
 
-func (I *Identifier) GetDiskType(driveInfo *C.driveInformationSAS_SATA) string {
+func (I *Identifier) IsRotational(driveInfo *C.driveInformationSAS_SATA) string {
+
+	if driveInfo.rotationRate == 0x0000 {
+		return "Not Available"
+	}
 
 	if driveInfo.rotationRate == 0x0001 {
 		return "SSD"
 	}
-	return ""
+	return "HDD/SATA"
 }
