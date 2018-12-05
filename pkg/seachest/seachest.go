@@ -156,5 +156,5 @@ func (I *Identifier) IsRotational(driveInfo *C.driveInformationSAS_SATA) string 
 	if driveInfo.rotationRate == 0x0001 {
 		return "SSD"
 	}
-	return "HDD/SATA"
+	return "HDD"
 }
