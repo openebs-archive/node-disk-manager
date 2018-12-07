@@ -17,6 +17,7 @@ type Disk struct {
 
 	Spec   DiskSpec   `json:"spec"`
 	Status DiskStatus `json:"status"`
+	Stats  DiskStat   `json:"stats"`
 }
 
 // DiskSpec is the specification for the disk stored as CRD
@@ -32,12 +33,15 @@ type DiskStatus struct {
 }
 
 type DiskCapacity struct {
-	Storage           uint64 `json:"storage"`           // disk size in bytes
-	LogicalSectorSize uint32 `json:"logicalSectorSize"` // disk logical size in bytes
+	Storage            uint64 `json:"storage"`             // disk size in bytes
+	PhysicalSectorSize uint32 `json: "physicalSectorSize"` // disk physical-Sector size in bytes
+	LogicalSectorSize  uint32 `json:"logicalSectorSize"`   // disk logical-sector size in bytes
 }
 
 // DiskDetails contains basic and static info of a disk
 type DiskDetails struct {
+	RotationRate     uint16 `json: "rotationRate"`    // Disk rotation speed if disk is not SSD
+	DriveType        string `json: "driveType"`       // DriveType represents the type of drive like SSD, HDD etc.,
 	Model            string `json:"model"`            // Model is model of disk
 	Compliance       string `json:"compliance"`       // Implemented standards/specifications version such as SPC-1, SPC-2, etc
 	Serial           string `json:"serial"`           // Serial is serial no of disk
@@ -60,4 +64,18 @@ type DiskList struct {
 	metav1.ListMeta `json:"metadata"`
 
 	Items []Disk `json:"items"`
+}
+
+type DiskStat struct {
+	TempInfo              Temperature `json:"diskTemperature"`
+	TotalBytesRead        uint64      `json:"totalBytesRead"`
+	TotalBytesWritten     uint64      `json:"totalBytesWritten"`
+	DeviceUtilizationRate float64     `json:"deviceUtilizationRate"`
+	PercentEnduranceUsed  float64     `json:"percentEnduranceUsed"`
+}
+
+type Temperature struct {
+	CurrentTemperature int16 `json:"currentTemperature"`
+	HighestTemperature int16 `json:"highestTemperature"`
+	LowestTemperature  int16 `json:"lowestTemperature"`
 }
