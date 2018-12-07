@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	capacityProbePriority = 3
+	capacityProbePriority = 4
 	capacityConfigKey     = "capacity-probe"
 )
 
