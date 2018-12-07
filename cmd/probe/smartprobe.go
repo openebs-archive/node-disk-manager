@@ -34,7 +34,7 @@ type smartProbe struct {
 
 const (
 	smartConfigKey     = "smart-probe"
-	smartProbePriority = 2
+	smartProbePriority = 3
 )
 
 var (
