@@ -23,7 +23,7 @@ package v1alpha1
 import (
 	time "time"
 
-	openebs_io_v1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
+	openebsiov1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
 	versioned "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
 	internalinterfaces "github.com/openebs/node-disk-manager/pkg/client/informers/externalversions/internalinterfaces"
 	v1alpha1 "github.com/openebs/node-disk-manager/pkg/client/listers/openebs.io/v1alpha1"
@@ -71,7 +71,7 @@ func NewFilteredDiskInformer(client versioned.Interface, resyncPeriod time.Durat
 				return client.OpenebsV1alpha1().Disks().Watch(options)
 			},
 		},
-		&openebs_io_v1alpha1.Disk{},
+		&openebsiov1alpha1.Disk{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,7 +82,7 @@ func (f *diskInformer) defaultInformer(client versioned.Interface, resyncPeriod 
 }
 
 func (f *diskInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&openebs_io_v1alpha1.Disk{}, f.defaultInformer)
+	return f.factory.InformerFor(&openebsiov1alpha1.Disk{}, f.defaultInformer)
 }
 
 func (f *diskInformer) Lister() v1alpha1.DiskLister {
