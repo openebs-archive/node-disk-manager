@@ -1,0 +1,7 @@
+apiVersion: openebs.io/v1alpha1
+kind: DiskClaim
+metadata:
+  name: example-diskclaim
+spec:
+  # Add fields here
+  size: 3

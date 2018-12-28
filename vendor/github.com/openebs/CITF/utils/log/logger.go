@@ -77,6 +77,22 @@ func (logger Logger) LogNonErrorf(err error, message string, a ...interface{}) {
 	}
 }
 
+// LogFatal logs error using `glog.Error` only when err is not nil.
+// Please follow convensions for error message e.g. start with lowercase, don't end with period etc.
+func (logger Logger) LogFatal(err error, message string) {
+	if err != nil {
+		glog.Fatal(message+":", err)
+	}
+}
+
+// LogFatalf formats according to a format specifier and logs error using `glog.Error` only when err is not nil.
+// Please follow convensions for error message e.g. start with lowercase, don't end with period etc.
+func (logger Logger) LogFatalf(err error, message string, a ...interface{}) {
+	if err != nil {
+		glog.Fatal(fmt.Sprintf(message, a...)+":", err)
+	}
+}
+
 // PrintError wtires error message to os.StdErr only when err is not nil.
 // Spaces are always added between operands and a newline is appended.
 // It returns the number of bytes written and any write error encountered.

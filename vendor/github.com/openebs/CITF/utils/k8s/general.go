@@ -15,11 +15,13 @@ package k8s
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/golang/glog"
+	"github.com/openebs/CITF/common"
+	"github.com/openebs/CITF/config"
+	openebs "github.com/openebs/CITF/pkg/client/clientset/versioned"
 	"github.com/openebs/CITF/utils/log"
+	sysutil "github.com/openebs/CITF/utils/system"
 	api_core_v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -32,31 +34,42 @@ var logger log.Logger
 
 // K8S is a struct which will be the driver for all the methods related to kubernetes
 type K8S struct {
-	Config    *rest.Config
-	Clientset *kubernetes.Clientset
+	Config           *rest.Config
+	Clientset        *kubernetes.Clientset
+	OpenebsClientSet *openebs.Clientset
+}
+
+func init() {
+	// check if `kubectl` is present
+	kubectlPath, err := sysutil.BinPathFromPathEnv(common.Kubectl)
+	if kubectlPath == "" {
+		// we don't want to exit here because k8s package may be used as a wrapper over client-go as well
+		glog.Errorf("%q not found in current directory or in directories represented by PATH environment variable: %+v", common.Kubectl, err)
+	}
+	glog.Infof("%q found on path: %q", common.Kubectl, kubectlPath)
 }
 
 // NewK8S returns K8S struct
 func NewK8S() (K8S, error) {
-	var config *rest.Config
-	var clientset *kubernetes.Clientset
-	var err error
+	config, err := GetClientConfig()
+	if err != nil {
+		return K8S{}, err
+	}
 
-	// For now we are ignoring this error, as we know with current design
-	// we may end-up trying to create Config even if there is no config present in the machine yet
-	config, err = GetClientConfig()
-	if err == nil {
-		clientset, err = GetClientsetFromConfig(config)
-		if err != nil {
-			return K8S{}, err
-		}
-	} else {
-		glog.Error(err)
+	clientset, err := GetClientsetFromConfig(config)
+	if err != nil {
+		return K8S{}, err
+	}
+
+	openebsClientSet, err := openebs.NewForConfig(config)
+	if err != nil {
+		return K8S{}, err
 	}
 
 	return K8S{
-		Config:    config,
-		Clientset: clientset,
+		Config:           config,
+		Clientset:        clientset,
+		OpenebsClientSet: openebsClientSet,
 	}, nil
 }
 
@@ -92,19 +105,19 @@ var PodBadStates = []string{"CrashLoopBackOff", "ImagePullBackOff", "RunContaine
 // Otherwise, it tries to build config from a default kubeconfig filepath if it fails, it fallback to the default config.
 // Once it get the config, it returns the same.
 func GetClientConfig() (*rest.Config, error) {
-	config, err := rest.InClusterConfig()
+	// First of all I want to give `InClusterConfig` a try then we'll give `BuildConfigFromFlags` a chance to create config
+	clientConfig, err := rest.InClusterConfig()
 	if err != nil {
 		logger.PrintfDebugMessage("unable to create config: %+v\v", err)
 		err1 := err
-		kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+		clientConfig, err = clientcmd.BuildConfigFromFlags(config.KubeMasterURL(), config.KubeConfigPath())
 		if err != nil {
 			err = fmt.Errorf("InClusterConfig as well as BuildConfigFromFlags Failed. Error in InClusterConfig: %+v\nError in BuildConfigFromFlags: %+v", err1, err)
 			return nil, err
 		}
 	}
 
-	return config, nil
+	return clientConfig, nil
 }
 
 // GetClientsetFromConfig takes REST config and Create a clientset based on that and return that clientset

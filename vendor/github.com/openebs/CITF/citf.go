@@ -16,7 +16,7 @@ package citf
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	citfoptions "github.com/openebs/CITF/citf_options"
 	"github.com/openebs/CITF/common"
 	"github.com/openebs/CITF/config"
 	"github.com/openebs/CITF/environments"
@@ -25,6 +25,8 @@ import (
 	"github.com/openebs/CITF/utils/k8s"
 	"github.com/openebs/CITF/utils/log"
 )
+
+var logger log.Logger
 
 // CITF is a struct which will be the driver for all functionalities of this framework
 type CITF struct {
@@ -35,34 +37,54 @@ type CITF struct {
 	Logger       log.Logger
 }
 
-// NewCITF returns CITF struct. One need this in order to use any functionality of this framework.
-func NewCITF(confFilePath string) (CITF, error) {
-	var environment environments.Environment
-	if err := config.LoadConf(confFilePath); err != nil {
-		// Log this here
-		// Here, we don't want to return fatal error since we want to continue
-		// executing the function with default configuration even if it fails
-		glog.Errorf("error loading config file. Error: %+v", err)
-	}
-
+// getEnvironment returns the environment according to the config
+func getEnvironment() (environments.Environment, error) {
 	switch config.Environment() {
 	case common.Minikube:
-		environment = minikube.NewMinikube()
+		return minikube.NewMinikube(), nil
 	default:
-		// Exit with Error
-		return CITF{}, fmt.Errorf("platform: %q is not suppported by CITF", config.Environment())
+		return nil, fmt.Errorf("platform: %q is not suppported by CITF", config.Environment())
+	}
+}
+
+// Reload reloads all the fields of citfInstance according to supplied `citfCreateOptions`
+func (citfInstance *CITF) Reload(citfCreateOptions *citfoptions.CreateOptions) error {
+	// Here, we don't want to return fatal error since we want to continue
+	// executing the function with default configuration even if it fails
+	// so we simply log any error and continue
+	logger.LogError(config.LoadConf(citfCreateOptions.ConfigPath), "error loading config file")
+
+	if citfCreateOptions.EnvironmentInclude {
+		environ, err := getEnvironment()
+		if err != nil {
+			return err
+		}
+		citfInstance.Environment = environ
 	}
 
-	k8sInstance, err := k8s.NewK8S()
-	if err != nil {
-		return CITF{}, err
+	if citfCreateOptions.K8SInclude {
+		k8sInstance, err := k8s.NewK8S()
+		if err != nil {
+			return err
+		}
+		citfInstance.K8S = k8sInstance
 	}
 
-	return CITF{
-		K8S:          k8sInstance,
-		Environment:  environment,
-		Docker:       docker.NewDocker(),
-		DebugEnabled: config.Debug(),
-		Logger:       log.Logger{},
-	}, nil
+	if citfCreateOptions.DockerInclude {
+		citfInstance.Docker = docker.NewDocker()
+	}
+
+	if citfCreateOptions.LoggerInclude {
+		citfInstance.Logger = log.Logger{}
+	}
+
+	citfInstance.DebugEnabled = config.Debug()
+	return nil
+}
+
+// NewCITF returns CITF struct filled according to supplied `citfCreateOptions`.
+// One need this in order to use any functionality of this framework.
+func NewCITF(citfCreateOptions *citfoptions.CreateOptions) (citfInstance CITF, err error) {
+	err = citfInstance.Reload(citfCreateOptions)
+	return
 }

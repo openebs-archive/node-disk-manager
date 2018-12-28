@@ -26,10 +26,12 @@ import (
 	"errors"
 
 	"github.com/golang/glog"
+	"github.com/openebs/CITF/common"
 	strutil "github.com/openebs/CITF/utils/string"
 	sysutil "github.com/openebs/CITF/utils/system"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	storage_v1 "k8s.io/api/storage/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
@@ -97,7 +99,7 @@ func (k8s K8S) GetPods(namespace, podNamePrefix string) ([]core_v1.Pod, error) {
 }
 
 // GetPodsUntilQuitSignal returns all the Pods object which has a prefix specified in its name in the given namespace.
-// it tries to get the pods which match the criteria unless `true` recieved from `quit` or it gets at least one such pod.
+// it tries to get the pods which match the criteria unless `true` received from `quit` or it gets at least one such pod.
 // NOTE: it counts pods which are not even in ContainerCreating state yet. Deal with them properly.
 func (k8s K8S) GetPodsUntilQuitSignal(namespace, podNamePrefix string, quit <-chan bool) (thePods []core_v1.Pod, err error) {
 	for {
@@ -107,12 +109,12 @@ func (k8s K8S) GetPodsUntilQuitSignal(namespace, podNamePrefix string, quit <-ch
 				if len(thePods) == 0 {
 					err = fmt.Errorf("failed to get any pod which starts with %q, forced to quit", podNamePrefix)
 				} else {
-					glog.Info("quit signal recieved `true`, quitting...")
+					glog.Info("quit signal received `true`, quitting...")
 					err = nil
 				}
 				return
 			}
-			glog.Info("quit signal recieved `false`, not quitting...")
+			glog.Info("quit signal received `false`, not quitting...")
 
 		default:
 			thePods, err = k8s.GetPods(namespace, podNamePrefix)
@@ -414,7 +416,7 @@ func (k8s K8S) GetDaemonsetStructFromYamlBytes(yamlBytes []byte) (v1beta1.Daemon
 func (k8s K8S) YAMLApply(yamlPath string) error {
 	// TODO: Try using API call first. i.e. Using client-go
 
-	err := sysutil.RunCommand("kubectl apply -f " + yamlPath)
+	err := sysutil.RunCommand(common.Kubectl + " apply -f " + yamlPath)
 	logger.LogErrorf(err, "error occurred while applying the %s", yamlPath)
 	if err != nil {
 		return fmt.Errorf("failed applying %s", yamlPath)
@@ -489,7 +491,7 @@ func (k8s K8S) ExecToPodThroughAPI(command, containerName, podName, namespace st
 // :return: string: Output of the command. (STDOUT)
 //           error: If any error has occurred otherwise `nil`
 func (k8s K8S) ExecToPodThroughKubectl(command, containerName, podName, namespace string) (string, error) {
-	kubectlCommand := "kubectl"
+	kubectlCommand := common.Kubectl
 
 	// adding namespace if namespace is not blank string
 	if len(namespace) != 0 {
@@ -561,7 +563,7 @@ func (k8s K8S) GetLog(podName, namespace string) (string, error) {
 use_kubectl:
 	glog.Errorf("Error while getting log with API call. Error: %+v", err)
 
-	return sysutil.ExecCommand("kubectl -n " + namespace + " logs " + podName)
+	return sysutil.ExecCommand(common.Kubectl + " -n " + namespace + " logs " + podName)
 }
 
 // BlockUntilPodIsUp blocks until all containers of the given pod is ready
@@ -659,3 +661,94 @@ func (k8s K8S) BlockUntilPodIsUpOrTimeout(pod *core_v1.Pod, timeout time.Duratio
 
 	return k8s.BlockUntilPodIsUpWithContext(ctx, pod)
 }
+
+// CreateDeployment creates the Deployment in the given namespace.
+func (k8s K8S) CreateDeployment(namespace string, deployment *v1beta1.Deployment) (*v1beta1.Deployment, error) {
+	deploymentClient := k8s.Clientset.ExtensionsV1beta1().Deployments(namespace)
+	return deploymentClient.Create(deployment);
+}
+
+// GetDeployment returns the Deployment object for given deploymentName in the given namespace.
+func (k8s K8S) GetDeployment(namespace, deploymentName string, opts meta_v1.GetOptions) (*v1beta1.Deployment, error) {
+	deploymentClient := k8s.Clientset.ExtensionsV1beta1().Deployments(namespace)
+	return deploymentClient.Get(deploymentName, opts)
+}
+
+// ListDeployments returns a pointer to the DeploymentList containing all the deployments.
+func (k8s K8S) ListDeployments(namespace string, opts meta_v1.ListOptions) (*v1beta1.DeploymentList, error) {
+	deploymentClient := k8s.Clientset.ExtensionsV1beta1().Deployments(namespace)
+	return deploymentClient.List(opts)
+}
+
+// DeleteDeployment deletes the Deployment object of the given deploymentName in the given namespace.
+func (k8s K8S) DeleteDeployment(namespace, deploymentName string, opts *meta_v1.DeleteOptions) error {
+	deploymentClient := k8s.Clientset.ExtensionsV1beta1().Deployments(namespace)
+	return deploymentClient.Delete(deploymentName, opts)
+}
+
+// CreateStorageClass creates the StorageClass.
+func (k8s K8S) CreateStorgeClass(storageClass *storage_v1.StorageClass) (*storage_v1.StorageClass, error) {
+	storageClassClient := k8s.Clientset.StorageV1().StorageClasses()
+	return storageClassClient.Create(storageClass)
+}
+
+// GetStorageClass returns the StorageClass object for given storageClassName.
+func (k8s K8S) GetStorageClass(storageClassName string, opts meta_v1.GetOptions) (*storage_v1.StorageClass, error) {
+	storageClassClient := k8s.Clientset.StorageV1().StorageClasses()
+	return storageClassClient.Get(storageClassName, opts)
+}
+
+// ListStorageClasses returns a pointer to StorageClassList containing all the storage classes.
+func (k8s K8S) ListStorageClasses(opts meta_v1.ListOptions) (*storage_v1.StorageClassList, error) {
+	storageClassClient := k8s.Clientset.StorageV1().StorageClasses()
+	return storageClassClient.List(opts)
+}
+
+// DeleteStorageClass deletes the StorageClass object of given storageClassName.
+func (k8s K8S) DeleteStorageClass(storageClassName string, opts *meta_v1.DeleteOptions) error {
+	storageClassClient := k8s.Clientset.StorageV1().StorageClasses()
+	return storageClassClient.Delete(storageClassName, opts)
+}
+
+// CreatePersistentVolumeClaim creates the PVC in the given namespace.
+func (k8s K8S) CreatePersistentVolumeClaim(namespace string, persistentVolumeClaim *core_v1.PersistentVolumeClaim) (*core_v1.PersistentVolumeClaim, error) {
+	persistentVolumeClaimClient := k8s.Clientset.CoreV1().PersistentVolumeClaims(namespace)
+	return persistentVolumeClaimClient.Create(persistentVolumeClaim)
+}
+
+// ListPersistentVolumeClaim lists all the PVCs in the given namespace.
+func (k8s K8S) ListPersistentVolumeClaim(namespace string, opts meta_v1.ListOptions) (*core_v1.PersistentVolumeClaimList, error) {
+	persistentVolumeClaimClient := k8s.Clientset.CoreV1().PersistentVolumeClaims(namespace)
+	return persistentVolumeClaimClient.List(opts)
+}
+
+// GetPersistentVolumeClaim lists single PVC in the given namespace.
+func (k8s K8S) GetPersistentVolumeClaim(namespace, persistentVolumeClaimName string, opts meta_v1.GetOptions) (*core_v1.PersistentVolumeClaim, error) {
+	persistentVolumeClaimClient := k8s.Clientset.CoreV1().PersistentVolumeClaims(namespace)
+	return persistentVolumeClaimClient.Get(persistentVolumeClaimName, opts)
+}
+
+// DeletePersistentVolumeClaim deletes supplied PVC in the given namespace.
+func (k8s K8S) DeletePersistentVolumeClaim(namespace, persistentVolumeClaimName string, opts *meta_v1.DeleteOptions) error {
+	persistentVolumeClaimClient := k8s.Clientset.CoreV1().PersistentVolumeClaims(namespace)
+	return persistentVolumeClaimClient.Delete(persistentVolumeClaimName, opts)
+}
+
+// GetPersistentVolume returns the PersistentVolume object for the given persistentVolumeName
+func (k8s K8S) GetPersistentVolume(persistentVolumeName string, opts meta_v1.GetOptions) (*core_v1.PersistentVolume, error) {
+	persistentVolumesClient := k8s.Clientset.CoreV1().PersistentVolumes()
+	return persistentVolumesClient.Get(persistentVolumeName, opts)
+}
+
+// ListPersistentVolume returns all the PersistentVolume objects
+func (k8s K8S) ListPersistentVolume(opts meta_v1.ListOptions) (*core_v1.PersistentVolumeList, error) {
+	persistentVolumesClient := k8s.Clientset.CoreV1().PersistentVolumes()
+	return persistentVolumesClient.List(opts)
+}
+
+// DeletePersistentVolume deletes a PersistentVolume object with the given persistentVolumeName
+func (k8s K8S) DeletePersistentVolume(persistentVolumeName string, opts *meta_v1.DeleteOptions) error {
+	persistentVolumesClient := k8s.Clientset.CoreV1().PersistentVolumes()
+	return persistentVolumesClient.Delete(persistentVolumeName, opts)
+}
+

@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/openebs/CITF/common"
 	"github.com/openebs/CITF/utils/log"
 	sysutil "github.com/openebs/CITF/utils/system"
@@ -32,6 +33,13 @@ var (
 )
 
 func init() {
+	// Check if `minikube` is present
+	minikubePath, err := sysutil.BinPathFromPathEnv(common.Minikube)
+	if minikubePath == "" {
+		logger.LogFatalf(err, "%q not found in current directory or in directories represented by PATH environment variable", common.Minikube)
+	}
+	glog.Infof("%q found on path: %q", common.Minikube, minikubePath)
+
 	// `sudo` use detection
 	useSudoEnv := strings.ToLower(strings.TrimSpace(os.Getenv("USE_SUDO")))
 	if useSudoEnv == "true" { // If it is mentioned in the environment variable to use sudo

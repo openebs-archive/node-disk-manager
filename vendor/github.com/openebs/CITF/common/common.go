@@ -18,4 +18,6 @@ const (
 	Minikube = "minikube"
 	// Docker is the name of Docker which is "docker"
 	Docker = "docker"
+	// Kubectl is the name of Kubectl which is "kubectl"
+	Kubectl = "kubectl"
 )

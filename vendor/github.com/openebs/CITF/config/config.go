@@ -16,6 +16,7 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 
 	"os"
 	"reflect"
@@ -28,8 +29,10 @@ import (
 
 // Configuration is struct to hold the configurations of CITF
 type Configuration struct {
-	Environment string `json:"environment,omitempty" yaml:"environment,omitempty"`
-	Debug       bool   `json:"debug,omitempty" yaml:"debug,omitempty"`
+	Environment    string `json:"environment,omitempty" yaml:"environment,omitempty"`
+	Debug          bool   `json:"debug,omitempty" yaml:"debug,omitempty"`
+	KubeMasterURL  string `json:"kubeMasterURL,omitempty" yaml:"kubeMasterURL,omitempty"`
+	KubeConfigPath string `json:"kubeConfigPath,omitempty" yaml:"kubeConfigPath,omitempty"`
 }
 
 var (
@@ -47,8 +50,10 @@ const (
 
 func init() {
 	defaultConf = Configuration{
-		Environment: common.Minikube,
-		Debug:       debugDisabledVal,
+		Environment:    common.Minikube,
+		Debug:          debugDisabledVal,
+		KubeMasterURL:  "",
+		KubeConfigPath: filepath.Join(os.Getenv("HOME"), ".kube", "config"),
 	}
 
 	// Set debug status to util packages
@@ -88,7 +93,7 @@ func LoadConf(confFilePath string) error {
 func getConfValueByStringField(conf Configuration, field string) string {
 	r := reflect.ValueOf(conf)
 	f := reflect.Indirect(r).FieldByName(field)
-	return f.String()
+	return fmt.Sprintf("%v", f)
 }
 
 // GetDefaultValueByStringField returns the value of the given field string in Default Configuration
@@ -126,3 +131,13 @@ func Debug() bool {
 
 // Verbose is an alias of Debug which returns the environment which should be used in testing
 var Verbose = Debug
+
+// KubeMasterURL returns the URL of kube-master as per citf configurations
+func KubeMasterURL() string {
+	return GetConf("KubeMasterURL")
+}
+
+// KubeConfigPath returns the path of kube-config as per citf configurations
+func KubeConfigPath() string {
+	return GetConf("KubeConfigPath")
+}

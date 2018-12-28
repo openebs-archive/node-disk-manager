@@ -16,6 +16,8 @@ package minikube
 import (
 	"fmt"
 	"os"
+
+	"github.com/openebs/CITF/common"
 )
 
 // runPostStartCommandsForMinikube runs the commands required when run minikube as --vm-driver=none
@@ -42,7 +44,7 @@ func (minikube Minikube) runPostStartCommandsForMinikubeNoneDriver() {
 
 // StartMinikube method starts minikube with `--vm-driver=none` option.
 func (minikube Minikube) StartMinikube() error {
-	err := runCommand("minikube start --vm-driver=none")
+	err := runCommand(common.Minikube + " start --vm-driver=none")
 	// We can also use following:
 	// "minikube start --vm-driver=none --feature-gates=MountPropagation=true --cpus=1 --memory=1024 --v=3 --alsologtostderr"
 	if err != nil {
@@ -75,7 +77,7 @@ func (minikube Minikube) Setup() error {
 	minikubeStatus, err := minikube.Status()
 
 	logger.PrintfDebugMessageIfError(err, "error occurred while checking minikube status")
-	logger.PrintfDebugMessageIfNotError(err, "minikube status: %q", minikubeStatus)
+	logger.PrintfDebugMessageIfNotError(err, common.Minikube+" status: %q", minikubeStatus)
 
 	teardownRequired := false
 	startRequired := false
