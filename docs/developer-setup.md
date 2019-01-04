@@ -41,6 +41,19 @@ git remote -v
 Install the build dependencies.
   * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
   * Run `make bootstrap` to install the required Go tools
+  * node-disk-manager uses OpenSeaChest to fetch certain details of the disk like temperature and rotation rate. This requires cloning the `openSeaChest` repo to `openebs` directory and build it. 
+    ```sh
+    git clone --recursive https://github.com/openebs/openSeaChest.git
+    cd openSeaChest/Make/gcc
+    make release
+    ```
+  * Copy the generated static library files to `/usr/lib`
+    ```sh
+    cd ../../
+    sudo cp opensea-common/Make/gcc/lib/libopensea-common.a /usr/lib
+    sudo cp opensea-operations/Make/gcc/lib/libopensea-operations.a /usr/lib
+    sudo cp opensea-transport/Make/gcc/lib/libopensea-transport.a /usr/lib
+    ```
 
 ## Git Development Workflow
 
