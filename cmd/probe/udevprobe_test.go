@@ -174,6 +174,7 @@ func TestUdevProbe(t *testing.T) {
 	}
 	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
 	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = "disk"
+	fakeDr.ObjectMeta.Labels[controller.NDMUnmanagedKey] = controller.FalseString
 	tests := map[string]struct {
 		actualDisk    apis.Disk
 		expectedDisk  apis.Disk

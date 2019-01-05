@@ -103,6 +103,7 @@ func (c *Controller) DeleteDisk(name string) {
 // and returns list of disk resources.
 func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
 	label := NDMHostKey + "=" + c.HostName
+	label = label + "," + NDMUnmanagedKey + "!=" + TrueString
 	filter := metav1.ListOptions{LabelSelector: label}
 	listDR, err := c.Clientset.OpenebsV1alpha1().Disks().List(filter)
 	return listDR, err

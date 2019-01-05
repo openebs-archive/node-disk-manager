@@ -149,6 +149,7 @@ func TestGetObjectMeta(t *testing.T) {
 	}
 	fakeObjectMeta.Labels[NDMHostKey] = hostName
 	fakeObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
+	fakeObjectMeta.Labels[NDMUnmanagedKey] = FalseString
 
 	tests := map[string]struct {
 		actualObjectMeta   metav1.ObjectMeta
@@ -257,6 +258,7 @@ func TestToDisk(t *testing.T) {
 	}
 	fakeObjectMeta.Labels[NDMHostKey] = hostName
 	fakeObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
+	fakeObjectMeta.Labels[NDMUnmanagedKey] = FalseString
 	expectedDisk.ObjectMeta = fakeObjectMeta
 	expectedDisk.Spec.DevLinks = fakeDevLinks
 	expectedDisk.Status.State = NDMActive
