@@ -107,7 +107,7 @@ echo "==> Removing old bin contents..."
 deleteOldContents
 
 # If its dev mode, only build for ourself
-if [[ "${NDM_AGENT_DEV}" ]]; then
+if [[ -n "${NDM_AGENT_DEV}" ]]; then
     XC_OS=$(go env GOOS)
     XC_ARCH=$(go env GOARCH)
 fi
