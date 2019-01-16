@@ -1,4 +1,7 @@
-
+v0.3.0 / 2018--12-07
+=====================
+ * OpenSeaChest is integrated with Node-Disk-Manager to get more info
+ * Core dump is enabled for Node-Disk-Manager for problem analysis.
 
 v0.2.0 / 2018-10-25
 =======================

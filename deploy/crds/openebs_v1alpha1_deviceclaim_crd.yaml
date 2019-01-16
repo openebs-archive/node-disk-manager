@@ -1,0 +1,15 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: deviceclaims.openebs.io
+spec:
+  group: openebs.io
+  names:
+    kind: DeviceClaim
+    listKind: DeviceClaimList
+    plural: deviceclaims
+    singular: deviceclaim
+  scope: Namespaced
+  version: v1alpha1
+  subresources:
+    status: {}

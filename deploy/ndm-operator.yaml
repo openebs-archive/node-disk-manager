@@ -1,0 +1,157 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-disk-operator
+  namespace: default
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: node-disk-operator
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: node-disk-operator
+  namespace: default
+- kind: User
+  name: system:serviceaccount:default:openebs-ndm-operator
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: node-disk-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: node-disk-operator
+rules:
+- apiGroups: ["*"]
+  resources: ["pods", "services", "endpoints", "persistentvolumeclaims", "events", "configmaps", "secrets"]
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - get
+  - create
+- apiGroups:
+  - openebs.io
+  resources:
+  - '*'
+  - devices
+  - deviceclaims
+  verbs:
+  - '*'
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: disks.openebs.io
+spec:
+  group: openebs.io
+  names:
+    kind: Disk
+    listKind: DiskList
+    plural: disks
+    singular: disk
+  scope: Cluster
+  version: v1alpha1
+  subresources:
+    status: {}
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: devices.openebs.io
+spec:
+  group: openebs.io
+  names:
+    kind: Device
+    listKind: DeviceList
+    plural: devices
+    singular: device
+  scope: Cluster 
+  version: v1alpha1
+  subresources:
+    status: {}
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: deviceclaims.openebs.io
+spec:
+  group: openebs.io
+  names:
+    kind: DeviceClaim
+    listKind: DeviceClaimList
+    plural: deviceclaims
+    singular: deviceclaim
+  scope: Cluster 
+  version: v1alpha1
+  subresources:
+    status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-disk-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: node-disk-operator
+  template:
+    metadata:
+      labels:
+        name: node-disk-operator
+    spec:
+      serviceAccountName: node-disk-operator
+      containers:
+        - name: node-disk-operator
+          # Replace this with the built image name
+          image: satbirchhikara/ndm-operator:test0
+          ports:
+          - containerPort: 60000
+            name: metrics
+          command:
+          - ndo
+          imagePullPolicy: Always
+          readinessProbe:
+            exec:
+              command:
+                - stat
+                - /tmp/operator-sdk-ready
+            initialDelaySeconds: 4
+            periodSeconds: 10
+            failureThreshold: 1
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "node-disk-operator"
+---

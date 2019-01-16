@@ -32,36 +32,36 @@ import (
 )
 
 const (
-	NDMPrefix           = "disk-"              // NDMPrefix used as disk's uuid prefix
-	UDEV_SUBSYSTEM      = "block"              // udev to filter this device type
-	UDEV_SYSTEM         = "disk"               // used to filter devices other than disk which udev tracks (eg. CD ROM)
+	NDMDiskPrefix       = "disk-"           // NDMPrefix used as disk's uuid prefix
+	NDMDevicePrefix     = "device-"         // NDMdevicePrefix used as device's uuid prefix
+	UDEV_SUBSYSTEM      = "block"           // udev to filter this device type
+	UDEV_SYSTEM         = "disk"            // used to filter devices other than disk which udev tracks (eg. CD ROM)
 	UDEV_PARTITION      = "partition"          // used to filter out partitions
-	UDEV_PATH           = "DEVPATH"            // udev attribute to get device path
-	UDEV_WWN            = "ID_WWN"             // udev attribute to get device WWN number
-	UDEV_SERIAL         = "ID_SERIAL_SHORT"    // udev attribute to get device serial number
-	UDEV_SERIAL_FULL    = "ID_SERIAL"          // udev attribute to get - separated vendor, model, serial
-	UDEV_BUS            = "ID_BUS"             // udev attribute to get bus name
-	UDEV_MODEL          = "ID_MODEL"           // udev attribute to get device model number
-	UDEV_VENDOR         = "ID_VENDOR"          // udev attribute to get device vendor details
-	UDEV_TYPE           = "ID_TYPE"            // udev attribute to get device type
-	UDEV_MAJOR          = "MAJOR"              // udev attribute to get device major no
-	UDEV_MINOR          = "MINOR"              // udev attribute to get device minor no
-	UDEV_UUID           = "UDEV_UUID"          // ndm attribute to get device uuid
-	UDEV_SYSPATH        = "UDEV_SYSPATH"       // udev attribute to get device syspath
-	UDEV_ACTION         = "UDEV_ACTION"        // udev attribute to get monitor device action
-	UDEV_ACTION_ADD     = "add"                // udev attribute constant for add action
-	UDEV_ACTION_REMOVE  = "remove"             // udev attribute constant for remove action
-	UDEV_DEVTYPE        = "DEVTYPE"            // udev attribute to get device device type ie - disk or part
-	UDEV_SOURCE         = "udev"               // udev source constant
-	UDEV_SYSPATH_PREFIX = "/sys/dev/block/"    // udev syspath prefix
-	UDEV_DEVNAME        = "DEVNAME"            // udev attribute contain disk name given by kernel
-	UDEV_DEVLINKS       = "DEVLINKS"           // udev attribute contain devlinks of a disk
-	BY_ID_LINK          = "by-id"              // by-path devlink contains this string
-	BY_PATH_LINK        = "by-path"            // by-path devlink contains this string
-	LINK_ID_INDEX       = 4                    // this is used to get link index from dev link
+	UDEV_PATH           = "DEVPATH"         // udev attribute to get device path
+	UDEV_WWN            = "ID_WWN"          // udev attribute to get device WWN number
+	UDEV_SERIAL         = "ID_SERIAL_SHORT" // udev attribute to get device serial number
+	UDEV_SERIAL_FULL    = "ID_SERIAL"       // udev attribute to get - separated vendor, model, serial
+	UDEV_BUS            = "ID_BUS"          // udev attribute to get bus name
+	UDEV_MODEL          = "ID_MODEL"        // udev attribute to get device model number
+	UDEV_VENDOR         = "ID_VENDOR"       // udev attribute to get device vendor details
+	UDEV_TYPE           = "ID_TYPE"         // udev attribute to get device type
+	UDEV_MAJOR          = "MAJOR"           // udev attribute to get device major no
+	UDEV_MINOR          = "MINOR"           // udev attribute to get device minor no
+	UDEV_UUID           = "UDEV_UUID"       // ndm attribute to get device uuid
+	UDEV_SYSPATH        = "UDEV_SYSPATH"    // udev attribute to get device syspath
+	UDEV_ACTION         = "UDEV_ACTION"     // udev attribute to get monitor device action
+	UDEV_ACTION_ADD     = "add"             // udev attribute constant for add action
+	UDEV_ACTION_REMOVE  = "remove"          // udev attribute constant for remove action
+	UDEV_DEVTYPE        = "DEVTYPE"         // udev attribute to get device device type ie - disk or part
+	UDEV_SOURCE         = "udev"            // udev source constant
+	UDEV_SYSPATH_PREFIX = "/sys/dev/block/" // udev syspath prefix
+	UDEV_DEVNAME        = "DEVNAME"         // udev attribute contain disk name given by kernel
+	UDEV_DEVLINKS       = "DEVLINKS"        // udev attribute contain devlinks of a disk
 	UDEV_PARTITION_TYPE = "ID_PART_ENTRY_TYPE" // udev attribute to get partition type
 	UDEV_FS_TYPE        = "ID_FS_TYPE"         // file system type the partition
-	UDEV_FS_NONE        = "None"               // udev constant for no file system
+	BY_ID_LINK          = "by-id"           // by-path devlink contains this string
+	BY_PATH_LINK        = "by-path"         // by-path devlink contains this string
+	LINK_ID_INDEX       = 4                 // this is used to get link index from dev link
 )
 
 // UdevDiskDetails struct contain different attribute of disk.
@@ -126,7 +126,7 @@ func (device *UdevDevice) GetUid() string {
 		uid += host + device.GetPropertyValue(UDEV_DEVNAME)
 	}
 
-	return NDMPrefix + util.Hash(uid)
+	return NDMDiskPrefix + util.Hash(uid)
 }
 
 // IsDisk returns true if device is a disk

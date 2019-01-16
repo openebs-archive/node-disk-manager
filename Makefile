@@ -1,10 +1,11 @@
 # Specify the name for the binaries
+NODE_DISK_OPERATOR=ndo
 NODE_DISK_MANAGER=ndm
 
 # Build the node-disk-manager image.
+build: clean fmt shellcheck ndo ndm version docker
 
-build: clean vet fmt shellcheck ndm version docker
-
+NODE_DISK_OPERATOR?=ndo
 NODE_DISK_MANAGER?=ndm
 
 # Determine the arch/os
@@ -16,7 +17,8 @@ ARCH:=${XC_OS}_${XC_ARCH}
 VERSION:=$(shell git describe --tags --always)
 
 # IMAGE is the image name of the node-disk-manager docker image.
-IMAGE:=openebs/node-disk-manager-${XC_ARCH}:ci
+IMAGE_NDO:=openebs/node-disk-operator-${XC_ARCH}:ci
+IMAGE_NDM:=openebs/node-disk-manager-${XC_ARCH}:ci
 
 # The ubuntu:16.04 image is being used as base image.
 BASEIMAGE:=ubuntu:16.04
@@ -50,7 +52,7 @@ version:
 
 test: 	vet fmt
 	@echo "--> Running go test";
-	$(PWD)/hack/test.sh
+	$(PWD)/build/test.sh
 
 # Bootstrap the build by downloading additional tools
 bootstrap:
@@ -64,17 +66,21 @@ Dockerfile: Dockerfile.in
 
 header:
 	@echo "----------------------------"
-	@echo "--> node-disk-manager       "
+	@echo "--> node-disk-operator      "
 	@echo "----------------------------"
 	@echo
 
-integration-test:
-	go test -v github.com/openebs/node-disk-manager/integration_test
+ndo:
+	@echo '--> Building node-disk operator binary...'
+	@pwd
+	@CTLNAME=${NODE_DISK_OPERATOR} sh -c "'$(PWD)/build/ndo_build.sh'"
+	@echo '--> Built binary.'
+	@echo
 
 ndm:
-	@echo '--> Building binary...'
+	@echo '--> Building node-disk-manager binary...'
 	@pwd
-	@CTLNAME=${NODE_DISK_MANAGER} sh -c "'$(PWD)/hack/build.sh'"
+	@CTLNAME=${NODE_DISK_MANAGER} sh -c "'$(PWD)/build/ndm_build.sh'"
 	@echo '--> Built binary.'
 	@echo
 
@@ -84,16 +90,21 @@ deps: header
 	@echo '--> Depedencies resolved.'
 	@echo
 
-docker: Dockerfile
+docker: 
 	@echo "--> Building docker image..."
-	@sudo docker build -t "$(IMAGE)" --build-arg ARCH=${ARCH} .
-	@echo "--> Build docker image: $(IMAGE)"
+	cp bin/ndo/${ARCH}/ndo build/ndm-operator/. && cd build/ndm-operator && sudo docker build -t "$(IMAGE_NDO)" .
+	@echo "--> Build docker image: $(IMAGE_NDO)"
 	@echo
 
+	cp bin/ndm/${ARCH}/ndm build/ndm-daemonset/. && cd build/ndm-daemonset && sudo docker build -t "$(IMAGE_NDM)" .
+	@echo "--> Build docker image: $(IMAGE_NDM)"
+	@echo
 
 clean: header
 	@echo '--> Cleaning directory...'
-	rm -rf bin
+	rm -rf bin/ndo
+	rm -rf bin/ndm
+	rm -rf ${GOPATH}/bin/${NODE_DISK_OPERATOR}
 	rm -rf ${GOPATH}/bin/${NODE_DISK_MANAGER}
 	rm -rf ${GOPATH}/pkg/*
 	@echo '--> Done cleaning.'
