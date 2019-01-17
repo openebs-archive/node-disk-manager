@@ -113,6 +113,7 @@ func TestFillDiskDetails(t *testing.T) {
 	expectedDiskInfo.DiskType = "disk"
 	expectedDiskInfo.ByIdDevLinks = mockOsDiskDetails.ByIdDevLinks
 	expectedDiskInfo.ByPathDevLinks = mockOsDiskDetails.ByPathDevLinks
+	expectedDiskInfo.FileSystemInfo = mockOsDiskDetails.FileSystem
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 

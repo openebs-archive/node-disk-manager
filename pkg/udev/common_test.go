@@ -83,6 +83,7 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 		Path:           diskDetails.DevNode,
 		ByIdDevLinks:   diskDetails.ByIdDevLinks,
 		ByPathDevLinks: diskDetails.ByPathDevLinks,
+		FileSystem:     diskDetails.FileSystem,
 	}
 	assert.Equal(t, expectedDiskDetails, device.DiskInfoFromLibudev())
 	tests := map[string]struct {
