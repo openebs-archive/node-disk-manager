@@ -18,6 +18,7 @@ package controller
 
 import (
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
+	udev "github.com/openebs/node-disk-manager/pkg/udev"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -45,6 +46,8 @@ type DiskInfo struct {
 	Compliance         string          // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
 	DiskType           string          // DiskType represents the type of disk like Disk, Sparse etc.,
 	DriveType          string          // DriveType represents the type of disk like HHD, HDD etc.,
+	FileSystemInfo     string          // FileSystemInfo stores the filesystem on the disk. Can be none, xfs, ext4 etc
+	PartitionData      []PartitionInfo // Information of the partitions on the disk
 
 	//Stats of disk which keep changing
 	TotalBytesRead        uint64
@@ -78,6 +81,11 @@ type ProbeIdentifier struct {
 	SeachestIdentifier string // SeachestIdentifier (devPath) is used to identify disk by seachest.
 }
 
+type PartitionInfo struct {
+	PartitionType string // Partition type like 83, 8e etc.
+	FileSystem    string // Filesystem of partition. can be none, xfs etc.
+}
+
 // NewDiskInfo returns a pointer of empty diskInfo struct which will
 // be field by different probes each probe will responsible for
 // populate some specific fields of DiskInfo struct.
@@ -96,6 +104,17 @@ func (di *DiskInfo) ToDisk() apis.Disk {
 	dr.Status = di.getStatus()
 	dr.Stats = di.getStats()
 	return dr
+}
+
+// ToPartition convert the PartitionData struct inside DiskInfo to apis.Partition
+// which will be used to include the parition information in the Disk CR
+func (di *DiskInfo) ToPartition() []apis.Partition {
+	partition := make([]apis.Partition, 0)
+	for _, partitionData := range di.PartitionData {
+		partition = append(partition, apis.Partition{PartitionType: partitionData.PartitionType,
+			FileSystemType: partitionData.FileSystem})
+	}
+	return partition
 }
 
 // getObjectMeta returns ObjectMeta struct which contains labels and Name of resource
@@ -140,6 +159,9 @@ func (di *DiskInfo) getDiskSpec() apis.DiskSpec {
 	diskSpec.Path = di.getPath()
 	diskSpec.Details = di.getDiskDetails()
 	diskSpec.Capacity = di.getDiskCapacity()
+	if di.FileSystemInfo != udev.UDEV_FS_NONE {
+		diskSpec.FileSystem = di.FileSystemInfo
+	}
 	diskSpec.DevLinks = di.getDiskLinks()
 	return diskSpec
 }

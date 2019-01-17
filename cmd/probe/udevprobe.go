@@ -139,12 +139,20 @@ func (up *udevProbe) scan() error {
 		if err != nil {
 			continue
 		}
-		if newUdevice.IsDisk() {
+		if newUdevice.IsDisk() || newUdevice.IsParitition() {
 			uuid := newUdevice.GetUid()
 			disksUid = append(disksUid, uuid)
 			deviceDetails := &controller.DiskInfo{}
 			deviceDetails.ProbeIdentifiers.Uuid = uuid
 			deviceDetails.ProbeIdentifiers.UdevIdentifier = newUdevice.GetSyspath()
+			if newUdevice.IsParitition() {
+				partitionData := controller.PartitionInfo{
+					PartitionType: newUdevice.GetPartitionType(),
+					FileSystem:    newUdevice.GetFileSystemInfo(),
+				}
+				deviceDetails.PartitionData = append(deviceDetails.PartitionData, partitionData)
+				glog.Info("Partition Data for ", uuid, " : ", deviceDetails.PartitionData)
+			}
 			diskInfo = append(diskInfo, deviceDetails)
 		}
 		newUdevice.UdevDeviceUnref()
@@ -154,6 +162,7 @@ func (up *udevProbe) scan() error {
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,
 	}
+	glog.Info("Partition Data to channel: ", eventDetails.Devices[3].PartitionData)
 	udevevent.UdevEventMessageChannel <- eventDetails
 	return nil
 }
@@ -171,6 +180,7 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	d.Vendor = udevDiskDetails.Vendor
 	d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
 	d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
+	d.FileSystemInfo = udevDiskDetails.FileSystem
 }
 
 // listen listens for event message over UdevEventMessages channel

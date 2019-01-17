@@ -54,7 +54,29 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 		}
 		glog.Info("processed data for ", diskDetails.ProbeIdentifiers.Uuid)
 		oldDr := pe.Controller.GetExistingResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
-		pe.Controller.PushDiskResource(oldDr, diskDetails)
+		// if old DiskCR doesn't exist and parition is found, it is ignored since we don't need info
+		// of partition if disk as a whole is ignored
+		if oldDr == nil && len(diskDetails.PartitionData) != 0 {
+			glog.Info("Skipping partition of already excluded disk ", diskDetails.ProbeIdentifiers.Uuid)
+			continue
+		}
+		// if diskCR is already present, and udev event is generated for partition, append the partition info
+		// to the diskCR
+		if oldDr != nil && len(diskDetails.PartitionData) != 0 {
+			newDrCopy := oldDr.DeepCopy()
+			glog.Info("Appending partition data to ", diskDetails.ProbeIdentifiers.Uuid)
+			newDrCopy.Spec.PartitionDetails = append(newDrCopy.Spec.PartitionDetails, diskDetails.ToPartition()...)
+			pe.Controller.UpdateDisk(*newDrCopy, oldDr)
+		} else {
+			pe.Controller.PushDiskResource(oldDr, diskDetails)
+		}
+		/// update the list of DiskCRs
+		diskList, err = pe.Controller.ListDiskResource()
+		if err != nil {
+			glog.Error(err)
+			go pe.initOrErrorEvent()
+			return
+		}
 	}
 }
 
@@ -87,6 +109,7 @@ func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
 // used for initial setup and when any uid mismatch or error occurred.
 func (pe *ProbeEvent) initOrErrorEvent() {
 	udevProbe := newUdevProbe(pe.Controller)
+	defer udevProbe.free()
 	err := udevProbe.scan()
 	if err != nil {
 		glog.Error(err)

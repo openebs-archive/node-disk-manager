@@ -22,10 +22,12 @@ type Disk struct {
 
 // DiskSpec is the specification for the disk stored as CRD
 type DiskSpec struct {
-	Path     string        `json:"path"`               //Path contain devpath (e.g. /dev/sdb)
-	Capacity DiskCapacity  `json:"capacity"`           //Capacity
-	Details  DiskDetails   `json:"details"`            //Details contains static attributes (model, serial ..)
-	DevLinks []DiskDevLink `json:"devlinks,omitempty"` //DevLinks contains soft links of one disk
+	Path             string        `json:"path"`                       //Path contain devpath (e.g. /dev/sdb)
+	Capacity         DiskCapacity  `json:"capacity"`                   //Capacity
+	Details          DiskDetails   `json:"details"`                    //Details contains static attributes (model, serial ..)
+	FileSystem       string        `json:"fileSystem,omitempty"`       //Contains the data about filesystem on the disk
+	PartitionDetails []Partition   `json:"partitionDetails,omitempty"` //Details of partitions in the disk (filesystem, partition type)
+	DevLinks         []DiskDevLink `json:"devlinks,omitempty"`         //DevLinks contains soft links of one disk
 }
 
 type DiskStatus struct {
@@ -33,15 +35,15 @@ type DiskStatus struct {
 }
 
 type DiskCapacity struct {
-	Storage            uint64 `json:"storage"`             // disk size in bytes
-	PhysicalSectorSize uint32 `json: "physicalSectorSize"` // disk physical-Sector size in bytes
-	LogicalSectorSize  uint32 `json:"logicalSectorSize"`   // disk logical-sector size in bytes
+	Storage            uint64 `json:"storage"`            // disk size in bytes
+	PhysicalSectorSize uint32 `json:"physicalSectorSize"` // disk physical-Sector size in bytes
+	LogicalSectorSize  uint32 `json:"logicalSectorSize"`  // disk logical-sector size in bytes
 }
 
 // DiskDetails contains basic and static info of a disk
 type DiskDetails struct {
-	RotationRate     uint16 `json: "rotationRate"`    // Disk rotation speed if disk is not SSD
-	DriveType        string `json: "driveType"`       // DriveType represents the type of drive like SSD, HDD etc.,
+	RotationRate     uint16 `json:"rotationRate"`     // Disk rotation speed if disk is not SSD
+	DriveType        string `json:"driveType"`        // DriveType represents the type of drive like SSD, HDD etc.,
 	Model            string `json:"model"`            // Model is model of disk
 	Compliance       string `json:"compliance"`       // Implemented standards/specifications version such as SPC-1, SPC-2, etc
 	Serial           string `json:"serial"`           // Serial is serial no of disk
@@ -78,4 +80,9 @@ type Temperature struct {
 	CurrentTemperature int16 `json:"currentTemperature"`
 	HighestTemperature int16 `json:"highestTemperature"`
 	LowestTemperature  int16 `json:"lowestTemperature"`
+}
+
+type Partition struct {
+	PartitionType  string `json:"partitionType"`
+	FileSystemType string `json:"fileSystemType"`
 }
