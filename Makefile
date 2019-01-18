@@ -3,7 +3,7 @@ NODE_DISK_OPERATOR=ndo
 NODE_DISK_MANAGER=ndm
 
 # Build the node-disk-manager image.
-build: clean fmt shellcheck ndo ndm version docker
+build: clean fmt shellcheck ndo ndm version docker_ndo docker_ndm
 
 NODE_DISK_OPERATOR?=ndo
 NODE_DISK_MANAGER?=ndm
@@ -61,9 +61,11 @@ bootstrap:
 		go get -u $$tool; \
 	done
 
-Dockerfile: Dockerfile.in
+./build/ndm-operator/Dockerfile: ./build/ndm-operator/Dockerfile.in
 	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
 
+./build/ndm-daemonset/Dockerfile: ./build/ndm-daemonset/Dockerfile.in
+	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
 header:
 	@echo "----------------------------"
 	@echo "--> node-disk-operator      "
@@ -90,13 +92,15 @@ deps: header
 	@echo '--> Depedencies resolved.'
 	@echo
 
-docker: 
-	@echo "--> Building docker image..."
-	cp bin/ndo/${ARCH}/ndo build/ndm-operator/. && cd build/ndm-operator && sudo docker build -t "$(IMAGE_NDO)" .
+docker_ndo: ./build/ndm-operator/Dockerfile 
+	@echo "--> Building docker image for ndm-operator..."
+	cp bin/ndo/${ARCH}/ndo build/ndm-operator/. && sudo docker build -t "$(IMAGE_NDO)" --build-arg ARCH=${ARCH} ./build/ndm-operator/
 	@echo "--> Build docker image: $(IMAGE_NDO)"
 	@echo
 
-	cp bin/ndm/${ARCH}/ndm build/ndm-daemonset/. && cd build/ndm-daemonset && sudo docker build -t "$(IMAGE_NDM)" .
+docker_ndm: ./build/ndm-daemonset/Dockerfile 
+	@echo "--> Building docker image for ndm-daemonset..."
+	cp bin/ndm/${ARCH}/ndm build/ndm-daemonset/. && sudo docker build -t "$(IMAGE_NDM)" --build-arg ARCH=${ARCH} ./build/ndm-daemonset/
 	@echo "--> Build docker image: $(IMAGE_NDM)"
 	@echo
 

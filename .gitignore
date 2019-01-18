@@ -5,6 +5,7 @@ tags
 *.swp
 *.swo
 coverage.txt
+Dockerfile
 build/ndm-daemonset/ndm
 build/ndm-operator/ndo
 build/_output

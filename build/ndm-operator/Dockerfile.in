@@ -3,11 +3,12 @@
 # 
 
 #Set the base image
-FROM ubuntu:16.04
+FROM @BASEIMAGE@
+
+ARG ARCH
 
 RUN apt update
 
 ADD ndo /usr/local/bin/ndo
 
 CMD ["./ndo"]
-
