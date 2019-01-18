@@ -1,7 +1,10 @@
 /bin/*
+bin/*
 cscope*
 tags
 *.swp
 *.swo
-Dockerfile
 coverage.txt
+build/ndm-daemonset/ndm
+build/ndm-operator/ndo
+build/_output
