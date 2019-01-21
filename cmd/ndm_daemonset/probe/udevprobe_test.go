@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	ndmFakeClientset "k8s.io/client-go/kubernetes/fake"
+	ndmFakeClientset "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 type alwaysTrueFilter struct{}
@@ -123,7 +123,7 @@ func TestUdevProbe(t *testing.T) {
 		t.Fatal(err)
 	}
 	fakeHostName := "node-name"
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := ndmFakeClientset.NewFakeClient()
 	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
 	filters := make([]*controller.Filter, 0)
@@ -167,8 +167,11 @@ func TestUdevProbe(t *testing.T) {
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
-	fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
+	// Retrieve disk resource
+	diskList, err1 := fakeController.ListDiskResource()
+	cdr1 := fakeController.GetExistingDiskResource(diskList, mockOsDiskDetails.Uid)
+	//fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
+	//cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
 	fakeDr, err := mockOsDiskToAPI()
 	if err != nil {
 		t.Fatal(err)

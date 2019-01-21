@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	ndmFakeClientset "k8s.io/client-go/kubernetes/fake"
+	ndmFakeClientset "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 var (
@@ -70,7 +70,7 @@ func (nf *fakeFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
 }
 
 func TestAddDiskEvent(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := ndmFakeClientset.NewFakeClient()
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &controller.Controller{
 		HostName:      fakeHostName,
@@ -115,9 +115,14 @@ func TestAddDiskEvent(t *testing.T) {
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
-	_, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(ignoreDiskUuid, metav1.GetOptions{})
-	if err2 == nil {
+	// Retrieve disk resource
+	diskList, err1 := fakeController.ListDiskResource()
+	cdr1 := fakeController.GetExistingDiskResource(diskList, mockuid)
+	//cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
+
+	cdr2 := fakeController.GetExistingDiskResource(diskList, ignoreDiskUuid)
+	//_, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(ignoreDiskUuid, metav1.GetOptions{})
+	if cdr2 != nil {
 		t.Error("resource with ignoreDiskUuid should not be present in etcd")
 	}
 	// Create one fake disk resource
@@ -146,7 +151,7 @@ func TestAddDiskEvent(t *testing.T) {
 }
 
 func TestDeleteDiskEvent(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := ndmFakeClientset.NewFakeClient()
 	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
 	mutex := &sync.Mutex{}
@@ -176,7 +181,12 @@ func TestDeleteDiskEvent(t *testing.T) {
 		Devices: eventmsg,
 	}
 	probeEvent.deleteDiskEvent(eventDetails)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
+
+	// Retrieve disk resource
+	diskList, err1 := fakeController.ListDiskResource()
+	cdr1 := fakeController.GetExistingDiskResource(diskList, mockuid)
+	//cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
+
 	fakeDr.Status.State = controller.NDMInactive
 	tests := map[string]struct {
 		actualDisk    apis.Disk
