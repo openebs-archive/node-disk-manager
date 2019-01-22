@@ -1,0 +1,15 @@
+apiVersion: openebs.io/v1alpha1
+kind: Disk
+metadata:
+  name: disk-123345 #<name of disk> #should be unique like disk-random-unique-name
+  labels:
+    kubernetes.io/hostname: minikube #<host name in which disk/device is attached> # like gke-openebs-user-default-pool-044afcb8-bmc0
+    ndm.io/managed: "false" # for manual disk creation put true
+    ndm.io/disk-type: disk #<device type> # like disk, partition, sparse file
+status:
+  state: Active
+spec:
+  capacity:
+    logicalSectorSize: 512 #<logical sector size of disk> # like 512
+    storage: 1024 #<total capacity in bits> #like 53687091200
+  path: /dev/sda#<devpath> # like /dev/sdb

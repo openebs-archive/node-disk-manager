@@ -4,7 +4,7 @@ metadata:
   name: <name of disk> #should be unique like disk-random-unique-name
   labels:
     kubernetes.io/hostname: <host name in which disk/device is attached> # like gke-openebs-user-default-pool-044afcb8-bmc0
-    ndm.io/unmanage: "true" # for manual disk creation put true
+    ndm.io/managed: "false" # for manual disk creation put false
     ndm.io/disk-type: <device type> # like disk, partition, sparse file
 status:
   state: Active

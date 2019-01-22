@@ -51,7 +51,7 @@ const (
 	// NDMDiskTypeKey specifies the type of disk.
 	NDMDiskTypeKey = "ndm.io/disk-type"
 	// NDMUnmanagedDiskKey specifies disk cr should be managed by ndm or not.
-	NDMUnmanagedKey = "ndm.io/unmanaged"
+	NDMManagedKey = "ndm.io/managed"
 )
 
 const (
