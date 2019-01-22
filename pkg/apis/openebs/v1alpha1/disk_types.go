@@ -35,8 +35,8 @@ type DiskDetails struct {
 
 // DiskDevlink holds the maping between type and links like by-id type or by-path type link
 type DiskDevLink struct {
-	Kind  string   `json:"kind,omitempty"`  // Kind is the type of link like by-id or by-path.
-	Links []string `json:"links,omitempty"` // Links are the soft links of Type type
+	Kind  string   `json:"kind"`  // Kind is the type of link like by-id or by-path.
+	Links []string `json:"links"` // Links are the soft links of Type type
 }
 
 // DiskStatus defines the observed state of Disk

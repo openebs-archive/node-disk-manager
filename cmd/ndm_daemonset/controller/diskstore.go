@@ -33,6 +33,8 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	if err == nil {
 		glog.Info("Created disk object in etcd : ", drCopy.ObjectMeta.Name)
 		return
+	} else {
+		glog.Errorf("Unable to create disk object:%v, err:%v", drCopy.ObjectMeta.Name, err)
 	}
 	/*
 	 * creation failure can be due to the case that resource is already
@@ -62,23 +64,26 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 // UpdateDisk update the Disk resource in etcd
 func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 	drCopy := dr.DeepCopy()
+
 	if oldDr == nil {
+		oldDrCopy := dr.DeepCopy()
 		var err error
 		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
-			Namespace: drCopy.Namespace,
-			Name:      drCopy.Name}, drCopy)
+			Namespace: oldDrCopy.Namespace,
+			Name:      oldDrCopy.Name}, oldDrCopy)
 		if err != nil {
-			glog.Error("unable to get disk object : ", err)
+			glog.Errorf("Unable to get disk object:%v, err:%v", oldDrCopy.ObjectMeta.Name, err)
 			return err
 		}
+		drCopy.ObjectMeta.ResourceVersion = oldDrCopy.ObjectMeta.ResourceVersion
 	}
-	drCopy.ObjectMeta.ResourceVersion = oldDr.ObjectMeta.ResourceVersion
+
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
-		glog.Error("unable to update disk object : ", err)
+		glog.Errorf("Unable to update disk object:%v, err:%v", drCopy.ObjectMeta.Name, err)
 		return err
 	}
-	glog.Info("updated disk object : ", drCopy.ObjectMeta.Name)
+	glog.Infof("Updated disk object::%v successfully", drCopy.ObjectMeta.Name)
 	return nil
 }
 
@@ -88,37 +93,60 @@ func (c *Controller) DeactivateDisk(dr apis.Disk) {
 	drCopy.Status.State = NDMInactive
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
-		glog.Error("unable to deactivate disk object : ", err)
+		glog.Error("Unable to deactivate disk object : ", err)
 		return
 	}
 	glog.Info("deactivate the disk object : ", drCopy.ObjectMeta.Name)
 }
 
+// GetDisk get Disk resource from etcd
+func (c *Controller) GetDisk(name string) (*apis.Disk, error) {
+	dr := &apis.Disk{}
+	err := c.Clientset.Get(context.TODO(),
+		client.ObjectKey{Namespace: "", Name: name}, dr)
+
+	if err != nil {
+		glog.Error("Unable to get disk object : ", err)
+		return nil, err
+	}
+	glog.Info("Got disk object : ", name)
+	return dr, nil
+}
+
 // DeleteDisk delete the Disk resource from etcd
 func (c *Controller) DeleteDisk(name string) {
-	/*
-		err := c.Clientset.Delete(context.TODO(), name, &metav1.DeleteOptions{})
-		if err != nil {
-			glog.Error("unable to delete disk object : ", err)
-			return
-		}
-		glog.Info("deleted disk object : ", name)
-	*/
+	dr := &apis.Disk{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: make(map[string]string),
+			Name:   name,
+		},
+	}
+
+	err := c.Clientset.Delete(context.TODO(), dr)
+	if err != nil {
+		glog.Error("unable to delete disk object : ", err)
+		return
+	}
+	glog.Info("deleted disk object : ", name)
 }
 
 // ListDiskResource queries the etcd for the devices for the host/node
 // and returns list of disk resources.
 func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
-	//label := NDMHostKey + "=" + c.HostName
-	//label = label + "," + NDMManagedKey + "!=" + FalseString
 	listDR := &apis.DiskList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Disk",
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
+
+	//label := NDMHostKey + "=" + c.HostName
+	//label = label + "," + NDMManagedKey + "!=" + FalseString
 	//filter := metav1.ListOptions{LabelSelector: label}
-	err := c.Clientset.List(context.TODO(), nil, listDR)
+	opts := &client.ListOptions{}
+	filter := ""
+	opts.SetLabelSelector(filter)
+	err := c.Clientset.List(context.TODO(), opts, listDR)
 	return listDR, err
 }
 
