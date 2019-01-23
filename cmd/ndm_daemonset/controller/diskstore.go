@@ -33,8 +33,6 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	if err == nil {
 		glog.Info("Created disk object in etcd : ", drCopy.ObjectMeta.Name)
 		return
-	} else {
-		glog.Errorf("Unable to create disk object:%v, err:%v", drCopy.ObjectMeta.Name, err)
 	}
 	/*
 	 * creation failure can be due to the case that resource is already

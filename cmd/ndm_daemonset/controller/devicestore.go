@@ -120,15 +120,20 @@ func (c *Controller) DeleteDevice(name string) {
 // ListDeviceResource queries the etcd for the devices for the host/node
 // and returns list of device resources.
 func (c *Controller) ListDeviceResource() (*apis.DeviceList, error) {
-	//label := NDMHostKey + "=" + c.HostName
+
 	listDVR := &apis.DeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Device",
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
+
+	//label := NDMHostKey + "=" + c.HostName
 	//filter := metav1.ListOptions{LabelSelector: label}
-	err := c.Clientset.List(context.TODO(), nil, listDVR)
+	opts := &client.ListOptions{}
+	filter := ""
+	opts.SetLabelSelector(filter)
+	err := c.Clientset.List(context.TODO(), opts, listDVR)
 	return listDVR, err
 }
 

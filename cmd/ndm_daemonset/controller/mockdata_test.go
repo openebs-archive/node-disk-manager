@@ -17,8 +17,15 @@ limitations under the License.
 package controller
 
 import (
+	"fmt"
+	"testing"
+
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	ndmFakeClientset "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 const (
@@ -95,3 +102,29 @@ var (
 		Status:     newFakeDiskStatus,
 	}
 )
+
+func CreateFakeClient(t *testing.T) client.Client {
+	dr := &apis.Disk{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: make(map[string]string),
+			Name:   "dummy-disk",
+		},
+	}
+
+	diskList := &apis.DiskList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Disk",
+			APIVersion: "",
+		},
+	}
+
+	objs := []runtime.Object{dr}
+	s := scheme.Scheme
+	s.AddKnownTypes(apis.SchemeGroupVersion, dr)
+	s.AddKnownTypes(apis.SchemeGroupVersion, diskList)
+	fakeNdmClient := ndmFakeClientset.NewFakeClient(objs...)
+	if fakeNdmClient == nil {
+		fmt.Println("NDMClient is not created")
+	}
+	return fakeNdmClient
+}
