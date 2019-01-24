@@ -48,9 +48,9 @@ const (
 	// NDMHostKey is host name label prefix.
 	NDMHostKey = "kubernetes.io/hostname"
 	// NDMFree is constant for free/available resource status.
-	NDMFree = "Free"
+	NDMUnclaimed = "Unclaimed"
 	// NDMUsed is constant for in-use resource status.
-	NDMUsed = "In-Use"
+	NDMClaimed = "Claimed"
 	// NDMNotPartioned is used to say device does not have any partition.
 	NDMNotPartitioned = "No"
 	// NDMPartitioned is used to say device has some partitions.
@@ -71,6 +71,8 @@ const (
 const (
 	// NDMDefaultDiskType will be used to initialize the disk type.
 	NDMDefaultDiskType = "disk"
+	// NDMDefaultDeviceType will be used to initialize the device type.
+	NDMDefaultDeviceType = "device"
 )
 
 const (

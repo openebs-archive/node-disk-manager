@@ -334,7 +334,7 @@ func TestListDiskResource(t *testing.T) {
 	}
 }
 
-func TestGetExistingResource(t *testing.T) {
+func TestGetExistingDiskResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
@@ -384,7 +384,7 @@ func TestGetExistingResource(t *testing.T) {
  * DiskInfo struct if old disk resource is not present it creates one
  * new resource if not then it update that resource with updated DiskInfo
  */
-func TestPushResource(t *testing.T) {
+func TestPushDiskResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{

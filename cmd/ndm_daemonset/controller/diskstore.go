@@ -122,10 +122,10 @@ func (c *Controller) DeleteDisk(name string) {
 
 	err := c.Clientset.Delete(context.TODO(), dr)
 	if err != nil {
-		glog.Error("unable to delete disk object : ", err)
+		glog.Error("Unable to delete disk object : ", err)
 		return
 	}
-	glog.Info("deleted disk object : ", name)
+	glog.Info("Deleted disk object : ", name)
 }
 
 // ListDiskResource queries the etcd for the devices for the host/node

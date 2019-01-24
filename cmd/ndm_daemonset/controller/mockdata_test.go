@@ -33,6 +33,9 @@ const (
 	newFakeDiskUid  = "new-fake-disk-uid"
 	fakeHostName    = "fake-host-name"
 	newFakeHostName = "new-fake-host-name"
+
+	fakeDeviceUid    = "fake-device-uid"
+	newFakeDeviceUid = "new-fake-device-uid"
 )
 
 var (
@@ -40,28 +43,34 @@ var (
 	fakeCapacity = apis.DiskCapacity{
 		Storage: 100000,
 	}
+
 	fakeDetails = apis.DiskDetails{
 		Model:  "disk-fake-model",
 		Serial: "disk-fake-serial",
 		Vendor: "disk-fake-vendor",
 	}
+
 	fakeObj = apis.DiskSpec{
 		Path:     "dev/disk-fake-path",
 		Capacity: fakeCapacity,
 		Details:  fakeDetails,
 		DevLinks: make([]apis.DiskDevLink, 0),
 	}
+
 	fakeTypeMeta = metav1.TypeMeta{
 		Kind:       NDMDiskKind,
 		APIVersion: NDMVersion,
 	}
+
 	fakeObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
 		Name:   fakeDiskUid,
 	}
+
 	fakeDiskStatus = apis.DiskStatus{
 		State: NDMActive,
 	}
+
 	fakeDr = apis.Disk{
 		TypeMeta:   fakeTypeMeta,
 		ObjectMeta: fakeObjectMeta,
@@ -73,38 +82,133 @@ var (
 	newFakeCapacity = apis.DiskCapacity{
 		Storage: 200000,
 	}
+
 	newFakeDetails = apis.DiskDetails{
 		Model:  "disk-fake-model-new",
 		Serial: "disk-fake-serial-new",
 		Vendor: "disk-fake-vendor-new",
 	}
+
 	newFakeObj = apis.DiskSpec{
 		Path:     "dev/disk-fake-path-new",
 		Capacity: newFakeCapacity,
 		Details:  newFakeDetails,
 		DevLinks: make([]apis.DiskDevLink, 0),
 	}
+
 	newFakeTypeMeta = metav1.TypeMeta{
 		Kind:       NDMDiskKind,
 		APIVersion: NDMVersion,
 	}
+
 	newFakeObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
 		Name:   newFakeDiskUid,
 	}
+
 	newFakeDiskStatus = apis.DiskStatus{
 		State: NDMActive,
 	}
+
 	newFakeDr = apis.Disk{
 		TypeMeta:   newFakeTypeMeta,
 		ObjectMeta: newFakeObjectMeta,
 		Spec:       newFakeObj,
 		Status:     newFakeDiskStatus,
 	}
+
+	// mock data for device
+	fakeDeviceCapacity = apis.DeviceCapacity{
+		Storage: 100000,
+	}
+
+	fakeDeviceDetails = apis.DeviceDetails{
+		Model:  "disk-fake-model",
+		Serial: "disk-fake-serial",
+		Vendor: "disk-fake-vendor",
+	}
+
+	fakeDeviceObj = apis.DeviceSpec{
+		Path:        "dev/disk-fake-path",
+		Capacity:    fakeDeviceCapacity,
+		Details:     fakeDeviceDetails,
+		DevLinks:    make([]apis.DeviceDevLink, 0),
+		Partitioned: NDMNotPartitioned,
+	}
+
+	fakeDeviceTypeMeta = metav1.TypeMeta{
+		Kind:       NDMDeviceKind,
+		APIVersion: NDMVersion,
+	}
+
+	fakeDeviceObjectMeta = metav1.ObjectMeta{
+		Labels: make(map[string]string),
+		Name:   fakeDeviceUid,
+	}
+
+	fakeDeviceClaimState = apis.DeviceClaimState{
+		State: NDMUnclaimed,
+	}
+
+	fakeDeviceStatus = apis.DeviceStatus{
+		State: NDMActive,
+	}
+
+	fakeDevice = apis.Device{
+		TypeMeta:   fakeDeviceTypeMeta,
+		ObjectMeta: fakeDeviceObjectMeta,
+		Spec:       fakeDeviceObj,
+		ClaimState: fakeDeviceClaimState,
+		Status:     fakeDeviceStatus,
+	}
+
+	// mock data for device
+	newFakeDeviceCapacity = apis.DeviceCapacity{
+		Storage: 200000,
+	}
+
+	newFakeDeviceDetails = apis.DeviceDetails{
+		Model:  "disk-fake-model-new",
+		Serial: "disk-fake-serial-new",
+		Vendor: "disk-fake-vendor-new",
+	}
+
+	newFakeDeviceObj = apis.DeviceSpec{
+		Path:     "dev/disk-fake-path-new",
+		Capacity: newFakeDeviceCapacity,
+		Details:  newFakeDeviceDetails,
+		DevLinks: make([]apis.DeviceDevLink, 0),
+	}
+
+	newFakeDeviceTypeMeta = metav1.TypeMeta{
+		Kind:       NDMDeviceKind,
+		APIVersion: NDMVersion,
+	}
+
+	newFakeDeviceObjectMeta = metav1.ObjectMeta{
+		Labels: make(map[string]string),
+		Name:   newFakeDeviceUid,
+	}
+
+	newFakeDeviceClaimState = apis.DeviceClaimState{
+		State: NDMUnclaimed,
+	}
+
+	newFakeDeviceStatus = apis.DeviceStatus{
+		State: NDMActive,
+	}
+
+	newFakeDevice = apis.Device{
+		TypeMeta:   newFakeDeviceTypeMeta,
+		ObjectMeta: newFakeDeviceObjectMeta,
+		Spec:       newFakeDeviceObj,
+		ClaimState: newFakeDeviceClaimState,
+		Status:     newFakeDeviceStatus,
+	}
 )
 
 func CreateFakeClient(t *testing.T) client.Client {
-	dr := &apis.Disk{
+	diskR := &apis.Disk{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: make(map[string]string),
 			Name:   "dummy-disk",
@@ -118,10 +222,28 @@ func CreateFakeClient(t *testing.T) client.Client {
 		},
 	}
 
-	objs := []runtime.Object{dr}
+	deviceR := &apis.Device{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: make(map[string]string),
+			Name:   "dummy-device",
+		},
+	}
+
+	deviceList := &apis.DeviceList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Device",
+			APIVersion: "",
+		},
+	}
+
+	objs := []runtime.Object{diskR}
 	s := scheme.Scheme
-	s.AddKnownTypes(apis.SchemeGroupVersion, dr)
+
+	s.AddKnownTypes(apis.SchemeGroupVersion, diskR)
 	s.AddKnownTypes(apis.SchemeGroupVersion, diskList)
+	s.AddKnownTypes(apis.SchemeGroupVersion, deviceR)
+	s.AddKnownTypes(apis.SchemeGroupVersion, deviceList)
+
 	fakeNdmClient := ndmFakeClientset.NewFakeClient(objs...)
 	if fakeNdmClient == nil {
 		fmt.Println("NDMClient is not created")

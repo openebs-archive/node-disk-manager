@@ -68,21 +68,21 @@ func (c *Controller) CreateDevice(dvr apis.Device) {
 
 // UpdateDevice update the Device resource in etcd
 func (c *Controller) UpdateDevice(dvr apis.Device, oldDvr *apis.Device) error {
-
 	var err error
 
 	dvrCopy := dvr.DeepCopy()
 	if oldDvr == nil {
+		oldDvrCopy := dvr.DeepCopy()
 		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
-			Namespace: dvrCopy.Namespace,
-			Name:      dvrCopy.Name}, dvrCopy)
+			Namespace: oldDvrCopy.Namespace,
+			Name:      oldDvrCopy.Name}, oldDvrCopy)
 		if err != nil {
 			glog.Error("Unable to get device object : ", err)
 			return err
 		}
+		dvrCopy.ObjectMeta.ResourceVersion = oldDvrCopy.ObjectMeta.ResourceVersion
 	}
 
-	dvrCopy.ObjectMeta.ResourceVersion = oldDvr.ObjectMeta.ResourceVersion
 	err = c.Clientset.Update(context.TODO(), dvrCopy)
 	if err != nil {
 		glog.Error("Unable to update device object : ", err)
@@ -105,16 +105,35 @@ func (c *Controller) DeactivateDevice(dvr apis.Device) {
 	glog.Info("Deactivated device object : ", dvrCopy.ObjectMeta.Name)
 }
 
+// GetDisk get Disk resource from etcd
+func (c *Controller) GetDevice(name string) (*apis.Device, error) {
+	dvr := &apis.Device{}
+	err := c.Clientset.Get(context.TODO(),
+		client.ObjectKey{Namespace: "", Name: name}, dvr)
+
+	if err != nil {
+		glog.Error("Unable to get device object : ", err)
+		return nil, err
+	}
+	glog.Info("Got device object : ", name)
+	return dvr, nil
+}
+
 // DeleteDevice delete the Device resource from etcd
 func (c *Controller) DeleteDevice(name string) {
-	/*
-		err := c.Clientset.Delete(context.TODO(), name, &metav1.DeleteOptions{})
-		if err != nil {
-			glog.Error("Unable to delete device object : ", err)
-			return
-		}
-		glog.Info("Deleted device object : ", name)
-	*/
+	dvr := &apis.Device{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: make(map[string]string),
+			Name:   name,
+		},
+	}
+
+	err := c.Clientset.Delete(context.TODO(), dvr)
+	if err != nil {
+		glog.Error("Unable to delete device object : ", err)
+		return
+	}
+	glog.Info("Deleted device object : ", name)
 }
 
 // ListDeviceResource queries the etcd for the devices for the host/node

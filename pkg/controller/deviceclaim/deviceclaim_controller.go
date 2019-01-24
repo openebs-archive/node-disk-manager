@@ -159,7 +159,7 @@ func (r *ReconcileDeviceClaim) claimDeviceForDeviceClaimCR(
 	//Find a device which is free and have available
 	//space more than or equal to requested
 	for _, item := range listDVR.Items {
-		if (strings.Compare(item.Status.State, ndm.NDMFree) == 0) &&
+		if (strings.Compare(item.ClaimState.State, ndm.NDMUnclaimed) == 0) &&
 			(item.Spec.Capacity.Storage >= instance.Spec.Capacity) {
 
 			reqLogger.Info("Found matching device", "Device Name:",
@@ -172,7 +172,7 @@ func (r *ReconcileDeviceClaim) claimDeviceForDeviceClaimCR(
 			dvr.Claim.Kind = instance.TypeMeta.Kind
 			dvr.Claim.Name = instance.ObjectMeta.Name
 			dvr.Claim.DeviceClaimUID = instance.ObjectMeta.UID
-			dvr.Status.State = ndm.NDMUsed
+			dvr.ClaimState.State = ndm.NDMClaimed
 			err := r.client.Update(context.TODO(), dvr)
 			if err != nil {
 				reqLogger.Info("Error while updating device CR")

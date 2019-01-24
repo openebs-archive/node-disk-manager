@@ -10,11 +10,11 @@ import (
 
 // DeviceSpec defines the desired state of Device
 type DeviceSpec struct {
-	Path        string          `json:"path"`               //Path contain devpath (e.g. /dev/sdb)
-	Capacity    DeviceCapacity  `json:"capacity"`           //Capacity
-	Details     DeviceDetails   `json:"details"`            //Details contains static attributes (model, serial ..)
-	DevLinks    []DeviceDevLink `json:"devlinks,omitempty"` //DevLinks contains soft links of one disk
-	Partitioned string          `json:"partitioned"`        //Device has partions or not (YES/NO)
+	Path        string          `json:"path"`        //Path contain devpath (e.g. /dev/sdb)
+	Capacity    DeviceCapacity  `json:"capacity"`    //Capacity
+	Details     DeviceDetails   `json:"details"`     //Details contains static attributes (model, serial ..)
+	DevLinks    []DeviceDevLink `json:"devlinks"`	 //DevLinks contains soft links of one disk
+	Partitioned string          `json:"partitioned"` //Device has partions or not (YES/NO)
 }
 
 type DeviceCapacity struct {
@@ -38,9 +38,14 @@ type DeviceDevLink struct {
 	Links []string `json:"links,omitempty"` // Links are the soft links of Type type
 }
 
+// DeviceClaimState defines the observed state of Device
+type DeviceClaimState struct {
+	State string `json:"State"` //current claim state of the device (Claimed/Unclaimed)
+}
+
 // DeviceStatus defines the observed state of Device
 type DeviceStatus struct {
-	State string `json:"state"` //current state of the device (IN-USE/FREE)
+	State string `json:"state"` //current state of the device (Active/Inactive)
 }
 
 type DeviceClaimInfo struct {
@@ -58,9 +63,10 @@ type Device struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   DeviceSpec      `json:"spec,omitempty"`
-	Status DeviceStatus    `json:"status,omitempty"`
-	Claim  DeviceClaimInfo `json:"claim,omitempty"`
+	Spec       DeviceSpec       `json:"spec,omitempty"`
+	Status     DeviceStatus     `json:"status,omitempty"`
+	ClaimState DeviceClaimState `json:"claimState"`
+	Claim      DeviceClaimInfo  `json:"claim,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

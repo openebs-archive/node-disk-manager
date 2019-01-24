@@ -62,28 +62,28 @@ func mockEmptyDiskCr() apis.Disk {
 }
 
 func CreateFakeClient(t *testing.T) client.Client {
-	diskR := &apis.Disk {
+	diskR := &apis.Disk{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: make(map[string]string),
 			Name:   "dummy-disk",
 		},
 	}
 
-	diskList := &apis.DiskList {
+	diskList := &apis.DiskList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Disk",
 			APIVersion: "",
 		},
 	}
 
-	deviceR := &apis.Device {
+	deviceR := &apis.Device{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: make(map[string]string),
 			Name:   "dummy-device",
 		},
 	}
 
-	deviceList := &apis.DeviceList {
+	deviceList := &apis.DeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Device",
 			APIVersion: "",

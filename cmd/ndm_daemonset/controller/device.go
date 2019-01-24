@@ -63,6 +63,7 @@ func (di *DeviceInfo) ToDevice() apis.Device {
 	dvr.Spec = di.getDeviceSpec()
 	dvr.ObjectMeta = di.getObjectMeta()
 	dvr.TypeMeta = di.getTypeMeta()
+	dvr.ClaimState = di.getClaimState()
 	dvr.Status = di.getStatus()
 	return dvr
 }
@@ -85,7 +86,7 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 		//Namespace: namespace,
 	}
 	objectMeta.Labels[NDMHostKey] = di.HostName
-	objectMeta.Labels[NDMDeviceTypeKey] = NDMDeviceKind
+	objectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	return objectMeta
 }
 
@@ -103,13 +104,25 @@ func (di *DeviceInfo) getTypeMeta() metav1.TypeMeta {
 }
 
 /*
+ * getClaimState returns claimState struct which contains
+ * claim state of Device resource. It is used to populate
+ * data of Device struct of Device CR.
+ */
+func (di *DeviceInfo) getClaimState() apis.DeviceClaimState {
+	claimState := apis.DeviceClaimState{
+		State: NDMUnclaimed,
+	}
+	return claimState
+}
+
+/*
  * getStatus returns DeviceStatus struct which contains
  * state of Device resource. It is used to populate data
  * of Device struct of Device CR.
  */
 func (di *DeviceInfo) getStatus() apis.DeviceStatus {
 	deviceStatus := apis.DeviceStatus{
-		State: NDMFree,
+		State: NDMActive,
 	}
 	return deviceStatus
 }
