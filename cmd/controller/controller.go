@@ -34,6 +34,10 @@ import (
 const (
 	// NDMKind is the CR kind.
 	NDMKind = "Disk"
+	// FalseString contains string value of false
+	FalseString = "false"
+	// TrueString contains string value of true
+	TrueString = "true"
 	// NDMVersion is the CR version.
 	NDMVersion = "openebs.io/v1alpha1"
 	// NDMHostKey is host name label prefix.
@@ -46,6 +50,8 @@ const (
 	NDMUnknown = "Unknown"
 	// NDMDiskTypeKey specifies the type of disk.
 	NDMDiskTypeKey = "ndm.io/disk-type"
+	// NDMUnmanagedDiskKey specifies disk cr should be managed by ndm or not.
+	NDMManagedKey = "ndm.io/managed"
 )
 
 const (

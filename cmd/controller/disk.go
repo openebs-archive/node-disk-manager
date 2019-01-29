@@ -107,6 +107,7 @@ func (di *DiskInfo) getObjectMeta() metav1.ObjectMeta {
 	}
 	objectMeta.Labels[NDMHostKey] = di.HostName
 	objectMeta.Labels[NDMDiskTypeKey] = di.DiskType
+	objectMeta.Labels[NDMManagedKey] = TrueString
 	return objectMeta
 }
 

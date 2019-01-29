@@ -1,27 +1,29 @@
 apiVersion: openebs.io/v1alpha1
 kind: Disk
 metadata:
-  name: disk-3d8b1efad969208d6bf5971f2c34dd0c
+  name: <name of disk> #should be unique like disk-random-unique-name
   labels:
-    "kubernetes.io/hostname": "gke-openebs-user-default-pool-044afcb8-bmc0"
+    kubernetes.io/hostname: <host name in which disk/device is attached> # like gke-openebs-user-default-pool-044afcb8-bmc0
+    ndm.io/managed: "false" # for manual disk creation put false
+    ndm.io/disk-type: <device type> # like disk, partition, sparse file
 status:
   state: Active
 spec:
   capacity:
-    logicalSectorSize: 512
-    storage: 53687091200
+    logicalSectorSize: <logical sector size of disk> # like 512
+    storage: <total capacity in bits> #like 53687091200
   details:
-    firmwareRevision: '1   '
-    model: PersistentDisk
-    serial: disk-2
-    compliance: "SPC-4"
-    vendor: Google
+    firmwareRevision: <firmware revision>
+    model: <model name of disk> # like PersistentDisk
+    serial: <serial no of disk> # like google-disk-2
+    compliance: <compliance of disk> #like "SPC-4"
+    vendor: <vendor of disk> #like Google
   devlinks:
   - kind: by-id
     links:
-    - /dev/disk/by-id/scsi-0Google_PersistentDisk_disk-2
-    - /dev/disk/by-id/google-disk-2
+    - <link1> # like /dev/disk/by-id/scsi-0Google_PersistentDisk_disk-2
+    - <link2> # like /dev/disk/by-id/google-disk-2
   - kind: by-path
     links:
-    - /dev/disk/by-path/virtio-pci-0000:00:03.0-scsi-0:0:2:0
-  path: /dev/sdb
+    - <link1> # like /dev/disk/by-path/virtio-pci-0000:00:03.0-scsi-0:0:2:0
+  path: <devpath> # like /dev/sdb
