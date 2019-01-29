@@ -13,7 +13,7 @@ type DeviceSpec struct {
 	Path        string          `json:"path"`        //Path contain devpath (e.g. /dev/sdb)
 	Capacity    DeviceCapacity  `json:"capacity"`    //Capacity
 	Details     DeviceDetails   `json:"details"`     //Details contains static attributes (model, serial ..)
-	DevLinks    []DeviceDevLink `json:"devlinks"`	 //DevLinks contains soft links of one disk
+	DevLinks    []DeviceDevLink `json:"devlinks"`    //DevLinks contains soft links of one disk
 	Partitioned string          `json:"partitioned"` //Device has partions or not (YES/NO)
 }
 
@@ -40,7 +40,7 @@ type DeviceDevLink struct {
 
 // DeviceClaimState defines the observed state of Device
 type DeviceClaimState struct {
-	State string `json:"State"` //current claim state of the device (Claimed/Unclaimed)
+	State string `json:"state"` //current claim state of the device (Claimed/Unclaimed)
 }
 
 // DeviceStatus defines the observed state of Device

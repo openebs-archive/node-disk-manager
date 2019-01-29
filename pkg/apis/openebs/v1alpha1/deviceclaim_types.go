@@ -37,6 +37,9 @@ const (
 	// search is going on for matching devices.
 	DeviceClaimStatusPending DeviceClaimPhase = "Pending"
 
+	// DeviceClaimStatusInvalidCapacity:  DeviceClaim CR has invalid capacity request i.e. 0/-1
+	DeviceClaimStatusInvalidCapacity DeviceClaimPhase = "Invalid Capacity Request"
+
 	// DeviceClaimStatusDone:  DeviceClaim CR assigned backing device and ready for use.
 	DeviceClaimStatusDone DeviceClaimPhase = "Bound"
 )
