@@ -62,7 +62,7 @@ const (
 	// NDMUnknown is constant for resource unknown satus.
 	NDMUnknown = "Unknown"
 	// NDMDiskTypeKey specifies the type of disk.
-	NDMDiskTypeKey = "ndm.io/disk-type"
+	NDMDiskTypeKey   = "ndm.io/disk-type"
 	NDMDeviceTypeKey = "ndm.io/device-type"
 	// NDMUnmanagedDiskKey specifies disk cr should be managed by ndm or not.
 	NDMManagedKey = "ndm.io/managed"
