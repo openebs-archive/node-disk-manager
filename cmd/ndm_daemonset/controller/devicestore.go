@@ -147,10 +147,8 @@ func (c *Controller) ListDeviceResource() (*apis.DeviceList, error) {
 		},
 	}
 
-	//label := NDMHostKey + "=" + c.HostName
-	//filter := metav1.ListOptions{LabelSelector: label}
+	filter := NDMHostKey + "=" + c.HostName
 	opts := &client.ListOptions{}
-	filter := ""
 	opts.SetLabelSelector(filter)
 	err := c.Clientset.List(context.TODO(), opts, listDVR)
 	return listDVR, err

@@ -135,6 +135,7 @@ func (r *ReconcileDeviceClaim) Reconcile(request reconcile.Request) (reconcile.R
 func (r *ReconcileDeviceClaim) claimDeviceForDeviceClaimCR(
 	instance *openebsv1alpha1.DeviceClaim, reqLogger logr.Logger) error {
 
+	var driveTypeSpecified bool = false
 	// Check if deviceCalim has valid capacity request
 	if instance.Spec.Capacity <= 0 {
 		err1 := fmt.Errorf("Invalid Capacity requested")
@@ -163,6 +164,7 @@ func (r *ReconcileDeviceClaim) claimDeviceForDeviceClaimCR(
 	opts := &client.ListOptions{}
 	filter := ndm.NDMHostKey + "=" + instance.Spec.HostName
 	reqLogger.Info("Filter string", "filter:", filter, "instance:", instance)
+
 	opts.SetLabelSelector(filter)
 
 	//Fetch deviceList with matching criteria
@@ -179,27 +181,25 @@ func (r *ReconcileDeviceClaim) claimDeviceForDeviceClaimCR(
 		return fmt.Errorf("No device found with matching criteria")
 	}
 
-	// Check if node has free space available which
-	// can satisfy this deviceClaim request
-	if r.isCapacityAvailable(instance, listDVR, reqLogger) == false {
-		err := fmt.Errorf("No free space available on node")
-		reqLogger.Error(err, "Node does not have required free-space available")
-		return err
+	length = len(instance.Spec.DriveType)
+	if length != 0 {
+		reqLogger.Info("DriveType specified in DeviceClaim CR")
+		driveTypeSpecified = true
 	}
 
-	// Find devices which has free space, claim those
-	// update deviceClaim CR
-	requestedCapacity := instance.Spec.Capacity
+	//Find a device which is free and have available
+	//space more than or equal to requested
 	for _, item := range listDVR.Items {
-		if strings.Compare(item.ClaimState.State, ndm.NDMUnclaimed) == 0 {
+		if (strings.Compare(item.ClaimState.State, ndm.NDMUnclaimed) == 0) &&
+			(item.Spec.Capacity.Storage >= instance.Spec.Capacity) {
 
-			if item.Spec.Capacity.Storage >= requestedCapacity {
-				requestedCapacity = 0
-			} else {
-				requestedCapacity = requestedCapacity - item.Spec.Capacity.Storage
+			if driveTypeSpecified == true {
+				if strings.Compare(item.Spec.Details.DriveType, instance.Spec.DriveType) != 0 {
+					continue
+				}
 			}
 
-			reqLogger.Info("Claiming device", "Device Name:",
+			reqLogger.Info("Found matching device", "Device Name:",
 				item.ObjectMeta.Name, "Device Capacity:",
 				item.Spec.Capacity.Storage)
 
@@ -216,54 +216,19 @@ func (r *ReconcileDeviceClaim) claimDeviceForDeviceClaimCR(
 				return err
 			}
 
-			if requestedCapacity == 0 {
-				//Update deviceClaim CR to show that device claim happened
-				instance_cpy := instance.DeepCopy()
-				instance_cpy.Status.Phase = openebsv1alpha1.DeviceClaimStatusDone
-				if !containsString(instance_cpy.ObjectMeta.Finalizers, FinalizerName) {
-					instance_cpy.ObjectMeta.Finalizers = append(instance_cpy.ObjectMeta.Finalizers, FinalizerName)
-				}
-				err = r.client.Update(context.TODO(), instance_cpy)
-				if err != nil {
-					reqLogger.Info("Error while updating deviceClaim CR")
-					return err
-				}
-				return nil
+			//Update deviceClaim CR to show that device claim happened
+			instance_cpy := instance.DeepCopy()
+			instance_cpy.Status.Phase = openebsv1alpha1.DeviceClaimStatusDone
+			instance_cpy.ObjectMeta.Finalizers = append(instance_cpy.ObjectMeta.Finalizers, FinalizerName)
+			err = r.client.Update(context.TODO(), instance_cpy)
+			if err != nil {
+				reqLogger.Info("Error while updating deviceClaim CR")
+				return err
 			}
+			return nil
 		}
 	}
-	return err
-}
-
-// Check if node has free space available to satisfy deviceClaim capacity
-func (r *ReconcileDeviceClaim) isCapacityAvailable(instance *openebsv1alpha1.DeviceClaim,
-	listDVR *openebsv1alpha1.DeviceList, reqLogger logr.Logger) bool {
-
-	requestedCapacity := instance.Spec.Capacity
-
-	for _, item := range listDVR.Items {
-		if strings.Compare(item.ClaimState.State, ndm.NDMUnclaimed) == 0 {
-
-			// Free Device is available which has
-			// capacity equal to/ greater than requested
-			if item.Spec.Capacity.Storage >= requestedCapacity {
-				requestedCapacity = 0
-			} else {
-				requestedCapacity = requestedCapacity - item.Spec.Capacity.Storage
-			}
-			reqLogger.Info("Device would be considered for this claim", "Device Name:",
-				item.ObjectMeta.Name, "Device Capacity:", item.Spec.Capacity.Storage)
-
-			if requestedCapacity == 0 {
-				return true
-			}
-		}
-	}
-
-	if requestedCapacity != 0 {
-		return false
-	}
-	return true
+	return fmt.Errorf("No device found to claim")
 }
 
 func (r *ReconcileDeviceClaim) FinalizerHandling(

@@ -138,11 +138,9 @@ func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
 		},
 	}
 
-	//label := NDMHostKey + "=" + c.HostName
-	//label = label + "," + NDMManagedKey + "!=" + FalseString
-	//filter := metav1.ListOptions{LabelSelector: label}
+	filter := NDMHostKey + "=" + c.HostName
+	filter = filter + "," + NDMManagedKey + "!=" + FalseString
 	opts := &client.ListOptions{}
-	filter := ""
 	opts.SetLabelSelector(filter)
 	err := c.Clientset.List(context.TODO(), opts, listDR)
 	return listDR, err
