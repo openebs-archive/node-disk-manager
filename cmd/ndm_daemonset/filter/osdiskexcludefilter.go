@@ -89,6 +89,8 @@ func (odf *oSDiskExcludeFilter) Start() {
 		if devPath, err := mountPointUtil.GetDiskPath(); err == nil {
 			odf.excludeDevPath = devPath
 			return
+		} else {
+			glog.Error(err)
 		}
 	}
 	/*
@@ -100,6 +102,8 @@ func (odf *oSDiskExcludeFilter) Start() {
 		if devPath, err := mountPointUtil.GetDiskPath(); err == nil {
 			odf.excludeDevPath = devPath
 			return
+		} else {
+			glog.Error(err)
 		}
 	}
 	glog.Error("unable to apply os disk filter")
@@ -112,5 +116,5 @@ func (odf *oSDiskExcludeFilter) Include(d *controller.DiskInfo) bool {
 
 // Exclude returns true if disk devpath matches with excludeDevPath
 func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
-	return odf.excludeDevPath != d.Path
+	return !strings.HasPrefix(d.Path, odf.excludeDevPath)
 }
