@@ -191,6 +191,7 @@ func (r *ReconcileDeviceClaim) claimDeviceForDeviceClaimCR(
 	//space more than or equal to requested
 	for _, item := range listDVR.Items {
 		if (strings.Compare(item.ClaimState.State, ndm.NDMUnclaimed) == 0) &&
+			(strings.Compare(item.Status.State, ndm.NDMActive) == 0) &&
 			(item.Spec.Capacity.Storage >= instance.Spec.Capacity) {
 
 			if driveTypeSpecified == true {

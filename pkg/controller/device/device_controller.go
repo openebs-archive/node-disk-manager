@@ -2,16 +2,20 @@ package device
 
 import (
 	"context"
+	"strings"
 
+	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
+	"github.com/openebs/node-disk-manager/pkg/udev"
+	//corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	//"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	//"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -51,16 +55,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create that are owned by the primary resource
-	// Watch for changes to secondary resource Pods and requeue the owner Device
-	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &openebsv1alpha1.Device{},
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -76,8 +70,6 @@ type ReconcileDevice struct {
 
 // Reconcile reads that state of the cluster for a Device object and makes changes based on the state read
 // and what is in the Device.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
-// a Pod as an example
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
@@ -98,58 +90,58 @@ func (r *ReconcileDevice) Reconcile(request reconcile.Request) (reconcile.Result
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
-	/*
-		// Define a new Pod object
-		pod := newPodForCR(instance)
 
-		// Set Device instance as the owner and controller
-		if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
-			return reconcile.Result{}, err
-		}
+	err = r.CheckBackingDiskStatusAndUpdateDeviceCR(instance,
+		request.NamespacedName.Namespace, reqLogger)
 
-		// Check if this Pod already exists
-		found := &corev1.Pod{}
-		err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
-		if err != nil && errors.IsNotFound(err) {
-			reqLogger.Info("Creating a new Pod", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
-			err = r.client.Create(context.TODO(), pod)
-			if err != nil {
-				return reconcile.Result{}, err
-			}
-
-			// Pod created successfully - don't requeue
-			return reconcile.Result{}, nil
-		} else if err != nil {
-			return reconcile.Result{}, err
-		}
-
-		// Pod already exists - don't requeue
-		reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", found.Namespace, "Pod.Name", found.Name)
-	*/
+	if err != nil {
+		// Error while reading, updating object - requeue the request.
+		return reconcile.Result{}, err
+	}
 	return reconcile.Result{}, nil
 }
 
-/*
-// newPodForCR returns a busybox pod with the same name/namespace as the cr
-func newPodForCR(cr *openebsv1alpha1.Device) *corev1.Pod {
-	labels := map[string]string{
-		"app": cr.Name,
+func (r *ReconcileDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
+	instance *openebsv1alpha1.Device, nameSpace string, reqLogger logr.Logger) error {
+
+	//Find the name of diskCR that need to be read from etcd
+	Uuid := strings.TrimPrefix(instance.ObjectMeta.Name, udev.NDMDevicePrefix)
+	Name := udev.NDMDiskPrefix + Uuid
+
+	// Fetch the Disk CR
+	diskInstance := &openebsv1alpha1.Disk{}
+	err := r.client.Get(context.TODO(), types.NamespacedName{Name: Name, Namespace: nameSpace}, diskInstance)
+	if err != nil {
+		reqLogger.Info("No disk-CR found", "Disk Name:",
+			Name, "Namespace:", nameSpace)
+		if errors.IsNotFound(err) {
+			reqLogger.Info("Disk CR not found")
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			dcpyInstance := instance.DeepCopy()
+			dcpyInstance.Status.State = ndm.NDMInactive
+			err := r.client.Update(context.TODO(), dcpyInstance)
+			if err != nil {
+				reqLogger.Info("Error while updating device CR")
+			}
+			return err
+		}
+		reqLogger.Info("Device CR marked Inactive", "Device:", instance.ObjectMeta.Name)
+		return err
 	}
-	return &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
-			Namespace: cr.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:    "busybox",
-					Image:   "busybox",
-					Command: []string{"sleep", "3600"},
-				},
-			},
-		},
+
+	reqLogger.Info("disk-CR found", "Disk Name:",
+		diskInstance.ObjectMeta.Name, "State:", diskInstance.Status.State)
+	if strings.Compare(diskInstance.Status.State, ndm.NDMInactive) == 0 {
+		dcpyInstance := instance.DeepCopy()
+		dcpyInstance.Status.State = ndm.NDMInactive
+		err := r.client.Update(context.TODO(), dcpyInstance)
+		if err != nil {
+			reqLogger.Info("Error while updating device CR")
+			return err
+		}
+		reqLogger.Info("Device CR marked Inactive", "Device:", instance.ObjectMeta.Name)
 	}
+	return nil
 }
-*/

@@ -242,6 +242,7 @@ func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
 	// Changing the state to unknown before shutting down. Similar as when one pod is
 	// running and you stopped kubelet it will make pod status unknown.
 	c.MarkDiskStatusToUnknown()
+	c.MarkDeviceStatusToUnknown()
 	glog.Info("shutting down the controller")
 	return nil
 }
