@@ -110,6 +110,8 @@ kind: DaemonSet
 metadata:
   name: node-disk-manager
 spec:
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
