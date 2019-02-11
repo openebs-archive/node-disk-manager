@@ -20,9 +20,6 @@ spec:
       hostNetwork: true
       containers:
       - name: node-disk-manager
-        command:
-        - /usr/sbin/ndm
-        - start
         image: openebs/node-disk-manager-amd64:ci
         imagePullPolicy: IfNotPresent
         securityContext:
