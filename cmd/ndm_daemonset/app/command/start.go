@@ -26,6 +26,7 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/probe"
 	//"github.com/openebs/node-disk-manager/pkg/metrics"
 	//"github.com/openebs/node-disk-manager/pkg/server"
+	"github.com/openebs/node-disk-manager/pkg/httpserver/ndm"
 	"github.com/spf13/cobra"
 )
 
@@ -62,8 +63,9 @@ func NewCmdStart() *cobra.Command {
 				server.MetricsPath = endpointpath
 				metrics.StartingTime = time.Now()
 				// Start HTTP server for /metrics endpoint
-				go server.StartHttpServer()
+				httpserver.StartHttpServer()
 			*/
+			ndm.StartHttpServer()
 			ctrl.Start()
 		},
 	}

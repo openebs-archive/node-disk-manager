@@ -51,8 +51,7 @@ rules:
   resources:
   - servicemonitors
   verbs:
-  - get
-  - create
+  - '*'
 - apiGroups:
   - openebs.io
   resources:
@@ -155,3 +154,18 @@ spec:
             - name: OPERATOR_NAME
               value: "node-disk-operator"
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-disk-operator-service
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+  - name: api
+    port: 8080
+    targetPort: 8080
+    nodePort: 31515
+  selector:
+    name: node-disk-operator
+  sessionAffinity: None
