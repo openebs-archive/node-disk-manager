@@ -114,7 +114,9 @@ func (odf *oSDiskExcludeFilter) Include(d *controller.DiskInfo) bool {
 	return true
 }
 
-// Exclude returns true if disk devpath matches with excludeDevPath
+// Exclude returns true if disk devpath does not match with excludeDevPath
 func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
-	return !strings.HasPrefix(d.Path, odf.excludeDevPath)
+	// The regex matches sda, sda1, sdan3p1, sda0p1 and not sdaa, sdab etc
+	regex := "(([0-9]*|p[0-9]+))$"
+	return !util.MatchRegex(odf.excludeDevPath+regex, d.Path)
 }
