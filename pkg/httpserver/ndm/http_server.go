@@ -36,7 +36,7 @@ func StartHttpServer() {
 					glog.Error(err)
 				}
 
-				_, err = http.Post("http://"+ svc_ip, "application/json", bytes.NewBuffer(resp))
+				_, err = http.Post("http://"+svc_ip, "application/json", bytes.NewBuffer(resp))
 				//_, err = http.Post("http://"+svc_ip+":8080/liveness", "application/json", bytes.NewBuffer(resp))
 				if err != nil {
 					glog.Error(err)
