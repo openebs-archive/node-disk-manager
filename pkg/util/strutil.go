@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"regexp"
 	"strings"
 )
 
@@ -62,4 +63,9 @@ func RemoveString(slice []string, s string) (result []string) {
 		}
 	}
 	return result
+}
+
+func MatchRegex(rx, s string) bool {
+	r, _ := regexp.Compile(rx)
+	return r.MatchString(s)
 }
