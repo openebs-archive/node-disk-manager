@@ -24,7 +24,7 @@ type DeviceCapacity struct {
 }
 
 type DeviceDetails struct {
-	DriveType        string `json: "driveType"`       // DriveType represents the type of drive like SSD, HDD etc.,
+	DeviceType       string `json: "deviceType"`      // DeviceType represents the type of drive like SSD, HDD etc.,
 	Model            string `json:"model"`            // Model is model of disk
 	Compliance       string `json:"compliance"`       // Implemented standards/specifications version such as SPC-1, SPC-2, etc
 	Serial           string `json:"serial"`           // Serial is serial no of disk

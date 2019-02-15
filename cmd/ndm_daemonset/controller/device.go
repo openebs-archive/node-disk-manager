@@ -42,7 +42,7 @@ type DeviceInfo struct {
 	LogicalSectorSize  uint32   // LogicalSectorSize is the Logical size of device sector in bytes
 	PhysicalSectorSize uint32   // PhysicalSectorSize is the Physical size of device sector in bytes
 	Compliance         string   // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
-	DriveType          string   // DeviceType represents the type of backing disk
+	DeviceType         string   // DeviceType represents the type of backing disk
 }
 
 /*
@@ -164,7 +164,7 @@ func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
 	deviceDetails.Vendor = di.Vendor
 	deviceDetails.FirmwareRevision = di.FirmwareRevision
 	deviceDetails.Compliance = di.Compliance
-	deviceDetails.DriveType = di.DriveType
+	deviceDetails.DeviceType = di.DeviceType
 	return deviceDetails
 }
 

@@ -11,4 +11,4 @@ RUN apt update
 
 ADD ndo /usr/local/bin/ndo
 
-CMD ["./ndo"]
+ENTRYPOINT ["./ndo"]

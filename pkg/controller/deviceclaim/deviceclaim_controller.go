@@ -195,7 +195,7 @@ func (r *ReconcileDeviceClaim) claimDeviceForDeviceClaimCR(
 			(item.Spec.Capacity.Storage >= instance.Spec.Capacity) {
 
 			if driveTypeSpecified == true {
-				if strings.Compare(item.Spec.Details.DriveType, instance.Spec.DriveType) != 0 {
+				if strings.Compare(item.Spec.Details.DeviceType, instance.Spec.DriveType) != 0 {
 					continue
 				}
 			}

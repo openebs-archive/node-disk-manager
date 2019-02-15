@@ -22,48 +22,52 @@ import (
 	"github.com/golang/glog"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// CreateDevice creates the Device resource in etcd
+// API to creates the Device resource in etcd
+// This API will be called for each new addDiskEvent
 func (c *Controller) CreateDevice(dvr apis.Device) {
 
 	dvrCopy := dvr.DeepCopy()
 	err := c.Clientset.Create(context.TODO(), dvrCopy)
 	if err == nil {
-		glog.Info("Created device object in etcd : ",
+		glog.Info("Created device object in etcd: ",
 			dvrCopy.ObjectMeta.Name)
 		return
 	}
-	glog.Infof("Dvr:%#v", dvrCopy)
-	glog.Error("Creation of device object failed : ", err)
+
+	if !errors.IsAlreadyExists(err) {
+		glog.Error("Creation of device object failed: ", err)
+		return
+	}
 
 	/*
 	 * Creation may fail because resource is already exist in etcd.
-	 * This is possible when disk has been moved from one node to
-	 * another in a cluster and so device object need to be updated
-	 * with new owner i.e current node.
+	 * This is possible when disk moved from one node to another in
+	 * cluster so device object need to be updated with new Node.
 	 */
 	err = c.UpdateDevice(dvr, nil)
 	if err == nil {
 		return
 	}
 
+	if !errors.IsConflict(err) {
+		glog.Error("Updating of Device Object failed: ", err)
+		return
+	}
+
 	/*
-	 * Updation failure can be due to the fact that old node may have set
-	 * the status to Inactive after updateDvr has done the Get call, as
-	 * resource version will change with each update, so we have to retry.
-	 * Also if other node try to update resource version after updation is
-	 * successful here, the update call from that node will fail.
+	 * Update might failed due to to resource version mismatch which
+	 * can happen if some other entity updating same resource in parallel.
 	 */
-	glog.Info("Device status updated by other node, ",
-		"changing the ownership to this node : ", err)
 	err = c.UpdateDevice(dvr, nil)
 	if err == nil {
 		return
 	}
-	glog.Info("Update to device object failed : ", dvr.ObjectMeta.Name)
+	glog.Error("Update to device object failed: ", dvr.ObjectMeta.Name)
 }
 
 // UpdateDevice update the Device resource in etcd
@@ -92,17 +96,17 @@ func (c *Controller) UpdateDevice(dvr apis.Device, oldDvr *apis.Device) error {
 	return nil
 }
 
-// DeactivateDevice sets the device status to inactive in etcd
+// This API used to set device status to "inactive" state in etcd
 func (c *Controller) DeactivateDevice(dvr apis.Device) {
 
 	dvrCopy := dvr.DeepCopy()
 	dvrCopy.Status.State = NDMActive
 	err := c.Clientset.Update(context.TODO(), dvrCopy)
 	if err != nil {
-		glog.Error("Unable to deactivate device object : ", err)
+		glog.Error("Unable to deactivate device: ", err)
 		return
 	}
-	glog.Info("Deactivated device object : ", dvrCopy.ObjectMeta.Name)
+	glog.Info("Deactivated device: ", dvrCopy.ObjectMeta.Name)
 }
 
 // GetDisk get Disk resource from etcd
