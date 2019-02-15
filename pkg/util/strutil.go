@@ -65,7 +65,9 @@ func RemoveString(slice []string, s string) (result []string) {
 	return result
 }
 
-func MatchRegex(rx, s string) bool {
-	r, _ := regexp.Compile(rx)
+// MatchRegex is a utility function which returns true if the string -s
+// matches with the regex specified.
+func MatchRegex(regex, s string) bool {
+	r, _ := regexp.Compile(regex)
 	return r.MatchString(s)
 }
