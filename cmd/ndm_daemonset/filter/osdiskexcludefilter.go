@@ -116,7 +116,16 @@ func (odf *oSDiskExcludeFilter) Include(d *controller.DiskInfo) bool {
 
 // Exclude returns true if disk devpath does not match with excludeDevPath
 func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
-	// The regex matches sda, sda1, sdan3p1, sda0p1 and not sdaa, sdab etc
-	regex := "(([0-9]*|p[0-9]+))$"
-	return !util.MatchRegex(odf.excludeDevPath+regex, d.Path)
+	// The partitionRegex is chosen depending on whether the device uses
+	// the p[0-9] partition naming structure or not.
+	var partitionRegex string
+	if util.MatchRegex(".+[0-9]+$", odf.excludeDevPath) {
+		// matches loop0, loop0p1, nvme3n0p1
+		partitionRegex = "(p[0-9]+)?$"
+	} else {
+		// matches sda, sda1
+		partitionRegex = "[0-9]*$"
+	}
+	glog.Info("applying regex ", odf.excludeDevPath+partitionRegex, " for os-disk-exclude-filter")
+	return !util.MatchRegex(odf.excludeDevPath+partitionRegex, d.Path)
 }

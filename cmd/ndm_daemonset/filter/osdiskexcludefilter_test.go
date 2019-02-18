@@ -63,24 +63,60 @@ func TestOsDiskFilterRegister(t *testing.T) {
 }
 
 func TestOsDiskExcludeFilterExclude(t *testing.T) {
-	fakeDiskPath := "fake-disk-path"
-	ignoreDiskPath := "ignore-disk-path"
-	fakeOsDiskFilter := oSDiskExcludeFilter{excludeDevPath: ignoreDiskPath}
-	disk1 := &controller.DiskInfo{}
-	disk1.Path = fakeDiskPath
-	disk2 := &controller.DiskInfo{}
-	disk2.Path = ignoreDiskPath
 	tests := map[string]struct {
+		filter   oSDiskExcludeFilter
 		disk     *controller.DiskInfo
-		actual   bool
 		expected bool
 	}{
-		"comparing return of Exclude for disk1": {actual: fakeOsDiskFilter.Exclude(disk1), expected: true},
-		"comparing return of Exclude for disk2": {actual: fakeOsDiskFilter.Exclude(disk2), expected: false},
+		"exclude path is /dev/sda and device path is /dev/sda": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+			disk:     &controller.DiskInfo{Path: "/dev/sda"},
+			expected: false,
+		},
+		"exclude path is /dev/sda and  device path is /dev/sda1": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+			disk:     &controller.DiskInfo{Path: "/dev/sda1"},
+			expected: false,
+		},
+		"exclude path is /dev/sda and device path is /dev/sdaa": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+			disk:     &controller.DiskInfo{Path: "/dev/sdaa"},
+			expected: true,
+		},
+		"exclude path is /dev/sda and device path is /dev/sdap1": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+			disk:     &controller.DiskInfo{Path: "/dev/sdap1"},
+			expected: true,
+		},
+		"exclude path is /dev/sda and device path is /dev/sda1p1": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+			disk:     &controller.DiskInfo{Path: "/dev/sda1p1"},
+			expected: true,
+		},
+		"exclude path is /dev/loop0 and device path is /dev/loop0p1": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: "/dev/loop0"},
+			disk:     &controller.DiskInfo{Path: "/dev/loop0p1"},
+			expected: false,
+		},
+		"exclude path is /dev/loop0 and device path is /dev/loop0": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: "/dev/loop0"},
+			disk:     &controller.DiskInfo{Path: "/dev/loop0"},
+			expected: false,
+		},
+		"exclude path is /dev/nvme0n1 and device path is /dev/nvme0n12": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: "/dev/nvme0n1"},
+			disk:     &controller.DiskInfo{Path: "/dev/nvme0n12"},
+			expected: true,
+		},
+		"exclude path is /dev/nvme0n1 and device path is /dev/nvme0n1p0": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: "/dev/nvme0n1"},
+			disk:     &controller.DiskInfo{Path: "/dev/nvme0n1p0"},
+			expected: false,
+		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expected, test.actual)
+			assert.Equal(t, test.expected, test.filter.Exclude(test.disk))
 		})
 	}
 }
