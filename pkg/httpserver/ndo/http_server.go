@@ -6,6 +6,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/common"
 	"github.com/openebs/node-disk-manager/pkg/httpserver"
 	"net/http"
+	"time"
 )
 
 func StartHttpServer() {
@@ -27,5 +28,5 @@ func livenessHandler(w http.ResponseWriter, r *http.Request) {
 	var resp httpserver.Response
 
 	json.NewDecoder(r.Body).Decode(&resp)
-	common.UpdateNodeLivenessTimeStamp(resp.Hostname)
+	common.UpdateNodeLivenessTimeStamp(resp.Hostname, time.Now())
 }

@@ -31,7 +31,7 @@ import (
 var log = logf.Log.WithName("controller_disk")
 
 // If node not see for 10Minute, we treat that node crashed/unreachable.
-var expirationeInterval = time.Duration(10 * time.Minute)
+var nodeExpiryTimeInterval = time.Duration(10 * time.Minute)
 
 // For initial scan of nodes, we use this flag
 var initialNodeCheckDone bool
@@ -40,7 +40,7 @@ var initialNodeCheckDone bool
 //of operation which check if node is stale or not.
 //Since Reconcilation would be triggered every now and then,
 //we need these counters.
-var isFirstTimeLivenessCheck bool
+var isFirstTimeLivenessCheck bool = true
 var lastNodeLivenessCheckTime time.Time
 var nodeLivenessCheckInterval = time.Duration(10 * time.Minute)
 
@@ -96,9 +96,9 @@ func (r *ReconcileDisk) Reconcile(request reconcile.Request) (reconcile.Result, 
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling Disk")
 
-	if !isFirstTimeLivenessCheck {
+	if isFirstTimeLivenessCheck {
 		lastNodeLivenessCheckTime = time.Now()
-		isFirstTimeLivenessCheck = true
+		isFirstTimeLivenessCheck = false
 	}
 
 	if lastNodeLivenessCheckTime.Add(nodeLivenessCheckInterval).Before(time.Now()) {
@@ -149,9 +149,9 @@ func (r *ReconcileDisk) FindInactiveNodesMarkDiskInactive(reqLogger logr.Logger)
 		initialNodeCheckDone = true
 		// Check if any of node is inactive/stale by looking into NodeLiveInfo map
 		// which is update after an interval by Node-Disk-Manager Daemonset
-		StaleNodeList = common.FindInactiveNodes(expirationeInterval, nodeList)
+		StaleNodeList = common.FindInactiveNodes(nodeExpiryTimeInterval, nodeList)
 	} else {
-		StaleNodeList = common.FindInactiveNodes(expirationeInterval, nil)
+		StaleNodeList = common.FindInactiveNodes(nodeExpiryTimeInterval, nil)
 	}
 
 	if len(StaleNodeList) == 0 {

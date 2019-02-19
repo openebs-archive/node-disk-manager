@@ -22,15 +22,15 @@ func InitNodeMap() {
 	NodeLiveInfo.NodeMap = make(map[string]NodeLastTime)
 }
 
-func UpdateNodeLivenessTimeStamp(hostName string) {
+func UpdateNodeLivenessTimeStamp(hostName string, curr_time time.Time) {
 	fmt.Println("Updating NodeMap for host:", hostName)
 	NodeLiveInfo.Mu.Lock()
-	NodeLiveInfo.NodeMap[hostName] = NodeLastTime{LastTimeStamp: time.Now()}
+	NodeLiveInfo.NodeMap[hostName] = NodeLastTime{LastTimeStamp: curr_time}
 	NodeLiveInfo.Mu.Unlock()
 	return
 }
 
-func FindInactiveNodes(expirationeInterval time.Duration, NodeList []string) []string {
+func FindInactiveNodes(nodeExpiryTimeInterval time.Duration, NodeList []string) []string {
 	var InactiveNodeList []string
 	curr := time.Now()
 
@@ -50,7 +50,7 @@ func FindInactiveNodes(expirationeInterval time.Duration, NodeList []string) []s
 
 	NodeLiveInfo.Mu.Lock()
 	for k := range NodeLiveInfo.NodeMap {
-		if NodeLiveInfo.NodeMap[k].LastTimeStamp.Add(expirationeInterval).Before(curr) {
+		if NodeLiveInfo.NodeMap[k].LastTimeStamp.Add(nodeExpiryTimeInterval).Before(curr) {
 			fmt.Println("Inactive Node:", k, "TimeStamp:", NodeLiveInfo.NodeMap[k])
 			InactiveNodeList = append(InactiveNodeList, k)
 		}
