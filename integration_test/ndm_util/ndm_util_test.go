@@ -152,7 +152,7 @@ func TestGetNDMOperatorFilePath(t *testing.T) {
 	}{
 		{
 			name: "Test GetNDMConfigurationFilePath",
-			want: path.Join(os.Getenv("GOPATH"), "src/github.com/openebs/node-disk-manager/", "ndm-operator.yaml"),
+			want: path.Join(os.Getenv("GOPATH"), "src/github.com/openebs/node-disk-manager/deploy/", "ndm-operator.yaml"),
 		},
 	}
 	for _, tt := range tests {

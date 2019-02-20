@@ -100,7 +100,7 @@ func (c *Controller) UpdateDevice(dvr apis.Device, oldDvr *apis.Device) error {
 func (c *Controller) DeactivateDevice(dvr apis.Device) {
 
 	dvrCopy := dvr.DeepCopy()
-	dvrCopy.Status.State = NDMActive
+	dvrCopy.Status.State = NDMInactive
 	err := c.Clientset.Update(context.TODO(), dvrCopy)
 	if err != nil {
 		glog.Error("Unable to deactivate device: ", err)

@@ -3,7 +3,7 @@ NODE_DISK_OPERATOR=ndo
 NODE_DISK_MANAGER=ndm
 
 # Build the node-disk-manager image.
-build: clean fmt shellcheck ndo ndm version docker_ndo docker_ndm
+build: clean vet fmt shellcheck ndo ndm version docker_ndo docker_ndm
 
 NODE_DISK_OPERATOR?=ndo
 NODE_DISK_MANAGER?=ndm
@@ -71,6 +71,9 @@ header:
 	@echo "--> node-disk-operator      "
 	@echo "----------------------------"
 	@echo
+
+integration-test:
+	go test -v github.com/openebs/node-disk-manager/integration_test
 
 ndo:
 	@echo '--> Building node-disk operator binary...'

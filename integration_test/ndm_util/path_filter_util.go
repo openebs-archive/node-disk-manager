@@ -2,11 +2,12 @@ package ndmutil
 
 import (
 	"fmt"
+	"io/ioutil"
+	"strings"
+
 	"github.com/ghodss/yaml"
 	sysutil "github.com/openebs/CITF/utils/system"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	"io/ioutil"
-	"strings"
 )
 
 type ConfigMapPatch controller.NodeDiskManagerConfig

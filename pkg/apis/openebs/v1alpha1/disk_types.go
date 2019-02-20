@@ -14,7 +14,7 @@ type DiskSpec struct {
 	Details          DiskDetails   `json:"details"`                    //Details contains static attributes (model, serial ..)
 	FileSystem       string        `json:"fileSystem,omitempty"`       //Contains the data about filesystem on the disk
 	PartitionDetails []Partition   `json:"partitionDetails,omitempty"` //Details of partitions in the disk (filesystem, partition type)
-	DevLinks         []DiskDevLink `json:"devlinks,omitempty"`         //DevLinks contains soft links of one disk
+	DevLinks         []DiskDevLink `json:"devlinks"`                   //DevLinks contains soft links of one disk
 }
 
 type DiskCapacity struct {

@@ -18,12 +18,12 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
-	"github.com/openebs/CITF/utils/k8s"
+	citfoptions "github.com/openebs/CITF/citf_options"
 	logutil "github.com/openebs/CITF/utils/log"
 	strutil "github.com/openebs/CITF/utils/string"
 	sysutil "github.com/openebs/CITF/utils/system"
 	cr "github.com/openebs/node-disk-manager/integration_test/common_resource"
-	"github.com/openebs/node-disk-manager/integration_test/k8s_util"
+	k8sutil "github.com/openebs/node-disk-manager/integration_test/k8s_util"
 	core_v1 "k8s.io/api/core/v1"
 	v1beta1 "k8s.io/api/extensions/v1beta1"
 )
@@ -33,7 +33,7 @@ const (
 	NdmYAML = "node-disk-manager.yaml"
 	// NdmOperatorYAML is the name of the Complete Configuration file for node-disk-manager
 	// with service-account, cluster-role and cluster-role-binding
-	NdmOperatorYAML = "ndm-operator.yaml"
+	NdmOperatorYAML = "ndm-daemonset.yaml" // "ndm-operator.yaml"
 	// NdmTestYAMLPath is the directory name where we shall keep temporary configuration file
 	NdmTestYAMLPath = "/tmp/"
 	// NdmTestYAMLName is the name of temporary configuration file
@@ -99,7 +99,7 @@ func GetNDMOperatorFileName() string {
 // GetNDMOperatorFilePath returns the path of Complete Configuration file for node-disk-manager
 // i.e. GetNDMDir() and GetNDMOperatorFileName() joined together
 func GetNDMOperatorFilePath() string {
-	return path.Join(GetNDMDir(), GetNDMOperatorFileName())
+	return path.Join(GetNDMDir(), "deploy/", GetNDMOperatorFileName())
 }
 
 // GetNDMTestConfigurationFilePath returns the path of Test Configuration file for node-disk-manager
@@ -667,8 +667,8 @@ func InitEnvironment() error {
 	// It starts minikube if it is not running.
 	cr.CitfInstance.Environment.Setup()
 
-	cr.CitfInstance.K8S, err = k8s.NewK8S()
-
+	// As per current structure of CITF we must Reload CitfInstance when we setup the environmemt
+	err = cr.CitfInstance.Reload(citfoptions.CreateOptionsIncludeAll(""))
 	if err != nil {
 		return err
 	}
@@ -679,6 +679,10 @@ func InitEnvironment() error {
 
 	if cr.CitfInstance.K8S.Clientset == nil {
 		return errors.New("k8s ClientSet is nil")
+	}
+
+	if cr.CitfInstance.K8S.OpenebsClientSet == nil {
+		return errors.New("openebs ClientSet is nil")
 	}
 
 	// It waits till namespace is ready
