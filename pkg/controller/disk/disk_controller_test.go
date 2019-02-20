@@ -41,7 +41,7 @@ func TestDiskController(t *testing.T) {
 
 	//For test case set these values to smaller intervals
 	nodeLivenessCheckInterval = time.Duration(1 * time.Second)
-	nodeexpiryTimeInterval = time.Duration(1 * time.Second)
+	nodeExpiryTimeInterval = time.Duration(1 * time.Second)
 
 	// Get Disk and diskList resource
 	disk := GetFakeDiskObject()
