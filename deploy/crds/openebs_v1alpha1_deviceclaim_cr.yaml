@@ -1,0 +1,8 @@
+apiVersion: openebs.io/v1alpha1
+kind: DeviceClaim
+metadata:
+  name: test-deviceclaim1
+spec:
+  capacity: 300
+  driveType: "SSD"
+  hostName: "gke-satbir-ndm-pool-1-93b7a0ae-s3"
