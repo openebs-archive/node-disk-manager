@@ -139,15 +139,15 @@ func (r *ReconcileDeviceClaim) claimDeviceForDeviceClaimCR(
 	// Check if deviceCalim has valid capacity request
 	if instance.Spec.Capacity <= 0 {
 		err1 := fmt.Errorf("Invalid Capacity requested")
-		reqLogger.Error(err1, "Capacity requested is invalid")
+		//reqLogger.Error(err1, "Capacity requested is invalid")
 
-		//Update deviceClaim CR to with error string
+		//Update deviceClaim CR with error string
 		instance_cpy := instance.DeepCopy()
 		instance_cpy.Status.Phase = openebsv1alpha1.DeviceClaimStatusInvalidCapacity
-		instance_cpy.ObjectMeta.Finalizers = append(instance_cpy.ObjectMeta.Finalizers, FinalizerName)
-		err := r.client.Update(context.TODO(), instance_cpy)
+		//instance_cpy.ObjectMeta.Finalizers = append(instance_cpy.ObjectMeta.Finalizers, FinalizerName)
+		err := r.client.Delete(context.TODO(), instance_cpy)
 		if err != nil {
-			reqLogger.Error(err, "Invalid Capacity error update to DeviceClaimCR failed")
+			reqLogger.Error(err, "Invalid Capacity, deletion of DeviceClaimCR failed")
 		}
 		return err1
 	}
