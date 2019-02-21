@@ -157,13 +157,14 @@ func TestSmartProbe(t *testing.T) {
 	deviceDetails := &controller.DiskInfo{}
 	deviceDetails.ProbeIdentifiers.Uuid = mockOsDiskDetailsUsingUdev.Uid
 	deviceDetails.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
+	deviceDetails.DiskType = libudevwrapper.UDEV_DISK
 	eventmsg = append(eventmsg, deviceDetails)
 
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
-	probeEvent.addDiskEvent(eventDetails)
+	probeEvent.addEvent(eventDetails)
 
 	// Retrieve disk resource
 	cdr1, err1 := fakeController.GetDisk(mockOsDiskDetailsUsingUdev.Uid)

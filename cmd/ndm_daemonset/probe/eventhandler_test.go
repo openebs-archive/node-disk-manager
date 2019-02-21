@@ -116,7 +116,7 @@ func (nf *fakeFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
 	return fakeDiskInfo.Uuid != ignoreDiskUuid
 }
 
-func TestAddDiskEvent(t *testing.T) {
+func TestAddEvent(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &controller.Controller{
@@ -151,17 +151,19 @@ func TestAddDiskEvent(t *testing.T) {
 	eventmsg := make([]*controller.DiskInfo, 0)
 	device1Details := &controller.DiskInfo{}
 	device1Details.ProbeIdentifiers.Uuid = mockuid
+	device1Details.DiskType = libudevwrapper.UDEV_DISK
 	eventmsg = append(eventmsg, device1Details)
 	// device-2 details
 	device2Details := &controller.DiskInfo{}
 	device2Details.ProbeIdentifiers.Uuid = ignoreDiskUuid
+	device2Details.DiskType = libudevwrapper.UDEV_DISK
 	eventmsg = append(eventmsg, device2Details)
 	// Creating one event message
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
-	probeEvent.addDiskEvent(eventDetails)
+	probeEvent.addEvent(eventDetails)
 	// Retrieve disk resource
 	cdr1, err1 := fakeController.GetDisk(mockuid)
 
@@ -195,7 +197,7 @@ func TestAddDiskEvent(t *testing.T) {
 	}
 }
 
-func TestDeleteDiskEvent(t *testing.T) {
+func TestDeleteEvent(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
@@ -220,12 +222,13 @@ func TestDeleteDiskEvent(t *testing.T) {
 	eventmsg := make([]*controller.DiskInfo, 0)
 	deviceDetails := &controller.DiskInfo{}
 	deviceDetails.ProbeIdentifiers.Uuid = mockuid
+	deviceDetails.DiskType = libudevwrapper.UDEV_DISK
 	eventmsg = append(eventmsg, deviceDetails)
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_REMOVE,
 		Devices: eventmsg,
 	}
-	probeEvent.deleteDiskEvent(eventDetails)
+	probeEvent.deleteEvent(eventDetails)
 
 	// Retrieve disk resource
 	cdr1, err1 := fakeController.GetDisk(mockuid)

@@ -53,6 +53,7 @@ func TestProcess(t *testing.T) {
 	deviceDetails := &controller.DiskInfo{}
 	deviceDetails.ProbeIdentifiers.Uuid = osDiskDetails.Uid
 	deviceDetails.ProbeIdentifiers.UdevIdentifier = osDiskDetails.SysPath
+	deviceDetails.DiskType = libudevwrapper.UDEV_DISK
 	diskInfo = append(diskInfo, deviceDetails)
 	expectedEvent.eventDetails.Action = ""
 	expectedEvent.eventDetails.Devices = diskInfo

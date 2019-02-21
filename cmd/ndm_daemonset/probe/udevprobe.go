@@ -145,14 +145,6 @@ func (up *udevProbe) scan() error {
 			deviceDetails := &controller.DiskInfo{}
 			deviceDetails.ProbeIdentifiers.Uuid = uuid
 			deviceDetails.ProbeIdentifiers.UdevIdentifier = newUdevice.GetSyspath()
-			if newUdevice.IsParitition() {
-				partitionData := controller.PartitionInfo{
-					PartitionType: newUdevice.GetPartitionType(),
-					FileSystem:    newUdevice.GetFileSystemInfo(),
-				}
-				deviceDetails.PartitionData = append(deviceDetails.PartitionData, partitionData)
-				glog.Info("Partition Data for ", uuid, " : ", deviceDetails.PartitionData)
-			}
 			diskInfo = append(diskInfo, deviceDetails)
 		}
 		newUdevice.UdevDeviceUnref()
@@ -162,7 +154,6 @@ func (up *udevProbe) scan() error {
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,
 	}
-	glog.Info("Partition Data to channel: ", eventDetails.Devices[3].PartitionData)
 	udevevent.UdevEventMessageChannel <- eventDetails
 	return nil
 }
@@ -180,7 +171,14 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	d.Vendor = udevDiskDetails.Vendor
 	d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
 	d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
+	d.DiskType = udevDiskDetails.DiskType
 	d.FileSystemInfo = udevDiskDetails.FileSystem
+	if len(udevDiskDetails.PartitionType) != 0 {
+		// fill the partition info, only if a partition type exists
+		d.PartitionData = append(d.PartitionData, controller.PartitionInfo{
+			PartitionType: udevDiskDetails.PartitionType,
+			FileSystem:    udevDiskDetails.FileSystem})
+	}
 }
 
 // listen listens for event message over UdevEventMessages channel
@@ -199,9 +197,9 @@ func (up *udevProbe) listen() {
 		msg := <-udevevent.UdevEventMessageChannel
 		switch msg.Action {
 		case string(AttachEA):
-			probeEvent.addDiskEvent(msg)
+			probeEvent.addEvent(msg)
 		case string(DetachEA):
-			probeEvent.deleteDiskEvent(msg)
+			probeEvent.deleteEvent(msg)
 		}
 	}
 }

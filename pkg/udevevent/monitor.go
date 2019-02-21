@@ -93,7 +93,7 @@ func (m *monitor) process(fd int) error {
 	if err != nil {
 		return err
 	}
-	if !device.IsDisk() {
+	if !device.IsDisk() && !device.IsParitition() {
 		device.UdevDeviceUnref()
 		return nil
 	}

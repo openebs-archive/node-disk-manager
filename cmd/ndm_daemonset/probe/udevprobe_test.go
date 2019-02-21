@@ -50,9 +50,14 @@ func mockOsDiskToAPI() (apis.Disk, error) {
 		Serial: mockOsDiskDetails.Serial,
 		Vendor: mockOsDiskDetails.Vendor,
 	}
+	fileSystem := ""
+	if mockOsDiskDetails.FileSystem != libudevwrapper.UDEV_FS_NONE {
+		fileSystem = mockOsDiskDetails.FileSystem
+	}
 	fakeObj := apis.DiskSpec{
-		Path:    mockOsDiskDetails.DevNode,
-		Details: fakeDetails,
+		Path:       mockOsDiskDetails.DevNode,
+		Details:    fakeDetails,
+		FileSystem: fileSystem,
 	}
 
 	devLinks := make([]apis.DiskDevLink, 0)
@@ -167,7 +172,7 @@ func TestUdevProbe(t *testing.T) {
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
-	probeEvent.addDiskEvent(eventDetails)
+	probeEvent.addEvent(eventDetails)
 	// Retrieve disk resource
 	cdr1, err1 := fakeController.GetDisk(mockOsDiskDetails.Uid)
 	fakeDr, err := mockOsDiskToAPI()

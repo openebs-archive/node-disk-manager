@@ -37,8 +37,8 @@ type ProbeEvent struct {
 	Controller *controller.Controller
 }
 
-// addDiskEvent fill disk details from different probes and push it to etcd
-func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
+// addEvent fill disk/device details from different probes and push it to etcd
+func (pe *ProbeEvent) addEvent(msg controller.EventMessage) {
 	diskList, err := pe.Controller.ListDiskResource()
 	if err != nil {
 		glog.Error(err)
@@ -48,28 +48,28 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 	for _, diskDetails := range msg.Devices {
 		glog.Info("Processing details for ", diskDetails.ProbeIdentifiers.Uuid)
 		pe.Controller.FillDiskDetails(diskDetails)
+
 		// if ApplyFilter returns true then we process the event further
+		glog.Info("applying filters to ", diskDetails.ProbeIdentifiers.Uuid)
 		if !pe.Controller.ApplyFilter(diskDetails) {
 			continue
 		}
-		glog.Info("Processed details for ", diskDetails.ProbeIdentifiers.Uuid)
+
+		glog.Info("processed details for ", diskDetails.ProbeIdentifiers.Uuid)
 		oldDr := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
-		// if old DiskCR doesn't exist and parition is found, it is ignored since we don't need info
-		// of partition if disk as a whole is ignored
-		if oldDr == nil && len(diskDetails.PartitionData) != 0 {
-			glog.Info("Skipping partition of already excluded disk ", diskDetails.ProbeIdentifiers.Uuid)
-			continue
-		}
-		// if diskCR is already present, and udev event is generated for partition, append the partition info
-		// to the diskCR
-		if oldDr != nil && len(diskDetails.PartitionData) != 0 {
-			newDrCopy := oldDr.DeepCopy()
+
+		if diskDetails.DiskType == libudevwrapper.UDEV_DISK {
+			// update etcd with the new disk details
+			pe.Controller.PushDiskResource(oldDr, diskDetails)
+		} else if diskDetails.DiskType == libudevwrapper.UDEV_PARTITION {
+			// append the partition data to disk details and push to etcd
 			glog.Info("Appending partition data to ", diskDetails.ProbeIdentifiers.Uuid)
+			newDrCopy := oldDr.DeepCopy()
 			newDrCopy.Spec.PartitionDetails = append(newDrCopy.Spec.PartitionDetails, diskDetails.ToPartition()...)
 			pe.Controller.UpdateDisk(*newDrCopy, oldDr)
-		} else {
-			pe.Controller.PushDiskResource(oldDr, diskDetails)
+		}
 
+		if diskDetails.DiskType == libudevwrapper.UDEV_DISK {
 			/*
 			 * There will be one device CR for each physical Disk.
 			 * For network devices like LUN there will be a device
@@ -92,7 +92,7 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 				pe.Controller.PushDeviceResource(oldDvr, deviceDetails)
 			}
 		}
-		/// update the list of DiskCRs
+
 		diskList, err = pe.Controller.ListDiskResource()
 		if err != nil {
 			glog.Error(err)
@@ -102,8 +102,9 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 	}
 }
 
-// deleteDiskEvent deactivate disk resource using uuid from etcd
-func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
+// deleteEvent deactivates disk resource or remove device details
+// using uuid from etcd
+func (pe *ProbeEvent) deleteEvent(msg controller.EventMessage) {
 	diskList, err := pe.Controller.ListDiskResource()
 	if err != nil {
 		glog.Error(err)
@@ -120,7 +121,18 @@ func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
 			mismatch = true
 			continue
 		}
-		pe.Controller.DeactivateDisk(*oldDr)
+		if diskDetails.DiskType == libudevwrapper.UDEV_DISK {
+			pe.Controller.DeactivateDisk(*oldDr)
+		} else if diskDetails.DiskType == libudevwrapper.UDEV_PARTITION {
+			glog.Info("Removing Partition Data from ", diskDetails.ProbeIdentifiers.Uuid)
+			newDrCopy := oldDr.DeepCopy()
+			// TODO : Delete the specific partition, instead of the last partition
+			if len(newDrCopy.Spec.PartitionDetails) > 0 {
+				// Currently the details of last partition will be removed
+				newDrCopy.Spec.PartitionDetails = newDrCopy.Spec.PartitionDetails[:len(newDrCopy.Spec.PartitionDetails)-1]
+			}
+			pe.Controller.UpdateDisk(*newDrCopy, oldDr)
+		}
 	}
 	if mismatch {
 		go pe.initOrErrorEvent()

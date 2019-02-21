@@ -189,7 +189,6 @@ func TestFillDetails(t *testing.T) {
 	expectedDr.Model = fakeModel
 	expectedDr.Serial = fakeSerial
 	expectedDr.Vendor = fakeVendor
-	expectedDr.DiskType = NDMDefaultDiskType
 
 	// create one fake Disk struct
 	actualDr := &DiskInfo{}

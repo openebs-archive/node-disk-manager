@@ -45,6 +45,7 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 	deviceDetails := &controller.DiskInfo{}
 	deviceDetails.ProbeIdentifiers.Uuid = uuid
 	deviceDetails.ProbeIdentifiers.UdevIdentifier = device.GetSyspath()
+	deviceDetails.DiskType = device.GetDevtype()
 	diskInfo = append(diskInfo, deviceDetails)
 	e.eventDetails.Action = action
 	e.eventDetails.Devices = diskInfo

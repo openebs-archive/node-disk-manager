@@ -36,6 +36,7 @@ const (
 	NDMDevicePrefix     = "device-"            // NDMdevicePrefix used as device's uuid prefix
 	UDEV_SUBSYSTEM      = "block"              // udev to filter this device type
 	UDEV_SYSTEM         = "disk"               // used to filter devices other than disk which udev tracks (eg. CD ROM)
+	UDEV_DISK           = UDEV_SYSTEM          // used to filter out disks
 	UDEV_PARTITION      = "partition"          // used to filter out partitions
 	UDEV_PATH           = "DEVPATH"            // udev attribute to get device path
 	UDEV_WWN            = "ID_WWN"             // udev attribute to get device WWN number
@@ -73,7 +74,9 @@ type UdevDiskDetails struct {
 	Path           string   // Path is Path of a disk.
 	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
+	DiskType       string   // DeviceType can be disk, partition
 	FileSystem     string   // FileSystem on the disk
+	PartitionType  string   // Partitiontype on the disk/device
 }
 
 // freeCharPtr frees c pointer
@@ -84,7 +87,7 @@ func freeCharPtr(s *C.char) {
 //DiskInfoFromLibudev returns disk attribute extracted using libudev apicalls.
 func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 	devLinks := device.GetDevLinks()
-	fileSystem := device.GetPropertyValue(UDEV_FS_TYPE)
+	fileSystem := device.GetFileSystemInfo()
 	if len(fileSystem) == 0 {
 		fileSystem = UDEV_FS_NONE
 	}
@@ -95,7 +98,9 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 		Path:           device.GetPropertyValue(UDEV_DEVNAME),
 		ByIdDevLinks:   devLinks[BY_ID_LINK],
 		ByPathDevLinks: devLinks[BY_PATH_LINK],
+		DiskType:       device.GetDevtype(),
 		FileSystem:     fileSystem,
+		PartitionType:  device.GetPartitionType(),
 	}
 	return diskDetails
 }
