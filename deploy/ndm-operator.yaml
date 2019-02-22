@@ -129,8 +129,8 @@ spec:
           # Replace this with the built image name
           image: satbirchhikara/ndm-operator:test0
           ports:
-          - containerPort: 60000
-            name: metrics
+          - containerPort: 8080
+            name: liveness
           command:
           - ndo
           imagePullPolicy: Always
@@ -160,12 +160,10 @@ metadata:
   name: node-disk-operator-service
   namespace: default
 spec:
-  type: NodePort
   ports:
   - name: api
     port: 8080
     targetPort: 8080
-    nodePort: 31515
   selector:
     name: node-disk-operator
   sessionAffinity: None

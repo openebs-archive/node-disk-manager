@@ -3,10 +3,11 @@ package ndm
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/openebs/node-disk-manager/pkg/httpserver"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/openebs/node-disk-manager/pkg/httpserver"
 
 	"k8s.io/klog/glog"
 )
@@ -23,12 +24,12 @@ func StartHttpServer() {
 
 	go func() {
 		ticker := time.NewTicker(5 * time.Second)
-		svc_ip := os.Getenv("NDO_OPERATOR_SERVICE_IP")
-		if len(svc_ip) == 0 {
-			glog.Error("Serivce IP not found")
-		}
-
 		for {
+			svc_ip := os.Getenv("NDO_OPERATOR_SERVICE_IP")
+			if len(svc_ip) == 0 {
+				glog.Error("Serivce IP not found")
+			}
+
 			select {
 			case <-ticker.C:
 				resp, err := createResponse()
@@ -36,8 +37,8 @@ func StartHttpServer() {
 					glog.Error(err)
 				}
 
-				_, err = http.Post("http://"+svc_ip, "application/json", bytes.NewBuffer(resp))
-				//_, err = http.Post("http://"+svc_ip+":8080/liveness", "application/json", bytes.NewBuffer(resp))
+				//_, err = http.Post(svc_ip+"/liveness", "application/json", bytes.NewBuffer(resp))
+				_, err = http.Post("http://"+svc_ip+":8080/liveness", "application/json", bytes.NewBuffer(resp))
 				if err != nil {
 					glog.Error(err)
 				}

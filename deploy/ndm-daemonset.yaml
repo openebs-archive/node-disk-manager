@@ -137,6 +137,7 @@ spec:
       # Use host network as container network to monitor udev source using netlink
       # to detect disk attach and detach events using fd.
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
@@ -173,8 +174,7 @@ spec:
         - name: SPARSE_FILE_COUNT
           value: "1"
         - name: NDO_OPERATOR_SERVICE_IP
-          value: 35.238.132.38:31515/liveness
-          #value: "node-disk-operator-service.default.svc.cluster.local"
+          value: node-disk-operator-service
       volumes:
       - name: config
         configMap:
