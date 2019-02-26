@@ -66,7 +66,7 @@ build(){
                 -X main.CtlName='${CTLNAME}' \
                 -X github.com/openebs/node-disk-manager/pkg/version.Version=${VERSION}" \
                 -o $output_name \
-               ./cmd/ndm_daemonset
+               ./cmd/"$BUILDPATH"
         done
     done
     echo "Successfully built: ${CTLNAME}"
@@ -90,11 +90,6 @@ GIT_COMMIT=$(getGitCommit)
 # Get the version details
 VERSION="beta"
 
-# Set binary name if already not set by env variable
-if [ -z "${CTLNAME}" ];
-then
-    CTLNAME="ndm"
-fi
 
 # Determine the arch/os combos we're building for
 XC_ARCH=${XC_ARCH:-"amd64"}
