@@ -19,7 +19,7 @@ package main
 import (
 	"os"
 
-	"github.com/openebs/node-disk-manager/cmd/app/command"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/app/command"
 	ndmlogger "github.com/openebs/node-disk-manager/pkg/logs"
 )
 

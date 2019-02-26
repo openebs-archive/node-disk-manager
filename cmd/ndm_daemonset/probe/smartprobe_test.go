@@ -20,7 +20,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/openebs/node-disk-manager/cmd/controller"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
 	ndmFakeClientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/fake"
 	smart "github.com/openebs/node-disk-manager/pkg/smart"

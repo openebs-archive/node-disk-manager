@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	sysutil "github.com/openebs/CITF/utils/system"
-	"github.com/openebs/node-disk-manager/cmd/controller"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"io/ioutil"
 	"strings"
 )

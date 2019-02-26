@@ -20,7 +20,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/openebs/node-disk-manager/cmd/controller"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/stretchr/testify/assert"
 )

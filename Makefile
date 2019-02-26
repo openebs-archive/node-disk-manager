@@ -1,11 +1,15 @@
 # Specify the name for the binaries
 NODE_DISK_MANAGER=ndm
 
+# env for specifying that we want to build ndm daemonset
+BUILD_PATH_NDM=ndm_daemonset
+
 # Build the node-disk-manager image.
 
 build: clean vet fmt shellcheck ndm version docker
 
 NODE_DISK_MANAGER?=ndm
+BUILD_PATH_NDM?=ndm_daemonset
 
 # Determine the arch/os
 XC_OS?= $(shell go env GOOS)
@@ -74,7 +78,7 @@ integration-test:
 ndm:
 	@echo '--> Building binary...'
 	@pwd
-	@CTLNAME=${NODE_DISK_MANAGER} sh -c "'$(PWD)/hack/build.sh'"
+	@CTLNAME=${NODE_DISK_MANAGER} BUILDPATH=${BUILD_PATH_NDM} sh -c "'$(PWD)/hack/build.sh'"
 	@echo '--> Built binary.'
 	@echo
 
