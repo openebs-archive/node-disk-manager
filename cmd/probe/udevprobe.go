@@ -162,7 +162,6 @@ func (up *udevProbe) scan() error {
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,
 	}
-	glog.Info("Partition Data to channel: ", eventDetails.Devices[3].PartitionData)
 	udevevent.UdevEventMessageChannel <- eventDetails
 	return nil
 }
