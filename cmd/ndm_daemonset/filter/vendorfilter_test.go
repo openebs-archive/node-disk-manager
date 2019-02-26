@@ -21,7 +21,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/openebs/node-disk-manager/cmd/controller"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/stretchr/testify/assert"
 )
 

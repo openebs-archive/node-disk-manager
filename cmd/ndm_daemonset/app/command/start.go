@@ -22,9 +22,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/openebs/node-disk-manager/cmd/controller"
-	"github.com/openebs/node-disk-manager/cmd/filter"
-	"github.com/openebs/node-disk-manager/cmd/probe"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/filter"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/probe"
 	"github.com/openebs/node-disk-manager/pkg/metrics"
 	"github.com/openebs/node-disk-manager/pkg/server"
 	"github.com/spf13/cobra"

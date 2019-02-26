@@ -66,7 +66,7 @@ build(){
                 -X main.CtlName='${CTLNAME}' \
                 -X github.com/openebs/node-disk-manager/pkg/version.Version=${VERSION}" \
                 -o $output_name \
-               ./cmd
+               ./cmd/ndm_daemonset
         done
     done
     echo "Successfully built: ${CTLNAME}"
