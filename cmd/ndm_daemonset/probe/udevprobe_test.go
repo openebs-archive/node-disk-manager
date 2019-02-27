@@ -21,8 +21,7 @@ import (
 	"testing"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
-	ndmFakeClientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/fake"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -74,7 +73,7 @@ func mockOsDiskToAPI() (apis.Disk, error) {
 	fakeObj.DevLinks = devLinks
 
 	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       controller.NDMKind,
+		Kind:       controller.NDMDiskKind,
 		APIVersion: controller.NDMVersion,
 	}
 	fakeObjectMeta := metav1.ObjectMeta{
@@ -123,7 +122,7 @@ func TestUdevProbe(t *testing.T) {
 		t.Fatal(err)
 	}
 	fakeHostName := "node-name"
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
 	filters := make([]*controller.Filter, 0)
@@ -145,8 +144,10 @@ func TestUdevProbe(t *testing.T) {
 		pi:         pi,
 		controller: fakeController,
 	}
+
 	newRegisterProbe.register()
-	//add one filter
+
+	// Add one filter
 	filter := &alwaysTrueFilter{}
 	filter1 := &controller.Filter{
 		Name:      "filter1",
@@ -167,8 +168,8 @@ func TestUdevProbe(t *testing.T) {
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
-	fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockOsDiskDetails.Uid, metav1.GetOptions{})
+	// Retrieve disk resource
+	cdr1, err1 := fakeController.GetDisk(mockOsDiskDetails.Uid)
 	fakeDr, err := mockOsDiskToAPI()
 	if err != nil {
 		t.Fatal(err)

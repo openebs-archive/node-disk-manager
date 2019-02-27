@@ -53,7 +53,7 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 			continue
 		}
 		glog.Info("processed data for ", diskDetails.ProbeIdentifiers.Uuid)
-		oldDr := pe.Controller.GetExistingResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
+		oldDr := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
 		// if old DiskCR doesn't exist and parition is found, it is ignored since we don't need info
 		// of partition if disk as a whole is ignored
 		if oldDr == nil && len(diskDetails.PartitionData) != 0 {
@@ -93,7 +93,7 @@ func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
 	// entry related that disk not present in etcd in that case it
 	// again rescan full system and update etcd accordingly.
 	for _, diskDetails := range msg.Devices {
-		oldDr := pe.Controller.GetExistingResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
+		oldDr := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
 		if oldDr == nil {
 			mismatch = true
 			continue

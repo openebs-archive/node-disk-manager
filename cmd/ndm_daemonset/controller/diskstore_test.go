@@ -19,8 +19,7 @@ package controller
 import (
 	"testing"
 
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
-	ndmFakeClientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/fake"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -34,7 +33,7 @@ func mockEmptyDiskCr() apis.Disk {
 		Name:   fakeDiskUid,
 	}
 	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       NDMKind,
+		Kind:       NDMDiskKind,
 		APIVersion: NDMVersion,
 	}
 	fakeDr.ObjectMeta = fakeObjectMeta
@@ -45,7 +44,7 @@ func mockEmptyDiskCr() apis.Disk {
 }
 
 func TestCreateDisk(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
 		HostName:      fakeHostName,
@@ -53,29 +52,35 @@ func TestCreateDisk(t *testing.T) {
 		Clientset:     fakeNdmClient,
 	}
 
-	// create resource1
+	// Create disk resource dr1
 	dr1 := fakeDr
 	dr1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr1.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr1.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr1)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
 
-	// create resource which is already present it should update
+	// Retrieve disk resource
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+
+	// Create resource which is already present, it should update
 	dr2 := fakeDr
 	dr2.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr2.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr2.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr2)
-	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
 
-	// create resource2
+	// Retrieve disk resource
+	cdr2, err2 := fakeController.GetDisk(fakeDiskUid)
+
+	// Create disk resource dr3
 	dr3 := newFakeDr
 	dr3.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr3.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr3.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr3)
-	cdr3, err3 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(newFakeDiskUid, metav1.GetOptions{})
+
+	// Retrieve disk resource
+	cdr3, err3 := fakeController.GetDisk(newFakeDiskUid)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -96,14 +101,15 @@ func TestCreateDisk(t *testing.T) {
 }
 
 func TestUpdateDisk(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
 		HostName:      fakeHostName,
 		KubeClientset: fakeKubeClient,
 		Clientset:     fakeNdmClient,
 	}
-	// update a resource which is not present
+
+	// Update a resource which is not present
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
@@ -112,23 +118,30 @@ func TestUpdateDisk(t *testing.T) {
 	if err == nil {
 		t.Error("error should not be nil as the resource is not present")
 	}
-	// create one disk resource then update it.
-	fakeController.CreateDisk(dr)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
 
-	// update already created resource
+	// Create one disk resource and update it.
+	fakeController.CreateDisk(dr)
+
+	// Retrieve disk resource
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+
+	// Update already created resource
 	err = fakeController.UpdateDisk(dr, cdr1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
 
-	// pass nil value in old resource
+	// Retrieve disk resource
+	cdr2, err2 := fakeController.GetDisk(fakeDiskUid)
+
+	// Pass nil value in old resource
 	err = fakeController.UpdateDisk(dr, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	cdr3, err3 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
+
+	// Retrieve disk resource
+	cdr3, err3 := fakeController.GetDisk(fakeDiskUid)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -147,7 +160,9 @@ func TestUpdateDisk(t *testing.T) {
 		})
 	}
 
-	cdr, _ := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
+	// Retrieve disk resource
+	cdr, err := fakeController.GetDisk(fakeDiskUid)
+
 	dr.ObjectMeta.Name = "disk-updated-fake-uuid"
 	err = fakeController.UpdateDisk(dr, cdr)
 	if err == nil {
@@ -156,35 +171,42 @@ func TestUpdateDisk(t *testing.T) {
 }
 
 func TestDeactivateDisk(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
 		HostName:      fakeHostName,
 		KubeClientset: fakeKubeClient,
 		Clientset:     fakeNdmClient,
 	}
-	// create one resource and deactivate it.
+
+	// Create one resource and deactivate it.
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
 	fakeController.DeactivateDisk(dr)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
-	// deactivate one resource which is not present it should return error
+
+	// Retrieve disk resource
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+
+	// Deactivate one resource which is not present it should return error
 	dr1 := newFakeDr
 	dr1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr1.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr1.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.DeactivateDisk(dr1)
-	// create another resource and deactivate it.
+
+	// Create another resource and deactivate it.
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
 	fakeController.DeactivateDisk(newDr)
-	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(newFakeDiskUid, metav1.GetOptions{})
+
+	// Retrieve disk resource
+	cdr2, err2 := fakeController.GetDisk(newFakeDiskUid)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -205,31 +227,38 @@ func TestDeactivateDisk(t *testing.T) {
 }
 
 func TestDeleteDisk(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
 		HostName:      fakeHostName,
 		KubeClientset: fakeKubeClient,
 		Clientset:     fakeNdmClient,
 	}
-	// create one resource and delete it
+
+	// Create one resource and delete it
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
 	fakeController.DeleteDisk(fakeDiskUid)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
-	// delete one resource which is not present it should return error
+
+	// Retrieve disk resource
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+
+	// Delete one resource which is not present it should return error
 	fakeController.DeleteDisk("another-uuid")
-	// create another resource and delete it
+
+	// Create another resource and delete it
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
 	fakeController.DeleteDisk(newFakeDiskUid)
-	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(newFakeDiskUid, metav1.GetOptions{})
+
+	// Retrieve disk resource
+	cdr2, err2 := fakeController.GetDisk(fakeDiskUid)
 
 	tests := map[string]struct {
 		expectedError error
@@ -250,27 +279,35 @@ func TestDeleteDisk(t *testing.T) {
 }
 
 func TestListDiskResource(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
 		HostName:      fakeHostName,
 		KubeClientset: fakeKubeClient,
 		Clientset:     fakeNdmClient,
 	}
-	// create resource1
+
+	// Create disk resource dr
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
-	// create resource2
+
+	// We have created this device as part of fake.client creation
+	// so delete it here
+	fakeController.DeleteDisk("dummy-disk")
+
+	// Create disk resource newDr
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
 	listDevice, err := fakeController.ListDiskResource()
-	typeMeta := metav1.TypeMeta{}
+
+	// TypeMeta should be same
+	typeMeta := newFakeTypeMeta
 	listMeta := metav1.ListMeta{}
 	diskList := make([]apis.Disk, 0)
 	diskList = append(diskList, dr)
@@ -297,21 +334,23 @@ func TestListDiskResource(t *testing.T) {
 	}
 }
 
-func TestGetExistingResource(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+func TestGetExistingDiskResource(t *testing.T) {
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
 		HostName:      fakeHostName,
 		KubeClientset: fakeKubeClient,
 		Clientset:     fakeNdmClient,
 	}
-	// create resource1
+
+	// Create disk resource dr
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
-	// create resource2
+
+	// Create disk resource newDr
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
@@ -322,9 +361,9 @@ func TestGetExistingResource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cdr1 := fakeController.GetExistingResource(listDr, fakeDiskUid)
-	cdr2 := fakeController.GetExistingResource(listDr, newFakeDiskUid)
-	cdr3 := fakeController.GetExistingResource(listDr, "newFakeDiskUid")
+	cdr1 := fakeController.GetExistingDiskResource(listDr, fakeDiskUid)
+	cdr2 := fakeController.GetExistingDiskResource(listDr, newFakeDiskUid)
+	cdr3 := fakeController.GetExistingDiskResource(listDr, "newFakeDiskUid")
 	tests := map[string]struct {
 		actualDisk   *apis.Disk
 		expectedDisk *apis.Disk
@@ -341,12 +380,12 @@ func TestGetExistingResource(t *testing.T) {
 }
 
 /*
-	PushResource take 2 argument one is old disk resource and other is DiskInfo struct
-	if old disk resource is not present it creates one new resource if not then it
-	update that resource with updated DiskInfo
-*/
-func TestPushResource(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+ * PushResource take 2 argument one is old disk resource and other is
+ * DiskInfo struct if old disk resource is not present it creates one
+ * new resource if not then it update that resource with updated DiskInfo
+ */
+func TestPushDiskResource(t *testing.T) {
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
 		HostName:      fakeHostName,
@@ -359,19 +398,23 @@ func TestPushResource(t *testing.T) {
 	deviceDetails.ProbeIdentifiers.Uuid = fakeDiskUid
 	deviceDetails.DiskType = NDMDefaultDiskType
 
-	// create one fake Disk struct
+	// Create one fake Disk struct
 	fakeDr := mockEmptyDiskCr()
 	fakeDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	fakeDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 
-	// pass 1st argument as nil then it creates one disk resource
+	// Pass 1st argument as nil then it creates one disk resource
 	fakeController.PushDiskResource(nil, deviceDetails)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
 
-	// pass old disk resource as 1st argument then it updates resource
+	// Retrieve disk resource
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+
+	// Pass old disk resource as 1st argument then it updates resource
 	fakeController.PushDiskResource(cdr1, deviceDetails)
-	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
+
+	// Retrieve disk resource
+	cdr2, err2 := fakeController.GetDisk(fakeDiskUid)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -391,32 +434,40 @@ func TestPushResource(t *testing.T) {
 }
 
 func TestDeactivateStaleDiskResource(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
 		HostName:      fakeHostName,
 		KubeClientset: fakeKubeClient,
 		Clientset:     fakeNdmClient,
 	}
-	// create resource1
+
+	// Create disk resource dr
 	dr := fakeDr
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
-	// create resource2
+
+	// Create disk resource newDr
 	newDr := newFakeDr
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
-	//add one resource's uuid so state of the other resource should be inactive.
+
+	// Add one resource's uuid so state of the other resource should be inactive.
 	diskList := make([]string, 0)
 	diskList = append(diskList, newFakeDiskUid)
 	fakeController.DeactivateStaleDiskResource(diskList)
 	dr.Status.State = NDMInactive
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
-	cdr2, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(newFakeDiskUid, metav1.GetOptions{})
+
+	// Retrieve disk resource
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+
+	// Retrieve disk resource
+	cdr2, err2 := fakeController.GetDisk(newFakeDiskUid)
+
 	tests := map[string]struct {
 		actualDisk    apis.Disk
 		actualError   error
@@ -435,7 +486,7 @@ func TestDeactivateStaleDiskResource(t *testing.T) {
 }
 
 func TestMarkDiskStatusToUnknown(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &Controller{
 		HostName:      fakeHostName,
@@ -450,7 +501,10 @@ func TestMarkDiskStatusToUnknown(t *testing.T) {
 
 	fakeController.MarkDiskStatusToUnknown()
 	dr.Status.State = NDMUnknown
-	cdr, err := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(fakeDiskUid, metav1.GetOptions{})
+
+	// Retrieve disk resource
+	cdr, err := fakeController.GetDisk(fakeDiskUid)
+
 	tests := map[string]struct {
 		actualDisk    apis.Disk
 		actualError   error

@@ -17,7 +17,7 @@ limitations under the License.
 package controller
 
 import (
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	udev "github.com/openebs/node-disk-manager/pkg/udev"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -134,7 +134,7 @@ func (di *DiskInfo) getObjectMeta() metav1.ObjectMeta {
 // It is used to populate data of Disk struct which is a disk CR.
 func (di *DiskInfo) getTypeMeta() metav1.TypeMeta {
 	typeMeta := metav1.TypeMeta{
-		Kind:       NDMKind,
+		Kind:       NDMDiskKind,
 		APIVersion: NDMVersion,
 	}
 	return typeMeta
