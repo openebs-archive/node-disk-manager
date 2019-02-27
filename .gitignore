@@ -3,5 +3,5 @@ cscope*
 tags
 *.swp
 *.swo
-Dockerfile
+Dockerfile.ndm
 coverage.txt

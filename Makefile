@@ -6,7 +6,7 @@ BUILD_PATH_NDM=ndm_daemonset
 
 # Build the node-disk-manager image.
 
-build: clean vet fmt shellcheck ndm version docker
+build: clean vet fmt shellcheck ndm version docker_ndm
 
 NODE_DISK_MANAGER?=ndm
 BUILD_PATH_NDM?=ndm_daemonset
@@ -54,7 +54,7 @@ version:
 
 test: 	vet fmt
 	@echo "--> Running go test";
-	$(PWD)/hack/test.sh
+	$(PWD)/build/test.sh
 
 # Bootstrap the build by downloading additional tools
 bootstrap:
@@ -63,7 +63,7 @@ bootstrap:
 		go get -u $$tool; \
 	done
 
-Dockerfile: Dockerfile.in
+Dockerfile.ndm: ./build/ndm-daemonset/Dockerfile.in
 	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
 
 header:
@@ -76,9 +76,9 @@ integration-test:
 	go test -v github.com/openebs/node-disk-manager/integration_test
 
 ndm:
-	@echo '--> Building binary...'
+	@echo '--> Building node-disk-manager binary...'
 	@pwd
-	@CTLNAME=${NODE_DISK_MANAGER} BUILDPATH=${BUILD_PATH_NDM} sh -c "'$(PWD)/hack/build.sh'"
+	@CTLNAME=${NODE_DISK_MANAGER} BUILDPATH=${BUILD_PATH_NDM} sh -c "'$(PWD)/build/build.sh'"
 	@echo '--> Built binary.'
 	@echo
 
@@ -88,9 +88,9 @@ deps: header
 	@echo '--> Depedencies resolved.'
 	@echo
 
-docker: Dockerfile
-	@echo "--> Building docker image..."
-	@sudo docker build -t "$(IMAGE)" --build-arg ARCH=${ARCH} .
+docker_ndm: Dockerfile.ndm 
+	@echo "--> Building docker image for ndm-daemonset..."
+	@sudo docker build -t "$(IMAGE)" --build-arg ARCH=${ARCH} -f Dockerfile.ndm .
 	@echo "--> Build docker image: $(IMAGE)"
 	@echo
 
