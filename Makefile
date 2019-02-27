@@ -9,7 +9,6 @@ BUILD_PATH_NDM=ndm_daemonset
 BUILD_PATH_NDO=manager
 
 # Build the node-disk-manager image.
-
 build: clean vet fmt shellcheck version ndm docker_ndm ndo docker_ndo
 
 IMAGE_NDM?=ndm
@@ -70,9 +69,12 @@ bootstrap:
 	done
 
 Dockerfile.ndm: ./build/ndm-daemonset/Dockerfile.in
+<<<<<<< HEAD
 	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
 
 Dockerfile.ndo: ./build/ndm-operator/Dockerfile.in
+=======
+>>>>>>> 627f04b2e3eca529f202d8f4a230d6c43febfb63
 	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
 
 header:
@@ -86,6 +88,7 @@ integration-test:
 
 ndm:
 	@echo '--> Building node-disk-manager binary...'
+<<<<<<< HEAD
 	@pwd
 	@CTLNAME=${IMAGE_NDM} BUILDPATH=${BUILD_PATH_NDM} sh -c "'$(PWD)/build/build.sh'"
 	@echo '--> Built binary.'
@@ -100,6 +103,10 @@ ndo:
 	@echo '--> Building node-disk-operator binary...'
 	@pwd
 	@CTLNAME=${IMAGE_NDO} BUILDPATH=${BUILD_PATH_NDO} sh -c "'$(PWD)/build/build.sh'"
+=======
+	@pwd
+	@CTLNAME=${NODE_DISK_MANAGER} BUILDPATH=${BUILD_PATH_NDM} sh -c "'$(PWD)/build/build.sh'"
+>>>>>>> 627f04b2e3eca529f202d8f4a230d6c43febfb63
 	@echo '--> Built binary.'
 	@echo
 
@@ -109,9 +116,15 @@ deps: header
 	@echo '--> Depedencies resolved.'
 	@echo
 
+<<<<<<< HEAD
 docker_ndo: Dockerfile.ndo 
 	@echo "--> Building docker image for ndm-operator..."
 	@sudo docker build -t "$(IMAGE)" --build-arg ARCH=${ARCH} -f Dockerfile.ndo .
+=======
+docker_ndm: Dockerfile.ndm 
+	@echo "--> Building docker image for ndm-daemonset..."
+	@sudo docker build -t "$(IMAGE)" --build-arg ARCH=${ARCH} -f Dockerfile.ndm .
+>>>>>>> 627f04b2e3eca529f202d8f4a230d6c43febfb63
 	@echo "--> Build docker image: $(IMAGE)"
 	@echo
 
