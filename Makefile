@@ -72,9 +72,6 @@ header:
 	@echo "----------------------------"
 	@echo
 
-integration-test:
-	go test -v github.com/openebs/node-disk-manager/integration_test
-
 ndm:
 	@echo '--> Building node-disk-manager binary...'
 	@pwd
