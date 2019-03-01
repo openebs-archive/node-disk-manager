@@ -17,18 +17,21 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	"github.com/golang/glog"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // CreateDisk creates the Disk resource in etcd
 func (c *Controller) CreateDisk(dr apis.Disk) {
 	drCopy := dr.DeepCopy()
-	cdr, err := c.Clientset.OpenebsV1alpha1().Disks().Create(drCopy)
+	err := c.Clientset.Create(context.TODO(), drCopy)
 	if err == nil {
-		glog.Info("created disk object : ", cdr.ObjectMeta.Name)
+		glog.Info("Created disk object in etcd : ", drCopy.ObjectMeta.Name)
 		return
 	}
 	/*
@@ -37,7 +40,6 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	 * one node to another in a cluster. So here we just have to change the
 	 * ownership of this disk resource to the current node.
 	 */
-	glog.Info("create failed, trying to update the disk object : ", err)
 	err = c.UpdateDisk(dr, nil)
 	if err == nil {
 		return
@@ -60,20 +62,26 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 // UpdateDisk update the Disk resource in etcd
 func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 	drCopy := dr.DeepCopy()
+
 	if oldDr == nil {
+		oldDrCopy := dr.DeepCopy()
 		var err error
-		oldDr, err = c.Clientset.OpenebsV1alpha1().Disks().Get(drCopy.ObjectMeta.Name, metav1.GetOptions{})
+		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
+			Namespace: oldDrCopy.Namespace,
+			Name:      oldDrCopy.Name}, oldDrCopy)
 		if err != nil {
+			glog.Errorf("Unable to get disk object:%v, err:%v", oldDrCopy.ObjectMeta.Name, err)
 			return err
 		}
+		drCopy.ObjectMeta.ResourceVersion = oldDrCopy.ObjectMeta.ResourceVersion
 	}
-	drCopy.ObjectMeta.ResourceVersion = oldDr.ObjectMeta.ResourceVersion
-	udr, err := c.Clientset.OpenebsV1alpha1().Disks().Update(drCopy)
+
+	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
-		glog.Error("unable to update disk object : ", err)
+		glog.Errorf("Unable to update disk object:%v, err:%v", drCopy.ObjectMeta.Name, err)
 		return err
 	}
-	glog.Info("updated disk object : ", udr.ObjectMeta.Name)
+	glog.Infof("Updated disk object::%v successfully", drCopy.ObjectMeta.Name)
 	return nil
 }
 
@@ -81,37 +89,66 @@ func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 func (c *Controller) DeactivateDisk(dr apis.Disk) {
 	drCopy := dr.DeepCopy()
 	drCopy.Status.State = NDMInactive
-	udr, err := c.Clientset.OpenebsV1alpha1().Disks().Update(drCopy)
+	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
-		glog.Error("unable to deactivate disk object : ", err)
+		glog.Error("Unable to deactivate disk object : ", err)
 		return
 	}
-	glog.Info("deactivate the disk object : ", udr.ObjectMeta.Name)
+	glog.Info("deactivate the disk object : ", drCopy.ObjectMeta.Name)
+}
+
+// GetDisk get Disk resource from etcd
+func (c *Controller) GetDisk(name string) (*apis.Disk, error) {
+	dr := &apis.Disk{}
+	err := c.Clientset.Get(context.TODO(),
+		client.ObjectKey{Namespace: "", Name: name}, dr)
+
+	if err != nil {
+		glog.Error("Unable to get disk object : ", err)
+		return nil, err
+	}
+	glog.Info("Got disk object : ", name)
+	return dr, nil
 }
 
 // DeleteDisk delete the Disk resource from etcd
 func (c *Controller) DeleteDisk(name string) {
-	err := c.Clientset.OpenebsV1alpha1().Disks().Delete(name, &metav1.DeleteOptions{})
+	dr := &apis.Disk{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: make(map[string]string),
+			Name:   name,
+		},
+	}
+
+	err := c.Clientset.Delete(context.TODO(), dr)
 	if err != nil {
-		glog.Error("unable to delete disk object : ", err)
+		glog.Error("Unable to delete disk object : ", err)
 		return
 	}
-	glog.Info("deleted disk object : ", name)
+	glog.Info("Deleted disk object : ", name)
 }
 
 // ListDiskResource queries the etcd for the devices for the host/node
 // and returns list of disk resources.
 func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
-	label := NDMHostKey + "=" + c.HostName
-	label = label + "," + NDMManagedKey + "!=" + FalseString
-	filter := metav1.ListOptions{LabelSelector: label}
-	listDR, err := c.Clientset.OpenebsV1alpha1().Disks().List(filter)
+	listDR := &apis.DiskList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Disk",
+			APIVersion: "openebs.io/v1alpha1",
+		},
+	}
+
+	filter := NDMHostKey + "=" + c.HostName
+	filter = filter + "," + NDMManagedKey + "!=" + FalseString
+	opts := &client.ListOptions{}
+	opts.SetLabelSelector(filter)
+	err := c.Clientset.List(context.TODO(), opts, listDR)
 	return listDR, err
 }
 
-// GetExistingResource returns the existing disk resource if it is
+// GetExistingDiskResource returns the existing disk resource if it is
 // present in etcd if not it returns nil pointer.
-func (c *Controller) GetExistingResource(listDr *apis.DiskList, uuid string) *apis.Disk {
+func (c *Controller) GetExistingDiskResource(listDr *apis.DiskList, uuid string) *apis.Disk {
 	for _, item := range listDr.Items {
 		if uuid == item.ObjectMeta.Name {
 			return &item
@@ -163,8 +200,9 @@ func (c *Controller) MarkDiskStatusToUnknown() {
 	for _, item := range listDR.Items {
 		drCopy := item.DeepCopy()
 		drCopy.Status.State = NDMUnknown
-		if dr, err := c.Clientset.OpenebsV1alpha1().Disks().Update(drCopy); err == nil {
-			glog.Error("updated disk object : ", dr.ObjectMeta.Name)
+		err := c.Clientset.Update(context.TODO(), drCopy)
+		if err == nil {
+			glog.Error("updated disk object : ", drCopy.ObjectMeta.Name)
 		}
 	}
 }

@@ -27,21 +27,34 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/golang/glog"
-	clientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned"
+	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/signals"
+	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 const (
-	// NDMKind is the CR kind.
-	NDMKind = "Disk"
 	// FalseString contains string value of false
 	FalseString = "false"
 	// TrueString contains string value of true
 	TrueString = "true"
+	// NDMDiskKind is the Disk kind CR.
+	NDMDiskKind = "Disk"
+	// NDMDeviceKind is the Device kind CR.
+	NDMDeviceKind = "Device"
 	// NDMVersion is the CR version.
 	NDMVersion = "openebs.io/v1alpha1"
 	// NDMHostKey is host name label prefix.
 	NDMHostKey = "kubernetes.io/hostname"
+	// NDMFree is constant for free/available resource status.
+	NDMUnclaimed = "Unclaimed"
+	// NDMUsed is constant for in-use resource status.
+	NDMClaimed = "Claimed"
+	// NDMNotPartioned is used to say device does not have any partition.
+	NDMNotPartitioned = "No"
+	// NDMPartitioned is used to say device has some partitions.
+	NDMPartitioned = "Yes"
 	// NDMActive is constant for active resource status.
 	NDMActive = "Active"
 	// NDMInactive is constant for inactive resource status.
@@ -49,7 +62,8 @@ const (
 	// NDMUnknown is constant for resource unknown satus.
 	NDMUnknown = "Unknown"
 	// NDMDiskTypeKey specifies the type of disk.
-	NDMDiskTypeKey = "ndm.io/disk-type"
+	NDMDiskTypeKey   = "ndm.io/disk-type"
+	NDMDeviceTypeKey = "ndm.io/device-type"
 	// NDMUnmanagedDiskKey specifies disk cr should be managed by ndm or not.
 	NDMManagedKey = "ndm.io/managed"
 )
@@ -57,6 +71,8 @@ const (
 const (
 	// NDMDefaultDiskType will be used to initialize the disk type.
 	NDMDefaultDiskType = "disk"
+	// NDMDefaultDeviceType will be used to initialize the device type.
+	NDMDefaultDeviceType = "device"
 )
 
 const (
@@ -68,11 +84,12 @@ const (
 // Each probe can get the copy of controller struct any time they need to read the channel.
 var ControllerBroadcastChannel = make(chan *Controller)
 
-// Controller is the controller implementation for do resources
+// Controller is the controller implementation for disk resources
 type Controller struct {
-	HostName      string                 // HostName is host name in which disk is attached
-	KubeClientset kubernetes.Interface   // KubeClientset is standard kubernetes clientset
-	Clientset     clientset.Interface    // Clientset is clientset for our own API group
+	HostName      string               // HostName is host name in which disk is attached
+	KubeClientset kubernetes.Interface // KubeClientset is standard kubernetes clientset
+	mgr           manager.Manager
+	Clientset     client.Client
 	NDMConfig     *NodeDiskManagerConfig // NDMConfig contains custom config for ndm
 	Mutex         *sync.Mutex            // Mutex is used to lock and unlock Controller
 	Filters       []*Filter              // Filters are the registered filters like os disk filter
@@ -89,9 +106,9 @@ func NewController(kubeconfig string) (*Controller, error) {
 	if err := controller.setKubeClient(cfg); err != nil {
 		return nil, err
 	}
-	if err := controller.setClientSet(cfg); err != nil {
-		return nil, err
-	}
+	//if err := controller.setClientSet(cfg); err != nil {
+	//	return nil, err
+	//}
 	if err := controller.setNodeName(); err != nil {
 		return nil, err
 	}
@@ -100,9 +117,30 @@ func NewController(kubeconfig string) (*Controller, error) {
 	controller.Probes = make([]*Probe, 0)
 	controller.Mutex = &sync.Mutex{}
 
-	//Wait for Disk CRD to be loaded
-	controller.WaitForDiskCRD()
+	// Create a new Cmd to provide shared dependencies and start components
+	namespace, err := k8sutil.GetWatchNamespace()
+	if err != nil && namespace == "" {
+		namespace = "default"
+	} else if err != nil {
+		return controller, err
+	}
 
+	controller.mgr, err = manager.New(cfg, manager.Options{Namespace: namespace})
+	if err != nil {
+		return controller, err
+	}
+
+	// Setup Scheme for all resources
+	if err := apis.AddToScheme(controller.mgr.GetScheme()); err != nil {
+		return controller, err
+	}
+
+	controller.Clientset = controller.mgr.GetClient()
+	if err != nil {
+		return controller, err
+	}
+
+	controller.WaitForDiskCRD()
 	return controller, nil
 }
 
@@ -135,6 +173,7 @@ func (c *Controller) setKubeClient(cfg *rest.Config) error {
 	return nil
 }
 
+/*
 // setClientset set Clientset field in Controller struct
 // if it gets Clientiset from cfg else it returns error
 func (c *Controller) setClientSet(cfg *rest.Config) error {
@@ -144,7 +183,7 @@ func (c *Controller) setClientSet(cfg *rest.Config) error {
 	}
 	c.Clientset = crdClient
 	return nil
-}
+}*/
 
 // setNodeName set HostName field in Controller struct
 // if it gets from env else it returns error
@@ -203,6 +242,8 @@ func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
 	// Changing the state to unknown before shutting down. Similar as when one pod is
 	// running and you stopped kubelet it will make pod status unknown.
 	c.MarkDiskStatusToUnknown()
+	//TODO: To be called when Device CR will be implemented
+	//c.MarkDeviceStatusToUnknown()
 	glog.Info("shutting down the controller")
 	return nil
 }

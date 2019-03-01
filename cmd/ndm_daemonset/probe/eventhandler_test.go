@@ -17,16 +17,20 @@ limitations under the License.
 package probe
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
-	ndmFakeClientset "github.com/openebs/node-disk-manager/pkg/client/clientset/versioned/fake"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	ndmFakeClientset "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 var (
@@ -47,7 +51,7 @@ func mockEmptyDiskCr() apis.Disk {
 		Name:   mockuid,
 	}
 	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       controller.NDMKind,
+		Kind:       controller.NDMDiskKind,
 		APIVersion: controller.NDMVersion,
 	}
 	fakeDr.ObjectMeta = fakeObjectMeta
@@ -55,6 +59,49 @@ func mockEmptyDiskCr() apis.Disk {
 	fakeDr.Status.State = controller.NDMActive
 	fakeDr.Spec.DevLinks = make([]apis.DiskDevLink, 0)
 	return fakeDr
+}
+
+func CreateFakeClient(t *testing.T) client.Client {
+	diskR := &apis.Disk{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: make(map[string]string),
+			Name:   "dummy-disk",
+		},
+	}
+
+	diskList := &apis.DiskList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Disk",
+			APIVersion: "",
+		},
+	}
+
+	deviceR := &apis.Device{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: make(map[string]string),
+			Name:   "dummy-device",
+		},
+	}
+
+	deviceList := &apis.DeviceList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Device",
+			APIVersion: "",
+		},
+	}
+
+	objs := []runtime.Object{diskR}
+	s := scheme.Scheme
+	s.AddKnownTypes(apis.SchemeGroupVersion, diskR)
+	s.AddKnownTypes(apis.SchemeGroupVersion, diskList)
+	s.AddKnownTypes(apis.SchemeGroupVersion, deviceR)
+	s.AddKnownTypes(apis.SchemeGroupVersion, deviceList)
+
+	fakeNdmClient := ndmFakeClientset.NewFakeClient(objs...)
+	if fakeNdmClient == nil {
+		fmt.Println("NDMClient is not created")
+	}
+	return fakeNdmClient
 }
 
 type fakeFilter struct{}
@@ -70,7 +117,7 @@ func (nf *fakeFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
 }
 
 func TestAddDiskEvent(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	fakeController := &controller.Controller{
 		HostName:      fakeHostName,
@@ -115,9 +162,12 @@ func TestAddDiskEvent(t *testing.T) {
 		Devices: eventmsg,
 	}
 	probeEvent.addDiskEvent(eventDetails)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
-	_, err2 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(ignoreDiskUuid, metav1.GetOptions{})
-	if err2 == nil {
+	// Retrieve disk resource
+	cdr1, err1 := fakeController.GetDisk(mockuid)
+
+	// Retrieve disk resource
+	cdr2, _ := fakeController.GetDisk(ignoreDiskUuid)
+	if cdr2 != nil {
 		t.Error("resource with ignoreDiskUuid should not be present in etcd")
 	}
 	// Create one fake disk resource
@@ -146,7 +196,7 @@ func TestAddDiskEvent(t *testing.T) {
 }
 
 func TestDeleteDiskEvent(t *testing.T) {
-	fakeNdmClient := ndmFakeClientset.NewSimpleClientset()
+	fakeNdmClient := CreateFakeClient(t)
 	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
 	mutex := &sync.Mutex{}
@@ -176,7 +226,10 @@ func TestDeleteDiskEvent(t *testing.T) {
 		Devices: eventmsg,
 	}
 	probeEvent.deleteDiskEvent(eventDetails)
-	cdr1, err1 := fakeController.Clientset.OpenebsV1alpha1().Disks().Get(mockuid, metav1.GetOptions{})
+
+	// Retrieve disk resource
+	cdr1, err1 := fakeController.GetDisk(mockuid)
+
 	fakeDr.Status.State = controller.NDMInactive
 	tests := map[string]struct {
 		actualDisk    apis.Disk

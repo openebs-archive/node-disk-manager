@@ -19,7 +19,7 @@ package controller
 import (
 	"testing"
 
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs.io/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -112,7 +112,7 @@ and get TypeMeta value from getTypeMeta() and compare them
 func TestGetTypeMeta(t *testing.T) {
 	fakeDiskInfo := NewDiskInfo()
 	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       NDMKind,
+		Kind:       NDMDiskKind,
 		APIVersion: NDMVersion,
 	}
 
@@ -248,7 +248,7 @@ func TestToDisk(t *testing.T) {
 	// Creating one Disk struct using mock value
 	expectedDisk := apis.Disk{}
 	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       NDMKind,
+		Kind:       NDMDiskKind,
 		APIVersion: NDMVersion,
 	}
 	expectedDisk.TypeMeta = fakeTypeMeta

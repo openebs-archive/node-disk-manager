@@ -1,15 +1,20 @@
 # Specify the name for the binaries
 NODE_DISK_MANAGER=ndm
+NODE_DISK_OPERATOR=ndo
 
 # env for specifying that we want to build ndm daemonset
 BUILD_PATH_NDM=ndm_daemonset
 
-# Build the node-disk-manager image.
+# env for specifying that we want to build node-disk-operator
+BUILD_PATH_NDO=manager
 
-build: clean vet fmt shellcheck ndm version docker_ndm
+# Build the node-disk-manager image.
+build: clean vet fmt shellcheck version ndm docker_ndm ndo docker_ndo
 
 NODE_DISK_MANAGER?=ndm
+NODE_DISK_OPERATOR?=ndo
 BUILD_PATH_NDM?=ndm_daemonset
+BUILD_PATH_NDO?=manager
 
 # Determine the arch/os
 XC_OS?= $(shell go env GOOS)
@@ -20,7 +25,8 @@ ARCH:=${XC_OS}_${XC_ARCH}
 VERSION:=$(shell git describe --tags --always)
 
 # IMAGE is the image name of the node-disk-manager docker image.
-IMAGE:=openebs/node-disk-manager-${XC_ARCH}:ci
+DOCKER_IMAGE_NDM:=openebs/node-disk-manager-${XC_ARCH}:ci
+DOCKER_IMAGE_NDO:=openebs/node-disk-operator-${XC_ARCH}:ci
 
 # The ubuntu:16.04 image is being used as base image.
 BASEIMAGE:=ubuntu:16.04
@@ -66,11 +72,17 @@ bootstrap:
 Dockerfile.ndm: ./build/ndm-daemonset/Dockerfile.in
 	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
 
+Dockerfile.ndo: ./build/ndm-operator/Dockerfile.in
+	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
+
 header:
 	@echo "----------------------------"
 	@echo "--> node-disk-manager       "
 	@echo "----------------------------"
 	@echo
+
+integration-test:
+	go test -v github.com/openebs/node-disk-manager/integration_test
 
 ndm:
 	@echo '--> Building node-disk-manager binary...'
@@ -79,23 +91,35 @@ ndm:
 	@echo '--> Built binary.'
 	@echo
 
+docker_ndm: Dockerfile.ndm 
+	@echo "--> Building docker image for ndm-daemonset..."
+	@sudo docker build -t "$(DOCKER_IMAGE_NDM)" --build-arg ARCH=${ARCH} -f Dockerfile.ndm .
+	@echo "--> Build docker image: $(DOCKER_IMAGE_NDM)"
+	@echo
+ndo:
+	@echo '--> Building node-disk-operator binary...'
+	@pwd
+	@CTLNAME=${NODE_DISK_OPERATOR} BUILDPATH=${BUILD_PATH_NDO} sh -c "'$(PWD)/build/build.sh'"
+	@echo '--> Built binary.'
+	@echo
+
+docker_ndo: Dockerfile.ndo 
+	@echo "--> Building docker image for ndm-operator..."
+	@sudo docker build -t "$(DOCKER_IMAGE_NDO)" --build-arg ARCH=${ARCH} -f Dockerfile.ndo .
+	@echo "--> Build docker image: $(DOCKER_IMAGE_NDO)"
+	@echo
+
 deps: header
 	@echo '--> Resolving dependencies...'
 	dep ensure
 	@echo '--> Depedencies resolved.'
 	@echo
 
-docker_ndm: Dockerfile.ndm 
-	@echo "--> Building docker image for ndm-daemonset..."
-	@sudo docker build -t "$(IMAGE)" --build-arg ARCH=${ARCH} -f Dockerfile.ndm .
-	@echo "--> Build docker image: $(IMAGE)"
-	@echo
-
-
 clean: header
 	@echo '--> Cleaning directory...'
 	rm -rf bin
 	rm -rf ${GOPATH}/bin/${NODE_DISK_MANAGER}
+	rm -rf ${GOPATH}/bin/${NODE_DISK_OPERATOR}
 	rm -rf ${GOPATH}/pkg/*
 	@echo '--> Done cleaning.'
 	@echo
