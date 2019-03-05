@@ -76,3 +76,32 @@ func TestMatchIgnoredCase(t *testing.T) {
 		})
 	}
 }
+
+func TestMatchRegex(t *testing.T) {
+	tests := map[string]struct {
+		regex    string
+		str      string
+		expected bool
+	}{
+		"string matches without the need of regex portion": {
+			regex:    "/dev/sda(([0-9]*|p[0-9]+))$",
+			str:      "/dev/sda",
+			expected: true,
+		},
+		"string matches with regex": {
+			regex:    "/dev/sda(([0-9]*|p[0-9]+))$",
+			str:      "/dev/sda1",
+			expected: true,
+		},
+		"string does not match the regex": {
+			regex:    "/dev/sda(([0-9]*|p[0-9]+))$",
+			str:      "/dev/sdaa",
+			expected: false,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expected, MatchRegex(test.regex, test.str))
+		})
+	}
+}
