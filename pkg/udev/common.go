@@ -32,7 +32,8 @@ import (
 )
 
 const (
-	NDMPrefix           = "disk-"              // NDMPrefix used as disk's uuid prefix
+	NDMDiskPrefix       = "disk-"              // NDMPrefix used as disk's uuid prefix
+	NDMDevicePrefix     = "device-"            // NDMdevicePrefix used as device's uuid prefix
 	UDEV_SUBSYSTEM      = "block"              // udev to filter this device type
 	UDEV_SYSTEM         = "disk"               // used to filter devices other than disk which udev tracks (eg. CD ROM)
 	UDEV_PARTITION      = "partition"          // used to filter out partitions
@@ -126,7 +127,7 @@ func (device *UdevDevice) GetUid() string {
 		uid += host + device.GetPropertyValue(UDEV_DEVNAME)
 	}
 
-	return NDMPrefix + util.Hash(uid)
+	return NDMDiskPrefix + util.Hash(uid)
 }
 
 // IsDisk returns true if device is a disk

@@ -1,0 +1,7 @@
+apiVersion: openebs.io/v1alpha1
+kind: Device
+metadata:
+  name: example-device
+spec:
+  # Add fields here
+  size: 3

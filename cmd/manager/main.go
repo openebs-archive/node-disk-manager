@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/openebs/node-disk-manager/pkg/apis"
+	"github.com/openebs/node-disk-manager/pkg/common"
 	"github.com/openebs/node-disk-manager/pkg/controller"
+	"github.com/openebs/node-disk-manager/pkg/httpserver/ndo"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/ready"
@@ -20,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 )
 
-var log = logf.Log.WithName("cmd")
+var log = logf.Log.WithName("ndm-operator cmd")
 
 func printVersion() {
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
@@ -63,8 +66,10 @@ func main() {
 	}
 	defer r.Unset()
 
+	//Reconciliation would be triggered with 5 second interval
+	recon_interval := time.Duration(5 * time.Second)
 	// Create a new Cmd to provide shared dependencies and start components
-	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace})
+	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &recon_interval})
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
@@ -84,7 +89,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Info("Starting the Cmd.")
+	log.Info("Starting the ndm-operator cmd.")
+	// Init NodeMap which would be used for Node Liveness check
+	common.InitNodeMap()
+	ndo.StartHttpServer()
 
 	// Start the Cmd
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {

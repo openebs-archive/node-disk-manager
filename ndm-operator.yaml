@@ -61,8 +61,38 @@ metadata:
   name: openebs-ndm-operator
 rules:
 - apiGroups: ["*"]
-  resources: ["disks"]
-  verbs: ["*"]
+  resources: ["disks", "devices", "devicerequests", "pods", "services", "endpoints", "persistentvolumeclaims", "events", "configmaps", "secrets"]
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - '*'
+- apiGroups:
+  - openebs.io
+  resources:
+  - '*'
+  - devices
+  - devicerequests
+  verbs:
+  - '*'
 ---
 # Bind the Service Account with the Role Privileges.
 # TODO: Check if default account also needs to be there
@@ -86,24 +116,46 @@ roleRef:
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  # name must match the spec fields below, and be in the form: <plural>.<group>
   name: disks.openebs.io
 spec:
-  # group name to use for REST API: /apis/<group>/<version>
   group: openebs.io
-  # version name to use for REST API: /apis/<group>/<version>
-  version: v1alpha1
-  scope: Cluster
   names:
-    # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-    plural: disks
-    # singular name to be used as an alias on the CLI and for display
-    singular: disk
-    # kind is normally the CamelCased singular type. Your resource manifests use this.
     kind: Disk
-    # shortNames allow shorter string to match your resource on the CLI
+    listKind: DiskList
+    plural: disks
+    singular: disk
     shortNames:
     - disk
+  version: v1alpha1
+  scope: Cluster
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: devices.openebs.io
+spec:
+  group: openebs.io
+  names:
+    kind: Device
+    listKind: DeviceList
+    plural: devices
+    singular: device
+  scope: Cluster
+  version: v1alpha1
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: devicerequests.openebs.io
+spec:
+  group: openebs.io
+  names:
+    kind: DeviceRequest
+    listKind: DeviceRequestList
+    plural: devicerequests
+    singular: devicerequest
+  scope: Cluster 
+  version: v1alpha1
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
@@ -112,10 +164,13 @@ metadata:
 spec:
   updateStrategy:
     type: RollingUpdate
+  selector:
+    matchLabels:
+      name: node-disk-manager
   template:
     metadata:
       labels:
-        app: node-disk-manager
+        name: node-disk-manager
     spec:
       # By default the node-disk-manager will be run on all kubernetes nodes
       # If you would like to limit this to only some nodes, say the nodes
@@ -127,10 +182,12 @@ spec:
       # Use host network as container network to monitor udev source using netlink
       # to detect disk attach and detach events using fd.
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
-        image: openebs/node-disk-manager-amd64:ci
+        image: satbirchhikara/ndm:test1
+        #openebs/node-disk-manager-amd64:ci
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
@@ -162,6 +219,8 @@ spec:
         # Specify the number of sparse files to be created
         - name: SPARSE_FILE_COUNT
           value: "1"
+        - name: NDO_OPERATOR_SERVICE_IP
+          value: node-disk-operator-service
       volumes:
       - name: config
         configMap:
@@ -178,3 +237,63 @@ spec:
       - name: sparsepath
         hostPath:
           path: /var/openebs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-disk-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: node-disk-operator
+  template:
+    metadata:
+      labels:
+        name: node-disk-operator
+    spec:
+      serviceAccountName: openebs-ndm-operator
+      containers:
+        - name: node-disk-operator
+          # Replace this with the built image name
+          image: satbirchhikara/ndm-operator:test1
+          #openebs/node-disk-operator-amd64:ci
+          ports:
+          - containerPort: 8080
+            name: liveness
+          command:
+          - ndo
+          imagePullPolicy: Always
+          readinessProbe:
+            exec:
+              command:
+                - stat
+                - /tmp/operator-sdk-ready
+            initialDelaySeconds: 4
+            periodSeconds: 10
+            failureThreshold: 1
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "node-disk-operator"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-disk-operator-service
+  namespace: default
+spec:
+  ports:
+  - name: api
+    port: 8080
+    targetPort: 8080
+  selector:
+    name: node-disk-operator
+  sessionAffinity: None

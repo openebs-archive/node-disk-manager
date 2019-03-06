@@ -33,6 +33,9 @@ const (
 	newFakeDiskUid  = "new-fake-disk-uid"
 	fakeHostName    = "fake-host-name"
 	newFakeHostName = "new-fake-host-name"
+
+	fakeDeviceUid    = "fake-device-uid"
+	newFakeDeviceUid = "new-fake-device-uid"
 )
 
 var (
@@ -112,6 +115,95 @@ var (
 		ObjectMeta: newFakeObjectMeta,
 		Spec:       newFakeObj,
 		Status:     newFakeDiskStatus,
+	}
+
+	// mock data for device
+	fakeDeviceCapacity = apis.DeviceCapacity{
+		Storage: 100000,
+	}
+
+	fakeDeviceDetails = apis.DeviceDetails{
+		Model:  "disk-fake-model",
+		Serial: "disk-fake-serial",
+		Vendor: "disk-fake-vendor",
+	}
+
+	fakeDeviceObj = apis.DeviceSpec{
+		Path:        "dev/disk-fake-path",
+		Capacity:    fakeDeviceCapacity,
+		Details:     fakeDeviceDetails,
+		DevLinks:    make([]apis.DeviceDevLink, 0),
+		Partitioned: NDMNotPartitioned,
+	}
+
+	fakeDeviceTypeMeta = metav1.TypeMeta{
+		Kind:       NDMDeviceKind,
+		APIVersion: NDMVersion,
+	}
+
+	fakeDeviceObjectMeta = metav1.ObjectMeta{
+		Labels: make(map[string]string),
+		Name:   fakeDeviceUid,
+	}
+
+	fakeDeviceClaimState = apis.DeviceClaimState{
+		State: NDMUnclaimed,
+	}
+
+	fakeDeviceStatus = apis.DeviceStatus{
+		State: NDMActive,
+	}
+
+	fakeDevice = apis.Device{
+		TypeMeta:   fakeDeviceTypeMeta,
+		ObjectMeta: fakeDeviceObjectMeta,
+		Spec:       fakeDeviceObj,
+		ClaimState: fakeDeviceClaimState,
+		Status:     fakeDeviceStatus,
+	}
+
+	// mock data for device
+	newFakeDeviceCapacity = apis.DeviceCapacity{
+		Storage: 200000,
+	}
+
+	newFakeDeviceDetails = apis.DeviceDetails{
+		Model:  "disk-fake-model-new",
+		Serial: "disk-fake-serial-new",
+		Vendor: "disk-fake-vendor-new",
+	}
+
+	newFakeDeviceObj = apis.DeviceSpec{
+		Path:     "dev/disk-fake-path-new",
+		Capacity: newFakeDeviceCapacity,
+		Details:  newFakeDeviceDetails,
+		DevLinks: make([]apis.DeviceDevLink, 0),
+	}
+
+	newFakeDeviceTypeMeta = metav1.TypeMeta{
+		Kind:       NDMDeviceKind,
+		APIVersion: NDMVersion,
+	}
+
+	newFakeDeviceObjectMeta = metav1.ObjectMeta{
+		Labels: make(map[string]string),
+		Name:   newFakeDeviceUid,
+	}
+
+	newFakeDeviceClaimState = apis.DeviceClaimState{
+		State: NDMUnclaimed,
+	}
+
+	newFakeDeviceStatus = apis.DeviceStatus{
+		State: NDMActive,
+	}
+
+	newFakeDevice = apis.Device{
+		TypeMeta:   newFakeDeviceTypeMeta,
+		ObjectMeta: newFakeDeviceObjectMeta,
+		Spec:       newFakeDeviceObj,
+		ClaimState: newFakeDeviceClaimState,
+		Status:     newFakeDeviceStatus,
 	}
 )
 
