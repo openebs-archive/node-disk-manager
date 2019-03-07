@@ -20,13 +20,11 @@ import (
 	goflag "flag"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/filter"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/probe"
-	"github.com/openebs/node-disk-manager/pkg/metrics"
-	"github.com/openebs/node-disk-manager/pkg/server"
+	"github.com/openebs/node-disk-manager/pkg/httpserver/ndm"
 	"github.com/spf13/cobra"
 )
 
@@ -56,13 +54,16 @@ func NewCmdStart() *cobra.Command {
 			filter.Start(filter.RegisteredFilters)
 			// Start starts registering of probes present in RegisteredProbes
 			probe.Start(probe.RegisteredProbes)
-			port := cmd.Flag("port").Value.String()
-			server.ListenPort = port
-			endpointpath := cmd.Flag("metricspath").Value.String()
-			server.MetricsPath = endpointpath
-			metrics.StartingTime = time.Now()
-			// Start HTTP server for /metrics endpoint
-			go server.StartHttpServer()
+			/*
+				port := cmd.Flag("port").Value.String()
+				server.ListenPort = port
+				endpointpath := cmd.Flag("metricspath").Value.String()
+				server.MetricsPath = endpointpath
+				metrics.StartingTime = time.Now()
+				// Start HTTP server for /metrics endpoint
+				httpserver.StartHttpServer()
+			*/
+			ndm.StartHttpServer()
 			ctrl.Start()
 		},
 	}

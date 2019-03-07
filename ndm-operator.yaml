@@ -186,8 +186,7 @@ spec:
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
-        image: satbirchhikara/ndm:test1
-        #openebs/node-disk-manager-amd64:ci
+        image: openebs/node-disk-manager-amd64:ci
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
@@ -256,8 +255,7 @@ spec:
       containers:
         - name: node-disk-operator
           # Replace this with the built image name
-          image: satbirchhikara/ndm-operator:test1
-          #openebs/node-disk-operator-amd64:ci
+          image: openebs/node-disk-operator-amd64:ci
           ports:
           - containerPort: 8080
             name: liveness

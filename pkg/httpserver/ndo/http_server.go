@@ -2,7 +2,7 @@ package ndo
 
 import (
 	"encoding/json"
-	//"fmt"
+	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/common"
 	"github.com/openebs/node-disk-manager/pkg/httpserver"
 	"net/http"
@@ -14,6 +14,7 @@ func StartHttpServer() {
 	http.HandleFunc("/liveness", livenessHandler)
 
 	go func() {
+		glog.Info("NDO Start http server at port:8080")
 		err := http.ListenAndServe(":8080", nil)
 
 		if err != nil {
@@ -28,5 +29,6 @@ func livenessHandler(w http.ResponseWriter, r *http.Request) {
 	var resp httpserver.Response
 
 	json.NewDecoder(r.Body).Decode(&resp)
+	glog.Info("Got Hostname:", resp.Hostname)
 	common.UpdateNodeLivenessTimeStamp(resp.Hostname, time.Now())
 }

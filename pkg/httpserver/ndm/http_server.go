@@ -23,13 +23,14 @@ func StartHttpServer() {
 	}()
 
 	go func() {
+		svc_ip := os.Getenv("NDO_OPERATOR_SERVICE_IP")
+		if len(svc_ip) == 0 {
+			glog.Error("Serivce IP not found")
+		}
+		glog.Info("NDM Start, posting liveness update at serviceIP:", svc_ip)
+
 		ticker := time.NewTicker(5 * time.Second)
 		for {
-			svc_ip := os.Getenv("NDO_OPERATOR_SERVICE_IP")
-			if len(svc_ip) == 0 {
-				glog.Error("Serivce IP not found")
-			}
-
 			select {
 			case <-ticker.C:
 				resp, err := createResponse()
