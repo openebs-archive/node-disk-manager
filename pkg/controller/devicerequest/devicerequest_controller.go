@@ -26,7 +26,7 @@ import (
 var log = logf.Log.WithName("controller_devicerequest")
 
 const (
-	FinalizerName = "deviceclaim.finalizer"
+	FinalizerName = "devicerequest.finalizer"
 )
 
 /**

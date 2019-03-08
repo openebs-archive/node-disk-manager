@@ -29,6 +29,7 @@ import (
 
 // API to creates the Device resource in etcd
 // This API will be called for each new addDiskEvent
+// dvr is DeviceResource-CR
 func (c *Controller) CreateDevice(dvr apis.Device) {
 
 	dvrCopy := dvr.DeepCopy()
