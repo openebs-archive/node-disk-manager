@@ -8,6 +8,9 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+
 // DeviceSpec defines the desired state of Device
 type DeviceSpec struct {
 	Path        string          `json:"path"`        //Path contain devpath (e.g. /dev/sdb)

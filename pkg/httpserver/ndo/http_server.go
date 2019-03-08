@@ -3,8 +3,8 @@ package ndo
 import (
 	"encoding/json"
 	"github.com/golang/glog"
-	"github.com/openebs/node-disk-manager/pkg/common"
 	"github.com/openebs/node-disk-manager/pkg/httpserver"
+	"github.com/openebs/node-disk-manager/pkg/liveness"
 	"net/http"
 	"time"
 )
@@ -30,5 +30,5 @@ func livenessHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&resp)
 	glog.Info("Got Hostname:", resp.Hostname)
-	common.UpdateNodeLivenessTimeStamp(resp.Hostname, time.Now())
+	liveness.UpdateNodeLivenessTimeStamp(resp.Hostname, time.Now())
 }

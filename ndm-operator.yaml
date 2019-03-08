@@ -61,28 +61,7 @@ metadata:
   name: openebs-ndm-operator
 rules:
 - apiGroups: ["*"]
-  resources: ["disks", "devices", "devicerequests", "pods", "services", "endpoints", "persistentvolumeclaims", "events", "configmaps", "secrets"]
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
-  - namespaces
-  verbs:
-  - get
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  - daemonsets
-  - replicasets
-  - statefulsets
-  verbs:
-  - '*'
-- apiGroups:
-  - monitoring.coreos.com
-  resources:
-  - servicemonitors
+  resources: ["disks", "devices", "devicerequests", "pods", "services", "endpoints", "events", "configmaps", "secrets"]
   verbs:
   - '*'
 - apiGroups:

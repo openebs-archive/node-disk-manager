@@ -54,15 +54,6 @@ func NewCmdStart() *cobra.Command {
 			filter.Start(filter.RegisteredFilters)
 			// Start starts registering of probes present in RegisteredProbes
 			probe.Start(probe.RegisteredProbes)
-			/*
-				port := cmd.Flag("port").Value.String()
-				server.ListenPort = port
-				endpointpath := cmd.Flag("metricspath").Value.String()
-				server.MetricsPath = endpointpath
-				metrics.StartingTime = time.Now()
-				// Start HTTP server for /metrics endpoint
-				httpserver.StartHttpServer()
-			*/
 			ndm.StartHttpServer()
 			ctrl.Start()
 		},

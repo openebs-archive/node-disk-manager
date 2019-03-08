@@ -20,7 +20,7 @@ import (
 
 	//"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"github.com/go-logr/logr"
-	"github.com/openebs/node-disk-manager/pkg/common"
+	"github.com/openebs/node-disk-manager/pkg/liveness"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -150,9 +150,9 @@ func (r *ReconcileDisk) FindInactiveNodesMarkDiskInactive(reqLogger logr.Logger)
 		initialNodeCheckDone = true
 		// Check if any of node is inactive/stale by looking into NodeLiveInfo map
 		// which is update after an interval by Node-Disk-Manager Daemonset
-		StaleNodeList = common.FindInactiveNodes(nodeExpiryTimeInterval, nodeList)
+		StaleNodeList = liveness.FindInactiveNodes(nodeExpiryTimeInterval, nodeList)
 	} else {
-		StaleNodeList = common.FindInactiveNodes(nodeExpiryTimeInterval, nil)
+		StaleNodeList = liveness.FindInactiveNodes(nodeExpiryTimeInterval, nil)
 	}
 
 	if len(StaleNodeList) == 0 {

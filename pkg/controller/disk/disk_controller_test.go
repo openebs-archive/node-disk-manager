@@ -10,7 +10,7 @@ import (
 
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	hmap "github.com/openebs/node-disk-manager/pkg/common"
+	liveness "github.com/openebs/node-disk-manager/pkg/liveness"
 	//appsv1 "k8s.io/api/apps/v1"
 	//corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,7 +37,7 @@ func TestDiskController(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
 
 	//Init hashMap which keep track of node heart beat
-	hmap.InitNodeMap()
+	liveness.InitNodeMap()
 
 	//For test case set these values to smaller intervals
 	nodeLivenessCheckInterval = time.Duration(1 * time.Second)
@@ -72,7 +72,7 @@ func TestDiskController(t *testing.T) {
 	}
 
 	//Update heart beat for fakeHostName in map
-	hmap.UpdateNodeLivenessTimeStamp(fakeHostName, time.Now())
+	liveness.UpdateNodeLivenessTimeStamp(fakeHostName, time.Now())
 	res, err := r.Reconcile(req)
 	if err != nil {
 		t.Fatalf("reconcile: (%v)", err)

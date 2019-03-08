@@ -96,16 +96,16 @@ func (r *ReconcileDeviceRequest) Reconcile(request reconcile.Request) (reconcile
 	}
 
 	// New deviceRequest if Phase is NULL
-	if instance.Status.Phase == openebsv1alpha1.DeviceClaimStatusEmpty {
+	if instance.Status.Phase == openebsv1alpha1.DeviceRequestStatusEmpty {
 		err := r.claimDeviceForDeviceRequestCR(instance, reqLogger)
 		if err != nil {
 			//reqLogger.Error(err, "DeviceRequest failed:", instance.ObjectMeta.Name)
 			return reconcile.Result{}, err
 		}
-	} else if instance.Status.Phase == openebsv1alpha1.DeviceClaimStatusPending {
+	} else if instance.Status.Phase == openebsv1alpha1.DeviceRequestStatusPending {
 
-	} else if (instance.Status.Phase == openebsv1alpha1.DeviceClaimStatusDone) ||
-		(instance.Status.Phase == openebsv1alpha1.DeviceClaimStatusInvalidCapacity) {
+	} else if (instance.Status.Phase == openebsv1alpha1.DeviceRequestStatusDone) ||
+		(instance.Status.Phase == openebsv1alpha1.DeviceRequestStatusInvalidCapacity) {
 
 		reqLogger.Info("In process of deleting deviceRequest")
 		err := r.FinalizerHandling(instance, reqLogger)
@@ -128,7 +128,7 @@ func (r *ReconcileDeviceRequest) isValidCapacityRequested(instance *openebsv1alp
 
 		//Update deviceRequest CR with error string
 		instance_cpy := instance.DeepCopy()
-		instance_cpy.Status.Phase = openebsv1alpha1.DeviceClaimStatusInvalidCapacity
+		instance_cpy.Status.Phase = openebsv1alpha1.DeviceRequestStatusInvalidCapacity
 
 		err := r.client.Delete(context.TODO(), instance_cpy)
 		if err != nil {
@@ -180,7 +180,7 @@ func (r *ReconcileDeviceRequest) claimDeviceCR(instance *openebsv1alpha1.DeviceR
 	var driveTypeSpecified bool = false
 
 	// Check if request is for SSD or HDD
-	length := len(instance.Spec.DriveType)
+	length := len(instance.Spec.DeviceType)
 	if length != 0 {
 		reqLogger.Info("DriveType specified in DeviceRequest CR")
 		driveTypeSpecified = true
@@ -196,7 +196,7 @@ func (r *ReconcileDeviceRequest) claimDeviceCR(instance *openebsv1alpha1.DeviceR
 			(item.Spec.Capacity.Storage >= instance.Spec.Capacity) {
 
 			if driveTypeSpecified == true {
-				if strings.Compare(item.Spec.Details.DeviceType, instance.Spec.DriveType) != 0 {
+				if strings.Compare(item.Spec.Details.DeviceType, instance.Spec.DeviceType) != 0 {
 					continue
 				}
 			}
@@ -251,7 +251,7 @@ func (r *ReconcileDeviceRequest) claimDeviceForDeviceRequestCR(
 	// Update DeviceRequest CR to show that "claim is done" also set
 	// finalizer string on instance
 	instance_cpy := instance.DeepCopy()
-	instance_cpy.Status.Phase = openebsv1alpha1.DeviceClaimStatusDone
+	instance_cpy.Status.Phase = openebsv1alpha1.DeviceRequestStatusDone
 	instance_cpy.ObjectMeta.Finalizers = append(instance_cpy.ObjectMeta.Finalizers, FinalizerName)
 	err = r.client.Update(context.TODO(), instance_cpy)
 	if err != nil {

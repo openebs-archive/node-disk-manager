@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/openebs/node-disk-manager/pkg/apis"
-	"github.com/openebs/node-disk-manager/pkg/common"
 	"github.com/openebs/node-disk-manager/pkg/controller"
 	"github.com/openebs/node-disk-manager/pkg/httpserver/ndo"
+	"github.com/openebs/node-disk-manager/pkg/liveness"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/ready"
@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 )
 
-var log = logf.Log.WithName("ndm-operator cmd")
+var log = logf.Log.WithName("ndm-operator")
 
 func printVersion() {
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
@@ -75,7 +75,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Info("Registering Components.")
+	log.Info("Registering Components")
 
 	// Setup Scheme for all resources
 	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
@@ -89,9 +89,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Info("Starting the ndm-operator cmd.")
+	log.Info("Starting the ndm-operator...")
 	// Init NodeMap which would be used for Node Liveness check
-	common.InitNodeMap()
+	liveness.InitNodeMap()
 	ndo.StartHttpServer()
 
 	// Start the Cmd

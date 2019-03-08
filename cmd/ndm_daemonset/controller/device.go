@@ -18,7 +18,6 @@ package controller
 
 import (
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	//"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
