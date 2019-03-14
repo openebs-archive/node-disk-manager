@@ -24,7 +24,7 @@ var (
 	diskName                    = "disk-example"
 	deviceName                  = "device-example"
 	devicerequestName           = "devicerequest-example"
-	deviceClaimUID    types.UID = "deviceRequest-example-UID"
+	deviceRequestUID  types.UID = "deviceRequest-example-UID"
 	namespace                   = ""
 	capacity          uint64    = 1024000
 )
@@ -127,12 +127,12 @@ func (r *ReconcileDeviceRequest) DeleteDeviceRequestedTest(t *testing.T,
 		t.Errorf("get devInst: (%v)", err)
 	}
 
-	if devInst.Claim.DeviceClaimUID == dvRequestInst.ObjectMeta.UID {
-		t.Logf("Device Obj ClaimUID:%v match expected ClaimUID:%v",
-			devInst.Claim.DeviceClaimUID, dvRequestInst.ObjectMeta.UID)
+	if devInst.ClaimRef.UID == dvRequestInst.ObjectMeta.UID {
+		t.Logf("Device ObjRef UID:%v match expected deviceRequest UID:%v",
+			devInst.ClaimRef.UID, dvRequestInst.ObjectMeta.UID)
 	} else {
-		t.Fatalf("Device Obj ClaimUID:%v did not match expected ClaimUID:%v",
-			devInst.Claim.DeviceClaimUID, dvRequestInst.ObjectMeta.UID)
+		t.Fatalf("Device ObjRef UID:%v did not match expected deviceRequest UID:%v",
+			devInst.ClaimRef.UID, dvRequestInst.ObjectMeta.UID)
 	}
 
 	if devInst.ClaimState.State == ndm.NDMClaimed {
@@ -161,12 +161,12 @@ func (r *ReconcileDeviceRequest) DeviceRequestedHappyPathTest(t *testing.T,
 		t.Errorf("get devInst: (%v)", err)
 	}
 
-	if devInst.Claim.DeviceClaimUID == devRequestInst.ObjectMeta.UID {
-		t.Logf("Device Obj ClaimUID:%v match expected ClaimUID:%v",
-			devInst.Claim.DeviceClaimUID, devRequestInst.ObjectMeta.UID)
+	if devInst.ClaimRef.UID == devRequestInst.ObjectMeta.UID {
+		t.Logf("Device ObjRef UID:%v match expected deviceRequest UID:%v",
+			devInst.ClaimRef.UID, devRequestInst.ObjectMeta.UID)
 	} else {
-		t.Fatalf("Device Obj ClaimUID:%v did not match expected ClaimUID:%v",
-			devInst.Claim.DeviceClaimUID, devRequestInst.ObjectMeta.UID)
+		t.Fatalf("Device ObjRef UID:%v did not match expected deviceRequest UID:%v",
+			devInst.ClaimRef.UID, devRequestInst.ObjectMeta.UID)
 	}
 
 	if devInst.ClaimState.State == ndm.NDMClaimed {
@@ -216,24 +216,24 @@ func (r *ReconcileDeviceRequest) InvalidCapacityTest(t *testing.T,
 func (r *ReconcileDeviceRequest) CheckDeviceRequestStatus(t *testing.T,
 	req reconcile.Request, phase openebsv1alpha1.DeviceRequestPhase) {
 
-	devClaimR := &openebsv1alpha1.DeviceRequest{}
-	err := r.client.Get(context.TODO(), req.NamespacedName, devClaimR)
+	devRequestCR := &openebsv1alpha1.DeviceRequest{}
+	err := r.client.Get(context.TODO(), req.NamespacedName, devRequestCR)
 	if err != nil {
-		t.Errorf("get devClaimR : (%v)", err)
+		t.Errorf("get devRequestCR : (%v)", err)
 	}
 
 	// DeviceRequest should yet to bound.
-	if devClaimR.Status.Phase == phase {
+	if devRequestCR.Status.Phase == phase {
 		t.Logf("DeviceRequest Object status:%v match expected status:%v",
-			devClaimR.Status.Phase, phase)
+			devRequestCR.Status.Phase, phase)
 	} else {
 		t.Fatalf("DeviceRequest Object status:%v did not match expected status:%v",
-			devClaimR.Status.Phase, phase)
+			devRequestCR.Status.Phase, phase)
 	}
 }
 
 func GetFakeDeviceRequestObject() *openebsv1alpha1.DeviceRequest {
-	deviceClaim := &openebsv1alpha1.DeviceRequest{}
+	deviceRequestCR := &openebsv1alpha1.DeviceRequest{}
 
 	TypeMeta := metav1.TypeMeta{
 		Kind:       "DeviceRequest",
@@ -244,7 +244,7 @@ func GetFakeDeviceRequestObject() *openebsv1alpha1.DeviceRequest {
 		Labels:    make(map[string]string),
 		Name:      devicerequestName,
 		Namespace: namespace,
-		UID:       deviceClaimUID,
+		UID:       deviceRequestUID,
 	}
 
 	Spec := openebsv1alpha1.DeviceRequestSpec{
@@ -253,11 +253,11 @@ func GetFakeDeviceRequestObject() *openebsv1alpha1.DeviceRequest {
 		HostName:   fakeHostName,
 	}
 
-	deviceClaim.ObjectMeta = ObjectMeta
-	deviceClaim.TypeMeta = TypeMeta
-	deviceClaim.Spec = Spec
-	deviceClaim.Status.Phase = openebsv1alpha1.DeviceRequestStatusEmpty
-	return deviceClaim
+	deviceRequestCR.ObjectMeta = ObjectMeta
+	deviceRequestCR.TypeMeta = TypeMeta
+	deviceRequestCR.Spec = Spec
+	deviceRequestCR.Status.Phase = openebsv1alpha1.DeviceRequestStatusEmpty
+	return deviceRequestCR
 }
 
 func GetFakeDeviceObject() *openebsv1alpha1.Device {
@@ -345,7 +345,7 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 		},
 	}
 
-	deviceClaimR := GetFakeDeviceRequestObject()
+	deviceRequestCR := GetFakeDeviceRequestObject()
 	deviceclaimList := &openebsv1alpha1.DeviceRequestList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "DeviceRequest",
@@ -360,7 +360,7 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, diskList)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceR)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceList)
-	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceClaimR)
+	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceRequestCR)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceclaimList)
 
 	fakeNdmClient := fake.NewFakeClient(diskObjs...)
@@ -375,7 +375,7 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 	}
 
 	// Create a new deviceclaim obj
-	err = fakeNdmClient.Create(context.TODO(), deviceClaimR)
+	err = fakeNdmClient.Create(context.TODO(), deviceRequestCR)
 	if err != nil {
 		fmt.Println("DeviceRequest object is not created")
 	}

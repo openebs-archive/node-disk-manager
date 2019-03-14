@@ -2,7 +2,6 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -16,13 +15,6 @@ type DeviceRequestSpec struct {
 	Capacity   uint64 `json:"capacity"`   // disk size in bytes
 	DeviceType string `json:"deviceType"` // DeviceType represents the type of drive like SSD, HDD etc.,
 	HostName   string `json:"hostName"`   // Node name from where device has to be claimed.
-}
-
-type PoolClaimInfo struct {
-	APIVersion   string    `json:"kind,omitempty" protobuf:"bytes,2,opt,name=apiVersion"`
-	Kind         string    `json:"kind,omitempty" protobuf:"bytes,1,opt,name=kind"`
-	Name         string    `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
-	PoolClaimUID types.UID `json:"poolClaimUID" protobuf: "bytes,4,opt,name=deviceClaimUID,casttype=k8s.io/apimachinery/pkg/types.UUID"`
 }
 
 // DeviceRequestPhase is a typed string for phase field of DeviceRequest.
@@ -62,7 +54,6 @@ type DeviceRequest struct {
 
 	Spec   DeviceRequestSpec   `json:"spec,omitempty"`
 	Status DeviceRequestStatus `json:"status,omitempty"`
-	Claim  PoolClaimInfo       `json:"claim,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

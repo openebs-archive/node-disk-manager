@@ -16,6 +16,7 @@ import (
 
 	"github.com/go-logr/logr"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"k8s.io/client-go/tools/reference"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -204,15 +205,17 @@ func (r *ReconcileDeviceRequest) claimDeviceCR(instance *openebsv1alpha1.DeviceR
 			reqLogger.Info("Found matching device", "Device Name:",
 				item.ObjectMeta.Name, "Device Capacity:",
 				item.Spec.Capacity.Storage)
+			claimRef, err := reference.GetReference(r.scheme, instance)
+			if err != nil {
+				reqLogger.Error(err, "Unexpected error getting claim reference", "Device-CR:", instance.ObjectMeta.Name)
+				return err
+			}
 
-			//Found a device, claim it, update ClaimInfo into etcd
+			// Found free device, mark it claimed, put ClaimRef of DeviceRequest-CR
 			dvr := item.DeepCopy()
-			dvr.Claim.APIVersion = instance.TypeMeta.APIVersion
-			dvr.Claim.Kind = instance.TypeMeta.Kind
-			dvr.Claim.Name = instance.ObjectMeta.Name
-			dvr.Claim.DeviceClaimUID = instance.ObjectMeta.UID
 			dvr.ClaimState.State = ndm.NDMClaimed
-			err := r.client.Update(context.TODO(), dvr)
+			dvr.ClaimRef = claimRef
+			err = r.client.Update(context.TODO(), dvr)
 			if err != nil {
 				reqLogger.Error(err, "Error while updating Device-CR", "Device-CR:", dvr.ObjectMeta.Name)
 				return err
@@ -265,7 +268,7 @@ func (r *ReconcileDeviceRequest) FinalizerHandling(
 	instance *openebsv1alpha1.DeviceRequest, reqLogger logr.Logger) error {
 
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
-		reqLogger.Info("No Deletion Time Stamp set on deviceClaim")
+		reqLogger.Info("No Deletion Time Stamp set on deviceRequest")
 		return nil
 	}
 	// The object is being deleted
@@ -296,17 +299,17 @@ func (r *ReconcileDeviceRequest) isDeviceRequestedByThisDeviceRequest(
 		return false
 	}
 
-	if strings.Compare(item.Claim.Name, instance.ObjectMeta.Name) != 0 {
-		reqLogger.Info("Claim Name mismatch")
+	if strings.Compare(item.ClaimRef.Name, instance.ObjectMeta.Name) != 0 {
+		reqLogger.Info("ClaimRef Name mismatch")
 		return false
 	}
 
-	if item.Claim.DeviceClaimUID != instance.ObjectMeta.UID {
-		reqLogger.Info("DeviceRequestUID mismatch")
+	if item.ClaimRef.UID != instance.ObjectMeta.UID {
+		reqLogger.Info("DeviceRequest UID mismatch")
 		return false
 	}
 
-	if strings.Compare(item.Claim.Kind, instance.TypeMeta.Kind) != 0 {
+	if strings.Compare(item.ClaimRef.Kind, instance.TypeMeta.Kind) != 0 {
 		reqLogger.Info("Kind mismatch")
 		return false
 	}
@@ -324,24 +327,20 @@ func (r *ReconcileDeviceRequest) deleteExternalDependency(
 		return err
 	}
 
-	// Check Claim and check if Claim.DeviceRequestUID
-	// is matching with instance.ObjectMeta.UID
+	// Check if same deviceRequest holding the ObjRef
 	for _, item := range listDVR.Items {
 		if r.isDeviceRequestedByThisDeviceRequest(instance, item, reqLogger) == false {
 			continue
 		}
 
-		//Found a device, clear claim, mark it
-		//unclaimed and update ClaimInfo into etcd
+		// Found a device ObjRef with DeviceRequest, Clear
+		// ObjRef and mark device unclaimed in etcd
 		dvr := item.DeepCopy()
-		dvr.Claim.APIVersion = ""
-		dvr.Claim.Kind = ""
-		dvr.Claim.Name = ""
-		dvr.Claim.DeviceClaimUID = ""
+		dvr.ClaimRef = nil
 		dvr.ClaimState.State = ndm.NDMUnclaimed
 		err := r.client.Update(context.TODO(), dvr)
 		if err != nil {
-			reqLogger.Error(err, "Error while updating Claim", "Device-CR:", dvr.ObjectMeta.Name)
+			reqLogger.Error(err, "Error while updating ObjRef", "Device-CR:", dvr.ObjectMeta.Name)
 			return err
 		}
 	}

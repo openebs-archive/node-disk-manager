@@ -1,8 +1,8 @@
 package v1alpha1
 
 import (
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -51,13 +51,6 @@ type DeviceStatus struct {
 	State string `json:"state"` //current state of the device (Active/Inactive)
 }
 
-type DeviceClaimInfo struct {
-	APIVersion     string    `json:"apiVersion,omitempty" protobuf:"bytes,2,opt,name=apiVersion"`
-	Kind           string    `json:"kind,omitempty" protobuf:"bytes,1,opt,name=kind"`
-	Name           string    `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
-	DeviceClaimUID types.UID `json:"deviceClaimUID" protobuf: "bytes,4,opt,name=deviceClaimUID,casttype=k8s.io/apimachinery/pkg/types.UUID"`
-}
-
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Device is the Schema for the devices API
@@ -69,7 +62,7 @@ type Device struct {
 	Spec       DeviceSpec       `json:"spec,omitempty"`
 	Status     DeviceStatus     `json:"status,omitempty"`
 	ClaimState DeviceClaimState `json:"claimState"`
-	Claim      DeviceClaimInfo  `json:"claim,omitempty"`
+	ClaimRef   *v1.ObjectReference
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
