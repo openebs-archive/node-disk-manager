@@ -90,8 +90,8 @@ func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, int) 
 		return nil, err
 	}
 
-	//Added for cross verification, can be removed later on.
-	C.print_SAS_Sata_Device_Information(&Drive)
+	// Added for cross verification, can be removed later on.
+	//C.print_SAS_Sata_Device_Information(&Drive)
 
 	return &Drive, err
 }

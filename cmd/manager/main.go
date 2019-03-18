@@ -10,8 +10,6 @@ import (
 
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/controller"
-	"github.com/openebs/node-disk-manager/pkg/httpserver/ndo"
-	"github.com/openebs/node-disk-manager/pkg/liveness"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/ready"
@@ -90,9 +88,6 @@ func main() {
 	}
 
 	log.Info("Starting the ndm-operator...")
-	// Init NodeMap which would be used for Node Liveness check
-	liveness.InitNodeMap()
-	ndo.StartHttpServer()
 
 	// Start the Cmd
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {

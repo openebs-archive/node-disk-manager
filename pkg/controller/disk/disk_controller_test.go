@@ -2,15 +2,10 @@ package disk
 
 import (
 	"context"
-	//"math/rand"
-	//"reflect"
-	//"strconv"
 	"testing"
-	"time"
 
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	liveness "github.com/openebs/node-disk-manager/pkg/liveness"
 	//appsv1 "k8s.io/api/apps/v1"
 	//corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,13 +30,6 @@ func TestDiskController(t *testing.T) {
 
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(logf.ZapLogger(true))
-
-	//Init hashMap which keep track of node heart beat
-	liveness.InitNodeMap()
-
-	//For test case set these values to smaller intervals
-	nodeLivenessCheckInterval = time.Duration(1 * time.Second)
-	nodeExpiryTimeInterval = time.Duration(1 * time.Second)
 
 	// Get Disk and diskList resource
 	disk := GetFakeDiskObject()
@@ -71,8 +59,6 @@ func TestDiskController(t *testing.T) {
 		},
 	}
 
-	//Update heart beat for fakeHostName in map
-	liveness.UpdateNodeLivenessTimeStamp(fakeHostName, time.Now())
 	res, err := r.Reconcile(req)
 	if err != nil {
 		t.Fatalf("reconcile: (%v)", err)
@@ -94,31 +80,6 @@ func TestDiskController(t *testing.T) {
 		t.Logf("Disk Object state:%v match expected state:%v", diskInstance.Status.State, ndm.NDMActive)
 	} else {
 		t.Fatalf("Disk Object state:%v did not match expected state:%v", diskInstance.Status.State, ndm.NDMActive)
-	}
-
-	//Let heart beat updating expire by waiting for 10 seconds
-	time.Sleep(10 * time.Second)
-	res, err = r.Reconcile(req)
-	if err != nil {
-		t.Fatalf("reconcile: (%v)", err)
-	}
-
-	// Check the result of reconciliation to make sure it has the desired state.
-	if !res.Requeue {
-		t.Log("reconcile did not requeue request as expected")
-	}
-
-	// Check Status of Disk object.
-	err = r.client.Get(context.TODO(), req.NamespacedName, diskInstance)
-	if err != nil {
-		t.Errorf("get diskInstance : (%v)", err)
-	}
-
-	// Disk Status state should be InActive as expected.
-	if diskInstance.Status.State == ndm.NDMInactive {
-		t.Logf("Disk Object state:%v match expected state:%v", diskInstance.Status.State, ndm.NDMInactive)
-	} else {
-		t.Errorf("Disk Object state:%v did not match expected state:%v", diskInstance.Status.State, ndm.NDMInactive)
 	}
 }
 

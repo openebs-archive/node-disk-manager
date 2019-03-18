@@ -24,7 +24,6 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/filter"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/probe"
-	"github.com/openebs/node-disk-manager/pkg/httpserver/ndm"
 	"github.com/spf13/cobra"
 )
 
@@ -54,7 +53,6 @@ func NewCmdStart() *cobra.Command {
 			filter.Start(filter.RegisteredFilters)
 			// Start starts registering of probes present in RegisteredProbes
 			probe.Start(probe.RegisteredProbes)
-			ndm.StartHttpServer()
 			ctrl.Start()
 		},
 	}
