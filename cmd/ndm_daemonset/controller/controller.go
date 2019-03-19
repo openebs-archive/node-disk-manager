@@ -141,6 +141,7 @@ func NewController(kubeconfig string) (*Controller, error) {
 	}
 
 	controller.WaitForDiskCRD()
+	controller.WaitForDeviceCRD()
 	return controller, nil
 }
 
@@ -207,6 +208,21 @@ func (c *Controller) WaitForDiskCRD() {
 			continue
 		}
 		glog.Info("Disk CRD is available")
+		break
+	}
+}
+
+// WaitForDeviceCRD will block till the CRDs are loaded
+// into Kubernetes
+func (c *Controller) WaitForDeviceCRD() {
+	for {
+		_, err := c.ListDeviceResource()
+		if err != nil {
+			glog.Errorf("Device CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
+			time.Sleep(CRDRetryInterval)
+			continue
+		}
+		glog.Info("Device CRD is available")
 		break
 	}
 }
