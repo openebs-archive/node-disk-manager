@@ -20,7 +20,7 @@ required = [
   # revision for tag "kubernetes-1.12.3"
   revision = "b503174bad5991eb66f18247f52e41c3258f6348"
 
-[[override]]
+[[constraint]]
   name = "k8s.io/apiextensions-apiserver"
   # revision for tag "kubernetes-1.12.3"
   revision = "0cd23ebeb6882bd1cdc2cb15fc7b2d72e8a86a5b"
@@ -48,6 +48,10 @@ required = [
   # The version rule is used for a specific release and the master branch for in between releases.
   branch = "master" #osdk_branch_annotation
   # version = "=v0.3.0" #osdk_version_annotation
+
+[[override]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"
 
 [prune]
   go-tests = true
