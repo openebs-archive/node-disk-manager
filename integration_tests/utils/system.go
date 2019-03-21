@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"os/exec"
 	"strings"
 )
@@ -32,4 +35,43 @@ func ExecCommand(cmd string) (string, error) {
 	args := substring[1:]
 	out, err := exec.Command(name, args...).CombinedOutput()
 	return string(out), err
+}
+
+// Exec 2 commands, pipe the output of first command to second
+func ExecCommandWithPipe(cmd1, cmd2 string) (string, error) {
+	parts1 := strings.Fields(cmd1)
+	parts2 := strings.Fields(cmd2)
+
+	c1 := exec.Command(parts1[0], parts1[1:]...)
+	c2 := exec.Command(parts2[0], parts2[1:]...)
+
+	reader, writer := io.Pipe()
+	c1.Stdout = writer
+	c2.Stdin = reader
+
+	var buffer bytes.Buffer
+	c2.Stdout = &buffer
+
+	err := c1.Start()
+	if err != nil {
+		return "", fmt.Errorf("error starting command: %q. Error: %v", cmd1, err)
+	}
+	err = c2.Start()
+	if err != nil {
+		return "", fmt.Errorf("error starting command: %q. Error: %v", cmd2, err)
+	}
+	err = c1.Wait()
+	if err != nil {
+		return "", fmt.Errorf("error while waiting for command: %q to exit. Error: %v", cmd1, err)
+	}
+	err = writer.Close()
+	if err != nil {
+		return "", fmt.Errorf("error while closing the pipe writer. Error: %v", err)
+	}
+	err = c2.Wait()
+	if err != nil {
+		return "", fmt.Errorf("error while waiting for command: %q to exit. Error: %v", cmd2, err)
+	}
+
+	return buffer.String(), nil
 }
