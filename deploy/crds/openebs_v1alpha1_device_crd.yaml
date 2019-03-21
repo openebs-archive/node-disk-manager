@@ -11,5 +11,3 @@ spec:
     singular: device
   scope: Namespaced
   version: v1alpha1
-  subresources:
-    status: {}
