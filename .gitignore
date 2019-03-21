@@ -6,3 +6,4 @@ tags
 Dockerfile.ndm
 Dockerfile.ndo
 coverage.txt
+build/_output

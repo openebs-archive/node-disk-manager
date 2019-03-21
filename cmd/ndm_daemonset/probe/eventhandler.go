@@ -46,13 +46,13 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 		return
 	}
 	for _, diskDetails := range msg.Devices {
-		glog.Info("processing details for ", diskDetails.ProbeIdentifiers.Uuid)
+		glog.Info("Processing details for ", diskDetails.ProbeIdentifiers.Uuid)
 		pe.Controller.FillDiskDetails(diskDetails)
 		// if ApplyFilter returns true then we process the event further
 		if !pe.Controller.ApplyFilter(diskDetails) {
 			continue
 		}
-		glog.Info("processed data for ", diskDetails.ProbeIdentifiers.Uuid)
+		glog.Info("Processed details for ", diskDetails.ProbeIdentifiers.Uuid)
 		oldDr := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
 		// if old DiskCR doesn't exist and parition is found, it is ignored since we don't need info
 		// of partition if disk as a whole is ignored
@@ -69,6 +69,28 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 			pe.Controller.UpdateDisk(*newDrCopy, oldDr)
 		} else {
 			pe.Controller.PushDiskResource(oldDr, diskDetails)
+
+			/*
+			 * There will be one device CR for each physical Disk.
+			 * For network devices like LUN there will be a device
+			 * CR but no disk CR. 1 to N mapping would be valid case
+			 * where disk have more than one partitions.
+			 * TODO: Need to check if udev event is for physical disk
+			 * and based on that need to create disk CR or device CR
+			 * or both.
+			 */
+			deviceDetails := pe.Controller.NewDeviceInfoFromDiskInfo(diskDetails)
+			if deviceDetails != nil {
+				glog.Infof("DeviceDetails:%#v", deviceDetails)
+				deviceList, err := pe.Controller.ListDeviceResource()
+				if err != nil {
+					glog.Error(err)
+					go pe.initOrErrorEvent()
+					return
+				}
+				oldDvr := pe.Controller.GetExistingDeviceResource(deviceList, deviceDetails.Uuid)
+				pe.Controller.PushDeviceResource(oldDvr, deviceDetails)
+			}
 		}
 		/// update the list of DiskCRs
 		diskList, err = pe.Controller.ListDiskResource()

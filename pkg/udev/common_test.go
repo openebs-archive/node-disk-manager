@@ -150,7 +150,7 @@ func TestGetUid(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer device.UdevDeviceUnref()
-	expectedUid := NDMPrefix + util.Hash(diskDetails.Wwn+diskDetails.Model+diskDetails.Serial+diskDetails.Vendor)
+	expectedUid := NDMDiskPrefix + util.Hash(diskDetails.Wwn+diskDetails.Model+diskDetails.Serial+diskDetails.Vendor)
 	tests := map[string]struct {
 		actualUuid   string
 		expectedUuid string

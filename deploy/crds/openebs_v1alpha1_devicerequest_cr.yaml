@@ -1,0 +1,8 @@
+apiVersion: openebs.io/v1alpha1
+kind: DeviceRequest
+metadata:
+  name: test-devicerequest
+spec:
+  capacity: 300
+  driveType: ""
+  hostName: "gke-satbir-ndm-default-pool-639356a6-l8g6"

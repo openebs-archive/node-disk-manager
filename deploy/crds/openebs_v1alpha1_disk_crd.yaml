@@ -4,12 +4,10 @@ metadata:
   name: disks.openebs.io
 spec:
   group: openebs.io
-  version: v1alpha1
-  scope: Cluster
   names:
+    kind: Disk
+    listKind: DiskList
     plural: disks
     singular: disk
-    kind: Disk
-    shortNames:
-    - disk
-
+  scope: Namespaced
+  version: v1alpha1

@@ -8,7 +8,6 @@ env:
   global:
    - ARCH=$(go env GOARCH)
    - TAG="ci"
-   - CHANGE_MINIKUBE_NONE_USER=true
    - CODECOV_TOKEN="d1e39bea-f800-45de-8266-3e9b85e2594a"
 
 sudo: required
@@ -28,12 +27,6 @@ install:
       mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/openebs;
       cd $GOPATH/src/github.com/openebs/node-disk-manager;
     fi
-  - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.9.4/bin/linux/amd64/kubectl
-  - sudo chmod +x ./kubectl
-  - sudo mv ./kubectl /usr/local/bin/
-  - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.25.0/minikube-linux-amd64
-  - sudo chmod +x minikube
-  - sudo mv minikube /usr/local/bin/
   # we need openSeaChest repo to build node-disk-manager
   - pushd .
   - cd ..
