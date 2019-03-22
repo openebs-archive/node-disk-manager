@@ -44,5 +44,6 @@ rules:
   - '*'
   - devices
   - deviceclaims
+  - ndmconfigs
   verbs:
   - '*'

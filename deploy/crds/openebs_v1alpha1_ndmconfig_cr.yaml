@@ -1,0 +1,7 @@
+apiVersion: openebs.io/v1alpha1
+kind: NdmConfig
+metadata:
+  name: example-ndmconfig
+spec:
+  # Add fields here
+  size: 3
