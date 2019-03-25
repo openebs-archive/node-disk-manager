@@ -13,10 +13,18 @@ type NdmConfigSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 }
 
+type NdmConfigPhase string
+
+const (
+	NdmConfigPhaseInit   NdmConfigPhase = "Initializing"
+	NdmConfigPhaseDone   NdmConfigPhase = "Init_Done"
+	NdmConfigPhaseDelete NdmConfigPhase = "Delete"
+)
+
 // NdmConfigStatus defines the observed state of NdmConfig
+// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 type NdmConfigStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	Phase NdmConfigPhase `json:"phase"` //Current state of NdmConfig (Init/Done/Delete)
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

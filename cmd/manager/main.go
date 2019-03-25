@@ -45,6 +45,7 @@ func main() {
 		log.Error(err, "failed to get watch namespace")
 		os.Exit(1)
 	}
+	log.Info(fmt.Sprintf("Namespace in operator: %s", namespace))
 
 	// Get a config to talk to the apiserver
 	cfg, err := config.GetConfig()
@@ -54,7 +55,7 @@ func main() {
 	}
 
 	// Become the leader before proceeding
-	leader.Become(context.TODO(), "node-disk-manager-lock")
+	leader.Become(context.TODO(), "node-disk-operator-lock")
 
 	r := ready.NewFileReady()
 	err = r.Set()

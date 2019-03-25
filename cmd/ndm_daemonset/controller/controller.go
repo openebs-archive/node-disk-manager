@@ -65,7 +65,8 @@ const (
 	NDMDiskTypeKey   = "ndm.io/disk-type"
 	NDMDeviceTypeKey = "ndm.io/device-type"
 	// NDMUnmanagedDiskKey specifies disk cr should be managed by ndm or not.
-	NDMManagedKey = "ndm.io/managed"
+	NDMManagedKey   = "ndm.io/managed"
+	NDMConfigPreFix = "ndmconfig-"
 )
 
 const (
@@ -119,12 +120,12 @@ func NewController(kubeconfig string) (*Controller, error) {
 
 	// Create a new Cmd to provide shared dependencies and start components
 	namespace, err := k8sutil.GetWatchNamespace()
-	if err != nil && namespace == "" {
-		namespace = "default"
-	} else if err != nil {
-		return controller, err
+	if err != nil {
+		glog.Error(err, "failed to get watch namespace")
+		return nil, err
 	}
 
+	glog.Info("Namespace in daemonset:", namespace)
 	controller.mgr, err = manager.New(cfg, manager.Options{Namespace: namespace})
 	if err != nil {
 		return controller, err
@@ -135,13 +136,15 @@ func NewController(kubeconfig string) (*Controller, error) {
 		return controller, err
 	}
 
-	controller.Clientset = controller.mgr.GetClient()
+	controller.Clientset, err = client.New(cfg, client.Options{})
 	if err != nil {
 		return controller, err
 	}
 
 	controller.WaitForDiskCRD()
 	controller.WaitForDeviceCRD()
+	controller.WaitForNdmConfigCRD()
+	controller.PushNdmConfigResource()
 	return controller, nil
 }
 
@@ -223,6 +226,21 @@ func (c *Controller) WaitForDeviceCRD() {
 			continue
 		}
 		glog.Info("Device CRD is available")
+		break
+	}
+}
+
+// WaitForNdmConfigCRD will block till the CRDs are loaded
+// into Kubernetes
+func (c *Controller) WaitForNdmConfigCRD() {
+	for {
+		_, err := c.ListNdmConfigResource()
+		if err != nil {
+			glog.Errorf("NdmConfig CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
+			time.Sleep(CRDRetryInterval)
+			continue
+		}
+		glog.Info("NdmConfig CRD is available")
 		break
 	}
 }
