@@ -122,11 +122,12 @@ func GetSparseFileSize() int64 {
 		return SparseFileDefaultSize
 	}
 
-	sparseFileSize, econv := strconv.ParseInt(sparseFileSizeStr, 10, 64)
+	fileSize, econv := strconv.ParseFloat(sparseFileSizeStr, 64)
 	if econv != nil {
-		glog.Info("Error converting sparse file size:  ", sparseFileSizeStr)
+		glog.Error("Error converting sparse file size:  ", econv)
 		return 0
 	}
+	sparseFileSize := int64(fileSize)
 
 	if sparseFileSize < SparseFileMinSize {
 		glog.Info(fmt.Sprint(sparseFileSizeStr), " is less than minimum required. Setting the size to:  ", fmt.Sprint(SparseFileMinSize))

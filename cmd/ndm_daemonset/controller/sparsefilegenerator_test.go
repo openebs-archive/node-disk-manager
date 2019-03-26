@@ -86,10 +86,11 @@ func TestGetSparseFileSize(t *testing.T) {
 		envFileSize  string
 		expectedSize int64
 	}{
-		"When size is not set":           {envFileSize: "", expectedSize: defaultSize},
-		"When valid size is set":         {envFileSize: "2000000000", expectedSize: int64(2000000000)},
-		"When less than min size is set": {envFileSize: "100", expectedSize: minSize},
-		"When invalid size is set":       {envFileSize: "z", expectedSize: 0},
+		"When size is not set":                {envFileSize: "", expectedSize: defaultSize},
+		"When valid size is set":              {envFileSize: "2000000000", expectedSize: int64(2000000000)},
+		"When file size is given as exponent": {envFileSize: "1.073741824e+11", expectedSize: int64(107374182400)},
+		"When less than min size is set":      {envFileSize: "100", expectedSize: minSize},
+		"When invalid size is set":            {envFileSize: "z", expectedSize: 0},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
