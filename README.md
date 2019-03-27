@@ -1,6 +1,7 @@
 # node-disk-manager
 
 [![Build Status](https://travis-ci.org/openebs/node-disk-manager.svg?branch=master)](https://travis-ci.org/openebs/node-disk-manager)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ea8d7835d7224178af058d98e5dac117)](https://www.codacy.com/app/OpenEBS/node-disk-manager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=openebs/node-disk-manager&amp;utm_campaign=Badge_Grade)
 [![Go Report](https://goreportcard.com/badge/github.com/openebs/node-disk-manager)](https://goreportcard.com/report/github.com/openebs/node-disk-manager)
 [![codecov](https://codecov.io/gh/openebs/node-disk-manager/branch/master/graph/badge.svg)](https://codecov.io/gh/openebs/node-disk-manager)
 [![BCH compliance](https://bettercodehub.com/edge/badge/openebs/node-disk-manager?branch=master)](https://bettercodehub.com/results/openebs/node-disk-manager)
