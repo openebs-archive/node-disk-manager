@@ -35,6 +35,6 @@ data:
       - key: path-filter
         name: path filter
         state: true
-        include: ""
-        exclude: loop
+        include: loop9
+        exclude: ""
 

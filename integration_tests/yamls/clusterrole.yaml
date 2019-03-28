@@ -4,6 +4,6 @@ metadata:
   namespace: default
   name: openebs-ndm-operator
 rules:
-  - apiGroups: ["*"]
-    resources: ["disks"]
-    verbs: ["*"]
+- apiGroups: ["*"]
+  resources: ["disks"]
+  verbs: ["*"]
