@@ -16,7 +16,7 @@ const (
 	ServiceAccountYAML           NDMYaml = "../yamls/serviceaccount.yaml"
 	ClusterRoleYAML              NDMYaml = "../yamls/clusterrole.yaml"
 	ClusterRoleBindingYAML       NDMYaml = "../yamls/clusterrolebinding.yaml"
-	CustomResourceDefinitionYAML NDMYaml = "../yamls/customresourcedefinition.yaml"
+	CustomResourceDefinitionYAML NDMYaml = "../yamls/diskCR.yaml"
 	DaemonSetYAML                NDMYaml = "../yamls/daemonset.yaml"
 )
 
