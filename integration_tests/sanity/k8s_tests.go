@@ -8,53 +8,61 @@ import (
 )
 
 const (
-	namespace = "default"
+	SparseDiskName = "sparse-"
+	DiskName       = "disk-"
+	ActiveState    = "Active"
+	InactiveState  = "Inactive"
+	DiskImageSize  = 1073741824
 )
 
 var _ = Describe("NDM Basic Tests", func() {
 
-	clientSet, _ := k8s.GetClientSet()
-	Context("Checking for pods in the cluster", func() {
-		It("should not have any pods", func() {
-			pods, err := k8s.GetPods(clientSet, namespace)
+	var (
+		noOfNodes int
+		err       error
+	)
+
+	k8sClient, _ := k8s.GetClientSet()
+	Context("Checking for Daemonset pods in the cluster", func() {
+		BeforeEach(func() {
+			nodes, err := k8s.GetNodes(k8sClient.ClientSet)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(len(pods)).To(BeZero())
+			noOfNodes = len(nodes)
 		})
-	})
+		It("should have running ndm pod on each node after creation", func() {
 
-	Context("Applying the ndm yaml", func() {
-		It("should have running Daemonset pod on each node", func() {
-
-			nodes, err := k8s.GetNodes(clientSet)
-			Expect(err).NotTo(HaveOccurred())
-			noOfNodes := len(nodes)
-
-			err = k8s.CreateNDMYAML(clientSet, namespace)
+			err = k8s.CreateNDMYAML(k8sClient)
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 
-			pods, err := k8s.GetPods(clientSet, namespace)
+			pods, err := k8s.GetPods(k8sClient.ClientSet)
 			Expect(err).NotTo(HaveOccurred())
-			noOfPods := len(pods)
 
-			Expect(noOfPods).To(Equal(noOfNodes))
-
+			noOfPods := 0
+			// Get the number of running pods
 			for _, status := range pods {
-				Expect(status).To(Equal(Running))
+				if status == Running {
+					noOfPods++
+				}
 			}
+			Expect(noOfPods).To(Equal(noOfNodes))
 		})
-	})
-
-	Context("Deleting the ndm yaml", func() {
-		It("should not have any ndm pods", func() {
-			err := k8s.DeleteNDMYAML(clientSet, namespace)
+		It("should not have any ndm pods after deletion", func() {
+			err = k8s.DeleteNDMYAML(k8sClient)
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 
-			pods, err := k8s.GetPods(clientSet, namespace)
+			pods, err := k8s.GetPods(k8sClient.ClientSet)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(len(pods)).To(BeZero())
+
+			noOfPods := 0
+			// Get the number of running pods
+			for _, status := range pods {
+				if status == Running {
+					noOfPods++
+				}
+			}
+			Expect(noOfPods).To(BeZero())
 		})
 	})
-
 })
