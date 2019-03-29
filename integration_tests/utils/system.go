@@ -8,18 +8,18 @@ import (
 	"strings"
 )
 
-// Run a command with sudo permissions
+// RunCommandWithSudo runs a command with sudo permissions
 func RunCommandWithSudo(cmd string) error {
 	return RunCommand("sudo " + cmd)
 }
 
-// Exec a command with sudo permissions and return the output
-// as a string
+// ExecCommandWithSudo runs a command with sudo permissions and
+// return the output as a string
 func ExecCommandWithSudo(cmd string) (string, error) {
 	return ExecCommand("sudo " + cmd)
 }
 
-// Run a command on the host
+// RunCommand runs a command on the host
 func RunCommand(cmd string) error {
 	substring := strings.Fields(cmd)
 	name := substring[0]
@@ -31,7 +31,7 @@ func RunCommand(cmd string) error {
 	return err
 }
 
-// Exec a command on the host and get the output
+// ExecCommand runs a command on the host and get the output
 func ExecCommand(cmd string) (string, error) {
 	substring := strings.Fields(cmd)
 	name := substring[0]
@@ -43,7 +43,8 @@ func ExecCommand(cmd string) (string, error) {
 	return string(out), err
 }
 
-// Exec 2 commands, pipe the output of first command to second
+// ExecCommandWithPipe runs 2 commands, pipe the output of first command to second,
+// and returns output from the second
 func ExecCommandWithPipe(cmd1, cmd2 string) (string, error) {
 	parts1 := strings.Fields(cmd1)
 	parts2 := strings.Fields(cmd2)

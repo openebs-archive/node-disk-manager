@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	minikube Minikube = NewMinikube()
+	minikube = NewMinikube()
 )
 
 func TestNDM(t *testing.T) {

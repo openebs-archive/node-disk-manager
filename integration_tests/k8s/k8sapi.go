@@ -18,7 +18,8 @@ import (
 // The wait time for all k8s API related operations
 const k8sWaitTime = 30 * time.Second
 
-// Get all the pods in the given namespace along with their status
+// GetPods returns the list of all pods in the given namespace along
+// with their status
 func GetPods(clientset *kubernetes.Clientset) (map[string]string, error) {
 	pods := make(map[string]string)
 	podList := &v1.PodList{}
@@ -32,7 +33,8 @@ func GetPods(clientset *kubernetes.Clientset) (map[string]string, error) {
 	return pods, nil
 }
 
-// Get all the nodes in the cluster along with their status
+// GetNodes returns list of all nodes(node name) in the cluster along with
+// their status
 func GetNodes(clientSet *kubernetes.Clientset) (map[string]string, error) {
 	nodes := make(map[string]string)
 	nodeList := &v1.NodeList{}
@@ -46,7 +48,7 @@ func GetNodes(clientSet *kubernetes.Clientset) (map[string]string, error) {
 	return nodes, nil
 }
 
-// Get the list of DiskCR in the cluster
+// GetDiskList returns list of DiskCR in the cluster
 func GetDiskList(clientSet k8sClient) (*v1alpha1.DiskList, error) {
 	diskList := &v1alpha1.DiskList{
 		TypeMeta: metav1.TypeMeta{
@@ -71,8 +73,9 @@ func GetDiskList(clientSet k8sClient) (*v1alpha1.DiskList, error) {
 	return diskList, nil
 }
 
-// Create all the objects specified in the NDM operator YAML
-// ConfigMap, ServiceAccount, ClusterRole, ClusterRoleBinding,
+// CreateNDMYAML creates all the objects specified in the NDM operator YAML.
+// Each resource object is generated from yaml file in ../yamls/ and parsed into
+// the required type. ConfigMap, ServiceAccount, ClusterRole, ClusterRoleBinding,
 // CustomResourceDefinition and DaemonSet are created
 func CreateNDMYAML(clientset k8sClient) error {
 	var err error
@@ -139,7 +142,7 @@ func CreateNDMYAML(clientset k8sClient) error {
 	return nil
 }
 
-// Deletes all the objects specified in the NDM operator YAML
+// DeleteNDMYAML deletes all the objects specified in the NDM operator YAML.
 // ConfigMap, ServiceAccount, ClusterRole, ClusterRoleBinding,
 // CustomResourceDefinition and DaemonSet are deleted
 func DeleteNDMYAML(clientset k8sClient) error {
@@ -208,86 +211,75 @@ func DeleteNDMYAML(clientset k8sClient) error {
 	return nil
 }
 
-// Create the ConfigMap for NDM
+// CreateConfigMap creates the NDM config map
 func CreateConfigMap(clientset client.Client, configMap v1.ConfigMap) error {
-	//_, err := clientset.CoreV1().ConfigMaps(ns).Create(&configMap)
 	err := clientset.Create(context.Background(), &configMap)
 	return err
 }
 
-// Delete the ConfigMap for NDM
+// DeleteConfigMap deletes the NDM config map
 func DeleteConfigMap(clientset client.Client, configMap v1.ConfigMap) error {
 	err := clientset.Delete(context.Background(), &configMap)
 	return err
 }
 
-// Create ServiceAccount required for NDM
+// CreateServiceAccount creates the service account required for NDM
 func CreateServiceAccount(clientset client.Client, serviceAccount v1.ServiceAccount) error {
-	//_, err := clientset.CoreV1().ServiceAccounts(ns).Create(&serviceAccount)
 	err := clientset.Create(context.Background(), &serviceAccount)
 	return err
 }
 
-// Delete ServiceAccount required for NDM
+// DeleteServiceAccount deletes the service account used by NDM
 func DeleteServiceAccount(clientset client.Client, serviceAccount v1.ServiceAccount) error {
 	err := clientset.Delete(context.Background(), &serviceAccount)
 	return err
 }
 
-// Create the ClusterRole required for NDM
+// CreateClusterRole creates the required cluster role
 func CreateClusterRole(clientset client.Client, clusterRole rbacv1beta1.ClusterRole) error {
-	//_, err := clientset.RbacV1beta1().ClusterRoles().Create(&clusterrole)
 	err := clientset.Create(context.Background(), &clusterRole)
 	return err
 }
 
-// Delete the ClusterRole required for NDM
+// DeleteClusterRole deletes the cluster role used by NDM
 func DeleteClusterRole(clientset client.Client, clusterRole rbacv1beta1.ClusterRole) error {
 	err := clientset.Delete(context.Background(), &clusterRole)
 	return err
 }
 
-// Create the ClusterRoleBinding required for NDM
+// CreateClusterRoleBinding creates the rolebinding
 func CreateClusterRoleBinding(clientset client.Client, clusterRoleBinding rbacv1beta1.ClusterRoleBinding) error {
-	//_, err := clientset.RbacV1beta1().ClusterRoleBindings().Create(&clusterrolebinding)
 	err := clientset.Create(context.Background(), &clusterRoleBinding)
 	return err
 }
 
-// Delete the ClusterRoleBinding required for NDM
+// DeleteClusterRoleBinding deletes the role binding
 func DeleteClusterRoleBinding(clientset client.Client, clusterrolebinding rbacv1beta1.ClusterRoleBinding) error {
 	err := clientset.Delete(context.Background(), &clusterrolebinding)
 	return err
 }
 
-// Create CRD
+// CreateCustomResourceDefinition creates the CRD (currently CRD for disk)
 func CreateCustomResourceDefinition(clientset *apiextensionsclient.Clientset, customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition) error {
 	_, err := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Create(&customResourceDefinition)
-	//err := clientset.Create(context.Background(), &customresourcedefinition)
 	return err
 }
 
-// Delete CRD
+// DeleteCustomResourceDefinition deletes the CRD
 func DeleteCustomResourceDefinition(clientset *apiextensionsclient.Clientset, customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition) error {
 	err := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(customResourceDefinition.Name, &metav1.DeleteOptions{})
-	//err := clientset.Delete(context.Background(), &customresourcedefinition)
 	return err
 }
 
-// Create the NDM DaemonSet
+// CreateDaemonSet creates the NDM Daemonset
 func CreateDaemonSet(clientset client.Client, daemonset v1beta1.DaemonSet) error {
-	//_, err := clientset.ExtensionsV1beta1().DaemonSets(ns).Create(&daemonset)
 	daemonset.Namespace = namespace
 	err := clientset.Create(context.Background(), &daemonset)
 	return err
 }
 
-// Delete NDM DaemonSet
+// DeleteDaemonSet deletes the NDM Daemonset from the cluster
 func DeleteDaemonSet(clientset client.Client, daemonset v1beta1.DaemonSet) error {
-	/*deletePropogation := metav1.DeletePropagationForeground
-	deleteOptions := metav1.DeleteOptions{
-		PropagationPolicy: &deletePropogation,
-	}*/
 	daemonset.Namespace = namespace
 	err := clientset.Delete(context.Background(), &daemonset, client.PropagationPolicy(metav1.DeletePropagationForeground))
 	return err

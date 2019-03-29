@@ -8,12 +8,16 @@ import (
 	"time"
 )
 
+// Disk and system attributes corresponding to backing image and
+// the loop device
 const (
 	blockSize      = 4096
 	imageDirectory = "/tmp"
 	syspath        = "/sys/class/block"
 )
 
+// Disk has the attributes of a virtual disk which is emulated for integration
+// testing.
 type Disk struct {
 	// Size in bytes
 	Size uint64
@@ -25,6 +29,9 @@ type Disk struct {
 	Name string
 }
 
+// NewDisk creates a Disk struct, with a specified size. Also the
+// random disk image name is generated. The actual image is generated only when
+// we try to attach the disk
 func NewDisk(size uint64) Disk {
 	disk := Disk{
 		Size:      size,
@@ -57,7 +64,7 @@ func (disk *Disk) createAndAttachDisk() error {
 	return nil
 }
 
-// Triggers a udev remove event. Detaches the loop device from the backing
+// DetachAndDeleteDisk triggers a udev remove event. It detaches the loop device from the backing
 // image. Also deletes the backing image and block device file in /dev
 func (disk *Disk) DetachAndDeleteDisk() error {
 	if disk.Name == "" {
@@ -105,7 +112,7 @@ func getLoopDevName() string {
 	return diskName
 }
 
-// Triggers a udev add event for the disk. If the disk is not present, the loop
+// AttachDisk triggers a udev add event for the disk. If the disk is not present, the loop
 // device is created and event is triggered
 func (disk *Disk) AttachDisk() error {
 	if disk.Name == "" {
@@ -114,7 +121,7 @@ func (disk *Disk) AttachDisk() error {
 	return TriggerEvent(UdevEventAdd, syspath, disk.Name)
 }
 
-// Detach the disk, a udev remove event is triggered for the disk
+// DetachDisk triggers a udev remove event for the disk
 func (disk *Disk) DetachDisk() error {
 	return TriggerEvent(UdevEventRemove, syspath, disk.Name)
 }

@@ -8,11 +8,17 @@ import (
 )
 
 const (
+	// SparseDiskName is the name given disk CRs created for a
+	// sparse image
 	SparseDiskName = "sparse-"
-	DiskName       = "disk-"
-	ActiveState    = "Active"
-	InactiveState  = "Inactive"
-	DiskImageSize  = 1073741824
+	// DiskName is the name of the disk CRs created corresponding to
+	// physical/virtual disks
+	DiskName = "disk-"
+	// State of the disk CR
+	ActiveState   = "Active"
+	InactiveState = "Inactive"
+	// The default file size used while creating backing image
+	DiskImageSize = 1073741824
 )
 
 var _ = Describe("NDM Basic Tests", func() {

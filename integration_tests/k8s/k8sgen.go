@@ -9,8 +9,11 @@ import (
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
 
+// NDMYaml is a string type that stores the path to the YAML files
+// which are required to deploy NDM
 type NDMYaml string
 
+// Path to various YAMLs used for integration testing
 const (
 	ConfigMapYAML                NDMYaml = "../yamls/configmap.yaml"
 	ServiceAccountYAML           NDMYaml = "../yamls/serviceaccount.yaml"
@@ -20,7 +23,7 @@ const (
 	DaemonSetYAML                NDMYaml = "../yamls/daemonset.yaml"
 )
 
-// Generate the ConfigMap object for NDM from the yaml file
+// GetConfigMap generates the ConfigMap object for NDM from the yaml file
 func GetConfigMap() (v1.ConfigMap, error) {
 	var configMap v1.ConfigMap
 	yamlstring, err := utils.GetYAMLString(string(ConfigMapYAML))
@@ -34,7 +37,7 @@ func GetConfigMap() (v1.ConfigMap, error) {
 	return configMap, nil
 }
 
-// Generate the ServiceAccount object from the yaml file
+// GetServiceAccount generates the ServiceAccount object from the yaml file
 func GetServiceAccount() (v1.ServiceAccount, error) {
 	var serviceAccount v1.ServiceAccount
 	yamlstring, err := utils.GetYAMLString(string(ServiceAccountYAML))
@@ -48,7 +51,7 @@ func GetServiceAccount() (v1.ServiceAccount, error) {
 	return serviceAccount, nil
 }
 
-// Generate the ClusterRole object from the yaml file
+// GetClusterRole generates the ClusterRole object from the yaml file
 func GetClusterRole() (rbacv1beta1.ClusterRole, error) {
 	var clusterRole rbacv1beta1.ClusterRole
 	yamlstring, err := utils.GetYAMLString(string(ClusterRoleYAML))
@@ -62,7 +65,7 @@ func GetClusterRole() (rbacv1beta1.ClusterRole, error) {
 	return clusterRole, nil
 }
 
-// Generate the ClusterRoleBinding object from the yaml file
+// GetClusterRoleBinding generates the ClusterRoleBinding object from the yaml file
 func GetClusterRoleBinding() (rbacv1beta1.ClusterRoleBinding, error) {
 	var clusterRoleBinding rbacv1beta1.ClusterRoleBinding
 	yamlstring, err := utils.GetYAMLString(string(ClusterRoleBindingYAML))
@@ -76,7 +79,7 @@ func GetClusterRoleBinding() (rbacv1beta1.ClusterRoleBinding, error) {
 	return clusterRoleBinding, err
 }
 
-// Generate the CustomResourceDefinition object for disk CR from the yaml file
+// GetCustomResourceDefinition generates the CustomResourceDefinition object for disk CR from the yaml file
 func GetCustomResourceDefinition() (apiextensionsv1beta1.CustomResourceDefinition, error) {
 	var customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition
 	yamlString, err := utils.GetYAMLString(string(CustomResourceDefinitionYAML))
@@ -90,7 +93,7 @@ func GetCustomResourceDefinition() (apiextensionsv1beta1.CustomResourceDefinitio
 	return customResourceDefinition, err
 }
 
-// Generate the NDM DaemonSet object from the yaml file
+// GetDaemonSet generates the NDM DaemonSet object from the yaml file
 func GetDaemonSet() (v1beta1.DaemonSet, error) {
 	var daemonSet v1beta1.DaemonSet
 	yamlstring, err := utils.GetYAMLString(string(DaemonSetYAML))
