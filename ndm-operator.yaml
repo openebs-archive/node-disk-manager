@@ -134,6 +134,12 @@ spec:
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
+          # sets the required selinux labels to the container so that pod
+          # can run in privileged mode on systems enforcing SELinux
+          seLinuxOptions:
+            level: s0:c25,c968
+            role: unconfined_u
+            user: unconfined_u
         # make udev database available inside container
         volumeMounts:
         - name: config
@@ -142,7 +148,7 @@ spec:
           readOnly: true
         - name: udev
           mountPath: /run/udev
-        - name: procmount
+        - name: mountpath
           mountPath: /host/mounts
         - name: sparsepath
           mountPath: /var/openebs
@@ -170,11 +176,11 @@ spec:
         hostPath:
           path: /run/udev
           type: Directory
-      - name: procmount
-      # mount /proc/1/mounts (mount file of process 1 of host) inside container
-      # to read which partition is mounted on / path
+      - name: mountpath
+        # mount /etc/mtab (symlink to /proc/self/mounts) inside container
+        # to read which partition is mounted on / path
         hostPath:
-          path: /proc/1/mounts
+          path: /etc/mtab
       - name: sparsepath
         hostPath:
           path: /var/openebs
