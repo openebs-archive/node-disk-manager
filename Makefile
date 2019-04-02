@@ -8,8 +8,13 @@ BUILD_PATH_NDM=ndm_daemonset
 # env for specifying that we want to build node-disk-operator
 BUILD_PATH_NDO=manager
 
+BUILD_ARCH = $(go env GOARCH)
+
+build: clean vet fmt version ndm docker_ndm ndo docker_ndo
 # Build the node-disk-manager image.
-build: clean vet fmt shellcheck version ndm docker_ndm ndo docker_ndo
+ifeq ($(BUILD_ARCH), ppc64le)
+build: clean vet fmt version ndm docker_ndm ndo docker_ndo
+endif
 
 NODE_DISK_MANAGER?=ndm
 NODE_DISK_OPERATOR?=ndo
