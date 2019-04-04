@@ -52,6 +52,7 @@ before_script:
   # from the integration tests which run as a non-root user can access the files and connect
   # to the minikube cluster
   - sudo chown -R $USER $HOME/.minikube
+  - sudo chown -R $USER $HOME/.kube
 
 script:
   - make
