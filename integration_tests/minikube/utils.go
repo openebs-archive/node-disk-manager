@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-// Check if all components in the minikube cluster is
-// in running state. If the api-server is Running we can
-// proceed with further operations on minikube
+// IsUpAndRunning checks if all components in the minikube cluster is
+// in running state. If the api-server is Running we can proceed
+// with further operations on minikube
 func (minikube Minikube) IsUpAndRunning() bool {
 	startTime := time.Now()
 	var status map[string]string
@@ -29,8 +29,8 @@ func (minikube Minikube) IsUpAndRunning() bool {
 	return false
 }
 
-// Waits for a fixed time or till the kube-config file
-// is available
+// WaitForMinikubeToBeReady waits for a fixed time or till the kube-config
+// file is available
 func (minikube Minikube) WaitForMinikubeToBeReady() error {
 	startTime := time.Now()
 	configPath, _ := utils.GetConfigPath()
@@ -45,7 +45,6 @@ func (minikube Minikube) WaitForMinikubeToBeReady() error {
 	}
 	if time.Since(startTime) >= minikube.Timeout {
 		return fmt.Errorf("Kubeconfig file not generated")
-	} else {
-		return nil
 	}
+	return nil
 }

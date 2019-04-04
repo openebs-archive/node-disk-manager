@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Return the status of the minikube cluster.
+// Status returns the status of the minikube cluster.
 // The map contains status of each component.
 // apiserver, kubelet etc.
 func (minikube Minikube) Status() (map[string]string, error) {

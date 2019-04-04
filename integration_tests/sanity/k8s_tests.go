@@ -14,10 +14,11 @@ const (
 	// DiskName is the name of the disk CRs created corresponding to
 	// physical/virtual disks
 	DiskName = "disk-"
-	// State of the disk CR
-	ActiveState   = "Active"
+	// ActiveState stores the active state of Disk/Device resource
+	ActiveState = "Active"
+	// InactiveState stores the deactivated state of Disk/Device resource
 	InactiveState = "Inactive"
-	// The default file size used while creating backing image
+	// DiskImageSize is the default file size used while creating backing image
 	DiskImageSize = 1073741824
 )
 

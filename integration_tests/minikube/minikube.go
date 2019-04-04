@@ -5,14 +5,20 @@ import (
 	"time"
 )
 
-const CommandName = "minikube"
-const Running = "Running"
+const (
+	// CommandName is the command to execute the minikube binary
+	CommandName = "minikube"
+	// Running is the active/running status of minikube cluster
+	Running = "Running"
+)
 
 var runCommand = utils.RunCommandWithSudo
 var execCommand = utils.ExecCommandWithSudo
 
+// Minikube contains the objects to be used while interfacing
+// with a minikube cluster
 type Minikube struct {
-	//the command to execute for minikube cluster
+	// the command to execute for minikube cluster
 	Command string
 
 	// timeout duration for all minikube operations
@@ -23,7 +29,7 @@ type Minikube struct {
 	WaitTime time.Duration
 }
 
-// Returns a new minikube struct with the command to execute
+// NewMinikube returns a new minikube struct with the command to execute
 // and the default wait-timeout
 func NewMinikube() Minikube {
 	return Minikube{

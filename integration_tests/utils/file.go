@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-// Get the yaml-string from the given YAML file
+// GetYAMLString gets the yaml-string from the given YAML file
 func GetYAMLString(fileName string) (string, error) {
 	fileBytes, err := ioutil.ReadFile(fileName)
 	if err != nil {
@@ -15,7 +15,7 @@ func GetYAMLString(fileName string) (string, error) {
 	return string(fileBytes), nil
 }
 
-// Get the home directory for the system.
+// GetHomeDir gets the home directory for the system.
 // It is required to locate the .kube/config file
 func GetHomeDir() (string, error) {
 	if h := os.Getenv("HOME"); h != "" {
@@ -25,7 +25,7 @@ func GetHomeDir() (string, error) {
 	return "", fmt.Errorf("Not able to locate home directory")
 }
 
-// Get the filepath of kubeconfig file
+// GetConfigPath returns the filepath of kubeconfig file
 func GetConfigPath() (string, error) {
 	home, err := GetHomeDir()
 	if err != nil {

@@ -9,7 +9,6 @@ import (
 const (
 	UdevEventAdd    = "add"
 	UdevEventRemove = "remove"
-	UdevEventChange = "change"
 )
 
 var execCommandWithPipe = utils.ExecCommandWithPipe
