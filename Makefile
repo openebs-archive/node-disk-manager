@@ -82,7 +82,7 @@ header:
 	@echo
 
 integration-test:
-	go test -v github.com/openebs/node-disk-manager/integration_tests/sanity
+	go test -v -timeout 15m github.com/openebs/node-disk-manager/integration_tests/sanity
 
 ndm:
 	@echo '--> Building node-disk-manager binary...'
