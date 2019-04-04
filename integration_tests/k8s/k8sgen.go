@@ -15,12 +15,14 @@ type NDMYaml string
 
 // Path to various YAMLs used for integration testing
 const (
-	ConfigMapYAML                NDMYaml = "../yamls/configmap.yaml"
-	ServiceAccountYAML           NDMYaml = "../yamls/serviceaccount.yaml"
-	ClusterRoleYAML              NDMYaml = "../yamls/clusterrole.yaml"
-	ClusterRoleBindingYAML       NDMYaml = "../yamls/clusterrolebinding.yaml"
-	CustomResourceDefinitionYAML NDMYaml = "../yamls/diskCR.yaml"
-	DaemonSetYAML                NDMYaml = "../yamls/daemonset.yaml"
+	ConfigMapYAML          NDMYaml = "../yamls/configmap.yaml"
+	ServiceAccountYAML     NDMYaml = "../yamls/serviceaccount.yaml"
+	ClusterRoleYAML        NDMYaml = "../yamls/clusterrole.yaml"
+	ClusterRoleBindingYAML NDMYaml = "../yamls/clusterrolebinding.yaml"
+	DiskCRDYAML            NDMYaml = "../yamls/diskCR.yaml"
+	DeviceCRDYAML          NDMYaml = "../yamls/deviceCR.yaml"
+	DeviceRequestCRDYAML   NDMYaml = "../yamls/deviceRequestCR.yaml"
+	DaemonSetYAML          NDMYaml = "../yamls/daemonset.yaml"
 )
 
 // GetConfigMap generates the ConfigMap object for NDM from the yaml file
@@ -79,10 +81,11 @@ func GetClusterRoleBinding() (rbacv1beta1.ClusterRoleBinding, error) {
 	return clusterRoleBinding, err
 }
 
-// GetCustomResourceDefinition generates the CustomResourceDefinition object for disk CR from the yaml file
-func GetCustomResourceDefinition() (apiextensionsv1beta1.CustomResourceDefinition, error) {
+// GetCustomResourceDefinition generates the CustomResourceDefinition object from the specified
+// YAML file
+func GetCustomResourceDefinition(crdyaml NDMYaml) (apiextensionsv1beta1.CustomResourceDefinition, error) {
 	var customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition
-	yamlString, err := utils.GetYAMLString(string(CustomResourceDefinitionYAML))
+	yamlString, err := utils.GetYAMLString(string(crdyaml))
 	if err != nil {
 		return customResourceDefinition, err
 	}

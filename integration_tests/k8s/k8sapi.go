@@ -56,17 +56,9 @@ func GetDiskList(clientSet k8sClient) (*v1alpha1.DiskList, error) {
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
-	i := 3
 
 	var err error
-	for i > 0 {
-		i--
-		err = clientSet.RunTimeClient.List(context.TODO(), &client.ListOptions{}, diskList)
-		if err == nil {
-			break
-		}
-		time.Sleep(10 * time.Second)
-	}
+	err = clientSet.RunTimeClient.List(context.TODO(), &client.ListOptions{}, diskList)
 	if err != nil {
 		return nil, fmt.Errorf("cannot list disks. Error :%v", err)
 	}
@@ -120,12 +112,32 @@ func CreateNDMYAML(clientset k8sClient) error {
 		return err
 	}
 
-	// creating crd
-	crd, err := GetCustomResourceDefinition()
+	// creating disk crd
+	diskcrd, err := GetCustomResourceDefinition(DiskCRDYAML)
 	if err != nil {
 		return err
 	}
-	err = CreateCustomResourceDefinition(clientset.APIextClient, crd)
+	err = CreateCustomResourceDefinition(clientset.APIextClient, diskcrd)
+	if err != nil {
+		return err
+	}
+
+	// creating device crd
+	devicecrd, err := GetCustomResourceDefinition(DeviceCRDYAML)
+	if err != nil {
+		return err
+	}
+	err = CreateCustomResourceDefinition(clientset.APIextClient, devicecrd)
+	if err != nil {
+		return err
+	}
+
+	// creating device request crd
+	deviceRequestcrd, err := GetCustomResourceDefinition(DeviceRequestCRDYAML)
+	if err != nil {
+		return err
+	}
+	err = CreateCustomResourceDefinition(clientset.APIextClient, deviceRequestcrd)
 	if err != nil {
 		return err
 	}
@@ -188,12 +200,30 @@ func DeleteNDMYAML(clientset k8sClient) error {
 		return err
 	}
 
-	// deleting crd
-	crd, err := GetCustomResourceDefinition()
+	// deleting disk crd
+	diskcrd, err := GetCustomResourceDefinition(DiskCRDYAML)
 	if err != nil {
 		return err
 	}
-	err = DeleteCustomResourceDefinition(clientset.APIextClient, crd)
+	err = DeleteCustomResourceDefinition(clientset.APIextClient, diskcrd)
+	if err != nil {
+		return err
+	}
+	// deleting device crd
+	devicecrd, err := GetCustomResourceDefinition(DeviceCRDYAML)
+	if err != nil {
+		return err
+	}
+	err = DeleteCustomResourceDefinition(clientset.APIextClient, devicecrd)
+	if err != nil {
+		return err
+	}
+	// deleting device request crd
+	devicerequestcrd, err := GetCustomResourceDefinition(DeviceRequestCRDYAML)
+	if err != nil {
+		return err
+	}
+	err = DeleteCustomResourceDefinition(clientset.APIextClient, devicerequestcrd)
 	if err != nil {
 		return err
 	}
