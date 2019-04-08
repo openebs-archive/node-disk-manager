@@ -4,7 +4,7 @@ export GOTRACEBACK=crash
 
 echo "[entrypoint.sh] enabling core dump."
 ulimit -c unlimited
-echo "/var/openebs/core.%e.%p.%h.%t" > /proc/sys/kernel/core_pattern
+echo "/var/openebs/sparse/core.%e.%p.%h.%t" > /proc/sys/kernel/core_pattern
 echo "[entrypoint.sh] launching ndm process."
 /usr/sbin/ndm start &
 
