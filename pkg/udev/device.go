@@ -34,7 +34,7 @@ type UdevDevice struct {
 // it returns nil if the pointer passed is NULL.
 func newUdevDevice(ptr *C.struct_udev_device) (*UdevDevice, error) {
 	if ptr == nil {
-		return nil, errors.New("unable to create Udevice object for for null struct struct_udev_device")
+		return nil, errors.New("unable to create Udevice object for null struct struct_udev_device")
 	}
 	ud := &UdevDevice{
 		udptr: ptr,
