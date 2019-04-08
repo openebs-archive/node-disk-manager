@@ -180,7 +180,7 @@ spec:
         - name: procmount
           mountPath: /host/mounts
         - name: sparsepath
-          mountPath: /var/openebs
+          mountPath: /var/openebs/sparse
         env:
         # pass hostname as env variable using downward API to the NDM container
         - name: NODE_NAME
@@ -212,7 +212,7 @@ spec:
           path: /proc/1/mounts
       - name: sparsepath
         hostPath:
-          path: /var/openebs
+          path: /var/openebs/sparse
 ---
 apiVersion: apps/v1
 kind: Deployment
