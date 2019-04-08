@@ -80,7 +80,7 @@ func TestNewDeviceFromSysPath(t *testing.T) {
 	if device1 != nil {
 		t.Fatal("device should be nil for invalid syspath")
 	}
-	assert.Equal(t, errors.New("unable to create Udevice object for for null struct struct_udev_device"), err)
+	assert.Equal(t, errors.New("unable to create Udevice object for null struct struct_udev_device"), err)
 	diskDetails, err := MockDiskDetails()
 	if err != nil {
 		t.Fatal(err)

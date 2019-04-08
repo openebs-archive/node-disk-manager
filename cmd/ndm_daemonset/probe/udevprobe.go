@@ -171,7 +171,7 @@ func (up *udevProbe) scan() error {
 func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	udevDevice, err := newUdevProbeForFillDiskDetails(d.ProbeIdentifiers.UdevIdentifier)
 	if err != nil {
-		glog.Error(err)
+		glog.Errorf("%s : %s", d.ProbeIdentifiers.UdevIdentifier, err)
 		return
 	}
 	udevDiskDetails := udevDevice.udevDevice.DiskInfoFromLibudev()
