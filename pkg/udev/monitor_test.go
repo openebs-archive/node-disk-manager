@@ -117,6 +117,6 @@ func TestUdevMonitorNewDevice(t *testing.T) {
 	defer udevMonitor.UdevMonitorUnref()
 	_, err = udevMonitor.ReceiveDevice()
 	if err != nil {
-		assert.Equal(t, errors.New("unable to create Udevice object for for null struct struct_udev_device"), err)
+		assert.Equal(t, errors.New("unable to create Udevice object for null struct struct_udev_device"), err)
 	}
 }
