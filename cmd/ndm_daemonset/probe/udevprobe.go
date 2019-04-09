@@ -94,20 +94,20 @@ func newUdevProbe(c *controller.Controller) *udevProbe {
 // newUdevProbeForFillDiskDetails returns udevProbe struct which helps populate diskInfo struct.
 // it contains copy of udevDevice struct to populate diskInfo use defer free in caller function
 // to free c pointer memory
-func newUdevProbeForFillDiskDetails(sysPath string) *udevProbe {
+func newUdevProbeForFillDiskDetails(sysPath string) (*udevProbe, error) {
 	udev, err := libudevwrapper.NewUdev()
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	udevDevice, err := udev.NewDeviceFromSysPath(sysPath)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	udevProbe := &udevProbe{
 		udev:       udev,
 		udevDevice: udevDevice,
 	}
-	return udevProbe
+	return udevProbe, nil
 }
 
 // Start setup udev probe listener and make a single scan of system
@@ -169,7 +169,11 @@ func (up *udevProbe) scan() error {
 
 // fillDiskDetails filles details in diskInfo struct using probe information
 func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
-	udevDevice := newUdevProbeForFillDiskDetails(d.ProbeIdentifiers.UdevIdentifier)
+	udevDevice, err := newUdevProbeForFillDiskDetails(d.ProbeIdentifiers.UdevIdentifier)
+	if err != nil {
+		glog.Errorf("%s : %s", d.ProbeIdentifiers.UdevIdentifier, err)
+		return
+	}
 	udevDiskDetails := udevDevice.udevDevice.DiskInfoFromLibudev()
 	defer udevDevice.free()
 	d.ProbeIdentifiers.SmartIdentifier = udevDiskDetails.Path

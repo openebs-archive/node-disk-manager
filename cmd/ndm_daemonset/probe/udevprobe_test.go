@@ -17,6 +17,7 @@ limitations under the License.
 package probe
 
 import (
+	"errors"
 	"sync"
 	"testing"
 
@@ -188,6 +189,46 @@ func TestUdevProbe(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			assert.Equal(t, test.expectedDisk, test.actualDisk)
+			assert.Equal(t, test.expectedError, test.actualError)
+		})
+	}
+}
+
+func TestNewUdevProbeForFillDiskDetails(t *testing.T) {
+	// Creating the actual udev probe struct
+	mockDisk, err := libudevwrapper.MockDiskDetails()
+	if err != nil {
+		t.Fatal(err)
+	}
+	sysPath := mockDisk.SysPath
+	udev, err := libudevwrapper.NewUdev()
+	if err != nil {
+		t.Fatal(err)
+	}
+	actualUdevProbe := &udevProbe{
+		udev: udev,
+	}
+	actualUdevProbe.udevDevice, err = actualUdevProbe.udev.NewDeviceFromSysPath(sysPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	udevProbeError := errors.New("unable to create Udevice object for null struct struct_udev_device")
+
+	// expected cases
+	expectedUdevProbe1, expectedError1 := newUdevProbeForFillDiskDetails(sysPath)
+	expectedUdevProbe2, expectedError2 := newUdevProbeForFillDiskDetails("")
+	tests := map[string]struct {
+		actualUdevProbe   *udevProbe
+		expectedUdevProbe *udevProbe
+		actualError       error
+		expectedError     error
+	}{
+		"udev probe with correct syspath": {actualUdevProbe: actualUdevProbe, expectedUdevProbe: expectedUdevProbe1, actualError: nil, expectedError: expectedError1},
+		"udev probe with empty syspath":   {actualUdevProbe: nil, expectedUdevProbe: expectedUdevProbe2, actualError: udevProbeError, expectedError: expectedError2},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expectedUdevProbe, test.actualUdevProbe)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
