@@ -64,18 +64,18 @@ func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 	drCopy := dr.DeepCopy()
 
 	if oldDr == nil {
-		oldDrCopy := dr.DeepCopy()
+		oldDr = dr.DeepCopy()
 		var err error
 		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
-			Namespace: oldDrCopy.Namespace,
-			Name:      oldDrCopy.Name}, oldDrCopy)
+			Namespace: oldDr.Namespace,
+			Name:      oldDr.Name}, oldDr)
 		if err != nil {
-			glog.Errorf("Unable to get disk object:%v, err:%v", oldDrCopy.ObjectMeta.Name, err)
+			glog.Errorf("Unable to get disk object:%v, err:%v", oldDr.ObjectMeta.Name, err)
 			return err
 		}
-		drCopy.ObjectMeta.ResourceVersion = oldDrCopy.ObjectMeta.ResourceVersion
 	}
 
+	drCopy.ObjectMeta.ResourceVersion = oldDr.ObjectMeta.ResourceVersion
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
 		glog.Errorf("Unable to update disk object:%v, err:%v", drCopy.ObjectMeta.Name, err)
