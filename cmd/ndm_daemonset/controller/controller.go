@@ -135,7 +135,7 @@ func NewController(kubeconfig string) (*Controller, error) {
 		return controller, err
 	}
 
-	controller.Clientset = controller.mgr.GetClient()
+	controller.Clientset, err = client.New(cfg, client.Options{})
 	if err != nil {
 		return controller, err
 	}

@@ -77,17 +77,17 @@ func (c *Controller) UpdateDevice(dvr apis.Device, oldDvr *apis.Device) error {
 
 	dvrCopy := dvr.DeepCopy()
 	if oldDvr == nil {
-		oldDvrCopy := dvr.DeepCopy()
+		oldDvr = dvr.DeepCopy()
 		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
-			Namespace: oldDvrCopy.Namespace,
-			Name:      oldDvrCopy.Name}, oldDvrCopy)
+			Namespace: oldDvr.Namespace,
+			Name:      oldDvr.Name}, oldDvr)
 		if err != nil {
-			glog.Error("Unable to get device object : ", err)
+			glog.Errorf("Unable to get device object:%v, err:%v", oldDvr.ObjectMeta.Name, err)
 			return err
 		}
-		dvrCopy.ObjectMeta.ResourceVersion = oldDvrCopy.ObjectMeta.ResourceVersion
 	}
 
+	dvrCopy.ObjectMeta.ResourceVersion = oldDvr.ObjectMeta.ResourceVersion
 	err = c.Clientset.Update(context.TODO(), dvrCopy)
 	if err != nil {
 		glog.Error("Unable to update device object : ", err)
