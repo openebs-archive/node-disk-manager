@@ -5,5 +5,5 @@ metadata:
   name: openebs-ndm-operator
 rules:
 - apiGroups: ["*"]
-  resources: ["disks"]
+  resources: ["disks", "devices", "devicerequests"]
   verbs: ["*"]
