@@ -68,7 +68,7 @@ func (disk *Disk) createAndAttachDisk() error {
 // image. Also deletes the backing image and block device file in /dev
 func (disk *Disk) DetachAndDeleteDisk() error {
 	if disk.Name == "" {
-		return fmt.Errorf("no such present for deletion")
+		return fmt.Errorf("no such disk present for deletion")
 	}
 	detachLoopCommand := "losetup -d " + disk.Name
 	err := utils.RunCommandWithSudo(detachLoopCommand)

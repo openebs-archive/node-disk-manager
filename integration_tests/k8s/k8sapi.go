@@ -65,219 +65,43 @@ func GetDiskList(clientSet k8sClient) (*v1alpha1.DiskList, error) {
 	return diskList, nil
 }
 
-// CreateNDMYAML creates all the objects specified in the NDM operator YAML.
-// Each resource object is generated from yaml file in ../yamls/ and parsed into
-// the required type. ConfigMap, ServiceAccount, ClusterRole, ClusterRoleBinding,
-// CustomResourceDefinition and DaemonSet are created
-func CreateNDMYAML(clientset k8sClient) error {
-	var err error
-
-	// creating NDM ConfigMap
-	configmap, err := GetConfigMap()
-	if err != nil {
-		return err
-	}
-	err = CreateConfigMap(clientset.RunTimeClient, configmap)
-	if err != nil {
-		return err
-	}
-
-	// creating NDM serviceAccount
-	serviceaccount, err := GetServiceAccount()
-	if err != nil {
-		return err
-	}
-	err = CreateServiceAccount(clientset.RunTimeClient, serviceaccount)
-	if err != nil {
-		return err
-	}
-
-	// creating NDM cluster role
-	clusterrole, err := GetClusterRole()
-	if err != nil {
-		return err
-	}
-	err = CreateClusterRole(clientset.RunTimeClient, clusterrole)
-	if err != nil {
-		return err
-	}
-
-	// creating NDM clusterrole binding
-	clusterrolebinding, err := GetClusterRoleBinding()
-	if err != nil {
-		return err
-	}
-	err = CreateClusterRoleBinding(clientset.RunTimeClient, clusterrolebinding)
-	if err != nil {
-		return err
-	}
-
-	// creating disk crd
-	diskcrd, err := GetCustomResourceDefinition(DiskCRDYAML)
-	if err != nil {
-		return err
-	}
-	err = CreateCustomResourceDefinition(clientset.APIextClient, diskcrd)
-	if err != nil {
-		return err
-	}
-
-	// creating device crd
-	devicecrd, err := GetCustomResourceDefinition(DeviceCRDYAML)
-	if err != nil {
-		return err
-	}
-	err = CreateCustomResourceDefinition(clientset.APIextClient, devicecrd)
-	if err != nil {
-		return err
-	}
-
-	// creating device request crd
-	deviceRequestcrd, err := GetCustomResourceDefinition(DeviceRequestCRDYAML)
-	if err != nil {
-		return err
-	}
-	err = CreateCustomResourceDefinition(clientset.APIextClient, deviceRequestcrd)
-	if err != nil {
-		return err
-	}
-
-	// creating NDM daemonset
-	daemonset, err := GetDaemonSet()
-	if err != nil {
-		return err
-	}
-	err = CreateDaemonSet(clientset.RunTimeClient, daemonset)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// DeleteNDMYAML deletes all the objects specified in the NDM operator YAML.
-// ConfigMap, ServiceAccount, ClusterRole, ClusterRoleBinding,
-// CustomResourceDefinition and DaemonSet are deleted
-func DeleteNDMYAML(clientset k8sClient) error {
-	var err error
-
-	// deleting NDM ConfigMap
-	configmap, err := GetConfigMap()
-	if err != nil {
-		return err
-	}
-	err = DeleteConfigMap(clientset.RunTimeClient, configmap)
-	if err != nil {
-		return err
-	}
-
-	// deleting NDM serviceAccount
-	serviceaccount, err := GetServiceAccount()
-	if err != nil {
-		return err
-	}
-	err = DeleteServiceAccount(clientset.RunTimeClient, serviceaccount)
-	if err != nil {
-		return err
-	}
-
-	// deleting NDM cluster role
-	clusterrole, err := GetClusterRole()
-	if err != nil {
-		return err
-	}
-	err = DeleteClusterRole(clientset.RunTimeClient, clusterrole)
-	if err != nil {
-		return err
-	}
-
-	// deleting NDM clusterrole binding
-	clusterrolebinding, err := GetClusterRoleBinding()
-	if err != nil {
-		return err
-	}
-	err = DeleteClusterRoleBinding(clientset.RunTimeClient, clusterrolebinding)
-	if err != nil {
-		return err
-	}
-
-	// deleting disk crd
-	diskcrd, err := GetCustomResourceDefinition(DiskCRDYAML)
-	if err != nil {
-		return err
-	}
-	err = DeleteCustomResourceDefinition(clientset.APIextClient, diskcrd)
-	if err != nil {
-		return err
-	}
-	// deleting device crd
-	devicecrd, err := GetCustomResourceDefinition(DeviceCRDYAML)
-	if err != nil {
-		return err
-	}
-	err = DeleteCustomResourceDefinition(clientset.APIextClient, devicecrd)
-	if err != nil {
-		return err
-	}
-	// deleting device request crd
-	devicerequestcrd, err := GetCustomResourceDefinition(DeviceRequestCRDYAML)
-	if err != nil {
-		return err
-	}
-	err = DeleteCustomResourceDefinition(clientset.APIextClient, devicerequestcrd)
-	if err != nil {
-		return err
-	}
-
-	// deleting NDM daemonset
-	daemonset, err := GetDaemonSet()
-	if err != nil {
-		return err
-	}
-	err = DeleteDaemonSet(clientset.RunTimeClient, daemonset)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// CreateConfigMap creates the NDM config map
+// CreateConfigMap creates a config map
 func CreateConfigMap(clientset client.Client, configMap v1.ConfigMap) error {
 	err := clientset.Create(context.Background(), &configMap)
 	return err
 }
 
-// DeleteConfigMap deletes the NDM config map
+// DeleteConfigMap deletes the config map
 func DeleteConfigMap(clientset client.Client, configMap v1.ConfigMap) error {
 	err := clientset.Delete(context.Background(), &configMap)
 	return err
 }
 
-// CreateServiceAccount creates the service account required for NDM
+// CreateServiceAccount creates a service account
 func CreateServiceAccount(clientset client.Client, serviceAccount v1.ServiceAccount) error {
 	err := clientset.Create(context.Background(), &serviceAccount)
 	return err
 }
 
-// DeleteServiceAccount deletes the service account used by NDM
+// DeleteServiceAccount deletes the service account
 func DeleteServiceAccount(clientset client.Client, serviceAccount v1.ServiceAccount) error {
 	err := clientset.Delete(context.Background(), &serviceAccount)
 	return err
 }
 
-// CreateClusterRole creates the required cluster role
+// CreateClusterRole creates a cluster role
 func CreateClusterRole(clientset client.Client, clusterRole rbacv1beta1.ClusterRole) error {
 	err := clientset.Create(context.Background(), &clusterRole)
 	return err
 }
 
-// DeleteClusterRole deletes the cluster role used by NDM
+// DeleteClusterRole deletes the cluster role
 func DeleteClusterRole(clientset client.Client, clusterRole rbacv1beta1.ClusterRole) error {
 	err := clientset.Delete(context.Background(), &clusterRole)
 	return err
 }
 
-// CreateClusterRoleBinding creates the rolebinding
+// CreateClusterRoleBinding creates a rolebinding
 func CreateClusterRoleBinding(clientset client.Client, clusterRoleBinding rbacv1beta1.ClusterRoleBinding) error {
 	err := clientset.Create(context.Background(), &clusterRoleBinding)
 	return err
@@ -289,7 +113,7 @@ func DeleteClusterRoleBinding(clientset client.Client, clusterrolebinding rbacv1
 	return err
 }
 
-// CreateCustomResourceDefinition creates the CRD (currently CRD for disk)
+// CreateCustomResourceDefinition creates a CRD
 func CreateCustomResourceDefinition(clientset *apiextensionsclient.Clientset, customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition) error {
 	_, err := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Create(&customResourceDefinition)
 	return err
@@ -301,14 +125,14 @@ func DeleteCustomResourceDefinition(clientset *apiextensionsclient.Clientset, cu
 	return err
 }
 
-// CreateDaemonSet creates the NDM Daemonset
+// CreateDaemonSet creates a Daemonset
 func CreateDaemonSet(clientset client.Client, daemonset v1beta1.DaemonSet) error {
 	daemonset.Namespace = namespace
 	err := clientset.Create(context.Background(), &daemonset)
 	return err
 }
 
-// DeleteDaemonSet deletes the NDM Daemonset from the cluster
+// DeleteDaemonSet deletes the Daemonset
 func DeleteDaemonSet(clientset client.Client, daemonset v1beta1.DaemonSet) error {
 	daemonset.Namespace = namespace
 	err := clientset.Delete(context.Background(), &daemonset, client.PropagationPolicy(metav1.DeletePropagationForeground))
