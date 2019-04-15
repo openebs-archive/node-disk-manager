@@ -204,7 +204,7 @@ func CacheResponseHandler(h http.Handler, informerCache cache.Cache, restMapper 
 }
 
 // InjectOwnerReferenceHandler will handle proxied requests and inject the
-// owner reference found in the authorization header. The Authorization is
+// owner refernece found in the authorization header. The Authorization is
 // then deleted so that the proxy can re-set with the correct authorization.
 func InjectOwnerReferenceHandler(h http.Handler, cMap *controllermap.ControllerMap, restMapper meta.RESTMapper, watchedNamespaces map[string]interface{}) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -278,12 +278,7 @@ func InjectOwnerReferenceHandler(h http.Handler, cMap *controllermap.ControllerM
 				}
 			}
 		}
-		h.ServeHTTP(w, req)
-	})
-}
-
-func removeAuthorizationHeader(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		// Removing the authorization so that the proxy can set the correct authorization.
 		req.Header.Del("Authorization")
 		h.ServeHTTP(w, req)
 	})
@@ -317,7 +312,7 @@ type Options struct {
 	Address           string
 	Port              int
 	Handler           HandlerChain
-	OwnerInjection    bool
+	NoOwnerInjection  bool
 	LogRequests       bool
 	KubeConfig        *rest.Config
 	Cache             cache.Cache
@@ -374,18 +369,14 @@ func Run(done chan error, o Options) error {
 		o.Cache = informerCache
 	}
 
-	server.Handler = removeAuthorizationHeader(server.Handler)
-
-	if o.OwnerInjection {
+	if !o.NoOwnerInjection {
 		server.Handler = InjectOwnerReferenceHandler(server.Handler, o.ControllerMap, o.RESTMapper, watchedNamespaceMap)
-	} else {
-		log.Info("Warning: injection of owner references and dependent watches is turned off")
 	}
 	if o.LogRequests {
 		server.Handler = RequestLogHandler(server.Handler)
 	}
 	if !o.DisableCache {
-		server.Handler = CacheResponseHandler(server.Handler, o.Cache, o.RESTMapper, watchedNamespaceMap, o.ControllerMap, o.OwnerInjection)
+		server.Handler = CacheResponseHandler(server.Handler, o.Cache, o.RESTMapper, watchedNamespaceMap, o.ControllerMap, !o.NoOwnerInjection)
 	}
 
 	l, err := server.Listen(o.Address, o.Port)
