@@ -125,7 +125,7 @@ func TestMatchRegex(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expected, MatchRegex(test.regex, test.str))
+			assert.Equal(t, test.expected, IsMatchRegex(test.regex, test.str))
 		})
 	}
 }
