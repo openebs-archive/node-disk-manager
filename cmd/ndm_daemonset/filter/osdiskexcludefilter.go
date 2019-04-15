@@ -86,11 +86,11 @@ func (odf *oSDiskExcludeFilter) Start() {
 	*/
 	for _, mountPoint := range mountPoints {
 		mountPointUtil := mount.NewMountUtil(hostMountFilePath, "", mountPoint)
-		if devPath, err := mountPointUtil.GetDiskPath(); err == nil {
+		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
+			glog.Error(err)
+		} else {
 			odf.excludeDevPath = devPath
 			return
-		} else {
-			glog.Error(err)
 		}
 	}
 	/*
@@ -99,11 +99,11 @@ func (odf *oSDiskExcludeFilter) Start() {
 	*/
 	for _, mountPoint := range mountPoints {
 		mountPointUtil := mount.NewMountUtil(defaultMountFilePath, "", mountPoint)
-		if devPath, err := mountPointUtil.GetDiskPath(); err == nil {
+		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
+			glog.Error(err)
+		} else {
 			odf.excludeDevPath = devPath
 			return
-		} else {
-			glog.Error(err)
 		}
 	}
 	glog.Error("unable to apply os disk filter")
@@ -119,13 +119,13 @@ func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
 	// The partitionRegex is chosen depending on whether the device uses
 	// the p[0-9] partition naming structure or not.
 	var partitionRegex string
-	if util.MatchRegex(".+[0-9]+$", odf.excludeDevPath) {
+	if util.IsMatchRegex(".+[0-9]+$", odf.excludeDevPath) {
 		// matches loop0, loop0p1, nvme3n0p1
 		partitionRegex = "(p[0-9]+)?$"
 	} else {
 		// matches sda, sda1
 		partitionRegex = "[0-9]*$"
 	}
-	glog.Info("applying regex ", odf.excludeDevPath+partitionRegex, " for os-disk-exclude-filter")
-	return !util.MatchRegex(odf.excludeDevPath+partitionRegex, d.Path)
+	glog.Infof("applying os-fiter regex %s on %s", odf.excludeDevPath+partitionRegex, d.Path)
+	return !util.IsMatchRegex(odf.excludeDevPath+partitionRegex, d.Path)
 }
