@@ -1,0 +1,9 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: openebs-ndm-operator
+rules:
+- apiGroups: ["*"]
+  resources: ["disks", "devices", "devicerequests"]
+  verbs: ["*"]
