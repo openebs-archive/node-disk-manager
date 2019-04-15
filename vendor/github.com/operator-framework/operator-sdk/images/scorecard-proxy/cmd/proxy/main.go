@@ -60,7 +60,7 @@ func main() {
 		KubeConfig:        mgr.GetConfig(),
 		RESTMapper:        mgr.GetRESTMapper(),
 		ControllerMap:     cMap,
-		OwnerInjection:    false,
+		NoOwnerInjection:  true,
 		LogRequests:       true,
 		WatchedNamespaces: []string{namespace},
 		DisableCache:      true,

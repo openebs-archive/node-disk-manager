@@ -53,13 +53,9 @@ func Run(flags *hoflags.HelmOperatorFlags) error {
 	namespace, found := os.LookupEnv(k8sutil.WatchNamespaceEnvVar)
 	log = log.WithValues("Namespace", namespace)
 	if found {
-		if namespace == metav1.NamespaceAll {
-			log.Info("Watching all namespaces.")
-		} else {
-			log.Info("Watching single namespace.")
-		}
+		log.Info("Watching single namespace.")
 	} else {
-		log.Info(fmt.Sprintf("%v environment variable not set. Watching all namespaces.",
+		log.Info(fmt.Sprintf("%v environment variable not set. This operator is watching all namespaces.",
 			k8sutil.WatchNamespaceEnvVar))
 		namespace = metav1.NamespaceAll
 	}

@@ -93,7 +93,6 @@ func Run(flags *aoflags.AnsibleOperatorFlags) error {
 		Cache:             mgr.GetCache(),
 		RESTMapper:        mgr.GetRESTMapper(),
 		ControllerMap:     cMap,
-		OwnerInjection:    flags.InjectOwnerRef,
 		WatchedNamespaces: []string{namespace},
 	})
 	if err != nil {
