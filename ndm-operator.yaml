@@ -178,7 +178,8 @@ spec:
         - name: udev
           mountPath: /run/udev
         - name: procmount
-          mountPath: /host/mounts
+          mountPath: /host/proc
+          readOnly: true
         - name: sparsepath
           mountPath: /var/openebs/sparse
         env:
@@ -209,7 +210,8 @@ spec:
       # mount /proc/1/mounts (mount file of process 1 of host) inside container
       # to read which partition is mounted on / path
         hostPath:
-          path: /proc/1/mounts
+          path: /proc
+          type: Directory
       - name: sparsepath
         hostPath:
           path: /var/openebs/sparse
