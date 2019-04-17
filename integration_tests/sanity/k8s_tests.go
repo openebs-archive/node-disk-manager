@@ -22,7 +22,7 @@ const (
 	DiskImageSize = 1073741824
 )
 
-var _ = Describe("NDM Basic Tests", func() {
+var _ = Describe("NDM Setup Tests", func() {
 
 	var (
 		noOfNodes int

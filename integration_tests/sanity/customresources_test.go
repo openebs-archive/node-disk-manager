@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var _ = Describe("Custom Resource Tests", func() {
+var _ = Describe("Device Discovery Tests", func() {
 	var (
 		noOfNodes int
 		err       error

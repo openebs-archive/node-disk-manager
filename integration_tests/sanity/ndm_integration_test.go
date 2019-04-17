@@ -25,7 +25,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).ShouldNot(HaveOccurred())
 })
 
-var _ = Describe("Minikube Cluster", func() {
+var _ = Describe("Verify Kubernetes Cluster Setup", func() {
 	var err error
 	Context("Initially, we check minikube status", func() {
 		It("should be running", func() {

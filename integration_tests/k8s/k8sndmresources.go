@@ -17,6 +17,7 @@ func CreateNDMYAML(clientset k8sClient) error {
 	if err != nil {
 		return err
 	}
+
 	// creating NDM serviceAccount
 	err = CreateNDMServiceAccount(clientset.RunTimeClient)
 	if err != nil {
