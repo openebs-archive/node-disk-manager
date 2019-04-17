@@ -30,10 +30,11 @@ type fakeProbe struct {
 
 func (p *fakeProbe) Start() {}
 
-func (p *fakeProbe) FillDiskDetails(fakeDiskInfo *controller.DiskInfo) {
+func (p *fakeProbe) FillDiskDetails(fakeDiskInfo *controller.DiskInfo) error {
 	fakeDiskInfo.Model = fakeModel
 	fakeDiskInfo.Serial = fakeSerial
 	fakeDiskInfo.Vendor = fakeVendor
+	return nil
 }
 
 func TestRegisterProbe(t *testing.T) {

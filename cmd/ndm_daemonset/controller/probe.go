@@ -17,11 +17,31 @@ limitations under the License.
 package controller
 
 import (
+	"errors"
+	"reflect"
 	"sort"
 
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
+
+const (
+	InitiateRescan             = "PrimaryProbeFailure"
+	PrimaryProbeFailureMessage = "Primary probe failed to fill disk details, initiating system rescan" // PrimaryProbeFailure contains PrimaryProbeFailure message
+	SkipRescan                 = "ProbeFailure"
+	ProbeFailureMessage        = "Probe failed to load data from resource" // ProbeFailure contains ProbeFailure message
+)
+
+// ProbeErrors are converted to string using this function
+func ProbeErrors(key string) error {
+	probeErrors := make(map[string]string)
+	probeErrors[InitiateRescan] = PrimaryProbeFailureMessage
+	probeErrors[SkipRescan] = ProbeFailureMessage
+	if val, ok := probeErrors[key]; ok {
+		return errors.New(val)
+	}
+	return nil
+}
 
 // EventMessage struct contains attribute of event message info.
 type EventMessage struct {
@@ -43,14 +63,14 @@ func (p *Probe) Start() {
 }
 
 // FillDiskDetails implements ProbeInterface's FillDiskDetails()
-func (p *Probe) FillDiskDetails(diskInfo *DiskInfo) {
-	p.Interface.FillDiskDetails(diskInfo)
+func (p *Probe) FillDiskDetails(diskInfo *DiskInfo) error {
+	return p.Interface.FillDiskDetails(diskInfo)
 }
 
 // ProbeInterface contains Start() and  FillDiskDetails()
 type ProbeInterface interface {
 	Start()
-	FillDiskDetails(*DiskInfo)
+	FillDiskDetails(*DiskInfo) error
 }
 
 // sortableProbes contains a slice of probes
@@ -97,13 +117,22 @@ func (c *Controller) ListProbe() []*Probe {
 }
 
 // FillDiskDetails lists registered probes and fills details from each probe
-func (c *Controller) FillDiskDetails(diskDetails *DiskInfo) {
+func (c *Controller) FillDiskDetails(diskDetails *DiskInfo) error {
 	diskDetails.HostName = c.HostName
 	diskDetails.DiskType = NDMDefaultDiskType
 	diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
 	probes := c.ListProbe()
 	for _, probe := range probes {
-		probe.FillDiskDetails(diskDetails)
-		glog.Info("details filled by ", probe.Name)
+		glog.Infof("invoking %s probe to fill details.", probe.Name)
+		err := probe.FillDiskDetails(diskDetails)
+		if err != nil {
+			glog.Error(err)
+			if reflect.DeepEqual(err, ProbeErrors(InitiateRescan)) {
+				return err
+			}
+		} else {
+			glog.Info("details filled by ", probe.Name)
+		}
 	}
+	return nil
 }

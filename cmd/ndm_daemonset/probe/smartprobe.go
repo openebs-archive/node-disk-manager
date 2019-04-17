@@ -88,21 +88,34 @@ func newSmartProbe(devPath string) *smartProbe {
 func (sp *smartProbe) Start() {}
 
 // fillDiskDetails fills details in diskInfo struct using information it gets from probe
-func (sp *smartProbe) FillDiskDetails(d *controller.DiskInfo) {
+func (sp *smartProbe) FillDiskDetails(d *controller.DiskInfo) error {
 	if d.ProbeIdentifiers.SmartIdentifier == "" {
 		glog.Error("smartIdentifier is found empty, smart probe will not fill disk details.")
 
-		return
+		return nil
 	}
 	smartProbe := newSmartProbe(d.ProbeIdentifiers.SmartIdentifier)
 	deviceBasicSCSIInfo, err := smartProbe.SmartIdentifier.SCSIBasicDiskInfo()
 	if len(err) != 0 {
 		glog.Error(err)
+		return controller.ProbeErrors(controller.SkipRescan)
 	}
-
-	d.Compliance = deviceBasicSCSIInfo.Compliance
-	d.FirmwareRevision = deviceBasicSCSIInfo.FirmwareRevision
-	d.Capacity = deviceBasicSCSIInfo.Capacity
-	d.LogicalSectorSize = deviceBasicSCSIInfo.LBSize
+	if deviceBasicSCSIInfo.Compliance != "" && d.Compliance == "" {
+		d.Compliance = deviceBasicSCSIInfo.Compliance
+		glog.Infof("Disk: %s Compliance:%s filled by smart probe.", d.Path, d.Compliance)
+	}
+	if deviceBasicSCSIInfo.FirmwareRevision != "" && d.FirmwareRevision == "" {
+		d.FirmwareRevision = deviceBasicSCSIInfo.FirmwareRevision
+		glog.Infof("Disk: %s FirmwareRevision:%s filled by smart probe.", d.Path, d.FirmwareRevision)
+	}
+	if deviceBasicSCSIInfo.Capacity != 0 && d.Capacity == 0 {
+		d.Capacity = deviceBasicSCSIInfo.Capacity
+		glog.Infof("Disk: %s Capacity:%v filled by smart probe.", d.Path, d.Capacity)
+	}
+	if deviceBasicSCSIInfo.LBSize != 0 && d.LogicalSectorSize == 0 {
+		d.LogicalSectorSize = deviceBasicSCSIInfo.LBSize
+		glog.Infof("Disk: %s LogicalSectorSize:%v filled by smart probe.", d.Path, d.LogicalSectorSize)
+	}
+	return nil
 
 }

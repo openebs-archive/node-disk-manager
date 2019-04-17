@@ -75,35 +75,40 @@ func (cp *capacityProbe) Start() {}
 
 // FillDiskDetails updates the capacity of the disk , if the capacity is
 // not populated.
-func (cp *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
+func (cp *capacityProbe) FillDiskDetails(d *controller.DiskInfo) error {
 
-	if d.Capacity != 0 {
-		return
+	if d.Capacity != 0 && d.LogicalSectorSize != 0 {
+		return nil
 	}
 	sysPath := d.ProbeIdentifiers.UdevIdentifier
 	b, err := ioutil.ReadFile(sysPath + "/size")
 	if err != nil {
-		glog.Error("unable to parse the block size ", err)
-		return
+		glog.Error(err.Error())
+		return controller.ProbeErrors(controller.SkipRescan)
 	}
 	blockSize, err := strconv.ParseInt(strings.TrimSuffix(string(b), "\n"), 10, 64)
 	if err != nil {
-		glog.Error("unable to parse the block size", err)
-		return
+		glog.Error(err.Error())
+		return controller.ProbeErrors(controller.SkipRescan)
 	}
 	b, err = ioutil.ReadFile(sysPath + "/queue/hw_sector_size")
 	if err != nil {
-		glog.Error("unable to read sector size", err)
-		return
+		glog.Error(err.Error())
+		return controller.ProbeErrors(controller.SkipRescan)
 	}
 	sectorSize, err := strconv.ParseInt(strings.TrimSuffix(string(b), "\n"), 10, 64)
 	if err != nil {
-		glog.Error("unable to parse the sector size", err)
-		return
+		glog.Error(err.Error())
+		return controller.ProbeErrors(controller.SkipRescan)
 	}
-	d.Capacity = uint64(blockSize * sectorSize)
+	if d.Capacity == 0 {
+		d.Capacity = uint64(blockSize * sectorSize)
+		glog.Infof("Disk: %s Capacity:%v filled by capacity probe.", d.Path, d.Capacity)
+	}
 
 	if d.LogicalSectorSize == 0 {
 		d.LogicalSectorSize = uint32(sectorSize)
+		glog.Infof("Disk: %s LogicalSectorSize:%v filled by capacity probe.", d.Path, d.LogicalSectorSize)
 	}
+	return nil
 }

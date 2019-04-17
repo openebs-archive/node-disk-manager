@@ -168,23 +168,44 @@ func (up *udevProbe) scan() error {
 }
 
 // fillDiskDetails filles details in diskInfo struct using probe information
-func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
+func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) error {
 	udevDevice, err := newUdevProbeForFillDiskDetails(d.ProbeIdentifiers.UdevIdentifier)
 	if err != nil {
-		glog.Errorf("%s : %s", d.ProbeIdentifiers.UdevIdentifier, err)
-		return
+		glog.Error(err)
+		return controller.ProbeErrors(controller.InitiateRescan)
 	}
 	udevDiskDetails := udevDevice.udevDevice.DiskInfoFromLibudev()
 	defer udevDevice.free()
-	d.ProbeIdentifiers.SmartIdentifier = udevDiskDetails.Path
-	d.ProbeIdentifiers.SeachestIdentifier = udevDiskDetails.Path
-	d.Model = udevDiskDetails.Model
-	d.Path = udevDiskDetails.Path
-	d.Serial = udevDiskDetails.Serial
-	d.Vendor = udevDiskDetails.Vendor
-	d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
-	d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
+	if udevDiskDetails.Path != "" {
+		d.Path = udevDiskDetails.Path
+		d.ProbeIdentifiers.SmartIdentifier = udevDiskDetails.Path
+		glog.Infof("Disk: %s SmartIdentifier:%s filled by udev probe.", d.Path, d.ProbeIdentifiers.SmartIdentifier)
+		d.ProbeIdentifiers.SeachestIdentifier = udevDiskDetails.Path
+		glog.Infof("Disk: %s SeachestIdentifier:%s filled by udev probe.", d.Path, d.ProbeIdentifiers.SeachestIdentifier)
+		glog.Infof("Disk: %s Path:%s filled by udev probe.", d.Path, d.Path)
+	}
+	if udevDiskDetails.Model != "" {
+		d.Model = udevDiskDetails.Model
+		glog.Infof("Disk: %s Model:%s filled by udev probe.", d.Path, d.Model)
+	}
+	if udevDiskDetails.Serial != "" {
+		d.Serial = udevDiskDetails.Serial
+		glog.Infof("Disk: %s Serial:%s filled by udev probe.", d.Path, d.Serial)
+	}
+	if udevDiskDetails.Vendor != "" {
+		d.Vendor = udevDiskDetails.Vendor
+		glog.Infof("Disk: %s Vendor:%s filled by udev probe.", d.Path, d.Vendor)
+	}
+	if len(udevDiskDetails.ByIdDevLinks) != 0 {
+		d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
+		glog.Infof("Disk: %s ByIdDevLinks:%s filled by udev probe.", d.Path, d.ByIdDevLinks)
+	}
+	if len(udevDiskDetails.ByPathDevLinks) != 0 {
+		d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
+		glog.Infof("Disk: %s ByPathDevLinks:%s filled by udev probe.", d.Path, d.ByPathDevLinks)
+	}
 	d.FileSystemInfo = udevDiskDetails.FileSystem
+	return nil
 }
 
 // listen listens for event message over UdevEventMessages channel

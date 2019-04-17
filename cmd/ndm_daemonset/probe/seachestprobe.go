@@ -88,17 +88,17 @@ func newSeachestProbe(devPath string) *seachestProbe {
 func (scp *seachestProbe) Start() {}
 
 // fillDiskDetails fills details in diskInfo struct using information it gets from probe
-func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
+func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) error {
 	if d.ProbeIdentifiers.SeachestIdentifier == "" {
 		glog.Error("seachestIdentifier is found empty, seachest probe will not fill disk details.")
-		return
+		return controller.ProbeErrors(controller.SkipRescan)
 	}
 
 	seachestProbe := newSeachestProbe(d.ProbeIdentifiers.SeachestIdentifier)
 	driveInfo, err := seachestProbe.SeachestIdentifier.SeachestBasicDiskInfo()
 	if err != 0 {
 		glog.Error(err)
-		return
+		return controller.ProbeErrors(controller.SkipRescan)
 	}
 
 	if d.Path == "" {
@@ -173,12 +173,12 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 
 	if d.DeviceUtilizationRate == 0 {
 		d.DeviceUtilizationRate = seachestProbe.SeachestIdentifier.GetDeviceUtilizationRate(driveInfo)
-		glog.Infof("Disk: %s DeviceUtilizationRate:%d filled by seachest.", d.Path, d.DeviceUtilizationRate)
+		glog.Infof("Disk: %s DeviceUtilizationRate:%v filled by seachest.", d.Path, d.DeviceUtilizationRate)
 	}
 
 	if d.PercentEnduranceUsed == 0 {
 		d.PercentEnduranceUsed = seachestProbe.SeachestIdentifier.GetPercentEnduranceUsed(driveInfo)
-		glog.Infof("Disk: %s PercentEnduranceUsed:%d filled by seachest.", d.Path, d.PercentEnduranceUsed)
+		glog.Infof("Disk: %s PercentEnduranceUsed:%v filled by seachest.", d.Path, d.PercentEnduranceUsed)
 	}
 
 	d.TemperatureInfo.TemperatureDataValid = seachestProbe.
@@ -217,4 +217,5 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 		glog.Infof("Disk: %s LowestTemperature:%d filled by seachest.",
 			d.Path, d.TemperatureInfo.LowestTemperature)
 	}
+	return nil
 }

@@ -39,10 +39,11 @@ func (np *fakeProbe) Start() {
 	messageChannel <- message
 }
 
-func (np *fakeProbe) FillDiskDetails(fakeDiskInfo *DiskInfo) {
+func (np *fakeProbe) FillDiskDetails(fakeDiskInfo *DiskInfo) error {
 	fakeDiskInfo.Model = fakeModel
 	fakeDiskInfo.Serial = fakeSerial
 	fakeDiskInfo.Vendor = fakeVendor
+	return nil
 }
 
 //Add one new probe and get the list of the probes and match them

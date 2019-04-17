@@ -45,9 +45,13 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 		go pe.initOrErrorEvent()
 		return
 	}
+	mismatch := false
 	for _, diskDetails := range msg.Devices {
 		glog.Info("Processing details for ", diskDetails.ProbeIdentifiers.Uuid)
-		pe.Controller.FillDiskDetails(diskDetails)
+		if err := pe.Controller.FillDiskDetails(diskDetails); err != nil {
+			mismatch = true
+			continue
+		}
 		// if ApplyFilter returns true then we process the event further
 		if !pe.Controller.ApplyFilter(diskDetails) {
 			continue
@@ -99,6 +103,9 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 			go pe.initOrErrorEvent()
 			return
 		}
+	}
+	if mismatch {
+		go pe.initOrErrorEvent()
 	}
 }
 
