@@ -190,7 +190,7 @@ spec:
         # specify the directory where the sparse files need to be created.
         # if not specified, then sparse files will not be created.
         - name: SPARSE_FILE_DIR
-          value: "/var/openebs"
+          value: "/var/openebs/sparse"
         # Size of the sparse file to be created.
         - name: SPARSE_FILE_SIZE
           value: "1073741824"
