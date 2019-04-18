@@ -31,7 +31,7 @@ const (
 var (
 	defaultMountFilePath     = "/proc/self/mounts"
 	mountPoints              = []string{"/", "/etc/hosts"}
-	hostMountFilePath        = "/host/mounts"           // hostMountFilePath is the file path mounted inside container
+	hostMountFilePath        = "/host/proc/1/mounts"    // hostMountFilePath is the file path mounted inside container
 	oSDiskExcludeFilterName  = "os disk exclude filter" // filter name
 	oSDiskExcludeFilterState = defaultEnabled           // filter state
 )
