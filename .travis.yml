@@ -48,5 +48,6 @@ script:
   - sudo -E env "PATH=$PATH" make test
 
 after_success:
-  - DIMAGE=openebs/node-disk-manager-$ARCH ./hack/push;
+  - DIMAGE=openebs/node-disk-manager-$ARCH ./build/push;
+  - DIMAGE=openebs/node-disk-operator-$ARCH ./build/push;
   - bash <(curl -s https://codecov.io/bash)
