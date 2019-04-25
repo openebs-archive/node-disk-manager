@@ -1,4 +1,4 @@
-package device
+package blockdevice
 
 import (
 	"context"
@@ -22,17 +22,17 @@ import (
 var (
 	fakeHostName        = "fake-hostname"
 	diskName            = "disk-example"
-	deviceName          = "device-example"
+	deviceName          = "blockdevice-example"
 	namespace           = ""
 	capacity     uint64 = 1024000
 )
 
 // TestDeviceController runs ReconcileDisk.Reconcile() against a
-// fake client that tracks a Device object.
+// fake client that tracks a BlockDevice object.
 // Test description:
-// Create a disk obj and associated device obj, check status of device obj,
+// Create a disk obj and associated blockdevice obj, check status of blockdevice obj,
 // it should be Active, now mark disk Inactive and trigger reconcile logic
-// on device, it would mark device Inactive as well. Check status of device,
+// on blockdevice, it would mark blockdevice Inactive as well. Check status of blockdevice,
 // this time it should be Inactive.
 func TestDeviceController(t *testing.T) {
 
@@ -64,7 +64,7 @@ func TestDeviceController(t *testing.T) {
 		t.Log("reconcile did not requeue request as expected")
 	}
 
-	deviceInstance := &openebsv1alpha1.Device{}
+	deviceInstance := &openebsv1alpha1.BlockDevice{}
 	err = r.client.Get(context.TODO(), req.NamespacedName, deviceInstance)
 	if err != nil {
 		t.Errorf("get deviceInstance : (%v)", err)
@@ -72,9 +72,9 @@ func TestDeviceController(t *testing.T) {
 
 	// Disk Status state should be Active as expected.
 	if deviceInstance.Status.State == ndm.NDMActive {
-		t.Logf("Device Object state:%v match expected state:%v", deviceInstance.Status.State, ndm.NDMActive)
+		t.Logf("BlockDevice Object state:%v match expected state:%v", deviceInstance.Status.State, ndm.NDMActive)
 	} else {
-		t.Fatalf("Device Object state:%v did not match expected state:%v", deviceInstance.Status.State, ndm.NDMActive)
+		t.Fatalf("BlockDevice Object state:%v did not match expected state:%v", deviceInstance.Status.State, ndm.NDMActive)
 	}
 
 	// Fetch the Disk CR
@@ -108,17 +108,17 @@ func TestDeviceController(t *testing.T) {
 
 	// Disk Status state should be InActive as expected.
 	if deviceInstance.Status.State == ndm.NDMInactive {
-		t.Logf("Device Object state:%v match expected state:%v", deviceInstance.Status.State, ndm.NDMInactive)
+		t.Logf("BlockDevice Object state:%v match expected state:%v", deviceInstance.Status.State, ndm.NDMInactive)
 	} else {
-		t.Errorf("Device Object state:%v did not match expected state:%v", deviceInstance.Status.State, ndm.NDMInactive)
+		t.Errorf("BlockDevice Object state:%v did not match expected state:%v", deviceInstance.Status.State, ndm.NDMInactive)
 	}
 }
 
-func GetFakeDeviceObject() *openebsv1alpha1.Device {
-	device := &openebsv1alpha1.Device{}
+func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {
+	device := &openebsv1alpha1.BlockDevice{}
 
 	TypeMeta := metav1.TypeMeta{
-		Kind:       ndm.NDMDeviceKind,
+		Kind:       ndm.NDMBlockDeviceKind,
 		APIVersion: ndm.NDMVersion,
 	}
 
@@ -131,7 +131,7 @@ func GetFakeDeviceObject() *openebsv1alpha1.Device {
 	Spec := openebsv1alpha1.DeviceSpec{
 		Path: "dev/disk-fake-path",
 		Capacity: openebsv1alpha1.DeviceCapacity{
-			Storage: capacity, // Set device size.
+			Storage: capacity, // Set blockdevice size.
 		},
 		DevLinks:    make([]openebsv1alpha1.DeviceDevLink, 0),
 		Partitioned: ndm.NDMNotPartitioned,
@@ -192,9 +192,9 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 
 	deviceR := GetFakeDeviceObject()
 
-	deviceList := &openebsv1alpha1.DeviceList{
+	deviceList := &openebsv1alpha1.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "Device",
+			Kind:       "BlockDevice",
 			APIVersion: "",
 		},
 	}
@@ -213,7 +213,7 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 	}
 	err := fakeNdmClient.Create(context.TODO(), deviceR)
 	if err != nil {
-		fmt.Println("Device object is not created")
+		fmt.Println("BlockDevice object is not created")
 	}
 	return fakeNdmClient, s
 }

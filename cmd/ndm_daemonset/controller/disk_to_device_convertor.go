@@ -27,7 +27,7 @@ func (c *Controller) NewDeviceInfoFromDiskInfo(diskDetails *DiskInfo) *DeviceInf
 
 	deviceDetails.HostName = c.HostName
 	Uuid := strings.TrimPrefix(diskDetails.ProbeIdentifiers.Uuid, udev.NDMDiskPrefix)
-	deviceDetails.Uuid = udev.NDMDevicePrefix + Uuid
+	deviceDetails.Uuid = udev.NDMBlockDevicePrefix + Uuid
 	deviceDetails.Capacity = diskDetails.Capacity
 	deviceDetails.Model = diskDetails.Model
 	deviceDetails.Serial = diskDetails.Serial

@@ -34,8 +34,8 @@ const (
 	fakeHostName    = "fake-host-name"
 	newFakeHostName = "new-fake-host-name"
 
-	fakeDeviceUid    = "fake-device-uid"
-	newFakeDeviceUid = "new-fake-device-uid"
+	fakeDeviceUid    = "fake-blockdevice-uid"
+	newFakeDeviceUid = "new-fake-blockdevice-uid"
 )
 
 var (
@@ -117,7 +117,7 @@ var (
 		Status:     newFakeDiskStatus,
 	}
 
-	// mock data for device
+	// mock data for blockdevice
 	fakeDeviceCapacity = apis.DeviceCapacity{
 		Storage: 100000,
 	}
@@ -137,7 +137,7 @@ var (
 	}
 
 	fakeDeviceTypeMeta = metav1.TypeMeta{
-		Kind:       NDMDeviceKind,
+		Kind:       NDMBlockDeviceKind,
 		APIVersion: NDMVersion,
 	}
 
@@ -154,7 +154,7 @@ var (
 		State: NDMActive,
 	}
 
-	fakeDevice = apis.Device{
+	fakeDevice = apis.BlockDevice{
 		TypeMeta:   fakeDeviceTypeMeta,
 		ObjectMeta: fakeDeviceObjectMeta,
 		Spec:       fakeDeviceObj,
@@ -162,7 +162,7 @@ var (
 		Status:     fakeDeviceStatus,
 	}
 
-	// mock data for device
+	// mock data for blockdevice
 	newFakeDeviceCapacity = apis.DeviceCapacity{
 		Storage: 200000,
 	}
@@ -181,7 +181,7 @@ var (
 	}
 
 	newFakeDeviceTypeMeta = metav1.TypeMeta{
-		Kind:       NDMDeviceKind,
+		Kind:       NDMBlockDeviceKind,
 		APIVersion: NDMVersion,
 	}
 
@@ -198,7 +198,7 @@ var (
 		State: NDMActive,
 	}
 
-	newFakeDevice = apis.Device{
+	newFakeDevice = apis.BlockDevice{
 		TypeMeta:   newFakeDeviceTypeMeta,
 		ObjectMeta: newFakeDeviceObjectMeta,
 		Spec:       newFakeDeviceObj,
@@ -222,16 +222,16 @@ func CreateFakeClient(t *testing.T) client.Client {
 		},
 	}
 
-	deviceR := &apis.Device{
+	deviceR := &apis.BlockDevice{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: make(map[string]string),
-			Name:   "dummy-device",
+			Name:   "dummy-blockdevice",
 		},
 	}
 
-	deviceList := &apis.DeviceList{
+	deviceList := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "Device",
+			Kind:       "BlockDevice",
 			APIVersion: "",
 		},
 	}

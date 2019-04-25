@@ -27,36 +27,36 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// API to creates the Device resource in etcd
+// API to creates the BlockDevice resource in etcd
 // This API will be called for each new addDiskEvent
 // dvr is DeviceResource-CR
-func (c *Controller) CreateDevice(dvr apis.Device) {
+func (c *Controller) CreateBlockDevice(dvr apis.BlockDevice) {
 
 	dvrCopy := dvr.DeepCopy()
 	err := c.Clientset.Create(context.TODO(), dvrCopy)
 	if err == nil {
-		glog.Info("Created device object in etcd: ",
+		glog.Info("Created blockdevice object in etcd: ",
 			dvrCopy.ObjectMeta.Name)
 		return
 	}
 
 	if !errors.IsAlreadyExists(err) {
-		glog.Error("Creation of device object failed: ", err)
+		glog.Error("Creation of blockdevice object failed: ", err)
 		return
 	}
 
 	/*
 	 * Creation may fail because resource is already exist in etcd.
 	 * This is possible when disk moved from one node to another in
-	 * cluster so device object need to be updated with new Node.
+	 * cluster so blockdevice object need to be updated with new Node.
 	 */
-	err = c.UpdateDevice(dvr, nil)
+	err = c.UpdateBlockDevice(dvr, nil)
 	if err == nil {
 		return
 	}
 
 	if !errors.IsConflict(err) {
-		glog.Error("Updating of Device Object failed: ", err)
+		glog.Error("Updating of BlockDevice Object failed: ", err)
 		return
 	}
 
@@ -64,15 +64,15 @@ func (c *Controller) CreateDevice(dvr apis.Device) {
 	 * Update might failed due to to resource version mismatch which
 	 * can happen if some other entity updating same resource in parallel.
 	 */
-	err = c.UpdateDevice(dvr, nil)
+	err = c.UpdateBlockDevice(dvr, nil)
 	if err == nil {
 		return
 	}
-	glog.Error("Update to device object failed: ", dvr.ObjectMeta.Name)
+	glog.Error("Update to blockdevice object failed: ", dvr.ObjectMeta.Name)
 }
 
-// UpdateDevice update the Device resource in etcd
-func (c *Controller) UpdateDevice(dvr apis.Device, oldDvr *apis.Device) error {
+// UpdateBlockDevice update the BlockDevice resource in etcd
+func (c *Controller) UpdateBlockDevice(dvr apis.BlockDevice, oldDvr *apis.BlockDevice) error {
 	var err error
 
 	dvrCopy := dvr.DeepCopy()
@@ -82,7 +82,7 @@ func (c *Controller) UpdateDevice(dvr apis.Device, oldDvr *apis.Device) error {
 			Namespace: oldDvr.Namespace,
 			Name:      oldDvr.Name}, oldDvr)
 		if err != nil {
-			glog.Errorf("Unable to get device object:%v, err:%v", oldDvr.ObjectMeta.Name, err)
+			glog.Errorf("Unable to get blockdevice object:%v, err:%v", oldDvr.ObjectMeta.Name, err)
 			return err
 		}
 	}
@@ -90,43 +90,43 @@ func (c *Controller) UpdateDevice(dvr apis.Device, oldDvr *apis.Device) error {
 	dvrCopy.ObjectMeta.ResourceVersion = oldDvr.ObjectMeta.ResourceVersion
 	err = c.Clientset.Update(context.TODO(), dvrCopy)
 	if err != nil {
-		glog.Error("Unable to update device object : ", err)
+		glog.Error("Unable to update blockdevice object : ", err)
 		return err
 	}
-	glog.Info("Updated device object : ", dvrCopy.ObjectMeta.Name)
+	glog.Info("Updated blockdevice object : ", dvrCopy.ObjectMeta.Name)
 	return nil
 }
 
-// This API used to set device status to "inactive" state in etcd
-func (c *Controller) DeactivateDevice(dvr apis.Device) {
+// This API used to set blockdevice status to "inactive" state in etcd
+func (c *Controller) DeactivateBlockDevice(dvr apis.BlockDevice) {
 
 	dvrCopy := dvr.DeepCopy()
 	dvrCopy.Status.State = NDMInactive
 	err := c.Clientset.Update(context.TODO(), dvrCopy)
 	if err != nil {
-		glog.Error("Unable to deactivate device: ", err)
+		glog.Error("Unable to deactivate blockdevice: ", err)
 		return
 	}
-	glog.Info("Deactivated device: ", dvrCopy.ObjectMeta.Name)
+	glog.Info("Deactivated blockdevice: ", dvrCopy.ObjectMeta.Name)
 }
 
 // GetDisk get Disk resource from etcd
-func (c *Controller) GetDevice(name string) (*apis.Device, error) {
-	dvr := &apis.Device{}
+func (c *Controller) GetBlockDevice(name string) (*apis.BlockDevice, error) {
+	dvr := &apis.BlockDevice{}
 	err := c.Clientset.Get(context.TODO(),
 		client.ObjectKey{Namespace: "", Name: name}, dvr)
 
 	if err != nil {
-		glog.Error("Unable to get device object : ", err)
+		glog.Error("Unable to get blockdevice object : ", err)
 		return nil, err
 	}
-	glog.Info("Got device object : ", name)
+	glog.Info("Got blockdevice object : ", name)
 	return dvr, nil
 }
 
-// DeleteDevice delete the Device resource from etcd
-func (c *Controller) DeleteDevice(name string) {
-	dvr := &apis.Device{
+// DeleteBlockDevice delete the BlockDevice resource from etcd
+func (c *Controller) DeleteBlockDevice(name string) {
+	dvr := &apis.BlockDevice{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: make(map[string]string),
 			Name:   name,
@@ -135,19 +135,19 @@ func (c *Controller) DeleteDevice(name string) {
 
 	err := c.Clientset.Delete(context.TODO(), dvr)
 	if err != nil {
-		glog.Error("Unable to delete device object : ", err)
+		glog.Error("Unable to delete blockdevice object : ", err)
 		return
 	}
-	glog.Info("Deleted device object : ", name)
+	glog.Info("Deleted blockdevice object : ", name)
 }
 
-// ListDeviceResource queries the etcd for the devices for the host/node
-// and returns list of device resources.
-func (c *Controller) ListDeviceResource() (*apis.DeviceList, error) {
+// ListBlockDeviceResource queries the etcd for the devices for the host/node
+// and returns list of blockdevice resources.
+func (c *Controller) ListBlockDeviceResource() (*apis.BlockDeviceList, error) {
 
-	listDVR := &apis.DeviceList{
+	listDVR := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "Device",
+			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
@@ -159,10 +159,10 @@ func (c *Controller) ListDeviceResource() (*apis.DeviceList, error) {
 	return listDVR, err
 }
 
-// GetExistingDeviceResource returns the existing device resource if it is
+// GetExistingBlockDeviceResource returns the existing blockdevice resource if it is
 // present in etcd if not it returns nil pointer.
-func (c *Controller) GetExistingDeviceResource(listDvr *apis.DeviceList,
-	uuid string) *apis.Device {
+func (c *Controller) GetExistingBlockDeviceResource(listDvr *apis.BlockDeviceList,
+	uuid string) *apis.BlockDevice {
 	for _, item := range listDvr.Items {
 		if uuid == item.ObjectMeta.Name {
 			return &item
@@ -171,42 +171,42 @@ func (c *Controller) GetExistingDeviceResource(listDvr *apis.DeviceList,
 	return nil
 }
 
-// DeactivateStaleDeviceResource deactivates the stale entry from etcd.
+// DeactivateStaleBlockDeviceResource deactivates the stale entry from etcd.
 // It gets list of resources which are present in system and queries etcd to get
 // list of active resources. Active resource which is present in etcd not in
 // system that will be marked as inactive.
-func (c *Controller) DeactivateStaleDeviceResource(devices []string) {
+func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
 	listDevices := append(devices, GetActiveSparseDisksUuids(c.HostName)...)
-	listDVR, err := c.ListDeviceResource()
+	listDVR, err := c.ListBlockDeviceResource()
 	if err != nil {
 		glog.Error(err)
 		return
 	}
 	for _, item := range listDVR.Items {
 		if !util.Contains(listDevices, item.ObjectMeta.Name) {
-			c.DeactivateDevice(item)
+			c.DeactivateBlockDevice(item)
 		}
 	}
 }
 
-// PushDeviceResource is a utility function which checks old device resource
+// PushBlockDeviceResource is a utility function which checks old blockdevice resource
 // present or not. If it presents in etcd then it updates the resource
-// else it creates new device resource in etcd
-func (c *Controller) PushDeviceResource(oldDvr *apis.Device,
+// else it creates new blockdevice resource in etcd
+func (c *Controller) PushBlockDeviceResource(oldDvr *apis.BlockDevice,
 	deviceDetails *DeviceInfo) {
 	deviceDetails.HostName = c.HostName
 	deviceApi := deviceDetails.ToDevice()
 	if oldDvr != nil {
-		c.UpdateDevice(deviceApi, oldDvr)
+		c.UpdateBlockDevice(deviceApi, oldDvr)
 		return
 	}
-	c.CreateDevice(deviceApi)
+	c.CreateBlockDevice(deviceApi)
 }
 
-// MarkDeviceStatusToUnknown makes state of all resources owned by node unknown
+// MarkBlockDeviceStatusToUnknown makes state of all resources owned by node unknown
 // This will call as a cleanup process before shutting down.
-func (c *Controller) MarkDeviceStatusToUnknown() {
-	listDVR, err := c.ListDeviceResource()
+func (c *Controller) MarkBlockDeviceStatusToUnknown() {
+	listDVR, err := c.ListBlockDeviceResource()
 	if err != nil {
 		glog.Error(err)
 		return
@@ -216,7 +216,7 @@ func (c *Controller) MarkDeviceStatusToUnknown() {
 		dvrCopy.Status.State = NDMUnknown
 		err := c.Clientset.Update(context.TODO(), dvrCopy)
 		if err == nil {
-			glog.Error("Status marked unknown for device object: ",
+			glog.Error("Status marked unknown for blockdevice object: ",
 				dvrCopy.ObjectMeta.Name)
 		}
 	}

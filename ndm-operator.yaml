@@ -61,15 +61,15 @@ metadata:
   name: openebs-ndm-operator
 rules:
 - apiGroups: ["*"]
-  resources: ["disks", "devices", "devicerequests", "pods", "services", "endpoints", "events", "configmaps", "secrets"]
+  resources: ["disks", "blockdevices", "blockdeviceclaims", "pods", "services", "endpoints", "events", "configmaps", "secrets"]
   verbs:
   - '*'
 - apiGroups:
   - openebs.io
   resources:
   - '*'
-  - devices
-  - devicerequests
+  - blockdevices
+  - blockdeviceclaims
   verbs:
   - '*'
 ---
@@ -111,28 +111,28 @@ spec:
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: devices.openebs.io
+  name: blockdevices.openebs.io
 spec:
   group: openebs.io
   names:
-    kind: Device
-    listKind: DeviceList
-    plural: devices
-    singular: device
+    kind: BlockDevice
+    listKind: BlockDeviceList
+    plural: blockdevices
+    singular: blockdevice
   scope: Cluster
   version: v1alpha1
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: devicerequests.openebs.io
+  name: blockdeviceclaims.openebs.io
 spec:
   group: openebs.io
   names:
-    kind: DeviceRequest
-    listKind: DeviceRequestList
-    plural: devicerequests
-    singular: devicerequest
+    kind: BlockDeviceClaim
+    listKind: BlockDeviceClaimList
+    plural: blockdeviceclaims
+    singular: blockdeviceclaim
   scope: Cluster 
   version: v1alpha1
 ---

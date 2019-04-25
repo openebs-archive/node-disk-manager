@@ -71,25 +71,25 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 			pe.Controller.PushDiskResource(oldDr, diskDetails)
 
 			/*
-			 * There will be one device CR for each physical Disk.
-			 * For network devices like LUN there will be a device
+			 * There will be one blockdevice CR for each physical Disk.
+			 * For network devices like LUN there will be a blockdevice
 			 * CR but no disk CR. 1 to N mapping would be valid case
 			 * where disk have more than one partitions.
 			 * TODO: Need to check if udev event is for physical disk
-			 * and based on that need to create disk CR or device CR
+			 * and based on that need to create disk CR or blockdevice CR
 			 * or both.
 			 */
 			deviceDetails := pe.Controller.NewDeviceInfoFromDiskInfo(diskDetails)
 			if deviceDetails != nil {
 				glog.Infof("DeviceDetails:%#v", deviceDetails)
-				deviceList, err := pe.Controller.ListDeviceResource()
+				deviceList, err := pe.Controller.ListBlockDeviceResource()
 				if err != nil {
 					glog.Error(err)
 					go pe.initOrErrorEvent()
 					return
 				}
-				oldDvr := pe.Controller.GetExistingDeviceResource(deviceList, deviceDetails.Uuid)
-				pe.Controller.PushDeviceResource(oldDvr, deviceDetails)
+				oldDvr := pe.Controller.GetExistingBlockDeviceResource(deviceList, deviceDetails.Uuid)
+				pe.Controller.PushBlockDeviceResource(oldDvr, deviceDetails)
 			}
 		}
 		/// update the list of DiskCRs

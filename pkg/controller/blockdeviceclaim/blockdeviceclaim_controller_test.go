@@ -1,4 +1,4 @@
-package devicerequest
+package blockdeviceclaim
 
 import (
 	"context"
@@ -20,19 +20,19 @@ import (
 )
 
 var (
-	fakeHostName                = "fake-hostname"
-	diskName                    = "disk-example"
-	deviceName                  = "device-example"
-	devicerequestName           = "devicerequest-example"
-	deviceRequestUID  types.UID = "deviceRequest-example-UID"
-	namespace                   = ""
-	capacity          uint64    = 1024000
+	fakeHostName                   = "fake-hostname"
+	diskName                       = "disk-example"
+	deviceName                     = "blockdevice-example"
+	blockDeviceClaimName           = "blockdeviceclaim-example"
+	blockDeviceClaimUID  types.UID = "blockDeviceClaim-example-UID"
+	namespace                      = ""
+	capacity             uint64    = 1024000
 )
 
-// TestDeviceRequestController runs ReconcileDeviceRequest.Reconcile() against a
-// fake client that tracks a DeviceRequest object.
+// TestBlockDeviceClaimController runs ReconcileBlockDeviceClaim.Reconcile() against a
+// fake client that tracks a BlockDeviceClaim object.
 // Test description:
-func TestDeviceRequestController(t *testing.T) {
+func TestBlockDeviceClaimController(t *testing.T) {
 
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(logf.ZapLogger(true))
@@ -41,31 +41,31 @@ func TestDeviceRequestController(t *testing.T) {
 	cl, s := CreateFakeClient(t)
 
 	// Create a ReconcileDevice object with the scheme and fake client.
-	r := &ReconcileDeviceRequest{client: cl, scheme: s}
+	r := &ReconcileBlockDeviceClaim{client: cl, scheme: s}
 
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .
 	req := reconcile.Request{
 		NamespacedName: types.NamespacedName{
-			Name:      devicerequestName,
+			Name:      blockDeviceClaimName,
 			Namespace: namespace,
 		},
 	}
 
-	// Check status of deviceRequest it should not be empty(Not bound)
-	r.CheckDeviceRequestStatus(t, req, openebsv1alpha1.DeviceRequestStatusEmpty)
+	// Check status of deviceClaim it should not be empty(Not bound)
+	r.CheckBlockDeviceClaimStatus(t, req, openebsv1alpha1.BlockDeviceClaimStatusEmpty)
 
-	// Fetch the DeviceRequest CR and change capacity to invalid
+	// Fetch the BlockDeviceClaim CR and change capacity to invalid
 	// Since Capacity is invalid, it delete deviceRequest CR
 	r.InvalidCapacityTest(t, req)
 
-	// Create new DeviceRequest CR with right capacity,
+	// Create new BlockDeviceClaim CR with right capacity,
 	// trigger reconilation event. This time, it should
 	// bound.
-	deviceRequestR := GetFakeDeviceRequestObject()
-	err := r.client.Create(context.TODO(), deviceRequestR)
+	blockDeviceClaimCR := GetFakeBlockDeviceClaimObject()
+	err := r.client.Create(context.TODO(), blockDeviceClaimCR)
 	if err != nil {
-		t.Errorf("DeviceRequest object is not created")
+		t.Errorf("BlockDeviceClaim object is not created")
 	}
 
 	res, err := r.Reconcile(req)
@@ -77,27 +77,27 @@ func TestDeviceRequestController(t *testing.T) {
 	if !res.Requeue {
 		t.Log("reconcile did not requeue request as expected")
 	}
-	r.CheckDeviceRequestStatus(t, req, openebsv1alpha1.DeviceRequestStatusDone)
+	r.CheckBlockDeviceClaimStatus(t, req, openebsv1alpha1.BlockDeviceClaimStatusDone)
 
 	r.DeviceRequestedHappyPathTest(t, req)
 	//TODO: Need to find a way to update deletion timestamp
-	//r.DeleteDeviceRequestedTest(t, req)
+	//r.DeleteBlockDeviceClaimedTest(t, req)
 }
 
-func (r *ReconcileDeviceRequest) DeleteDeviceRequestedTest(t *testing.T,
+func (r *ReconcileBlockDeviceClaim) DeleteBlockDeviceClaimedTest(t *testing.T,
 	req reconcile.Request) {
 
-	devRequestInst := &openebsv1alpha1.DeviceRequest{}
+	devRequestInst := &openebsv1alpha1.BlockDeviceClaim{}
 
-	// Fetch the DeviceRequest CR
+	// Fetch the BlockDeviceClaim CR
 	err := r.client.Get(context.TODO(), req.NamespacedName, devRequestInst)
 	if err != nil {
-		t.Errorf("Get devRequestInst: (%v)", err)
+		t.Errorf("Get devClaimInst: (%v)", err)
 	}
 
 	err = r.client.Delete(context.TODO(), devRequestInst)
 	if err != nil {
-		t.Errorf("Delete devRequestInst: (%v)", err)
+		t.Errorf("Delete devClaimInst: (%v)", err)
 	}
 
 	res, err := r.Reconcile(req)
@@ -110,78 +110,78 @@ func (r *ReconcileDeviceRequest) DeleteDeviceRequestedTest(t *testing.T,
 		t.Log("reconcile did not requeue request as expected")
 	}
 
-	dvRequestInst := &openebsv1alpha1.DeviceRequest{}
+	dvRequestInst := &openebsv1alpha1.BlockDeviceClaim{}
 	err = r.client.Get(context.TODO(), req.NamespacedName, dvRequestInst)
 	if errors.IsNotFound(err) {
-		t.Logf("DeviceRequest is deleted, expected")
+		t.Logf("BlockDeviceClaim is deleted, expected")
 		err = nil
 	} else if err != nil {
-		t.Errorf("Get dvRequestInst: (%v)", err)
+		t.Errorf("Get dvClaimInst: (%v)", err)
 	}
 
 	time.Sleep(10 * time.Second)
-	// Fetch the Device CR
-	devInst := &openebsv1alpha1.Device{}
+	// Fetch the BlockDevice CR
+	devInst := &openebsv1alpha1.BlockDevice{}
 	err = r.client.Get(context.TODO(), types.NamespacedName{Name: deviceName, Namespace: namespace}, devInst)
 	if err != nil {
 		t.Errorf("get devInst: (%v)", err)
 	}
 
 	if devInst.ClaimRef.UID == dvRequestInst.ObjectMeta.UID {
-		t.Logf("Device ObjRef UID:%v match expected deviceRequest UID:%v",
+		t.Logf("BlockDevice ObjRef UID:%v match expected deviceRequest UID:%v",
 			devInst.ClaimRef.UID, dvRequestInst.ObjectMeta.UID)
 	} else {
-		t.Fatalf("Device ObjRef UID:%v did not match expected deviceRequest UID:%v",
+		t.Fatalf("BlockDevice ObjRef UID:%v did not match expected deviceRequest UID:%v",
 			devInst.ClaimRef.UID, dvRequestInst.ObjectMeta.UID)
 	}
 
 	if devInst.ClaimState.State == ndm.NDMClaimed {
-		t.Logf("Device Obj state:%v match expected state:%v",
+		t.Logf("BlockDevice Obj state:%v match expected state:%v",
 			devInst.ClaimState.State, ndm.NDMClaimed)
 	} else {
-		t.Fatalf("Device Obj state:%v did not match expected state:%v",
+		t.Fatalf("BlockDevice Obj state:%v did not match expected state:%v",
 			devInst.ClaimState.State, ndm.NDMClaimed)
 	}
 }
 
-func (r *ReconcileDeviceRequest) DeviceRequestedHappyPathTest(t *testing.T,
+func (r *ReconcileBlockDeviceClaim) DeviceRequestedHappyPathTest(t *testing.T,
 	req reconcile.Request) {
 
-	devRequestInst := &openebsv1alpha1.DeviceRequest{}
-	// Fetch the DeviceRequest CR
+	devRequestInst := &openebsv1alpha1.BlockDeviceClaim{}
+	// Fetch the BlockDeviceClaim CR
 	err := r.client.Get(context.TODO(), req.NamespacedName, devRequestInst)
 	if err != nil {
 		t.Errorf("Get devRequestInst: (%v)", err)
 	}
 
-	// Fetch the Device CR
-	devInst := &openebsv1alpha1.Device{}
+	// Fetch the BlockDevice CR
+	devInst := &openebsv1alpha1.BlockDevice{}
 	err = r.client.Get(context.TODO(), types.NamespacedName{Name: deviceName, Namespace: namespace}, devInst)
 	if err != nil {
 		t.Errorf("get devInst: (%v)", err)
 	}
 
 	if devInst.ClaimRef.UID == devRequestInst.ObjectMeta.UID {
-		t.Logf("Device ObjRef UID:%v match expected deviceRequest UID:%v",
+		t.Logf("BlockDevice ObjRef UID:%v match expected deviceRequest UID:%v",
 			devInst.ClaimRef.UID, devRequestInst.ObjectMeta.UID)
 	} else {
-		t.Fatalf("Device ObjRef UID:%v did not match expected deviceRequest UID:%v",
+		t.Fatalf("BlockDevice ObjRef UID:%v did not match expected deviceRequest UID:%v",
 			devInst.ClaimRef.UID, devRequestInst.ObjectMeta.UID)
 	}
 
 	if devInst.ClaimState.State == ndm.NDMClaimed {
-		t.Logf("Device Obj state:%v match expected state:%v",
+		t.Logf("BlockDevice Obj state:%v match expected state:%v",
 			devInst.ClaimState.State, ndm.NDMClaimed)
 	} else {
-		t.Fatalf("Device Obj state:%v did not match expected state:%v",
+		t.Fatalf("BlockDevice Obj state:%v did not match expected state:%v",
 			devInst.ClaimState.State, ndm.NDMClaimed)
 	}
 }
 
-func (r *ReconcileDeviceRequest) InvalidCapacityTest(t *testing.T,
+func (r *ReconcileBlockDeviceClaim) InvalidCapacityTest(t *testing.T,
 	req reconcile.Request) {
 
-	devRequestInst := &openebsv1alpha1.DeviceRequest{}
+	devRequestInst := &openebsv1alpha1.BlockDeviceClaim{}
 	err := r.client.Get(context.TODO(), req.NamespacedName, devRequestInst)
 	if err != nil {
 		t.Errorf("Get devRequestInst: (%v)", err)
@@ -203,51 +203,51 @@ func (r *ReconcileDeviceRequest) InvalidCapacityTest(t *testing.T,
 		t.Log("reconcile did not requeue request as expected")
 	}
 
-	dvC := &openebsv1alpha1.DeviceRequest{}
+	dvC := &openebsv1alpha1.BlockDeviceClaim{}
 	err = r.client.Get(context.TODO(), req.NamespacedName, dvC)
 	if errors.IsNotFound(err) {
-		t.Logf("DeviceRequest is deleted, expected")
+		t.Logf("BlockDeviceClaim is deleted, expected")
 		err = nil
 	} else if err != nil {
 		t.Errorf("Get devRequestInst: (%v)", err)
 	}
 }
 
-func (r *ReconcileDeviceRequest) CheckDeviceRequestStatus(t *testing.T,
-	req reconcile.Request, phase openebsv1alpha1.DeviceRequestPhase) {
+func (r *ReconcileBlockDeviceClaim) CheckBlockDeviceClaimStatus(t *testing.T,
+	req reconcile.Request, phase openebsv1alpha1.DeviceClaimPhase) {
 
-	devRequestCR := &openebsv1alpha1.DeviceRequest{}
+	devRequestCR := &openebsv1alpha1.BlockDeviceClaim{}
 	err := r.client.Get(context.TODO(), req.NamespacedName, devRequestCR)
 	if err != nil {
 		t.Errorf("get devRequestCR : (%v)", err)
 	}
 
-	// DeviceRequest should yet to bound.
+	// BlockDeviceClaim should yet to bound.
 	if devRequestCR.Status.Phase == phase {
-		t.Logf("DeviceRequest Object status:%v match expected status:%v",
+		t.Logf("BlockDeviceClaim Object status:%v match expected status:%v",
 			devRequestCR.Status.Phase, phase)
 	} else {
-		t.Fatalf("DeviceRequest Object status:%v did not match expected status:%v",
+		t.Fatalf("BlockDeviceClaim Object status:%v did not match expected status:%v",
 			devRequestCR.Status.Phase, phase)
 	}
 }
 
-func GetFakeDeviceRequestObject() *openebsv1alpha1.DeviceRequest {
-	deviceRequestCR := &openebsv1alpha1.DeviceRequest{}
+func GetFakeBlockDeviceClaimObject() *openebsv1alpha1.BlockDeviceClaim {
+	deviceRequestCR := &openebsv1alpha1.BlockDeviceClaim{}
 
 	TypeMeta := metav1.TypeMeta{
-		Kind:       "DeviceRequest",
+		Kind:       "BlockDeviceClaim",
 		APIVersion: ndm.NDMVersion,
 	}
 
 	ObjectMeta := metav1.ObjectMeta{
 		Labels:    make(map[string]string),
-		Name:      devicerequestName,
+		Name:      blockDeviceClaimName,
 		Namespace: namespace,
-		UID:       deviceRequestUID,
+		UID:       blockDeviceClaimUID,
 	}
 
-	Spec := openebsv1alpha1.DeviceRequestSpec{
+	Spec := openebsv1alpha1.DeviceClaimSpec{
 		Capacity:   capacity, // Set deviceclaim size
 		DeviceType: "",
 		HostName:   fakeHostName,
@@ -256,15 +256,15 @@ func GetFakeDeviceRequestObject() *openebsv1alpha1.DeviceRequest {
 	deviceRequestCR.ObjectMeta = ObjectMeta
 	deviceRequestCR.TypeMeta = TypeMeta
 	deviceRequestCR.Spec = Spec
-	deviceRequestCR.Status.Phase = openebsv1alpha1.DeviceRequestStatusEmpty
+	deviceRequestCR.Status.Phase = openebsv1alpha1.BlockDeviceClaimStatusEmpty
 	return deviceRequestCR
 }
 
-func GetFakeDeviceObject() *openebsv1alpha1.Device {
-	device := &openebsv1alpha1.Device{}
+func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {
+	device := &openebsv1alpha1.BlockDevice{}
 
 	TypeMeta := metav1.TypeMeta{
-		Kind:       ndm.NDMDeviceKind,
+		Kind:       ndm.NDMBlockDeviceKind,
 		APIVersion: ndm.NDMVersion,
 	}
 
@@ -277,7 +277,7 @@ func GetFakeDeviceObject() *openebsv1alpha1.Device {
 	Spec := openebsv1alpha1.DeviceSpec{
 		Path: "dev/disk-fake-path",
 		Capacity: openebsv1alpha1.DeviceCapacity{
-			Storage: capacity, // Set device size.
+			Storage: capacity, // Set blockdevice size.
 		},
 		DevLinks:    make([]openebsv1alpha1.DeviceDevLink, 0),
 		Partitioned: ndm.NDMNotPartitioned,
@@ -338,17 +338,17 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 
 	deviceR := GetFakeDeviceObject()
 
-	deviceList := &openebsv1alpha1.DeviceList{
+	deviceList := &openebsv1alpha1.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "Device",
+			Kind:       "BlockDevice",
 			APIVersion: "",
 		},
 	}
 
-	deviceRequestCR := GetFakeDeviceRequestObject()
-	deviceclaimList := &openebsv1alpha1.DeviceRequestList{
+	deviceRequestCR := GetFakeBlockDeviceClaimObject()
+	deviceclaimList := &openebsv1alpha1.BlockDeviceClaimList{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "DeviceRequest",
+			Kind:       "BlockDeviceClaim",
 			APIVersion: "",
 		},
 	}
@@ -368,16 +368,16 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 		fmt.Println("NDMClient is not created")
 	}
 
-	// Create a new device obj
+	// Create a new blockdevice obj
 	err := fakeNdmClient.Create(context.TODO(), deviceR)
 	if err != nil {
-		fmt.Println("Device object is not created")
+		fmt.Println("BlockDevice object is not created")
 	}
 
 	// Create a new deviceclaim obj
 	err = fakeNdmClient.Create(context.TODO(), deviceRequestCR)
 	if err != nil {
-		fmt.Println("DeviceRequest object is not created")
+		fmt.Println("BlockDeviceClaim object is not created")
 	}
 	return fakeNdmClient, s
 }

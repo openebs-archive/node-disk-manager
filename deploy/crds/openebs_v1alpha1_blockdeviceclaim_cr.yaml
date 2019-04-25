@@ -1,7 +1,7 @@
 apiVersion: openebs.io/v1alpha1
-kind: DeviceRequest
+kind: BlockDeviceClaim
 metadata:
-  name: test-devicerequest
+  name: test-blockdeviceclaim
 spec:
   capacity: 300
   driveType: ""

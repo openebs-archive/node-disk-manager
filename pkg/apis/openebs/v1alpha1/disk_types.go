@@ -62,7 +62,7 @@ type DiskStat struct {
 }
 
 type DeviceInfo struct {
-	DeviceUID string `json: "Device UID"` //Cross reference to Device CR backed by this disk
+	DeviceUID string `json: "BlockDevice UID"` //Cross reference to BlockDevice CR backed by this disk
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
