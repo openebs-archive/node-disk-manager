@@ -65,9 +65,9 @@ func main() {
 	defer r.Unset()
 
 	//Reconciliation would be triggered with 5 second interval
-	recon_interval := time.Duration(5 * time.Second)
+	reconInterval := time.Duration(5 * time.Second)
 	// Create a new Cmd to provide shared dependencies and start components
-	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &recon_interval})
+	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &reconInterval})
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
