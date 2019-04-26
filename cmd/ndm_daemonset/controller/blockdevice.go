@@ -58,13 +58,13 @@ func NewDeviceInfo() *DeviceInfo {
  * type which will be pushed to etcd
  */
 func (di *DeviceInfo) ToDevice() apis.BlockDevice {
-	dvr := apis.BlockDevice{}
-	dvr.Spec = di.getDeviceSpec()
-	dvr.ObjectMeta = di.getObjectMeta()
-	dvr.TypeMeta = di.getTypeMeta()
-	dvr.ClaimState = di.getClaimState()
-	dvr.Status = di.getStatus()
-	return dvr
+	blockDevice := apis.BlockDevice{}
+	blockDevice.Spec = di.getDeviceSpec()
+	blockDevice.ObjectMeta = di.getObjectMeta()
+	blockDevice.TypeMeta = di.getTypeMeta()
+	blockDevice.ClaimState = di.getClaimState()
+	blockDevice.Status = di.getStatus()
+	return blockDevice
 }
 
 /*
