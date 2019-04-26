@@ -2,7 +2,13 @@ package blockdevice
 
 import (
 	"context"
+	"github.com/go-logr/logr"
+	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	"github.com/openebs/node-disk-manager/pkg/udev"
+	"k8s.io/apimachinery/pkg/types"
+	"strings"
+
 	//corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -85,17 +91,17 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, err
 	}
 
-	/*err = r.CheckBackingDiskStatusAndUpdateDeviceCR(instance,
+	err = r.CheckBackingDiskStatusAndUpdateDeviceCR(instance,
 		request.NamespacedName.Namespace, reqLogger)
 
 	if err != nil {
 		// Error while reading, updating object - requeue the request.
 		return reconcile.Result{}, err
-	}*/
+	}
 	return reconcile.Result{}, nil
 }
 
-/*func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
+func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 	instance *openebsv1alpha1.BlockDevice, nameSpace string, reqLogger logr.Logger) error {
 
 	// Find the name of diskCR that need to be read from etcd
@@ -139,4 +145,4 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 		reqLogger.Info("BlockDevice-CR marked Inactive", "BlockDevice:", instance.ObjectMeta.Name)
 	}
 	return nil
-}*/
+}
