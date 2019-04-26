@@ -22,7 +22,7 @@ import (
 )
 
 //Reconciliation would be triggered with 5 second interval
-const reconInterval = 5 * time.Second
+const ReconcilationInterval = 5 * time.Second
 
 var log = logf.Log.WithName("ndm-operator")
 
@@ -66,6 +66,8 @@ func main() {
 		os.Exit(1)
 	}
 	defer r.Unset()
+
+	reconInterval := ReconcilationInterval
 
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &reconInterval})
