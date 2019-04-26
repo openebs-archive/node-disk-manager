@@ -2,22 +2,14 @@ package blockdevice
 
 import (
 	"context"
-	"strings"
-
-	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	"github.com/openebs/node-disk-manager/pkg/udev"
-
 	//corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	//"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -40,7 +32,7 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileDevice{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileBlockDevice{client: mgr.GetClient(), scheme: mgr.GetScheme()}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -60,10 +52,10 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
-var _ reconcile.Reconciler = &ReconcileDevice{}
+var _ reconcile.Reconciler = &ReconcileBlockDevice{}
 
-// ReconcileDevice reconciles a BlockDevice object
-type ReconcileDevice struct {
+// ReconcileBlockDevice reconciles a BlockDevice object
+type ReconcileBlockDevice struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
@@ -75,7 +67,7 @@ type ReconcileDevice struct {
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
-func (r *ReconcileDevice) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling BlockDevice")
 
@@ -93,17 +85,17 @@ func (r *ReconcileDevice) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	err = r.CheckBackingDiskStatusAndUpdateDeviceCR(instance,
+	/*err = r.CheckBackingDiskStatusAndUpdateDeviceCR(instance,
 		request.NamespacedName.Namespace, reqLogger)
 
 	if err != nil {
 		// Error while reading, updating object - requeue the request.
 		return reconcile.Result{}, err
-	}
+	}*/
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
+/*func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 	instance *openebsv1alpha1.BlockDevice, nameSpace string, reqLogger logr.Logger) error {
 
 	// Find the name of diskCR that need to be read from etcd
@@ -147,4 +139,4 @@ func (r *ReconcileDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 		reqLogger.Info("BlockDevice-CR marked Inactive", "BlockDevice:", instance.ObjectMeta.Name)
 	}
 	return nil
-}
+}*/

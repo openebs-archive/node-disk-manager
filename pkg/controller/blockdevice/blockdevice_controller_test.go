@@ -42,8 +42,8 @@ func TestDeviceController(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl, s := CreateFakeClient(t)
 
-	// Create a ReconcileDevice object with the scheme and fake client.
-	r := &ReconcileDevice{client: cl, scheme: s}
+	// Create a ReconcileBlockDevice object with the scheme and fake client.
+	r := &ReconcileBlockDevice{client: cl, scheme: s}
 
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .

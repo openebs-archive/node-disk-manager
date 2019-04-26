@@ -3,6 +3,7 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	"strings"
 
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
@@ -24,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var log = logf.Log.WithName("controller_devicerequest")
+var log = logf.Log.WithName("controller_deviceclaim")
 
 const (
 	FinalizerName = "blockdeviceclaim.finalizer"
@@ -91,7 +92,7 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, err
 	}
 
-	// New deviceRequest if Phase is NULL
+	// New device claim if Phase is NULL
 	if instance.Status.Phase == openebsv1alpha1.BlockDeviceClaimStatusEmpty {
 		err := r.claimDeviceForBlockDeviceClaimCR(instance, reqLogger)
 		if err != nil {
@@ -103,7 +104,7 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 	} else if (instance.Status.Phase == openebsv1alpha1.BlockDeviceClaimStatusDone) ||
 		(instance.Status.Phase == openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity) {
 
-		reqLogger.Info("In process of deleting deviceClaim")
+		reqLogger.Info("In process of deleting block device claim")
 		err := r.FinalizerHandling(instance, reqLogger)
 		if err != nil {
 			reqLogger.Error(err, "Finalizer handling failed", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
@@ -122,7 +123,7 @@ func (r *ReconcileBlockDeviceClaim) isValidCapacityRequested(instance *openebsv1
 	if instance.Spec.Capacity <= 0 {
 		err1 := fmt.Errorf("Invalid Capacity requested")
 
-		//Update deviceRequest CR with error string
+		//Update deviceClaim CR with error string
 		instance_cpy := instance.DeepCopy()
 		instance_cpy.Status.Phase = openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity
 
@@ -175,7 +176,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceCR(instance *openebsv1alpha1.Bloc
 
 	var driveTypeSpecified bool = false
 
-	// Check if request is for SSD or HDD
+	// Check if claim is for SSD or HDD
 	length := len(instance.Spec.DeviceType)
 	if length != 0 {
 		reqLogger.Info("DriveType specified in BlockDeviceClaim CR")
@@ -263,11 +264,11 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 	instance *openebsv1alpha1.BlockDeviceClaim, reqLogger logr.Logger) error {
 
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
-		reqLogger.Info("No Deletion Time Stamp set on deviceRequest")
+		reqLogger.Info("No Deletion Time Stamp set on device claim")
 		return nil
 	}
 	// The object is being deleted
-	if containsString(instance.ObjectMeta.Finalizers, FinalizerName) {
+	if util.Contains(instance.ObjectMeta.Finalizers, FinalizerName) {
 		// Finalizer is set, lets handle external dependency
 		if err := r.deleteExternalDependency(instance, reqLogger); err != nil {
 			reqLogger.Error(err, "Could not delete external dependency", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
@@ -275,7 +276,7 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 		}
 
 		// Remove finalizer from list and update it.
-		instance.ObjectMeta.Finalizers = removeString(instance.ObjectMeta.Finalizers, FinalizerName)
+		instance.ObjectMeta.Finalizers = util.RemoveString(instance.ObjectMeta.Finalizers, FinalizerName)
 		if err := r.client.Update(context.TODO(), instance); err != nil {
 			reqLogger.Error(err, "Could not remove finalizer", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
 			return err
@@ -285,7 +286,7 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 	return nil
 }
 
-func (r *ReconcileBlockDeviceClaim) isDeviceRequestedByThisDeviceRequest(
+func (r *ReconcileBlockDeviceClaim) isDeviceRequestedByThisDeviceClaim(
 	instance *openebsv1alpha1.BlockDeviceClaim, item openebsv1alpha1.BlockDevice,
 	reqLogger logr.Logger) bool {
 
@@ -322,9 +323,9 @@ func (r *ReconcileBlockDeviceClaim) deleteExternalDependency(
 		return err
 	}
 
-	// Check if same deviceRequest holding the ObjRef
+	// Check if same deviceclaim holding the ObjRef
 	for _, item := range listDVR.Items {
-		if r.isDeviceRequestedByThisDeviceRequest(instance, item, reqLogger) == false {
+		if r.isDeviceRequestedByThisDeviceClaim(instance, item, reqLogger) == false {
 			continue
 		}
 
@@ -340,24 +341,4 @@ func (r *ReconcileBlockDeviceClaim) deleteExternalDependency(
 		}
 	}
 	return nil
-}
-
-// Helper functions to check and remove string from a slice of strings.
-func containsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-	return false
-}
-
-func removeString(slice []string, s string) (result []string) {
-	for _, item := range slice {
-		if item == s {
-			continue
-		}
-		result = append(result, item)
-	}
-	return
 }
