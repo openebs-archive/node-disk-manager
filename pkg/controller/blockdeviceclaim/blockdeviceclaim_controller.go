@@ -28,7 +28,8 @@ import (
 var log = logf.Log.WithName("controller_deviceclaim")
 
 const (
-	FinalizerName = "blockdeviceclaim.finalizer"
+	// BlockDeviceClaimFinalizer is the finalizer name for the block device claim
+	BlockDeviceClaimFinalizer = "blockdeviceclaim.finalizer"
 )
 
 // Add creates a new BlockDeviceClaim Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -251,7 +252,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaimCR(
 	// finalizer string on instance
 	instance_cpy := instance.DeepCopy()
 	instance_cpy.Status.Phase = openebsv1alpha1.BlockDeviceClaimStatusDone
-	instance_cpy.ObjectMeta.Finalizers = append(instance_cpy.ObjectMeta.Finalizers, FinalizerName)
+	instance_cpy.ObjectMeta.Finalizers = append(instance_cpy.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer)
 	err = r.client.Update(context.TODO(), instance_cpy)
 	if err != nil {
 		reqLogger.Error(err, "Error while updating", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
@@ -260,6 +261,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaimCR(
 	return nil
 }
 
+// FinalizerHandling removes the finalizer from the claim resource
 func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 	instance *openebsv1alpha1.BlockDeviceClaim, reqLogger logr.Logger) error {
 
@@ -268,7 +270,7 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 		return nil
 	}
 	// The object is being deleted
-	if util.Contains(instance.ObjectMeta.Finalizers, FinalizerName) {
+	if util.Contains(instance.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer) {
 		// Finalizer is set, lets handle external dependency
 		if err := r.deleteExternalDependency(instance, reqLogger); err != nil {
 			reqLogger.Error(err, "Could not delete external dependency", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
@@ -276,7 +278,7 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 		}
 
 		// Remove finalizer from list and update it.
-		instance.ObjectMeta.Finalizers = util.RemoveString(instance.ObjectMeta.Finalizers, FinalizerName)
+		instance.ObjectMeta.Finalizers = util.RemoveString(instance.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer)
 		if err := r.client.Update(context.TODO(), instance); err != nil {
 			reqLogger.Error(err, "Could not remove finalizer", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
 			return err

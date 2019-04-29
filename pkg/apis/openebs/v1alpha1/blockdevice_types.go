@@ -23,14 +23,16 @@ type DeviceSpec struct {
 	AggregateDevice string          `json:"aggregateDevice,omitempty"` //AggregateDevice has the UUID of the aggregate device created from this device
 }
 
+// DeviceCapacity defines the physical and logical size of the block device
 type DeviceCapacity struct {
 	Storage            uint64 `json:"storage"`            // blockdevice capacity in bytes
 	PhysicalSectorSize uint32 `json:"physicalSectorSize"` // blockdevice physical-Sector size in bytes
 	LogicalSectorSize  uint32 `json:"logicalSectorSize"`  // blockdevice logical-sector size in bytes
 }
 
+// DeviceDetails represent certain hardware/static attributes of the block device
 type DeviceDetails struct {
-	DeviceType       string `json: "deviceType"`      // DeviceType represents the type of drive like SSD, HDD etc.,
+	DeviceType       string `json:"deviceType"`       // DeviceType represents the type of drive like SSD, HDD etc.,
 	Model            string `json:"model"`            // Model is model of disk
 	Compliance       string `json:"compliance"`       // Implemented standards/specifications version such as SPC-1, SPC-2, etc
 	Serial           string `json:"serial"`           // Serial is serial no of disk
@@ -38,12 +40,13 @@ type DeviceDetails struct {
 	FirmwareRevision string `json:"firmwareRevision"` // disk firmware revision
 }
 
+// FileSystemInfo defines the filesystem type and mountpoint of the device if it exists
 type FileSystemInfo struct {
 	Type       string `json:"fsType,omitempty"`     //Type represents the FileSystem type of the block device
 	Mountpoint string `json:"mountPoint,omitempty"` //MountPoint represents the mountpoint of the block device.
 }
 
-// DeviceDevlink holds the maping between type and links like by-id type or by-path type link
+// DeviceDevLink holds the maping between type and links like by-id type or by-path type link
 type DeviceDevLink struct {
 	Kind  string   `json:"kind,omitempty"`  // Kind is the type of link like by-id or by-path.
 	Links []string `json:"links,omitempty"` // Links are the soft links of Type type

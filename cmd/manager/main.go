@@ -21,7 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 )
 
-//Reconciliation would be triggered with 5 second interval
+//ReconcilationInterval defines the triggering interval for reconcilation operation
 const ReconcilationInterval = 5 * time.Second
 
 var log = logf.Log.WithName("ndm-operator")

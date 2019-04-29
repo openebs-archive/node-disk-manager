@@ -101,14 +101,17 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 	return reconcile.Result{}, nil
 }
 
+// CheckBackingDiskStatusAndUpdateDeviceCR checks the status of the backing DiskCR for a block device CR, and updates
+// the status of Block Device. If the backing Disk of a block-device is marked inactive, then all block devices
+// which use that disk should be marked inactive.
 func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 	instance *openebsv1alpha1.BlockDevice, nameSpace string, reqLogger logr.Logger) error {
 
 	// Find the name of diskCR that need to be read from etcd
 	// TODO: This need to be changed, Currently name of disk and blockdevice
 	// are using same string except prefix which would be "blockdevice"/"disk"
-	Uuid := strings.TrimPrefix(instance.ObjectMeta.Name, udev.NDMBlockDevicePrefix)
-	Name := udev.NDMDiskPrefix + Uuid
+	UUID := strings.TrimPrefix(instance.ObjectMeta.Name, udev.NDMBlockDevicePrefix)
+	Name := udev.NDMDiskPrefix + UUID
 
 	// Fetch the Disk CR
 	diskInstance := &openebsv1alpha1.Disk{}

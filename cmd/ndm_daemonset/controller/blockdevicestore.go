@@ -27,9 +27,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// API to creates the BlockDevice resource in etcd
+// CreateBlockDevice creates the BlockDevice resource in etcd
 // This API will be called for each new addDiskEvent
-// dvr is DeviceResource-CR
+// blockDevice is DeviceResource-CR
 func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 
 	blockDeviceCopy := blockDevice.DeepCopy()
@@ -97,7 +97,7 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 	return nil
 }
 
-// This API used to set blockdevice status to "inactive" state in etcd
+// DeactivateBlockDevice API is used to set blockdevice status to "inactive" state in etcd
 func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 
 	blockDeviceCopy := blockDevice.DeepCopy()
@@ -110,7 +110,7 @@ func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 	glog.Info("Deactivated blockdevice: ", blockDeviceCopy.ObjectMeta.Name)
 }
 
-// GetDisk get Disk resource from etcd
+// GetBlockDevice get Disk resource from etcd
 func (c *Controller) GetBlockDevice(name string) (*apis.BlockDevice, error) {
 	dvr := &apis.BlockDevice{}
 	err := c.Clientset.Get(context.TODO(),
@@ -195,12 +195,12 @@ func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
 func (c *Controller) PushBlockDeviceResource(oldBlockDevice *apis.BlockDevice,
 	deviceDetails *DeviceInfo) {
 	deviceDetails.HostName = c.HostName
-	deviceApi := deviceDetails.ToDevice()
+	deviceAPI := deviceDetails.ToDevice()
 	if oldBlockDevice != nil {
-		c.UpdateBlockDevice(deviceApi, oldBlockDevice)
+		c.UpdateBlockDevice(deviceAPI, oldBlockDevice)
 		return
 	}
-	c.CreateBlockDevice(deviceApi)
+	c.CreateBlockDevice(deviceAPI)
 }
 
 // MarkBlockDeviceStatusToUnknown makes state of all resources owned by node unknown

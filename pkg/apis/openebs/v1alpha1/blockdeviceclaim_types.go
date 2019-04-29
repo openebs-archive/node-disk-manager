@@ -26,17 +26,17 @@ type DeviceClaimPhase string
  * Given below table, have all phases which BlockDeviceClaim CR can go before it is marked done.
  */
 const (
-	// BlockDeviceClaimStatusEmpty: BlockDeviceClaim CR is just created.
+	// BlockDeviceClaimStatusEmpty represents that the BlockDeviceClaim was just created.
 	BlockDeviceClaimStatusEmpty DeviceClaimPhase = ""
 
-	// BlockDeviceClaimStatusPending: BlockDeviceClaim CR yet to be assigned devices. Rather
+	// BlockDeviceClaimStatusPending represents BlockDeviceClaim has not been assigned devices yet. Rather
 	// search is going on for matching devices.
 	BlockDeviceClaimStatusPending DeviceClaimPhase = "Pending"
 
-	// BlockDeviceClaimStatusInvalidCapacity:  BlockDeviceClaim CR has invalid capacity request i.e. 0/-1
+	// BlockDeviceClaimStatusInvalidCapacity represents BlockDeviceClaim has invalid capacity request i.e. 0/-1
 	BlockDeviceClaimStatusInvalidCapacity DeviceClaimPhase = "Invalid Capacity Request"
 
-	// BlockDeviceClaimStatusDone:  BlockDeviceClaim CR assigned backing blockdevice and ready for use.
+	// BlockDeviceClaimStatusDone represents BlockDeviceClaim has been assigned backing blockdevice and ready for use.
 	BlockDeviceClaimStatusDone DeviceClaimPhase = "Bound"
 )
 
@@ -45,6 +45,7 @@ type DeviceClaimStatus struct {
 	Phase DeviceClaimPhase `json:"phase"`
 }
 
+// DeviceClaimDetails defines the details of the block device that should be claimed
 type DeviceClaimDetails struct {
 	DeviceFormat   string `json:"formatType"`     //Format of the device required, eg:ext4, xfs
 	MountPoint     string `json:"mountPoint"`     //MountPoint of the device required. Claim device from the specified mountpoint.

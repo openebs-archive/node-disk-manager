@@ -51,7 +51,7 @@ const (
 	NDMUnclaimed = "Unclaimed"
 	// NDMUsed is constant for in-use resource status.
 	NDMClaimed = "Claimed"
-	// NDMNotPartioned is used to say blockdevice does not have any partition.
+	// NDMNotPartitioned is used to say blockdevice does not have any partition.
 	NDMNotPartitioned = "No"
 	// NDMPartitioned is used to say blockdevice has some partitions.
 	NDMPartitioned = "Yes"
@@ -62,7 +62,8 @@ const (
 	// NDMUnknown is constant for resource unknown satus.
 	NDMUnknown = "Unknown"
 	// NDMDiskTypeKey specifies the type of disk.
-	NDMDiskTypeKey   = "ndm.io/disk-type"
+	NDMDiskTypeKey = "ndm.io/disk-type"
+	// NDMDeviceTypeKey specifies the block device type
 	NDMDeviceTypeKey = "ndm.io/blockdevice-type"
 	// NDMUnmanagedDiskKey specifies disk cr should be managed by ndm or not.
 	NDMManagedKey = "ndm.io/managed"
