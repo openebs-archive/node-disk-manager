@@ -33,8 +33,13 @@ var _ = Describe("Device Discovery Tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 		})
+<<<<<<< HEAD
 		It("should have one sparse block device per node", func() {
 			bdList, err := k8sClient.ListBlockDevices()
+=======
+		It("should have one sparse disk per node", func() {
+			diskList, err := k8sClient.ListDisk()
+>>>>>>> refactor(code): address review comments
 			Expect(err).NotTo(HaveOccurred())
 
 			noOfSparseBlockDevices := 0
@@ -65,6 +70,7 @@ var _ = Describe("Device Discovery Tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 		})
+<<<<<<< HEAD
 		It("should have 1 DiskCR and 2 BlockDeviceCR per node", func() {
 			// should have 2 block device CR, one for sparse disk and one for the
 			// external disk
@@ -72,6 +78,9 @@ var _ = Describe("Device Discovery Tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// should have single DiskCR which corresponds to the external disk attached
+=======
+		It("should have 2 DiskCRs per node", func() {
+>>>>>>> refactor(code): address review comments
 			diskList, err := k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -140,7 +149,11 @@ var _ = Describe("Device Discovery Tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 		})
+<<<<<<< HEAD
 		It("should have one additional Disk and BlockDevice CR after we attach a disk", func() {
+=======
+		It("should have one additional disk CR after we attach a disk", func() {
+>>>>>>> refactor(code): address review comments
 			diskList, err := k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
 			noOfDiskCR := len(diskList.Items)
