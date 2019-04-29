@@ -16,25 +16,25 @@ var _ = Describe("Device Discovery Tests", func() {
 
 	k8sClient, _ := k8s.GetClientSet()
 	BeforeEach(func() {
-		nodes, err := k8s.GetNodes(k8sClient.ClientSet)
+		nodes, err := k8sClient.ListNodeStatus()
 		Expect(err).NotTo(HaveOccurred())
 		noOfNodes = len(nodes)
 	})
 
 	Context("Setup with no external disk", func() {
 		BeforeEach(func() {
-			err = k8s.CreateNDMYAML(k8sClient)
+			err = k8sClient.CreateNDMYAML()
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 			k8sClient, _ = k8s.GetClientSet()
 		})
 		AfterEach(func() {
-			err := k8s.DeleteNDMYAML(k8sClient)
+			err := k8sClient.DeleteNDMYAML()
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 		})
 		It("should have one sparse disk per node", func() {
-			diskList, err := k8s.GetDiskList(k8sClient)
+			diskList, err := k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
 			noOfDisks := len(diskList.Items)
 			Expect(noOfDisks).NotTo(BeZero())
@@ -56,19 +56,19 @@ var _ = Describe("Device Discovery Tests", func() {
 		physicalDisk = udev.NewDisk(DiskImageSize)
 		_ = physicalDisk.AttachDisk()
 		BeforeEach(func() {
-			err = k8s.CreateNDMYAML(k8sClient)
+			err = k8sClient.CreateNDMYAML()
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 
 			k8sClient, _ = k8s.GetClientSet()
 		})
 		AfterEach(func() {
-			err = k8s.DeleteNDMYAML(k8sClient)
+			err = k8sClient.DeleteNDMYAML()
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 		})
 		It("should have 2 DiskCRs per node", func() {
-			diskList, err := k8s.GetDiskList(k8sClient)
+			diskList, err := k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
 			noOfDisks := len(diskList.Items)
 			Expect(noOfDisks).NotTo(BeZero())
@@ -91,7 +91,7 @@ var _ = Describe("Device Discovery Tests", func() {
 			err = physicalDisk.DetachDisk()
 			k8s.WaitForStateChange()
 
-			diskList, err := k8s.GetDiskList(k8sClient)
+			diskList, err := k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
 			noOfDisks := len(diskList.Items)
 			Expect(noOfDisks).NotTo(BeZero())
@@ -111,19 +111,19 @@ var _ = Describe("Device Discovery Tests", func() {
 		var physicalDisk udev.Disk
 		physicalDisk = udev.NewDisk(DiskImageSize)
 		BeforeEach(func() {
-			err = k8s.CreateNDMYAML(k8sClient)
+			err = k8sClient.CreateNDMYAML()
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 
 			k8sClient, _ = k8s.GetClientSet()
 		})
 		AfterEach(func() {
-			err = k8s.DeleteNDMYAML(k8sClient)
+			err = k8sClient.DeleteNDMYAML()
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 		})
 		It("should have one additional disk CR after we attach a disk", func() {
-			diskList, err := k8s.GetDiskList(k8sClient)
+			diskList, err := k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
 			noOfDiskCR := len(diskList.Items)
 			Expect(noOfDiskCR).NotTo(BeZero())
@@ -132,7 +132,7 @@ var _ = Describe("Device Discovery Tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 
-			diskList, err = k8s.GetDiskList(k8sClient)
+			diskList, err = k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(diskList.Items)).To(Equal(noOfDiskCR + 1))
 		})

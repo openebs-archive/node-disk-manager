@@ -18,7 +18,7 @@ const (
 	ActiveState = "Active"
 	// InactiveState stores the deactivated state of Disk/Device resource
 	InactiveState = "Inactive"
-	// DiskImageSize is the default file size used while creating backing image
+	// DiskImageSize is the default file size(1GB) used while creating backing image
 	DiskImageSize = 1073741824
 )
 
@@ -32,17 +32,17 @@ var _ = Describe("NDM Setup Tests", func() {
 	k8sClient, _ := k8s.GetClientSet()
 	Context("Checking for Daemonset pods in the cluster", func() {
 		BeforeEach(func() {
-			nodes, err := k8s.GetNodes(k8sClient.ClientSet)
+			nodes, err := k8sClient.ListNodeStatus()
 			Expect(err).NotTo(HaveOccurred())
 			noOfNodes = len(nodes)
 		})
 		It("should have running ndm pod on each node after creation", func() {
 
-			err = k8s.CreateNDMYAML(k8sClient)
+			err = k8sClient.CreateNDMYAML()
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 
-			pods, err := k8s.GetPods(k8sClient.ClientSet)
+			pods, err := k8sClient.ListPodStatus()
 			Expect(err).NotTo(HaveOccurred())
 
 			noOfPods := 0
@@ -55,11 +55,11 @@ var _ = Describe("NDM Setup Tests", func() {
 			Expect(noOfPods).To(Equal(noOfNodes))
 		})
 		It("should not have any ndm pods after deletion", func() {
-			err = k8s.DeleteNDMYAML(k8sClient)
+			err = k8sClient.DeleteNDMYAML()
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 
-			pods, err := k8s.GetPods(k8sClient.ClientSet)
+			pods, err := k8sClient.ListPodStatus()
 			Expect(err).NotTo(HaveOccurred())
 
 			noOfPods := 0
