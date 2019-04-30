@@ -10,11 +10,11 @@ status:
   state: Active
 spec:
   capacity:
-    logicalSectorSize: <logical sector size of block blockdevice> # like 512
+    logicalSectorSize: <logical sector size of lockdevice> # like 512
     storage: <total capacity in bits> #like 53687091200
   details:
     firmwareRevision: <firmware revision>
-    model: <model name of  block blockdevice> # like PersistentDisk
+    model: <model name of blockdevice> # like PersistentDisk
     serial: <serial no of disk> # like google-disk-2
     compliance: <compliance of disk> #like "SPC-4"
     vendor: <vendor of disk> #like Google
