@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -12,19 +13,22 @@ import (
 
 // DeviceClaimSpec defines the desired state of BlockDeviceClaim
 type DeviceClaimSpec struct {
-	Capacity   uint64             `json:"capacity"`           // disk size in bytes
-	DeviceType string             `json:"deviceType"`         // DeviceType represents the type of drive like SSD, HDD etc.,
-	HostName   string             `json:"hostName"`           // Node name from where blockdevice has to be claimed.
-	Details    DeviceClaimDetails `json:"deviceClaimDetails"` // Details of the device to be claimed
+	Requirements DeviceClaimRequirements `json:"requirements"`       // the requirements in the claim like Capacity, IOPS
+	DeviceType   string                  `json:"deviceType"`         // DeviceType represents the type of drive like SSD, HDD etc.,
+	HostName     string                  `json:"hostName"`           // Node name from where blockdevice has to be claimed.
+	Details      DeviceClaimDetails      `json:"deviceClaimDetails"` // Details of the device to be claimed
+}
+
+// DeviceClaimStatus defines the observed state of BlockDeviceClaim
+type DeviceClaimStatus struct {
+	Phase DeviceClaimPhase `json:"phase"`
 }
 
 // DeviceClaimPhase is a typed string for phase field of BlockDeviceClaim.
 type DeviceClaimPhase string
 
-/*
- * BlockDeviceClaim CR, when created pass through phases before it got some Devices Assigned.
- * Given below table, have all phases which BlockDeviceClaim CR can go before it is marked done.
- */
+// BlockDeviceClaim CR, when created pass through phases before it got some Devices Assigned.
+// Given below table, have all phases which BlockDeviceClaim CR can go before it is marked done.
 const (
 	// BlockDeviceClaimStatusEmpty represents that the BlockDeviceClaim was just created.
 	BlockDeviceClaimStatusEmpty DeviceClaimPhase = ""
@@ -40,10 +44,17 @@ const (
 	BlockDeviceClaimStatusDone DeviceClaimPhase = "Bound"
 )
 
-// DeviceClaimStatus defines the observed state of BlockDeviceClaim
-type DeviceClaimStatus struct {
-	Phase DeviceClaimPhase `json:"phase"`
+// DeviceClaimRequirements defines the request by the claim, eg, Capacity, IOPS
+type DeviceClaimRequirements struct {
+	// Requests describes the minimum resources required. eg: if storage resource of 10G is
+	// requested minimum capacity of 10G should be available
+	Requests v1.ResourceList `json:"requests"`
 }
+
+const (
+	// Capacity required in bytes (eg: 5Gi = 5GiB = 5*1024*1024*1024)
+	ResourceCapacity v1.ResourceName = "capacity"
+)
 
 // DeviceClaimDetails defines the details of the block device that should be claimed
 type DeviceClaimDetails struct {
@@ -53,9 +64,9 @@ type DeviceClaimDetails struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// BlockDeviceClaim is the Schema for the devicerequests API
 // +k8s:openapi-gen=true
+
+// BlockDeviceClaim is the Schema for the block device claim API
 type BlockDeviceClaim struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
