@@ -117,25 +117,16 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 }
 
 // Capacity check is to check if a valid capacity requested or not
-func (r *ReconcileBlockDeviceClaim) isValidCapacityRequested(instance *openebsv1alpha1.BlockDeviceClaim,
-	reqLogger logr.Logger) error {
+func (r *ReconcileBlockDeviceClaim) getRequestedCapacity(instance *openebsv1alpha1.BlockDeviceClaim,
+	reqLogger logr.Logger) (int64, error) {
 
+	resourceCapacity := instance.Spec.Requirements.Requests[openebsv1alpha1.ResourceCapacity]
 	// Check if deviceCalim has valid capacity request
-	if instance.Spec.Capacity <= 0 {
-		err1 := fmt.Errorf("Invalid Capacity requested")
-
-		//Update deviceClaim CR with error string
-		instance_cpy := instance.DeepCopy()
-		instance_cpy.Status.Phase = openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity
-
-		err := r.client.Delete(context.TODO(), instance_cpy)
-		if err != nil {
-			reqLogger.Error(err, "Invalid capacity requested, deletion failed", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
-			return err
-		}
-		return err1
+	capacity, err := (&resourceCapacity).AsInt64()
+	if !err || capacity <= 0 {
+		return 0, fmt.Errorf("invalid capacity requested")
 	}
-	return nil
+	return capacity, nil
 }
 
 func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(instance *openebsv1alpha1.BlockDeviceClaim,
@@ -173,7 +164,7 @@ func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(instance *openebsv1al
 }
 
 func (r *ReconcileBlockDeviceClaim) claimDeviceCR(instance *openebsv1alpha1.BlockDeviceClaim,
-	listDVR *openebsv1alpha1.BlockDeviceList, reqLogger logr.Logger) error {
+	listDVR *openebsv1alpha1.BlockDeviceList, capacity int64, reqLogger logr.Logger) error {
 
 	var driveTypeSpecified bool = false
 
@@ -191,7 +182,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceCR(instance *openebsv1alpha1.Bloc
 	for _, item := range listDVR.Items {
 		if (strings.Compare(item.ClaimState.State, ndm.NDMUnclaimed) == 0) &&
 			(strings.Compare(item.Status.State, ndm.NDMActive) == 0) &&
-			(item.Spec.Capacity.Storage >= instance.Spec.Capacity) {
+			(item.Spec.Capacity.Storage >= uint64(capacity)) {
 
 			if driveTypeSpecified == true {
 				if strings.Compare(item.Spec.Details.DeviceType, instance.Spec.DeviceType) != 0 {
@@ -230,9 +221,18 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceCR(instance *openebsv1alpha1.Bloc
 func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaimCR(
 	instance *openebsv1alpha1.BlockDeviceClaim, reqLogger logr.Logger) error {
 
-	// Check if capacity requested is 0 or -
-	err := r.isValidCapacityRequested(instance, reqLogger)
+	// Get the capacity requested in the claim
+	capacity, err := r.getRequestedCapacity(instance, reqLogger)
 	if err != nil {
+		//Update deviceClaim CR with error string
+		instanceCopy := instance.DeepCopy()
+		instanceCopy.Status.Phase = openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity
+
+		err1 := r.client.Delete(context.TODO(), instanceCopy)
+		if err1 != nil {
+			reqLogger.Error(err1, "Invalid capacity requested, deletion failed", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
+			return err1
+		}
 		return err
 	}
 
@@ -242,7 +242,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaimCR(
 		return err
 	}
 
-	err = r.claimDeviceCR(instance, listDVR, reqLogger)
+	err = r.claimDeviceCR(instance, listDVR, capacity, reqLogger)
 	if err != nil {
 		reqLogger.Error(err, "Error claiming BlockDevice", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
 		return err

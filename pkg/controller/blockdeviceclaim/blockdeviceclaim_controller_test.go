@@ -3,6 +3,8 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"testing"
 	"time"
 
@@ -27,6 +29,7 @@ var (
 	blockDeviceClaimUID  types.UID = "blockDeviceClaim-example-UID"
 	namespace                      = ""
 	capacity             uint64    = 1024000
+	claimCapacity                  = resource.MustParse("1024000")
 )
 
 // TestBlockDeviceClaimController runs ReconcileBlockDeviceClaim.Reconcile() against a
@@ -52,11 +55,11 @@ func TestBlockDeviceClaimController(t *testing.T) {
 		},
 	}
 
-	// Check status of deviceClaim it should not be empty(Not bound)
+	// Check status of deviceClaim it should be empty(Not bound)
 	r.CheckBlockDeviceClaimStatus(t, req, openebsv1alpha1.BlockDeviceClaimStatusEmpty)
 
 	// Fetch the BlockDeviceClaim CR and change capacity to invalid
-	// Since Capacity is invalid, it delete deviceRequest CR
+	// Since Capacity is invalid, it delete device claim CR
 	r.InvalidCapacityTest(t, req)
 
 	// Create new BlockDeviceClaim CR with right capacity,
@@ -187,7 +190,8 @@ func (r *ReconcileBlockDeviceClaim) InvalidCapacityTest(t *testing.T,
 		t.Errorf("Get devRequestInst: (%v)", err)
 	}
 
-	devRequestInst.Spec.Capacity = 0
+	capacity := "0"
+	devRequestInst.Spec.Requirements.Requests[openebsv1alpha1.ResourceCapacity] = resource.MustParse(capacity)
 	err = r.client.Update(context.TODO(), devRequestInst)
 	if err != nil {
 		t.Errorf("Update devRequestInst: (%v)", err)
@@ -247,10 +251,16 @@ func GetFakeBlockDeviceClaimObject() *openebsv1alpha1.BlockDeviceClaim {
 		UID:       blockDeviceClaimUID,
 	}
 
+	Requests := v1.ResourceList{openebsv1alpha1.ResourceCapacity: claimCapacity}
+
+	Requirements := openebsv1alpha1.DeviceClaimRequirements{
+		Requests: Requests,
+	}
+
 	Spec := openebsv1alpha1.DeviceClaimSpec{
-		Capacity:   capacity, // Set deviceclaim size
-		DeviceType: "",
-		HostName:   fakeHostName,
+		Requirements: Requirements,
+		DeviceType:   "",
+		HostName:     fakeHostName,
 	}
 
 	deviceRequestCR.ObjectMeta = ObjectMeta
