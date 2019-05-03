@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"k8s.io/api/core/v1"
 	"strings"
 
-	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	//corev1 "k8s.io/api/core/v1"
+	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -52,7 +52,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource BlockDeviceClaim
-	err = c.Watch(&source.Kind{Type: &openebsv1alpha1.BlockDeviceClaim{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &v1alpha1.BlockDeviceClaim{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 	reqLogger.Info("Reconciling BlockDeviceClaim")
 
 	// Fetch the BlockDeviceClaim instance
-	instance := &openebsv1alpha1.BlockDeviceClaim{}
+	instance := &v1alpha1.BlockDeviceClaim{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -93,18 +93,19 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, err
 	}
 
-	// New device claim if Phase is NULL
-	if instance.Status.Phase == openebsv1alpha1.BlockDeviceClaimStatusEmpty {
-		err := r.claimDeviceForBlockDeviceClaimCR(instance, reqLogger)
+	switch instance.Status.Phase {
+	case v1alpha1.BlockDeviceClaimStatusPending:
+		fallthrough
+	case v1alpha1.BlockDeviceClaimStatusEmpty:
+		err := r.claimDeviceForBlockDeviceClaim(instance, reqLogger)
 		if err != nil {
-			//reqLogger.Error(err, "BlockDeviceClaim failed:", instance.ObjectMeta.Name)
+			reqLogger.Error(err, "BlockDeviceClaim "+instance.ObjectMeta.Name+" failed")
 			return reconcile.Result{}, err
 		}
-	} else if instance.Status.Phase == openebsv1alpha1.BlockDeviceClaimStatusPending {
-
-	} else if (instance.Status.Phase == openebsv1alpha1.BlockDeviceClaimStatusDone) ||
-		(instance.Status.Phase == openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity) {
-
+	case v1alpha1.BlockDeviceClaimStatusInvalidCapacity:
+		// currently for invalid capacity, the device claim will be deleted
+		fallthrough
+	case v1alpha1.BlockDeviceClaimStatusDone:
 		reqLogger.Info("In process of deleting block device claim")
 		err := r.FinalizerHandling(instance, reqLogger)
 		if err != nil {
@@ -116,24 +117,28 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 	return reconcile.Result{}, nil
 }
 
-// Capacity check is to check if a valid capacity requested or not
-func (r *ReconcileBlockDeviceClaim) getRequestedCapacity(instance *openebsv1alpha1.BlockDeviceClaim,
-	reqLogger logr.Logger) (int64, error) {
+// getRequestedCapacity gets the requested capacity from the BlockDeviceClaim
+// It returns an error if the Quantity cannot be parsed
+func getRequestedCapacity(list v1.ResourceList) (int64, error) {
 
-	resourceCapacity := instance.Spec.Requirements.Requests[openebsv1alpha1.ResourceCapacity]
+	resourceCapacity := list[v1alpha1.ResourceCapacity]
 	// Check if deviceCalim has valid capacity request
 	capacity, err := (&resourceCapacity).AsInt64()
 	if !err || capacity <= 0 {
-		return 0, fmt.Errorf("invalid capacity requested")
+		return 0, fmt.Errorf("invalid capacity requested, %v", err)
 	}
 	return capacity, nil
 }
 
-func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(instance *openebsv1alpha1.BlockDeviceClaim,
-	reqLogger logr.Logger) (*openebsv1alpha1.BlockDeviceList, error) {
+// getListofDevicesOnHost gets the list of block devices on the node to which BlockDeviceClaim is made
+// TODO:
+//  ListBlockDeviceResource in package cmd/ndm_daemonset/controller has the same functionality.
+//  Need to merge these 2 functions.
+func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(instance *v1alpha1.BlockDeviceClaim,
+	reqLogger logr.Logger) (*v1alpha1.BlockDeviceList, error) {
 
 	//Initialize a deviceList object.
-	listDVR := &openebsv1alpha1.BlockDeviceList{
+	listDVR := &v1alpha1.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -163,72 +168,17 @@ func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(instance *openebsv1al
 	return listDVR, nil
 }
 
-func (r *ReconcileBlockDeviceClaim) claimDeviceCR(instance *openebsv1alpha1.BlockDeviceClaim,
-	listDVR *openebsv1alpha1.BlockDeviceList, capacity int64, reqLogger logr.Logger) error {
-
-	var driveTypeSpecified bool = false
-
-	// Check if claim is for SSD or HDD
-	length := len(instance.Spec.DeviceType)
-	if length != 0 {
-		reqLogger.Info("DriveType specified in BlockDeviceClaim CR")
-		driveTypeSpecified = true
-	}
-
-	//fmt.Print("BlockDevice List:", listDVR)
-
-	//Find a blockdevice which is free and have available
-	//space more than or equal to requested
-	for _, item := range listDVR.Items {
-		if (strings.Compare(item.ClaimState.State, ndm.NDMUnclaimed) == 0) &&
-			(strings.Compare(item.Status.State, ndm.NDMActive) == 0) &&
-			(item.Spec.Capacity.Storage >= uint64(capacity)) {
-
-			if driveTypeSpecified == true {
-				if strings.Compare(item.Spec.Details.DeviceType, instance.Spec.DeviceType) != 0 {
-					continue
-				}
-			}
-
-			reqLogger.Info("Found matching blockdevice", "BlockDevice Name:",
-				item.ObjectMeta.Name, "BlockDevice Capacity:",
-				item.Spec.Capacity.Storage)
-			claimRef, err := reference.GetReference(r.scheme, instance)
-			if err != nil {
-				reqLogger.Error(err, "Unexpected error getting claim reference", "BlockDevice-CR:", instance.ObjectMeta.Name)
-				return err
-			}
-
-			// Found free blockdevice, mark it claimed, put ClaimRef of BlockDeviceClaim-CR
-			dvr := item.DeepCopy()
-			dvr.ClaimState.State = ndm.NDMClaimed
-			dvr.ClaimRef = claimRef
-			err = r.client.Update(context.TODO(), dvr)
-			if err != nil {
-				reqLogger.Error(err, "Error while updating BlockDevice-CR", "BlockDevice-CR:", dvr.ObjectMeta.Name)
-				return err
-			}
-			return nil
-		}
-	}
-	return fmt.Errorf("No blockdevice found to claim")
-}
-
-/*
- * New BlockDeviceClaim CR is created, try to findout blockdevice which is
- * free and has size equal/greater than BlockDeviceClaim request.
- */
-func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaimCR(
-	instance *openebsv1alpha1.BlockDeviceClaim, reqLogger logr.Logger) error {
+// claimDeviceForBlockDeviceClaim is created, try to findout blockdevice which is
+// free and has size equal/greater than BlockDeviceClaim request.
+func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
+	instance *v1alpha1.BlockDeviceClaim, reqLogger logr.Logger) error {
 
 	// Get the capacity requested in the claim
-	capacity, err := r.getRequestedCapacity(instance, reqLogger)
+	_, err := getRequestedCapacity(instance.Spec.Requirements.Requests)
 	if err != nil {
 		//Update deviceClaim CR with error string
-		instanceCopy := instance.DeepCopy()
-		instanceCopy.Status.Phase = openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity
-
-		err1 := r.client.Delete(context.TODO(), instanceCopy)
+		instance.Status.Phase = v1alpha1.BlockDeviceClaimStatusInvalidCapacity
+		err1 := r.client.Delete(context.TODO(), instance)
 		if err1 != nil {
 			reqLogger.Error(err1, "Invalid capacity requested, deletion failed", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
 			return err1
@@ -242,18 +192,35 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaimCR(
 		return err
 	}
 
-	err = r.claimDeviceCR(instance, listDVR, capacity, reqLogger)
-	if err != nil {
-		reqLogger.Error(err, "Error claiming BlockDevice", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
-		return err
+	// get matching BD list
+	matchingDevices := r.getMatchingBlockDevices(instance, listDVR, reqLogger)
+
+	// select the block device based on resource requirements
+	if selectedDevice, ok := selectBlockDevice(matchingDevices, instance.Spec.Requirements.Requests); ok {
+		claimRef, err := reference.GetReference(r.scheme, instance)
+		if err != nil {
+			reqLogger.Error(err, "error getting claim reference", "BlockDevice-CR:", instance.ObjectMeta.Name)
+			return err
+		}
+		selectedDevice.ClaimRef = claimRef
+		selectedDevice.ClaimState.State = ndm.NDMClaimed
+		err = r.client.Update(context.TODO(), &selectedDevice)
+		if err != nil {
+			reqLogger.Error(err, "Error while updating BlockDevice-CR", "BlockDevice-CR:", selectedDevice.ObjectMeta.Name)
+			return err
+		}
+		reqLogger.Info("Block Device " + selectedDevice.Name + " claimed")
+		instance.Status.Phase = v1alpha1.BlockDeviceClaimStatusDone
+	} else {
+		instance.Status.Phase = v1alpha1.BlockDeviceClaimStatusPending
 	}
 
-	// Update BlockDeviceClaim CR to show that "claim is done" also set
-	// finalizer string on instance
-	instance_cpy := instance.DeepCopy()
-	instance_cpy.Status.Phase = openebsv1alpha1.BlockDeviceClaimStatusDone
-	instance_cpy.ObjectMeta.Finalizers = append(instance_cpy.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer)
-	err = r.client.Update(context.TODO(), instance_cpy)
+	// set finalizer string on instance if claim status is Done
+	if instance.Status.Phase == v1alpha1.BlockDeviceClaimStatusDone {
+		instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer)
+	}
+	// Update BlockDeviceClaim CR
+	err = r.client.Update(context.TODO(), instance)
 	if err != nil {
 		reqLogger.Error(err, "Error while updating", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
 		return err
@@ -263,7 +230,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaimCR(
 
 // FinalizerHandling removes the finalizer from the claim resource
 func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
-	instance *openebsv1alpha1.BlockDeviceClaim, reqLogger logr.Logger) error {
+	instance *v1alpha1.BlockDeviceClaim, reqLogger logr.Logger) error {
 
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
 		reqLogger.Info("No Deletion Time Stamp set on device claim")
@@ -272,7 +239,7 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 	// The object is being deleted
 	if util.Contains(instance.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer) {
 		// Finalizer is set, lets handle external dependency
-		if err := r.deleteExternalDependency(instance, reqLogger); err != nil {
+		if err := r.deleteClaimedBlockDevice(instance, reqLogger); err != nil {
 			reqLogger.Error(err, "Could not delete external dependency", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
 			return err
 		}
@@ -288,8 +255,9 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 	return nil
 }
 
+// isDeviceRequestedByThisDeviceClaim checks whether a claimed block device belongs to the given BDC
 func (r *ReconcileBlockDeviceClaim) isDeviceRequestedByThisDeviceClaim(
-	instance *openebsv1alpha1.BlockDeviceClaim, item openebsv1alpha1.BlockDevice,
+	instance *v1alpha1.BlockDeviceClaim, item v1alpha1.BlockDevice,
 	reqLogger logr.Logger) bool {
 
 	if strings.Compare(item.ClaimState.State, ndm.NDMClaimed) != 0 {
@@ -314,10 +282,11 @@ func (r *ReconcileBlockDeviceClaim) isDeviceRequestedByThisDeviceClaim(
 	return true
 }
 
-func (r *ReconcileBlockDeviceClaim) deleteExternalDependency(
-	instance *openebsv1alpha1.BlockDeviceClaim, reqLogger logr.Logger) error {
+// deleteClaimedBlockDevice unclaims the block device claimed by this BlockDeviceClaim
+func (r *ReconcileBlockDeviceClaim) deleteClaimedBlockDevice(
+	instance *v1alpha1.BlockDeviceClaim, reqLogger logr.Logger) error {
 
-	reqLogger.Info("Deleting external dependencies for CR:", instance)
+	reqLogger.Info("Deleting external dependencies for CR:" + instance.Name)
 
 	//Get BlockDevice list for particular host
 	listDVR, err := r.getListofDevicesOnHost(instance, reqLogger)
@@ -343,4 +312,48 @@ func (r *ReconcileBlockDeviceClaim) deleteExternalDependency(
 		}
 	}
 	return nil
+}
+
+// getMatchingBlockDevices returns a list of BDs which match the
+// spec given in the BDC
+func (r *ReconcileBlockDeviceClaim) getMatchingBlockDevices(
+	instance *v1alpha1.BlockDeviceClaim, bdList *v1alpha1.BlockDeviceList, reqLogger logr.Logger) v1alpha1.BlockDeviceList {
+	checkDeviceType := false
+	if len(instance.Spec.DeviceType) == 0 {
+		checkDeviceType = true
+	}
+
+	matchingBlockDevices := v1alpha1.BlockDeviceList{}
+	for _, bd := range bdList.Items {
+		// check whether the block device is unclaimed and active
+		if bd.Status.State != ndm.NDMActive || bd.ClaimState.State != ndm.NDMUnclaimed {
+			continue
+		}
+		// check device type
+		if checkDeviceType && bd.Spec.Details.DeviceType != instance.Spec.DeviceType {
+			continue
+		}
+		matchingBlockDevices.Items = append(matchingBlockDevices.Items, bd)
+	}
+	return matchingBlockDevices
+}
+
+// selectBlockDevice selects a single BlockDevice from the list of
+// block devices based on the resource requirements
+func selectBlockDevice(blockDeviceList v1alpha1.BlockDeviceList, resourceLists v1.ResourceList) (selected v1alpha1.BlockDevice, foundMatch bool) {
+	foundMatch = false
+	for _, bd := range blockDeviceList.Items {
+		if matchResourceRequirements(bd, resourceLists) {
+			selected = *bd.DeepCopy()
+			foundMatch = true
+			break
+		}
+	}
+	return
+}
+
+// matchResourceRequirements matches a block device with a ResourceList
+func matchResourceRequirements(bd v1alpha1.BlockDevice, list v1.ResourceList) bool {
+	capacity, _ := getRequestedCapacity(list)
+	return bd.Spec.Capacity.Storage >= uint64(capacity)
 }
