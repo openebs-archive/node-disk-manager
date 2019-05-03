@@ -52,7 +52,7 @@ type DeviceClaimRequirements struct {
 }
 
 const (
-	// Capacity required in bytes (eg: 5Gi = 5GiB = 5*1024*1024*1024)
+	// ResourceCapacity defines the capacity required as v1.Quantity
 	ResourceCapacity v1.ResourceName = "capacity"
 )
 

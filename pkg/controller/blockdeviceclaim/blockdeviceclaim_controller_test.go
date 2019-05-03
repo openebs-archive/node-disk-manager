@@ -3,6 +3,7 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"testing"
@@ -190,8 +191,7 @@ func (r *ReconcileBlockDeviceClaim) InvalidCapacityTest(t *testing.T,
 		t.Errorf("Get devRequestInst: (%v)", err)
 	}
 
-	capacity := "0"
-	devRequestInst.Spec.Requirements.Requests[openebsv1alpha1.ResourceCapacity] = resource.MustParse(capacity)
+	devRequestInst.Spec.Requirements.Requests[openebsv1alpha1.ResourceCapacity] = resource.MustParse("0")
 	err = r.client.Update(context.TODO(), devRequestInst)
 	if err != nil {
 		t.Errorf("Update devRequestInst: (%v)", err)
@@ -270,7 +270,7 @@ func GetFakeBlockDeviceClaimObject() *openebsv1alpha1.BlockDeviceClaim {
 	return deviceRequestCR
 }
 
-func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {
+func GetFakeDeviceObject(bdName string, bdCapacity uint64) *openebsv1alpha1.BlockDevice {
 	device := &openebsv1alpha1.BlockDevice{}
 
 	TypeMeta := metav1.TypeMeta{
@@ -280,14 +280,14 @@ func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {
 
 	ObjectMeta := metav1.ObjectMeta{
 		Labels:    make(map[string]string),
-		Name:      deviceName,
+		Name:      bdName,
 		Namespace: namespace,
 	}
 
 	Spec := openebsv1alpha1.DeviceSpec{
 		Path: "dev/disk-fake-path",
 		Capacity: openebsv1alpha1.DeviceCapacity{
-			Storage: capacity, // Set blockdevice size.
+			Storage: bdCapacity, // Set blockdevice size.
 		},
 		DevLinks:    make([]openebsv1alpha1.DeviceDevLink, 0),
 		Partitioned: ndm.NDMNotPartitioned,
@@ -346,7 +346,7 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 		},
 	}
 
-	deviceR := GetFakeDeviceObject()
+	deviceR := GetFakeDeviceObject(deviceName, capacity)
 
 	deviceList := &openebsv1alpha1.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
@@ -390,4 +390,53 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 		fmt.Println("BlockDeviceClaim object is not created")
 	}
 	return fakeNdmClient, s
+}
+
+func TestSelectBlockDevice(t *testing.T) {
+	bdList := openebsv1alpha1.BlockDeviceList{}
+	bd1 := GetFakeDeviceObject("blockdevice-example1", 102400)
+	bd2 := GetFakeDeviceObject("blockdevice-example1", 1024000)
+	bdList.Items = append(bdList.Items, *bd1, *bd2)
+
+	resourceList1 := v1.ResourceList{openebsv1alpha1.ResourceCapacity: resource.MustParse("102400")}
+	resourceList2 := v1.ResourceList{openebsv1alpha1.ResourceCapacity: resource.MustParse("2048000")}
+
+	tests := map[string]struct {
+		deviceList     openebsv1alpha1.BlockDeviceList
+		rList          v1.ResourceList
+		expectedDevice openebsv1alpha1.BlockDevice
+		expectedOk     bool
+	}{
+		"can find a block device with matching requirements":    {bdList, resourceList1, *bd1, true},
+		"cannot find a block device with matching requirements": {bdList, resourceList2, openebsv1alpha1.BlockDevice{}, false},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			bd, ok := selectBlockDevice(test.deviceList, test.rList)
+			assert.Equal(t, test.expectedDevice, bd)
+			assert.Equal(t, test.expectedOk, ok)
+		})
+	}
+}
+
+func TestMatchResourceRequirements(t *testing.T) {
+	blockDevice := GetFakeDeviceObject(deviceName, capacity)
+	tests := map[string]struct {
+		blockDevice *openebsv1alpha1.BlockDevice
+		rList       v1.ResourceList
+		expected    bool
+	}{
+		"block device capacity greater than requested capacity": {blockDevice,
+			v1.ResourceList{openebsv1alpha1.ResourceCapacity: resource.MustParse("1024000")},
+			true},
+		"block device capacity is less than requested capacity": {blockDevice,
+			v1.ResourceList{openebsv1alpha1.ResourceCapacity: resource.MustParse("404800000")},
+			false},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expected, matchResourceRequirements(*test.blockDevice, test.rList))
+		})
+	}
 }
