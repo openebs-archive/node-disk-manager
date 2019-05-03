@@ -3,6 +3,8 @@ kind: BlockDeviceClaim
 metadata:
   name: test-blockdeviceclaim
 spec:
-  capacity: 300
   driveType: ""
-  hostName: "gke-satbir-ndm-default-pool-639356a6-l8g6"
+  hostName: ""
+  requirements:
+    resources:
+      - capacity: 1Gi
