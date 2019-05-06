@@ -25,17 +25,17 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-// mockEmptyDeviceCr returns Device object with minimum attributes it is used in unit test cases.
-func mockEmptyDeviceCr() apis.Device {
-	fakeDevice := apis.Device{}
+// mockEmptyDeviceCr returns BlockDevice object with minimum attributes it is used in unit test cases.
+func mockEmptyDeviceCr() apis.BlockDevice {
+	fakeDevice := apis.BlockDevice{}
 
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   fakeDeviceUid,
+		Name:   fakeDeviceUID,
 	}
 
 	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       NDMDeviceKind,
+		Kind:       NDMBlockDeviceKind,
 		APIVersion: NDMVersion,
 	}
 
@@ -46,7 +46,7 @@ func mockEmptyDeviceCr() apis.Device {
 
 	fakeDevice.ObjectMeta = fakeObjectMeta
 	fakeDevice.TypeMeta = fakeTypeMeta
-	fakeDevice.ClaimState.State = NDMUnclaimed
+	fakeDevice.Status.ClaimState = apis.BlockDeviceUnclaimed
 	fakeDevice.Status.State = NDMActive
 	fakeDevice.Spec = fakeDeviceSpec
 	/*.Partitioned = NDMNotPartitioned
@@ -63,37 +63,37 @@ func TestCreateDevice(t *testing.T) {
 		Clientset:     fakeNdmClient,
 	}
 
-	// Create device resource devR1
+	// Create blockdevice resource devR1
 	devR1 := fakeDevice
 	devR1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	devR1.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(devR1)
+	fakeController.CreateBlockDevice(devR1)
 
-	// Retrieve device resource
-	cdevR1, err1 := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdevR1, err1 := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	// Create resource which is already present, it should update
 	devR2 := fakeDevice
 	devR2.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	devR2.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(devR2)
+	fakeController.CreateBlockDevice(devR2)
 
-	// Retrieve device resource
-	cdevR2, err2 := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdevR2, err2 := fakeController.GetBlockDevice(fakeDeviceUID)
 
-	// Create device resource devR3
+	// Create blockdevice resource devR3
 	devR3 := newFakeDevice
 	devR3.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	devR3.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(devR3)
+	fakeController.CreateBlockDevice(devR3)
 
-	// Retrieve device resource
-	cdevR3, err3 := fakeController.GetDevice(newFakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdevR3, err3 := fakeController.GetBlockDevice(newFakeDeviceUID)
 
 	tests := map[string]struct {
-		actualDevice   apis.Device
+		actualDevice   apis.BlockDevice
 		actualError    error
-		expectedDevice apis.Device
+		expectedDevice apis.BlockDevice
 		expectedError  error
 	}{
 		"create one resource":                          {actualDevice: *cdevR1, actualError: err1, expectedDevice: devR1, expectedError: nil},
@@ -121,39 +121,39 @@ func TestUpdateDevice(t *testing.T) {
 	devR := fakeDevice
 	devR.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	devR.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	err := fakeController.UpdateDevice(devR, nil)
+	err := fakeController.UpdateBlockDevice(devR, nil)
 	if err == nil {
 		t.Error("error should not be nil as the resource is not present")
 	}
 
-	// Create one device resource and update it.
-	fakeController.CreateDevice(devR)
+	// Create one blockdevice resource and update it.
+	fakeController.CreateBlockDevice(devR)
 
-	// Retrieve device resource
-	cdevR1, err1 := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdevR1, err1 := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	// Update already created resource
-	err = fakeController.UpdateDevice(devR, cdevR1)
+	err = fakeController.UpdateBlockDevice(devR, cdevR1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Retrieve device resource
-	cdevR2, err2 := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdevR2, err2 := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	// Pass nil value in old resource
-	err = fakeController.UpdateDevice(devR, nil)
+	err = fakeController.UpdateBlockDevice(devR, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Retrieve device resource
-	cdevR3, err3 := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdevR3, err3 := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	tests := map[string]struct {
-		actualDevice   apis.Device
+		actualDevice   apis.BlockDevice
 		actualError    error
-		expectedDevice apis.Device
+		expectedDevice apis.BlockDevice
 		expectedError  error
 	}{
 		"create one resource":                          {actualDevice: *cdevR1, actualError: err1, expectedDevice: devR, expectedError: nil},
@@ -168,10 +168,10 @@ func TestUpdateDevice(t *testing.T) {
 	}
 
 	// Retrieve disk resource
-	cdevR, err := fakeController.GetDevice(fakeDeviceUid)
+	cdevR, err := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	devR.ObjectMeta.Name = "disk-updated-fake-uuid"
-	err = fakeController.UpdateDevice(devR, cdevR)
+	err = fakeController.UpdateBlockDevice(devR, cdevR)
 	if err == nil {
 		t.Error("if resource is not present then it should return error")
 	}
@@ -190,32 +190,32 @@ func TestDeactivateDevice(t *testing.T) {
 	dr := fakeDevice
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(dr)
-	fakeController.DeactivateDevice(dr)
+	fakeController.CreateBlockDevice(dr)
+	fakeController.DeactivateBlockDevice(dr)
 
-	// Retrieve device resource
-	cdr1, err1 := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdr1, err1 := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	// Deactivate one resource which is not present it should return error
 	dr1 := newFakeDevice
 	dr1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr1.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.DeactivateDevice(dr1)
+	fakeController.DeactivateBlockDevice(dr1)
 
 	// Create another resource and deactivate it.
 	newDr := newFakeDevice
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(newDr)
-	fakeController.DeactivateDevice(newDr)
+	fakeController.CreateBlockDevice(newDr)
+	fakeController.DeactivateBlockDevice(newDr)
 
-	// Retrieve device resource
-	cdr2, err2 := fakeController.GetDevice(newFakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdr2, err2 := fakeController.GetBlockDevice(newFakeDeviceUID)
 
 	tests := map[string]struct {
-		actualDevice   apis.Device
+		actualDevice   apis.BlockDevice
 		actualError    error
-		expectedDevice apis.Device
+		expectedDevice apis.BlockDevice
 		expectedError  error
 	}{
 		"deactivate dr resource":    {actualDevice: *cdr1, actualError: err1, expectedDevice: dr, expectedError: nil},
@@ -243,29 +243,29 @@ func TestDeleteDevice(t *testing.T) {
 	dr := fakeDevice
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(dr)
-	fakeController.DeleteDevice(fakeDeviceUid)
+	fakeController.CreateBlockDevice(dr)
+	fakeController.DeleteBlockDevice(fakeDeviceUID)
 
-	// Retrieve device resource
-	cdr1, err1 := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdr1, err1 := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	// Delete one resource which is not present it should return error
-	fakeController.DeleteDevice("another-uuid")
+	fakeController.DeleteBlockDevice("another-uuid")
 
 	// Create another resource and delete it
 	newDr := newFakeDevice
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(newDr)
-	fakeController.DeleteDevice(newFakeDeviceUid)
+	fakeController.CreateBlockDevice(newDr)
+	fakeController.DeleteBlockDevice(newFakeDeviceUID)
 
 	// Retrieve disk resource
-	cdr2, err2 := fakeController.GetDevice(fakeDeviceUid)
+	cdr2, err2 := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	tests := map[string]struct {
 		expectedError  error
-		actualDevice   *apis.Device
-		expectedDevice *apis.Device
+		actualDevice   *apis.BlockDevice
+		expectedDevice *apis.BlockDevice
 	}{
 		"delete dr resource":    {expectedError: err1, actualDevice: cdr1, expectedDevice: nil},
 		"delete newDr resource": {expectedError: err2, actualDevice: cdr2, expectedDevice: nil},
@@ -289,26 +289,26 @@ func TestListDeviceResource(t *testing.T) {
 		Clientset:     fakeNdmClient,
 	}
 
-	// Create device resource dr
+	// Create blockdevice resource dr
 	dr := fakeDevice
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(dr)
+	fakeController.CreateBlockDevice(dr)
 
-	// Create device resource newDr
+	// Create blockdevice resource newDr
 	newDr := newFakeDevice
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(newDr)
-	listDevice, err := fakeController.ListDeviceResource()
+	fakeController.CreateBlockDevice(newDr)
+	listDevice, err := fakeController.ListBlockDeviceResource()
 
 	// TypeMeta should be same
 	typeMeta := newFakeDeviceTypeMeta
 	listMeta := metav1.ListMeta{}
-	deviceList := make([]apis.Device, 0)
+	deviceList := make([]apis.BlockDevice, 0)
 	deviceList = append(deviceList, dr)
 	deviceList = append(deviceList, newDr)
-	expectedList := &apis.DeviceList{
+	expectedList := &apis.BlockDeviceList{
 		TypeMeta: typeMeta,
 		ListMeta: listMeta,
 		Items:    deviceList,
@@ -317,8 +317,8 @@ func TestListDeviceResource(t *testing.T) {
 	tests := map[string]struct {
 		actualError        error
 		expectedError      error
-		actualDeviceList   *apis.DeviceList
-		expectedDeviceList *apis.DeviceList
+		actualDeviceList   *apis.BlockDeviceList
+		expectedDeviceList *apis.BlockDeviceList
 	}{
 		"delete dr resource": {actualError: err, expectedError: nil, actualDeviceList: listDevice, expectedDeviceList: expectedList},
 	}
@@ -339,31 +339,31 @@ func TestGetExistingDeviceResource(t *testing.T) {
 		Clientset:     fakeNdmClient,
 	}
 
-	// Create device resource dr
+	// Create blockdevice resource dr
 	dr := fakeDevice
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(dr)
+	fakeController.CreateBlockDevice(dr)
 
-	// Create device resource newDr
+	// Create blockdevice resource newDr
 	newDr := newFakeDevice
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(newDr)
+	fakeController.CreateBlockDevice(newDr)
 
-	listDr, err := fakeController.ListDeviceResource()
+	listDr, err := fakeController.ListBlockDeviceResource()
 	if err != nil {
 		t.Fatal(err)
 	}
-	cdr1 := fakeController.GetExistingDeviceResource(listDr, fakeDeviceUid)
-	cdr2 := fakeController.GetExistingDeviceResource(listDr, newFakeDeviceUid)
-	cdr3 := fakeController.GetExistingDeviceResource(listDr, "newFakeDeviceUid")
+	cdr1 := fakeController.GetExistingBlockDeviceResource(listDr, fakeDeviceUID)
+	cdr2 := fakeController.GetExistingBlockDeviceResource(listDr, newFakeDeviceUID)
+	cdr3 := fakeController.GetExistingBlockDeviceResource(listDr, "newFakeDeviceUID")
 	tests := map[string]struct {
-		actualDevice   *apis.Device
-		expectedDevice *apis.Device
+		actualDevice   *apis.BlockDevice
+		expectedDevice *apis.BlockDevice
 	}{
-		"resource with 'fake-device-uid' uuid":           {actualDevice: cdr1, expectedDevice: &dr},
-		"resource with 'new-fake-device-uid' uuid":       {actualDevice: cdr2, expectedDevice: &newDr},
+		"resource with 'fake-blockdevice-uid' uuid":      {actualDevice: cdr1, expectedDevice: &dr},
+		"resource with 'new-fake-blockdevice-uid' uuid":  {actualDevice: cdr2, expectedDevice: &newDr},
 		"resource with invalid uuid not present in etcd": {actualDevice: cdr3, expectedDevice: nil},
 	}
 	for name, test := range tests {
@@ -374,8 +374,8 @@ func TestGetExistingDeviceResource(t *testing.T) {
 }
 
 /*
- * PushDeviceResource take 2 argument one is old device resource and other is
- * DeviceInfo struct. If old device resource is not present it creates one
+ * PushBlockDeviceResource take 2 argument one is old blockdevice resource and other is
+ * DeviceInfo struct. If old blockdevice resource is not present it creates one
  * new resource, if not then it update that resource with updated DeviceInfo
  */
 func TestPushDeviceResource(t *testing.T) {
@@ -389,33 +389,33 @@ func TestPushDeviceResource(t *testing.T) {
 
 	// Create one DeviceInfo struct with mock uuid
 	deviceDetails := &DeviceInfo{}
-	deviceDetails.Uuid = fakeDeviceUid
+	deviceDetails.UUID = fakeDeviceUID
 
-	// Create one fake Device struct
+	// Create one fake BlockDevice struct
 	fakeDr := mockEmptyDeviceCr()
 	fakeDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	fakeDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 
 	// Pass 1st argument as nil then it creates one disk resource
-	fakeController.PushDeviceResource(nil, deviceDetails)
+	fakeController.PushBlockDeviceResource(nil, deviceDetails)
 
-	// Retrieve device resource
-	cdr1, err1 := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdr1, err1 := fakeController.GetBlockDevice(fakeDeviceUID)
 
-	// Pass old device resource as 1st argument then it updates resource
-	fakeController.PushDeviceResource(cdr1, deviceDetails)
+	// Pass old blockdevice resource as 1st argument then it updates resource
+	fakeController.PushBlockDeviceResource(cdr1, deviceDetails)
 
 	// Retrieve disk resource
-	cdr2, err2 := fakeController.GetDevice(fakeDeviceUid)
+	cdr2, err2 := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	tests := map[string]struct {
-		actualDevice   apis.Device
-		expectedDevice apis.Device
+		actualDevice   apis.BlockDevice
+		expectedDevice apis.BlockDevice
 		actualError    error
 		expectedError  error
 	}{
-		"push resource with 'fake-device-uid' uuid for create resource": {actualDevice: *cdr1, expectedDevice: fakeDr, actualError: err1, expectedError: nil},
-		"push resource with 'fake-device-uid' uuid for update resource": {actualDevice: *cdr2, expectedDevice: fakeDr, actualError: err2, expectedError: nil},
+		"push resource with 'fake-blockdevice-uid' uuid for create resource": {actualDevice: *cdr1, expectedDevice: fakeDr, actualError: err1, expectedError: nil},
+		"push resource with 'fake-blockdevice-uid' uuid for update resource": {actualDevice: *cdr2, expectedDevice: fakeDr, actualError: err2, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -434,34 +434,34 @@ func TestDeactivateStaleDeviceResource(t *testing.T) {
 		Clientset:     fakeNdmClient,
 	}
 
-	// Create device resource dr
+	// Create blockdevice resource dr
 	dr := fakeDevice
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(dr)
+	fakeController.CreateBlockDevice(dr)
 
-	// Create device resource newDr
+	// Create blockdevice resource newDr
 	newDr := newFakeDevice
 	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(newDr)
+	fakeController.CreateBlockDevice(newDr)
 
 	// Add one resource's uuid so state of the other resource should be inactive.
 	deviceList := make([]string, 0)
-	deviceList = append(deviceList, newFakeDeviceUid)
-	fakeController.DeactivateStaleDeviceResource(deviceList)
+	deviceList = append(deviceList, newFakeDeviceUID)
+	fakeController.DeactivateStaleBlockDeviceResource(deviceList)
 	dr.Status.State = NDMInactive
 
-	// Retrieve device resource
-	cdr1, err1 := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdr1, err1 := fakeController.GetBlockDevice(fakeDeviceUID)
 
-	// Retrieve device resource
-	cdr2, err2 := fakeController.GetDevice(newFakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdr2, err2 := fakeController.GetBlockDevice(newFakeDeviceUID)
 
 	tests := map[string]struct {
-		actualDevice   apis.Device
+		actualDevice   apis.BlockDevice
 		actualError    error
-		expectedDevice apis.Device
+		expectedDevice apis.BlockDevice
 		expectedError  error
 	}{
 		"resource1 present in etcd but not in system": {actualDevice: *cdr1, actualError: err1, expectedDevice: dr, expectedError: nil},
@@ -487,18 +487,18 @@ func TestMarkDeviceStatusToUnknown(t *testing.T) {
 	dr := mockEmptyDeviceCr()
 	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateDevice(dr)
+	fakeController.CreateBlockDevice(dr)
 
-	fakeController.MarkDeviceStatusToUnknown()
+	fakeController.MarkBlockDeviceStatusToUnknown()
 	dr.Status.State = NDMUnknown
 
-	// Retrieve device resource
-	cdr, err := fakeController.GetDevice(fakeDeviceUid)
+	// Retrieve blockdevice resource
+	cdr, err := fakeController.GetBlockDevice(fakeDeviceUID)
 
 	tests := map[string]struct {
-		actualDevice   apis.Device
+		actualDevice   apis.BlockDevice
 		actualError    error
-		expectedDevice apis.Device
+		expectedDevice apis.BlockDevice
 		expectedError  error
 	}{
 		"DeactivateOwnedDeviceResource should make all present resources state inactive": {actualDevice: *cdr, actualError: err, expectedDevice: dr, expectedError: nil},

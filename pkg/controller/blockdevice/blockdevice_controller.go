@@ -1,23 +1,21 @@
-package device
+package blockdevice
 
 import (
 	"context"
-	"strings"
-
+	"github.com/go-logr/logr"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/udev"
+	"k8s.io/apimachinery/pkg/types"
+	"strings"
 
 	//corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	//"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -32,7 +30,7 @@ var log = logf.Log.WithName("controller_device")
 * business logic.  Delete these comments after modifying this file.*
  */
 
-// Add creates a new Device Controller and adds it to the Manager. The Manager will set fields on the Controller
+// Add creates a new BlockDevice Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
@@ -40,19 +38,19 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileDevice{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileBlockDevice{client: mgr.GetClient(), scheme: mgr.GetScheme()}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("device-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("blockdevice-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
-	// Watch for changes to primary resource Device
-	err = c.Watch(&source.Kind{Type: &openebsv1alpha1.Device{}}, &handler.EnqueueRequestForObject{})
+	// Watch for changes to primary resource BlockDevice
+	err = c.Watch(&source.Kind{Type: &openebsv1alpha1.BlockDevice{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -60,27 +58,27 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
-var _ reconcile.Reconciler = &ReconcileDevice{}
+var _ reconcile.Reconciler = &ReconcileBlockDevice{}
 
-// ReconcileDevice reconciles a Device object
-type ReconcileDevice struct {
+// ReconcileBlockDevice reconciles a BlockDevice object
+type ReconcileBlockDevice struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
 	scheme *runtime.Scheme
 }
 
-// Reconcile reads that state of the cluster for a Device object and makes changes based on the state read
-// and what is in the Device.Spec
+// Reconcile reads that state of the cluster for a BlockDevice object and makes changes based on the state read
+// and what is in the BlockDevice.Spec
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
-func (r *ReconcileDevice) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	reqLogger.Info("Reconciling Device")
+	reqLogger.Info("Reconciling BlockDevice")
 
-	// Fetch the Device instance
-	instance := &openebsv1alpha1.Device{}
+	// Fetch the BlockDevice instance
+	instance := &openebsv1alpha1.BlockDevice{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -103,14 +101,17 @@ func (r *ReconcileDevice) Reconcile(request reconcile.Request) (reconcile.Result
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
-	instance *openebsv1alpha1.Device, nameSpace string, reqLogger logr.Logger) error {
+// CheckBackingDiskStatusAndUpdateDeviceCR checks the status of the backing DiskCR for a block device CR, and updates
+// the status of Block Device. If the backing Disk of a block-device is marked inactive, then all block devices
+// which use that disk should be marked inactive.
+func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
+	instance *openebsv1alpha1.BlockDevice, nameSpace string, reqLogger logr.Logger) error {
 
 	// Find the name of diskCR that need to be read from etcd
-	// TODO: This need to be changed, Currently name of disk and device
-	// are using same string except prefix which would be "device"/"disk"
-	Uuid := strings.TrimPrefix(instance.ObjectMeta.Name, udev.NDMDevicePrefix)
-	Name := udev.NDMDiskPrefix + Uuid
+	// TODO: This need to be changed, Currently name of disk and blockdevice
+	// are using same string except prefix which would be "blockdevice"/"disk"
+	UUID := strings.TrimPrefix(instance.ObjectMeta.Name, udev.NDMBlockDevicePrefix)
+	Name := udev.NDMDiskPrefix + UUID
 
 	// Fetch the Disk CR
 	diskInstance := &openebsv1alpha1.Disk{}
@@ -126,9 +127,9 @@ func (r *ReconcileDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 			dcpyInstance.Status.State = ndm.NDMInactive
 			err := r.client.Update(context.TODO(), dcpyInstance)
 			if err != nil {
-				reqLogger.Error(err, "Error while updating Device-CR", "Device-CR", instance.ObjectMeta.Name)
+				reqLogger.Error(err, "Error while updating BlockDevice-CR", "BlockDevice-CR", instance.ObjectMeta.Name)
 			}
-			reqLogger.Info("Device-CR marked Inactive", "Device:", instance.ObjectMeta.Name)
+			reqLogger.Info("BlockDevice-CR marked Inactive", "BlockDevice:", instance.ObjectMeta.Name)
 			return err
 		}
 		return err
@@ -141,10 +142,10 @@ func (r *ReconcileDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 		dcpyInstance.Status.State = ndm.NDMInactive
 		err := r.client.Update(context.TODO(), dcpyInstance)
 		if err != nil {
-			reqLogger.Error(err, "Error while updating Device-CR", "Device-CR", instance.ObjectMeta.Name)
+			reqLogger.Error(err, "Error while updating BlockDevice-CR", "BlockDevice-CR", instance.ObjectMeta.Name)
 			return err
 		}
-		reqLogger.Info("Device-CR marked Inactive", "Device:", instance.ObjectMeta.Name)
+		reqLogger.Info("BlockDevice-CR marked Inactive", "BlockDevice:", instance.ObjectMeta.Name)
 	}
 	return nil
 }

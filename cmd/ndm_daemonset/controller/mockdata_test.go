@@ -29,13 +29,13 @@ import (
 )
 
 const (
-	fakeDiskUid     = "fake-disk-uid"
-	newFakeDiskUid  = "new-fake-disk-uid"
+	fakeDiskUID     = "fake-disk-uid"
+	newFakeDiskUID  = "new-fake-disk-uid"
 	fakeHostName    = "fake-host-name"
 	newFakeHostName = "new-fake-host-name"
 
-	fakeDeviceUid    = "fake-device-uid"
-	newFakeDeviceUid = "new-fake-device-uid"
+	fakeDeviceUID    = "fake-blockdevice-uid"
+	newFakeDeviceUID = "new-fake-blockdevice-uid"
 )
 
 var (
@@ -64,7 +64,7 @@ var (
 
 	fakeObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   fakeDiskUid,
+		Name:   fakeDiskUID,
 	}
 
 	fakeDiskStatus = apis.DiskStatus{
@@ -103,7 +103,7 @@ var (
 
 	newFakeObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   newFakeDiskUid,
+		Name:   newFakeDiskUID,
 	}
 
 	newFakeDiskStatus = apis.DiskStatus{
@@ -117,7 +117,7 @@ var (
 		Status:     newFakeDiskStatus,
 	}
 
-	// mock data for device
+	// mock data for blockdevice
 	fakeDeviceCapacity = apis.DeviceCapacity{
 		Storage: 100000,
 	}
@@ -137,32 +137,28 @@ var (
 	}
 
 	fakeDeviceTypeMeta = metav1.TypeMeta{
-		Kind:       NDMDeviceKind,
+		Kind:       NDMBlockDeviceKind,
 		APIVersion: NDMVersion,
 	}
 
 	fakeDeviceObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   fakeDeviceUid,
-	}
-
-	fakeDeviceClaimState = apis.DeviceClaimState{
-		State: NDMUnclaimed,
+		Name:   fakeDeviceUID,
 	}
 
 	fakeDeviceStatus = apis.DeviceStatus{
-		State: NDMActive,
+		ClaimState: apis.BlockDeviceUnclaimed,
+		State:      NDMActive,
 	}
 
-	fakeDevice = apis.Device{
+	fakeDevice = apis.BlockDevice{
 		TypeMeta:   fakeDeviceTypeMeta,
 		ObjectMeta: fakeDeviceObjectMeta,
 		Spec:       fakeDeviceObj,
-		ClaimState: fakeDeviceClaimState,
 		Status:     fakeDeviceStatus,
 	}
 
-	// mock data for device
+	// mock data for blockdevice
 	newFakeDeviceCapacity = apis.DeviceCapacity{
 		Storage: 200000,
 	}
@@ -181,28 +177,24 @@ var (
 	}
 
 	newFakeDeviceTypeMeta = metav1.TypeMeta{
-		Kind:       NDMDeviceKind,
+		Kind:       NDMBlockDeviceKind,
 		APIVersion: NDMVersion,
 	}
 
 	newFakeDeviceObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   newFakeDeviceUid,
-	}
-
-	newFakeDeviceClaimState = apis.DeviceClaimState{
-		State: NDMUnclaimed,
+		Name:   newFakeDeviceUID,
 	}
 
 	newFakeDeviceStatus = apis.DeviceStatus{
-		State: NDMActive,
+		ClaimState: apis.BlockDeviceUnclaimed,
+		State:      NDMActive,
 	}
 
-	newFakeDevice = apis.Device{
+	newFakeDevice = apis.BlockDevice{
 		TypeMeta:   newFakeDeviceTypeMeta,
 		ObjectMeta: newFakeDeviceObjectMeta,
 		Spec:       newFakeDeviceObj,
-		ClaimState: newFakeDeviceClaimState,
 		Status:     newFakeDeviceStatus,
 	}
 )
@@ -222,16 +214,16 @@ func CreateFakeClient(t *testing.T) client.Client {
 		},
 	}
 
-	deviceR := &apis.Device{
+	deviceR := &apis.BlockDevice{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: make(map[string]string),
-			Name:   "dummy-device",
+			Name:   "dummy-blockdevice",
 		},
 	}
 
-	deviceList := &apis.DeviceList{
+	deviceList := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "Device",
+			Kind:       "BlockDevice",
 			APIVersion: "",
 		},
 	}

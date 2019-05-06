@@ -76,16 +76,16 @@ func CreateFakeClient(t *testing.T) client.Client {
 		},
 	}
 
-	deviceR := &apis.Device{
+	deviceR := &apis.BlockDevice{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: make(map[string]string),
-			Name:   "dummy-device",
+			Name:   "dummy-blockdevice",
 		},
 	}
 
-	deviceList := &apis.DeviceList{
+	deviceList := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "Device",
+			Kind:       "BlockDevice",
 			APIVersion: "",
 		},
 	}
@@ -147,12 +147,12 @@ func TestAddDiskEvent(t *testing.T) {
 	probeEvent := &ProbeEvent{
 		Controller: fakeController,
 	}
-	// device-1 details
+	// blockdevice-1 details
 	eventmsg := make([]*controller.DiskInfo, 0)
 	device1Details := &controller.DiskInfo{}
 	device1Details.ProbeIdentifiers.Uuid = mockuid
 	eventmsg = append(eventmsg, device1Details)
-	// device-2 details
+	// blockdevice-2 details
 	device2Details := &controller.DiskInfo{}
 	device2Details.ProbeIdentifiers.Uuid = ignoreDiskUuid
 	eventmsg = append(eventmsg, device2Details)

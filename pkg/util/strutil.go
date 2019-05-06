@@ -53,3 +53,13 @@ func MatchIgnoredCase(keys []string, s string) bool {
 	}
 	return false
 }
+
+// RemoveString removes all occurrences of a string from slice
+func RemoveString(slice []string, s string) (result []string) {
+	for _, item := range slice {
+		if item != s {
+			result = append(result, item)
+		}
+	}
+	return result
+}

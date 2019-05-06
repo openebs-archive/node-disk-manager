@@ -21,6 +21,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 )
 
+//ReconcilationInterval defines the triggering interval for reconcilation operation
+const ReconcilationInterval = 5 * time.Second
+
 var log = logf.Log.WithName("ndm-operator")
 
 func printVersion() {
@@ -64,10 +67,10 @@ func main() {
 	}
 	defer r.Unset()
 
-	//Reconciliation would be triggered with 5 second interval
-	recon_interval := time.Duration(5 * time.Second)
+	reconInterval := ReconcilationInterval
+
 	// Create a new Cmd to provide shared dependencies and start components
-	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &recon_interval})
+	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &reconInterval})
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)

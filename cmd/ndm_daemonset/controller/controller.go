@@ -41,19 +41,15 @@ const (
 	TrueString = "true"
 	// NDMDiskKind is the Disk kind CR.
 	NDMDiskKind = "Disk"
-	// NDMDeviceKind is the Device kind CR.
-	NDMDeviceKind = "Device"
+	// NDMBlockDeviceKind is the Device kind CR.
+	NDMBlockDeviceKind = "BlockDevice"
 	// NDMVersion is the CR version.
 	NDMVersion = "openebs.io/v1alpha1"
 	// NDMHostKey is host name label prefix.
 	NDMHostKey = "kubernetes.io/hostname"
-	// NDMFree is constant for free/available resource status.
-	NDMUnclaimed = "Unclaimed"
-	// NDMUsed is constant for in-use resource status.
-	NDMClaimed = "Claimed"
-	// NDMNotPartioned is used to say device does not have any partition.
+	// NDMNotPartitioned is used to say blockdevice does not have any partition.
 	NDMNotPartitioned = "No"
-	// NDMPartitioned is used to say device has some partitions.
+	// NDMPartitioned is used to say blockdevice has some partitions.
 	NDMPartitioned = "Yes"
 	// NDMActive is constant for active resource status.
 	NDMActive = "Active"
@@ -62,17 +58,18 @@ const (
 	// NDMUnknown is constant for resource unknown satus.
 	NDMUnknown = "Unknown"
 	// NDMDiskTypeKey specifies the type of disk.
-	NDMDiskTypeKey   = "ndm.io/disk-type"
-	NDMDeviceTypeKey = "ndm.io/device-type"
-	// NDMUnmanagedDiskKey specifies disk cr should be managed by ndm or not.
+	NDMDiskTypeKey = "ndm.io/disk-type"
+	// NDMDeviceTypeKey specifies the block device type
+	NDMDeviceTypeKey = "ndm.io/blockdevice-type"
+	// NDMManagedKey specifies disk cr should be managed by ndm or not.
 	NDMManagedKey = "ndm.io/managed"
 )
 
 const (
 	// NDMDefaultDiskType will be used to initialize the disk type.
 	NDMDefaultDiskType = "disk"
-	// NDMDefaultDeviceType will be used to initialize the device type.
-	NDMDefaultDeviceType = "device"
+	// NDMDefaultDeviceType will be used to initialize the blockdevice type.
+	NDMDefaultDeviceType = "blockdevice"
 )
 
 const (
@@ -141,7 +138,7 @@ func NewController(kubeconfig string) (*Controller, error) {
 	}
 
 	controller.WaitForDiskCRD()
-	controller.WaitForDeviceCRD()
+	controller.WaitForBlockDeviceCRD()
 	return controller, nil
 }
 
@@ -212,17 +209,17 @@ func (c *Controller) WaitForDiskCRD() {
 	}
 }
 
-// WaitForDeviceCRD will block till the CRDs are loaded
+// WaitForBlockDeviceCRD will block till the CRDs are loaded
 // into Kubernetes
-func (c *Controller) WaitForDeviceCRD() {
+func (c *Controller) WaitForBlockDeviceCRD() {
 	for {
-		_, err := c.ListDeviceResource()
+		_, err := c.ListBlockDeviceResource()
 		if err != nil {
-			glog.Errorf("Device CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
+			glog.Errorf("BlockDevice CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
 			time.Sleep(CRDRetryInterval)
 			continue
 		}
-		glog.Info("Device CRD is available")
+		glog.Info("BlockDevice CRD is available")
 		break
 	}
 }
@@ -258,8 +255,7 @@ func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
 	// Changing the state to unknown before shutting down. Similar as when one pod is
 	// running and you stopped kubelet it will make pod status unknown.
 	c.MarkDiskStatusToUnknown()
-	//TODO: To be called when Device CR will be implemented
-	//c.MarkDeviceStatusToUnknown()
+	c.MarkBlockDeviceStatusToUnknown()
 	glog.Info("shutting down the controller")
 	return nil
 }

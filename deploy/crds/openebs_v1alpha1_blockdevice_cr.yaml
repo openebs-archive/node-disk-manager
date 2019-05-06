@@ -1,20 +1,21 @@
 apiVersion: openebs.io/v1alpha1
-kind: Device
+kind: BlockDevice
 metadata:
-  name: example-device
+  name: example-blockdevice
   labels:
-    kubernetes.io/hostname: <host name in which disk/device is attached> # like gke-openebs-user-default-pool-044afcb8-bmc0
+    kubernetes.io/hostname: <host name in which disk/blockdevice is attached> # like gke-openebs-user-default-pool-044afcb8-bmc0
     ndm.io/managed: "false" # for manual disk creation put false
-    ndm.io/disk-type: <device type> # like disk, partition, sparse file
+    ndm.io/disk-type: <blockdevice type> # like disk, partition, sparse file
 status:
+  claimState: Unclaimed
   state: Active
 spec:
   capacity:
-    logicalSectorSize: <logical sector size of device> # like 512
+    logicalSectorSize: <logical sector size of lockdevice> # like 512
     storage: <total capacity in bits> #like 53687091200
   details:
     firmwareRevision: <firmware revision>
-    model: <model name of device> # like PersistentDisk
+    model: <model name of blockdevice> # like PersistentDisk
     serial: <serial no of disk> # like google-disk-2
     compliance: <compliance of disk> #like "SPC-4"
     vendor: <vendor of disk> #like Google

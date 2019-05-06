@@ -21,57 +21,48 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-/*
- * DeviceInfo contains details of device which can be converted into api.Device
- * There will be one DeviceInfo created for each physical disk (may change in
- * future). At the end it is converted to Device struct which will be pushed to
- * etcd as a CR of that device.
- */
+// DeviceInfo contains details of blockdevice which can be converted into api.BlockDevice
+// There will be one DeviceInfo created for each physical disk (may change in
+// future). At the end it is converted to BlockDevice struct which will be pushed to
+// etcd as a CR of that blockdevice.
 type DeviceInfo struct {
 	HostName           string   // Node's name to which backing disk is attached.
-	Uuid               string   // Uuid of backing disk
-	Capacity           uint64   // Capacity of device
-	Model              string   // Do device have model ??
-	Serial             string   // Do device have serial no ??
-	Vendor             string   // Vendor of device
-	Path               string   // device Path like /dev/sda
+	UUID               string   // UUID of backing disk
+	Capacity           uint64   // Capacity of blockdevice
+	Model              string   // Do blockdevice have model ??
+	Serial             string   // Do blockdevice have serial no ??
+	Vendor             string   // Vendor of blockdevice
+	Path               string   // blockdevice Path like /dev/sda
 	ByIdDevLinks       []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks     []string // ByPathDevLinks contains by-path devlinks
 	FirmwareRevision   string   // FirmwareRevision is the firmware revision for a disk
-	LogicalSectorSize  uint32   // LogicalSectorSize is the Logical size of device sector in bytes
-	PhysicalSectorSize uint32   // PhysicalSectorSize is the Physical size of device sector in bytes
+	LogicalSectorSize  uint32   // LogicalSectorSize is the Logical size of blockdevice sector in bytes
+	PhysicalSectorSize uint32   // PhysicalSectorSize is the Physical size of blockdevice sector in bytes
 	Compliance         string   // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
 	DeviceType         string   // DeviceType represents the type of backing disk
 }
 
-/*
- * NewDeviceInfo returns a pointer of empty DeviceInfo
- * struct which will be field from DiskInfo.
- */
+// NewDeviceInfo returns a pointer of empty DeviceInfo
+// struct which will be field from DiskInfo.
 func NewDeviceInfo() *DeviceInfo {
 	deviceInfo := &DeviceInfo{}
 	return deviceInfo
 }
 
-/*
- * ToDevice convert deviceInfo struct to api.Device
- * type which will be pushed to etcd
- */
-func (di *DeviceInfo) ToDevice() apis.Device {
-	dvr := apis.Device{}
-	dvr.Spec = di.getDeviceSpec()
-	dvr.ObjectMeta = di.getObjectMeta()
-	dvr.TypeMeta = di.getTypeMeta()
-	dvr.ClaimState = di.getClaimState()
-	dvr.Status = di.getStatus()
-	return dvr
+// ToDevice convert deviceInfo struct to api.BlockDevice
+// type which will be pushed to etcd
+func (di *DeviceInfo) ToDevice() apis.BlockDevice {
+	blockDevice := apis.BlockDevice{}
+	blockDevice.Spec = di.getDeviceSpec()
+	blockDevice.ObjectMeta = di.getObjectMeta()
+	blockDevice.TypeMeta = di.getTypeMeta()
+	blockDevice.Status = di.getStatus()
+	return blockDevice
 }
 
-/*
- * getObjectMeta returns ObjectMeta struct which contains
- * labels and Name of resource. It is used to populate data
- * of Device struct of Device CR.
- */
+// getObjectMeta returns ObjectMeta struct which contains
+// labels and Name of resource. It is used to populate data
+// of BlockDevice struct of BlockDevice CR.
 func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 	/*
 		namespace, err := k8sutil.GetWatchNamespace()
@@ -81,7 +72,7 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 	*/
 	objectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   di.Uuid,
+		Name:   di.UUID,
 		//Namespace: namespace,
 	}
 	objectMeta.Labels[NDMHostKey] = di.HostName
@@ -89,50 +80,33 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 	return objectMeta
 }
 
-/*
- * getTypeMeta returns TypeMeta struct which contains
- * resource kind and version. It is used to populate
- * data of Device struct of Device CR.
- */
+// getTypeMeta returns TypeMeta struct which contains
+// resource kind and version. It is used to populate
+// data of BlockDevice struct of BlockDevice CR.
 func (di *DeviceInfo) getTypeMeta() metav1.TypeMeta {
 	typeMeta := metav1.TypeMeta{
-		Kind:       NDMDeviceKind,
+		Kind:       NDMBlockDeviceKind,
 		APIVersion: NDMVersion,
 	}
 	return typeMeta
 }
 
-/*
- * getClaimState returns claimState struct which contains
- * claim state of Device resource. It is used to populate
- * data of Device struct of Device CR.
- */
-func (di *DeviceInfo) getClaimState() apis.DeviceClaimState {
-	claimState := apis.DeviceClaimState{
-		State: NDMUnclaimed,
-	}
-	return claimState
-}
-
-/*
- * getStatus returns DeviceStatus struct which contains
- * state of Device resource. It is used to populate data
- * of Device struct of Device CR.
- */
+// getStatus returns DeviceStatus struct which contains
+// state of BlockDevice resource. It is used to populate data
+// of BlockDevice struct of BlockDevice CR.
 func (di *DeviceInfo) getStatus() apis.DeviceStatus {
 	deviceStatus := apis.DeviceStatus{
-		State: NDMActive,
+		ClaimState: apis.BlockDeviceUnclaimed,
+		State:      NDMActive,
 	}
 	return deviceStatus
 }
 
-/*
- * getDiskSpec returns DiskSpec struct which contains info of device like :
- * - path - /dev/sdb etc.
- * - capacity - (size,logical sector size ...)
- * - devlinks - (by-id , by-path links)
- * It is used to populate data of Device struct of device CR.
- */
+// getDiskSpec returns DiskSpec struct which contains info of blockdevice like :
+// - path - /dev/sdb etc.
+// - capacity - (size,logical sector size ...)
+// - devlinks - (by-id , by-path links)
+// It is used to populate data of BlockDevice struct of blockdevice CR.
 func (di *DeviceInfo) getDeviceSpec() apis.DeviceSpec {
 	deviceSpec := apis.DeviceSpec{}
 	deviceSpec.Path = di.getPath()
@@ -143,19 +117,15 @@ func (di *DeviceInfo) getDeviceSpec() apis.DeviceSpec {
 	return deviceSpec
 }
 
-/*
- * getPath returns path of the device like (/dev/sda , /dev/sdb ...).
- * It is used to populate data of Device struct of Device CR.
- */
+// getPath returns path of the blockdevice like (/dev/sda , /dev/sdb ...).
+// It is used to populate data of BlockDevice struct of BlockDevice CR.
 func (di *DeviceInfo) getPath() string {
 	return di.Path
 }
 
-/*
- * getDeviceDetails returns DeviceDetails struct which contains primary
- * and static info of device resource like model, serial, vendor etc.
- * It is used to populate data of Device struct which of Device CR.
- */
+// getDeviceDetails returns DeviceDetails struct which contains primary
+// and static info of blockdevice resource like model, serial, vendor etc.
+// It is used to populate data of BlockDevice struct which of BlockDevice CR.
 func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
 	deviceDetails := apis.DeviceDetails{}
 	deviceDetails.Model = di.Model
@@ -167,13 +137,11 @@ func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
 	return deviceDetails
 }
 
-/*
- * getDiskCapacity returns DeviceCapacity struct which contains:
- * -size of disk (in bytes)
- * -logical sector size (in bytes)
- * -physical sector size (in bytes)
- * It is used to populate data of Device struct of Device CR.
- */
+// getDiskCapacity returns DeviceCapacity struct which contains:
+// -size of disk (in bytes)
+// -logical sector size (in bytes)
+// -physical sector size (in bytes)
+// It is used to populate data of BlockDevice struct of BlockDevice CR.
 func (di *DeviceInfo) getDeviceCapacity() apis.DeviceCapacity {
 	capacity := apis.DeviceCapacity{}
 	capacity.Storage = di.Capacity
@@ -182,19 +150,17 @@ func (di *DeviceInfo) getDeviceCapacity() apis.DeviceCapacity {
 	return capacity
 }
 
-/*
- * getDiskLinks returns DeviceDevLink struct which contains
- * soft links like by-id ,by-path link. It is used to populate
- * data of Device struct of Device CR.
- */
+// getDiskLinks returns DeviceDevLink struct which contains
+// soft links like by-id ,by-path link. It is used to populate
+// data of BlockDevice struct of BlockDevice CR.
 func (di *DeviceInfo) getDeviceLinks() []apis.DeviceDevLink {
 	devLinks := make([]apis.DeviceDevLink, 0)
 	if len(di.ByIdDevLinks) != 0 {
-		byIdLinks := apis.DeviceDevLink{
+		byIDLinks := apis.DeviceDevLink{
 			Kind:  "by-id",
 			Links: di.ByIdDevLinks,
 		}
-		devLinks = append(devLinks, byIdLinks)
+		devLinks = append(devLinks, byIDLinks)
 	}
 	if len(di.ByPathDevLinks) != 0 {
 		byPathLinks := apis.DeviceDevLink{

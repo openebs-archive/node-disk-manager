@@ -173,12 +173,12 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 
 	if d.DeviceUtilizationRate == 0 {
 		d.DeviceUtilizationRate = seachestProbe.SeachestIdentifier.GetDeviceUtilizationRate(driveInfo)
-		glog.Infof("Disk: %s DeviceUtilizationRate:%d filled by seachest.", d.Path, d.DeviceUtilizationRate)
+		glog.Infof("Disk: %s DeviceUtilizationRate:%f filled by seachest.", d.Path, d.DeviceUtilizationRate)
 	}
 
 	if d.PercentEnduranceUsed == 0 {
 		d.PercentEnduranceUsed = seachestProbe.SeachestIdentifier.GetPercentEnduranceUsed(driveInfo)
-		glog.Infof("Disk: %s PercentEnduranceUsed:%d filled by seachest.", d.Path, d.PercentEnduranceUsed)
+		glog.Infof("Disk: %s PercentEnduranceUsed:%f filled by seachest.", d.Path, d.PercentEnduranceUsed)
 	}
 
 	d.TemperatureInfo.TemperatureDataValid = seachestProbe.

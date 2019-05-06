@@ -30,7 +30,7 @@ func mockEmptyDiskCr() apis.Disk {
 	fakeDr := apis.Disk{}
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   fakeDiskUid,
+		Name:   fakeDiskUID,
 	}
 	fakeTypeMeta := metav1.TypeMeta{
 		Kind:       NDMDiskKind,
@@ -60,7 +60,7 @@ func TestCreateDisk(t *testing.T) {
 	fakeController.CreateDisk(dr1)
 
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUID)
 
 	// Create resource which is already present, it should update
 	dr2 := fakeDr
@@ -70,7 +70,7 @@ func TestCreateDisk(t *testing.T) {
 	fakeController.CreateDisk(dr2)
 
 	// Retrieve disk resource
-	cdr2, err2 := fakeController.GetDisk(fakeDiskUid)
+	cdr2, err2 := fakeController.GetDisk(fakeDiskUID)
 
 	// Create disk resource dr3
 	dr3 := newFakeDr
@@ -80,7 +80,7 @@ func TestCreateDisk(t *testing.T) {
 	fakeController.CreateDisk(dr3)
 
 	// Retrieve disk resource
-	cdr3, err3 := fakeController.GetDisk(newFakeDiskUid)
+	cdr3, err3 := fakeController.GetDisk(newFakeDiskUID)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -123,7 +123,7 @@ func TestUpdateDisk(t *testing.T) {
 	fakeController.CreateDisk(dr)
 
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUID)
 
 	// Update already created resource
 	err = fakeController.UpdateDisk(dr, cdr1)
@@ -132,7 +132,7 @@ func TestUpdateDisk(t *testing.T) {
 	}
 
 	// Retrieve disk resource
-	cdr2, err2 := fakeController.GetDisk(fakeDiskUid)
+	cdr2, err2 := fakeController.GetDisk(fakeDiskUID)
 
 	// Pass nil value in old resource
 	err = fakeController.UpdateDisk(dr, nil)
@@ -141,7 +141,7 @@ func TestUpdateDisk(t *testing.T) {
 	}
 
 	// Retrieve disk resource
-	cdr3, err3 := fakeController.GetDisk(fakeDiskUid)
+	cdr3, err3 := fakeController.GetDisk(fakeDiskUID)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -161,7 +161,7 @@ func TestUpdateDisk(t *testing.T) {
 	}
 
 	// Retrieve disk resource
-	cdr, err := fakeController.GetDisk(fakeDiskUid)
+	cdr, err := fakeController.GetDisk(fakeDiskUID)
 
 	dr.ObjectMeta.Name = "disk-updated-fake-uuid"
 	err = fakeController.UpdateDisk(dr, cdr)
@@ -188,7 +188,7 @@ func TestDeactivateDisk(t *testing.T) {
 	fakeController.DeactivateDisk(dr)
 
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUID)
 
 	// Deactivate one resource which is not present it should return error
 	dr1 := newFakeDr
@@ -206,7 +206,7 @@ func TestDeactivateDisk(t *testing.T) {
 	fakeController.DeactivateDisk(newDr)
 
 	// Retrieve disk resource
-	cdr2, err2 := fakeController.GetDisk(newFakeDiskUid)
+	cdr2, err2 := fakeController.GetDisk(newFakeDiskUID)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -241,10 +241,10 @@ func TestDeleteDisk(t *testing.T) {
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
-	fakeController.DeleteDisk(fakeDiskUid)
+	fakeController.DeleteDisk(fakeDiskUID)
 
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUID)
 
 	// Delete one resource which is not present it should return error
 	fakeController.DeleteDisk("another-uuid")
@@ -255,10 +255,10 @@ func TestDeleteDisk(t *testing.T) {
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
-	fakeController.DeleteDisk(newFakeDiskUid)
+	fakeController.DeleteDisk(newFakeDiskUID)
 
 	// Retrieve disk resource
-	cdr2, err2 := fakeController.GetDisk(fakeDiskUid)
+	cdr2, err2 := fakeController.GetDisk(fakeDiskUID)
 
 	tests := map[string]struct {
 		expectedError error
@@ -361,9 +361,9 @@ func TestGetExistingDiskResource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cdr1 := fakeController.GetExistingDiskResource(listDr, fakeDiskUid)
-	cdr2 := fakeController.GetExistingDiskResource(listDr, newFakeDiskUid)
-	cdr3 := fakeController.GetExistingDiskResource(listDr, "newFakeDiskUid")
+	cdr1 := fakeController.GetExistingDiskResource(listDr, fakeDiskUID)
+	cdr2 := fakeController.GetExistingDiskResource(listDr, newFakeDiskUID)
+	cdr3 := fakeController.GetExistingDiskResource(listDr, "newFakeDiskUID")
 	tests := map[string]struct {
 		actualDisk   *apis.Disk
 		expectedDisk *apis.Disk
@@ -395,7 +395,7 @@ func TestPushDiskResource(t *testing.T) {
 
 	// create one DiskInfo struct with mock uuid
 	deviceDetails := &DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = fakeDiskUid
+	deviceDetails.ProbeIdentifiers.Uuid = fakeDiskUID
 	deviceDetails.DiskType = NDMDefaultDiskType
 
 	// Create one fake Disk struct
@@ -408,13 +408,13 @@ func TestPushDiskResource(t *testing.T) {
 	fakeController.PushDiskResource(nil, deviceDetails)
 
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUID)
 
 	// Pass old disk resource as 1st argument then it updates resource
 	fakeController.PushDiskResource(cdr1, deviceDetails)
 
 	// Retrieve disk resource
-	cdr2, err2 := fakeController.GetDisk(fakeDiskUid)
+	cdr2, err2 := fakeController.GetDisk(fakeDiskUID)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -458,15 +458,15 @@ func TestDeactivateStaleDiskResource(t *testing.T) {
 
 	// Add one resource's uuid so state of the other resource should be inactive.
 	diskList := make([]string, 0)
-	diskList = append(diskList, newFakeDiskUid)
+	diskList = append(diskList, newFakeDiskUID)
 	fakeController.DeactivateStaleDiskResource(diskList)
 	dr.Status.State = NDMInactive
 
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(fakeDiskUid)
+	cdr1, err1 := fakeController.GetDisk(fakeDiskUID)
 
 	// Retrieve disk resource
-	cdr2, err2 := fakeController.GetDisk(newFakeDiskUid)
+	cdr2, err2 := fakeController.GetDisk(newFakeDiskUID)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk
@@ -503,7 +503,7 @@ func TestMarkDiskStatusToUnknown(t *testing.T) {
 	dr.Status.State = NDMUnknown
 
 	// Retrieve disk resource
-	cdr, err := fakeController.GetDisk(fakeDiskUid)
+	cdr, err := fakeController.GetDisk(fakeDiskUID)
 
 	tests := map[string]struct {
 		actualDisk    apis.Disk

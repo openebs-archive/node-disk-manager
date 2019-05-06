@@ -1,0 +1,10 @@
+apiVersion: openebs.io/v1alpha1
+kind: BlockDeviceClaim
+metadata:
+  name: test-blockdeviceclaim
+spec:
+  driveType: ""
+  hostName: ""
+  requirements:
+    resources:
+      - capacity: 1Gi
