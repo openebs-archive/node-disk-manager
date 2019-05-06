@@ -1,0 +1,17 @@
+# Official list of OpenEBS Maintainers.
+#
+# Names added to this file should be in the following format:
+#     Individual's name,@githubhandle, Company Name
+#
+# Please keep the below list sorted in ascending order.
+#
+#Maintainers
+"Kiran Mova",@kmova,MayaData
+"Jeffry Molanus",@gila,MayaData
+"Richard Elling",@richardelling,Viking Enterprise Solutions a division of Sanmina Corporation
+
+#Reviewers
+"Akhil Mohan",@akhilerm,MayaData
+"Pawan Prakash",@pawanpraka1,MayaData
+"Satbir Singh",@satbirchhikara,MayaData
+"Sagar Kumar",@sagarkrsd,MayaData
