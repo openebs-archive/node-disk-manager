@@ -61,7 +61,7 @@ const (
 	NDMDiskTypeKey = "ndm.io/disk-type"
 	// NDMDeviceTypeKey specifies the block device type
 	NDMDeviceTypeKey = "ndm.io/blockdevice-type"
-	// NDMUnmanagedDiskKey specifies disk cr should be managed by ndm or not.
+	// NDMManagedKey specifies disk cr should be managed by ndm or not.
 	NDMManagedKey = "ndm.io/managed"
 )
 

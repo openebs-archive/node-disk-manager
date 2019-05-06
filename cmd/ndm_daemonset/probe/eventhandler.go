@@ -88,7 +88,7 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 					go pe.initOrErrorEvent()
 					return
 				}
-				oldDvr := pe.Controller.GetExistingBlockDeviceResource(deviceList, deviceDetails.Uuid)
+				oldDvr := pe.Controller.GetExistingBlockDeviceResource(deviceList, deviceDetails.UUID)
 				pe.Controller.PushBlockDeviceResource(oldDvr, deviceDetails)
 			}
 		}

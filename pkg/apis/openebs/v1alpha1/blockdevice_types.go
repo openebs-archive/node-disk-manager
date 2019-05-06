@@ -55,8 +55,8 @@ type DeviceDevLink struct {
 
 // DeviceStatus defines the observed state of BlockDevice
 type DeviceStatus struct {
-	ClaimState DeviceClaimState `json:"claimState"`  // claim state of the block device
-	State      string           `json:"deviceState"` //current state of the blockdevice (Active/Inactive)
+	ClaimState DeviceClaimState `json:"claimState"` // claim state of the block device
+	State      string           `json:"state"`      // current state of the blockdevice (Active/Inactive)
 }
 
 // DeviceClaimState defines the observed state of BlockDevice

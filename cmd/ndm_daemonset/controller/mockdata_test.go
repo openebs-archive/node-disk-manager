@@ -29,13 +29,13 @@ import (
 )
 
 const (
-	fakeDiskUid     = "fake-disk-uid"
-	newFakeDiskUid  = "new-fake-disk-uid"
+	fakeDiskUID     = "fake-disk-uid"
+	newFakeDiskUID  = "new-fake-disk-uid"
 	fakeHostName    = "fake-host-name"
 	newFakeHostName = "new-fake-host-name"
 
-	fakeDeviceUid    = "fake-blockdevice-uid"
-	newFakeDeviceUid = "new-fake-blockdevice-uid"
+	fakeDeviceUID    = "fake-blockdevice-uid"
+	newFakeDeviceUID = "new-fake-blockdevice-uid"
 )
 
 var (
@@ -64,7 +64,7 @@ var (
 
 	fakeObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   fakeDiskUid,
+		Name:   fakeDiskUID,
 	}
 
 	fakeDiskStatus = apis.DiskStatus{
@@ -103,7 +103,7 @@ var (
 
 	newFakeObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   newFakeDiskUid,
+		Name:   newFakeDiskUID,
 	}
 
 	newFakeDiskStatus = apis.DiskStatus{
@@ -143,7 +143,7 @@ var (
 
 	fakeDeviceObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   fakeDeviceUid,
+		Name:   fakeDeviceUID,
 	}
 
 	fakeDeviceStatus = apis.DeviceStatus{
@@ -183,7 +183,7 @@ var (
 
 	newFakeDeviceObjectMeta = metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   newFakeDeviceUid,
+		Name:   newFakeDeviceUID,
 	}
 
 	newFakeDeviceStatus = apis.DeviceStatus{

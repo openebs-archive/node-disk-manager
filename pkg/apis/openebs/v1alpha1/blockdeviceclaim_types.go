@@ -17,7 +17,7 @@ type DeviceClaimSpec struct {
 	DeviceType      string                  `json:"deviceType"`                   // DeviceType represents the type of drive like SSD, HDD etc.,
 	HostName        string                  `json:"hostName"`                     // Node name from where blockdevice has to be claimed.
 	Details         DeviceClaimDetails      `json:"deviceClaimDetails,omitempty"` // Details of the device to be claimed
-	BlockDeviceName string                  `json:"BlockDeviceName,omitempty"`    // BlockDeviceName is the reference to the block-device backing this claim
+	BlockDeviceName string                  `json:"blockDeviceName,omitempty"`    // BlockDeviceName is the reference to the block-device backing this claim
 }
 
 // DeviceClaimStatus defines the observed state of BlockDeviceClaim
