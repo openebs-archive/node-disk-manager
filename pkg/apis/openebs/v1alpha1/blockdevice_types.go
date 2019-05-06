@@ -70,10 +70,10 @@ type BlockDevice struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec       DeviceSpec       `json:"spec,omitempty"`
-	Status     DeviceStatus     `json:"status,omitempty"`
-	ClaimState DeviceClaimState `json:"claimState"`
-	ClaimRef   *v1.ObjectReference
+	Spec       DeviceSpec          `json:"spec,omitempty"`
+	Status     DeviceStatus        `json:"status,omitempty"`
+	ClaimState DeviceClaimState    `json:"claimState"`
+	ClaimRef   *v1.ObjectReference `json:"claimRef,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

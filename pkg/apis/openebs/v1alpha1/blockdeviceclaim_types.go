@@ -13,10 +13,10 @@ import (
 
 // DeviceClaimSpec defines the desired state of BlockDeviceClaim
 type DeviceClaimSpec struct {
-	Requirements DeviceClaimRequirements `json:"requirements"`       // the requirements in the claim like Capacity, IOPS
-	DeviceType   string                  `json:"deviceType"`         // DeviceType represents the type of drive like SSD, HDD etc.,
-	HostName     string                  `json:"hostName"`           // Node name from where blockdevice has to be claimed.
-	Details      DeviceClaimDetails      `json:"deviceClaimDetails"` // Details of the device to be claimed
+	Requirements DeviceClaimRequirements `json:"requirements"`                 // the requirements in the claim like Capacity, IOPS
+	DeviceType   string                  `json:"deviceType"`                   // DeviceType represents the type of drive like SSD, HDD etc.,
+	HostName     string                  `json:"hostName"`                     // Node name from where blockdevice has to be claimed.
+	Details      DeviceClaimDetails      `json:"deviceClaimDetails,omitempty"` // Details of the device to be claimed
 }
 
 // DeviceClaimStatus defines the observed state of BlockDeviceClaim
@@ -58,9 +58,9 @@ const (
 
 // DeviceClaimDetails defines the details of the block device that should be claimed
 type DeviceClaimDetails struct {
-	DeviceFormat   string `json:"formatType"`     //Format of the device required, eg:ext4, xfs
-	MountPoint     string `json:"mountPoint"`     //MountPoint of the device required. Claim device from the specified mountpoint.
-	AllowPartition bool   `json:"allowPartition"` //AllowPartition represents whether to claim a full block device or a device that is a partition
+	DeviceFormat   string `json:"formatType,omitempty"`     //Format of the device required, eg:ext4, xfs
+	MountPoint     string `json:"mountPoint,omitempty"`     //MountPoint of the device required. Claim device from the specified mountpoint.
+	AllowPartition bool   `json:"allowPartition,omitempty"` //AllowPartition represents whether to claim a full block device or a device that is a partition
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
