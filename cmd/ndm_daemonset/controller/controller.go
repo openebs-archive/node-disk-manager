@@ -47,10 +47,6 @@ const (
 	NDMVersion = "openebs.io/v1alpha1"
 	// NDMHostKey is host name label prefix.
 	NDMHostKey = "kubernetes.io/hostname"
-	// NDMFree is constant for free/available resource status.
-	NDMUnclaimed = "Unclaimed"
-	// NDMUsed is constant for in-use resource status.
-	NDMClaimed = "Claimed"
 	// NDMNotPartitioned is used to say blockdevice does not have any partition.
 	NDMNotPartitioned = "No"
 	// NDMPartitioned is used to say blockdevice has some partitions.

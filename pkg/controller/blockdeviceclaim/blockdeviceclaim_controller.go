@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/api/core/v1"
-	"strings"
 
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -202,14 +201,15 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 			reqLogger.Error(err, "error getting claim reference", "BlockDevice-CR:", instance.ObjectMeta.Name)
 			return err
 		}
-		selectedDevice.ClaimRef = claimRef
-		selectedDevice.ClaimState.State = ndm.NDMClaimed
+		selectedDevice.Spec.ClaimRef = claimRef
+		selectedDevice.Status.ClaimState = v1alpha1.BlockDeviceClaimed
 		err = r.client.Update(context.TODO(), &selectedDevice)
 		if err != nil {
 			reqLogger.Error(err, "Error while updating BlockDevice-CR", "BlockDevice-CR:", selectedDevice.ObjectMeta.Name)
 			return err
 		}
 		reqLogger.Info("Block Device " + selectedDevice.Name + " claimed")
+		instance.Spec.BlockDeviceName = selectedDevice.Name
 		instance.Status.Phase = v1alpha1.BlockDeviceClaimStatusDone
 	} else {
 		instance.Status.Phase = v1alpha1.BlockDeviceClaimStatusPending
@@ -260,22 +260,22 @@ func (r *ReconcileBlockDeviceClaim) isDeviceRequestedByThisDeviceClaim(
 	instance *v1alpha1.BlockDeviceClaim, item v1alpha1.BlockDevice,
 	reqLogger logr.Logger) bool {
 
-	if strings.Compare(item.ClaimState.State, ndm.NDMClaimed) != 0 {
+	if item.Status.ClaimState != v1alpha1.BlockDeviceClaimed {
 		reqLogger.Info("Found blockdevice which yet to be claimed")
 		return false
 	}
 
-	if strings.Compare(item.ClaimRef.Name, instance.ObjectMeta.Name) != 0 {
+	if item.Spec.ClaimRef.Name != instance.ObjectMeta.Name {
 		reqLogger.Info("ClaimRef Name mismatch")
 		return false
 	}
 
-	if item.ClaimRef.UID != instance.ObjectMeta.UID {
+	if item.Spec.ClaimRef.UID != instance.ObjectMeta.UID {
 		reqLogger.Info("BlockDeviceClaim UID mismatch")
 		return false
 	}
 
-	if strings.Compare(item.ClaimRef.Kind, instance.TypeMeta.Kind) != 0 {
+	if item.Spec.ClaimRef.Kind != instance.TypeMeta.Kind {
 		reqLogger.Info("Kind mismatch")
 		return false
 	}
@@ -303,8 +303,8 @@ func (r *ReconcileBlockDeviceClaim) deleteClaimedBlockDevice(
 		// Found a blockdevice ObjRef with BlockDeviceClaim, Clear
 		// ObjRef and mark blockdevice unclaimed in etcd
 		dvr := item.DeepCopy()
-		dvr.ClaimRef = nil
-		dvr.ClaimState.State = ndm.NDMUnclaimed
+		dvr.Spec.ClaimRef = nil
+		dvr.Status.ClaimState = v1alpha1.BlockDeviceUnclaimed
 		err := r.client.Update(context.TODO(), dvr)
 		if err != nil {
 			reqLogger.Error(err, "Error while updating ObjRef", "BlockDevice-CR:", dvr.ObjectMeta.Name)
@@ -326,7 +326,8 @@ func (r *ReconcileBlockDeviceClaim) getMatchingBlockDevices(
 	matchingBlockDevices := v1alpha1.BlockDeviceList{}
 	for _, bd := range bdList.Items {
 		// check whether the block device is unclaimed and active
-		if bd.Status.State != ndm.NDMActive || bd.ClaimState.State != ndm.NDMUnclaimed {
+		if bd.Status.State != ndm.NDMActive ||
+			bd.Status.ClaimState != v1alpha1.BlockDeviceUnclaimed {
 			continue
 		}
 		// check device type

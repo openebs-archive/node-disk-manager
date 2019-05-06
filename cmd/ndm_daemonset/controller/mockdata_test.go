@@ -146,19 +146,15 @@ var (
 		Name:   fakeDeviceUid,
 	}
 
-	fakeDeviceClaimState = apis.DeviceClaimState{
-		State: NDMUnclaimed,
-	}
-
 	fakeDeviceStatus = apis.DeviceStatus{
-		State: NDMActive,
+		ClaimState: apis.BlockDeviceUnclaimed,
+		State:      NDMActive,
 	}
 
 	fakeDevice = apis.BlockDevice{
 		TypeMeta:   fakeDeviceTypeMeta,
 		ObjectMeta: fakeDeviceObjectMeta,
 		Spec:       fakeDeviceObj,
-		ClaimState: fakeDeviceClaimState,
 		Status:     fakeDeviceStatus,
 	}
 
@@ -190,19 +186,15 @@ var (
 		Name:   newFakeDeviceUid,
 	}
 
-	newFakeDeviceClaimState = apis.DeviceClaimState{
-		State: NDMUnclaimed,
-	}
-
 	newFakeDeviceStatus = apis.DeviceStatus{
-		State: NDMActive,
+		ClaimState: apis.BlockDeviceUnclaimed,
+		State:      NDMActive,
 	}
 
 	newFakeDevice = apis.BlockDevice{
 		TypeMeta:   newFakeDeviceTypeMeta,
 		ObjectMeta: newFakeDeviceObjectMeta,
 		Spec:       newFakeDeviceObj,
-		ClaimState: newFakeDeviceClaimState,
 		Status:     newFakeDeviceStatus,
 	}
 )

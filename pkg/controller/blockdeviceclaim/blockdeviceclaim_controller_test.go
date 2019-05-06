@@ -131,20 +131,20 @@ func (r *ReconcileBlockDeviceClaim) DeleteBlockDeviceClaimedTest(t *testing.T,
 		t.Errorf("get devInst: (%v)", err)
 	}
 
-	if devInst.ClaimRef.UID == dvRequestInst.ObjectMeta.UID {
+	if devInst.Spec.ClaimRef.UID == dvRequestInst.ObjectMeta.UID {
 		t.Logf("BlockDevice ObjRef UID:%v match expected deviceRequest UID:%v",
-			devInst.ClaimRef.UID, dvRequestInst.ObjectMeta.UID)
+			devInst.Spec.ClaimRef.UID, dvRequestInst.ObjectMeta.UID)
 	} else {
 		t.Fatalf("BlockDevice ObjRef UID:%v did not match expected deviceRequest UID:%v",
-			devInst.ClaimRef.UID, dvRequestInst.ObjectMeta.UID)
+			devInst.Spec.ClaimRef.UID, dvRequestInst.ObjectMeta.UID)
 	}
 
-	if devInst.ClaimState.State == ndm.NDMClaimed {
+	if devInst.Status.ClaimState == openebsv1alpha1.BlockDeviceClaimed {
 		t.Logf("BlockDevice Obj state:%v match expected state:%v",
-			devInst.ClaimState.State, ndm.NDMClaimed)
+			devInst.Status.ClaimState, openebsv1alpha1.BlockDeviceClaimed)
 	} else {
 		t.Fatalf("BlockDevice Obj state:%v did not match expected state:%v",
-			devInst.ClaimState.State, ndm.NDMClaimed)
+			devInst.Status.ClaimState, openebsv1alpha1.BlockDeviceClaimed)
 	}
 }
 
@@ -165,20 +165,20 @@ func (r *ReconcileBlockDeviceClaim) DeviceRequestedHappyPathTest(t *testing.T,
 		t.Errorf("get devInst: (%v)", err)
 	}
 
-	if devInst.ClaimRef.UID == devRequestInst.ObjectMeta.UID {
+	if devInst.Spec.ClaimRef.UID == devRequestInst.ObjectMeta.UID {
 		t.Logf("BlockDevice ObjRef UID:%v match expected deviceRequest UID:%v",
-			devInst.ClaimRef.UID, devRequestInst.ObjectMeta.UID)
+			devInst.Spec.ClaimRef.UID, devRequestInst.ObjectMeta.UID)
 	} else {
 		t.Fatalf("BlockDevice ObjRef UID:%v did not match expected deviceRequest UID:%v",
-			devInst.ClaimRef.UID, devRequestInst.ObjectMeta.UID)
+			devInst.Spec.ClaimRef.UID, devRequestInst.ObjectMeta.UID)
 	}
 
-	if devInst.ClaimState.State == ndm.NDMClaimed {
+	if devInst.Status.ClaimState == openebsv1alpha1.BlockDeviceClaimed {
 		t.Logf("BlockDevice Obj state:%v match expected state:%v",
-			devInst.ClaimState.State, ndm.NDMClaimed)
+			devInst.Status.ClaimState, openebsv1alpha1.BlockDeviceClaimed)
 	} else {
 		t.Fatalf("BlockDevice Obj state:%v did not match expected state:%v",
-			devInst.ClaimState.State, ndm.NDMClaimed)
+			devInst.Status.ClaimState, openebsv1alpha1.BlockDeviceClaimed)
 	}
 }
 
@@ -295,7 +295,7 @@ func GetFakeDeviceObject(bdName string, bdCapacity uint64) *openebsv1alpha1.Bloc
 
 	device.ObjectMeta = ObjectMeta
 	device.TypeMeta = TypeMeta
-	device.ClaimState.State = ndm.NDMUnclaimed
+	device.Status.ClaimState = openebsv1alpha1.BlockDeviceUnclaimed
 	device.Status.State = ndm.NDMActive
 	device.Spec = Spec
 	return device

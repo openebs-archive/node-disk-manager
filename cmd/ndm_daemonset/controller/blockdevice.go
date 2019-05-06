@@ -62,7 +62,6 @@ func (di *DeviceInfo) ToDevice() apis.BlockDevice {
 	blockDevice.Spec = di.getDeviceSpec()
 	blockDevice.ObjectMeta = di.getObjectMeta()
 	blockDevice.TypeMeta = di.getTypeMeta()
-	blockDevice.ClaimState = di.getClaimState()
 	blockDevice.Status = di.getStatus()
 	return blockDevice
 }
@@ -103,25 +102,14 @@ func (di *DeviceInfo) getTypeMeta() metav1.TypeMeta {
 }
 
 /*
- * getClaimState returns claimState struct which contains
- * claim state of BlockDevice resource. It is used to populate
- * data of BlockDevice struct of BlockDevice CR.
- */
-func (di *DeviceInfo) getClaimState() apis.DeviceClaimState {
-	claimState := apis.DeviceClaimState{
-		State: NDMUnclaimed,
-	}
-	return claimState
-}
-
-/*
  * getStatus returns DeviceStatus struct which contains
  * state of BlockDevice resource. It is used to populate data
  * of BlockDevice struct of BlockDevice CR.
  */
 func (di *DeviceInfo) getStatus() apis.DeviceStatus {
 	deviceStatus := apis.DeviceStatus{
-		State: NDMActive,
+		ClaimState: apis.BlockDeviceUnclaimed,
+		State:      NDMActive,
 	}
 	return deviceStatus
 }

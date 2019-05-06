@@ -139,7 +139,7 @@ func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {
 
 	device.ObjectMeta = ObjectMeta
 	device.TypeMeta = TypeMeta
-	device.ClaimState.State = ndm.NDMUnclaimed
+	device.Status.ClaimState = openebsv1alpha1.BlockDeviceUnclaimed
 	device.Status.State = ndm.NDMActive
 	device.Spec = Spec
 	return device

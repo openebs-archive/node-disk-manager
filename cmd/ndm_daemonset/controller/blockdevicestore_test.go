@@ -46,7 +46,7 @@ func mockEmptyDeviceCr() apis.BlockDevice {
 
 	fakeDevice.ObjectMeta = fakeObjectMeta
 	fakeDevice.TypeMeta = fakeTypeMeta
-	fakeDevice.ClaimState.State = NDMUnclaimed
+	fakeDevice.Status.ClaimState = apis.BlockDeviceUnclaimed
 	fakeDevice.Status.State = NDMActive
 	fakeDevice.Spec = fakeDeviceSpec
 	/*.Partitioned = NDMNotPartitioned

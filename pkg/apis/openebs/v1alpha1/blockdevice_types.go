@@ -13,14 +13,15 @@ import (
 
 // DeviceSpec defines the desired state of BlockDevice
 type DeviceSpec struct {
-	Path            string          `json:"path"`                      //Path contain devpath (e.g. /dev/sdb)
-	Capacity        DeviceCapacity  `json:"capacity"`                  //Capacity
-	Details         DeviceDetails   `json:"details"`                   //Details contains static attributes (model, serial ..)
-	DevLinks        []DeviceDevLink `json:"devlinks"`                  //DevLinks contains soft links of one disk
-	FileSystem      FileSystemInfo  `json:"filesystem,omitempty"`      //FileSystem contains mountpoint and filesystem type
-	Partitioned     string          `json:"partitioned"`               //BlockDevice has partions or not (YES/NO)
-	ParentDevice    string          `json:"parentDevice,omitempty"`    //ParentDevice has the UUID of the parent device
-	AggregateDevice string          `json:"aggregateDevice,omitempty"` //AggregateDevice has the UUID of the aggregate device created from this device
+	Path            string              `json:"path"`                      //Path contain devpath (e.g. /dev/sdb)
+	Capacity        DeviceCapacity      `json:"capacity"`                  //Capacity
+	Details         DeviceDetails       `json:"details"`                   //Details contains static attributes (model, serial ..)
+	ClaimRef        *v1.ObjectReference `json:"claimRef,omitempty"`        // Reference to the BDC which has claimed this BD
+	DevLinks        []DeviceDevLink     `json:"devlinks"`                  //DevLinks contains soft links of one disk
+	FileSystem      FileSystemInfo      `json:"filesystem,omitempty"`      //FileSystem contains mountpoint and filesystem type
+	Partitioned     string              `json:"partitioned"`               //BlockDevice has partions or not (YES/NO)
+	ParentDevice    string              `json:"parentDevice,omitempty"`    //ParentDevice has the UUID of the parent device
+	AggregateDevice string              `json:"aggregateDevice,omitempty"` //AggregateDevice has the UUID of the aggregate device created from this device
 }
 
 // DeviceCapacity defines the physical and logical size of the block device
@@ -52,15 +53,21 @@ type DeviceDevLink struct {
 	Links []string `json:"links,omitempty"` // Links are the soft links of Type type
 }
 
-// DeviceClaimState defines the observed state of BlockDevice
-type DeviceClaimState struct {
-	State string `json:"state"` //current claim state of the blockdevice (Claimed/Unclaimed)
-}
-
 // DeviceStatus defines the observed state of BlockDevice
 type DeviceStatus struct {
-	State string `json:"state"` //current state of the blockdevice (Active/Inactive)
+	ClaimState DeviceClaimState `json:"claimState"`  // claim state of the block device
+	State      string           `json:"deviceState"` //current state of the blockdevice (Active/Inactive)
 }
+
+// DeviceClaimState defines the observed state of BlockDevice
+type DeviceClaimState string
+
+const (
+	// BlockDeviceUnclaimed represents that the block device is not bound to any BDC
+	BlockDeviceUnclaimed = "Unclaimed"
+	// BlockDeviceClaimed represents that the block device is bound to a BDC
+	BlockDeviceClaimed = "Claimed"
+)
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -70,10 +77,8 @@ type BlockDevice struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec       DeviceSpec          `json:"spec,omitempty"`
-	Status     DeviceStatus        `json:"status,omitempty"`
-	ClaimState DeviceClaimState    `json:"claimState"`
-	ClaimRef   *v1.ObjectReference `json:"claimRef,omitempty"`
+	Spec   DeviceSpec   `json:"spec,omitempty"`
+	Status DeviceStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
