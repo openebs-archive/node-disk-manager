@@ -14,33 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package util
+package mount
 
 import (
 	"bufio"
-	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-// MountUtil contains mount point and mount file attributes
-// It helps to find which partition is mounted on given mount point
 type MountUtil struct {
-	FilePath   string // FilePath is the path of mounts file like -/proc/self/mounts
-	MountPoint string // MountPoint is mount points like - / /var ...
+	filePath string
+	devPath  string
 }
 
-// NewMountUtil returns MountUtil struct for given mounts file path and mount point
-func NewMountUtil(filePath, mountPoint string) MountUtil {
+// newMountUtil returns MountUtil struct for given mounts file path and mount point
+func newMountUtil(filePath, devPath string) MountUtil {
 	MountUtil := MountUtil{
-		FilePath:   filePath,
-		MountPoint: mountPoint,
+		filePath: filePath,
+		devPath:  devPath,
 	}
 	return MountUtil
 }
 
-// GetDiskPath returns os disk devpath
+/*// GetDiskPath returns os disk devpath
 func (m MountUtil) GetDiskPath() (string, error) {
 	partition, err := m.getPartitionName()
 	if err != nil {
@@ -55,19 +53,20 @@ func (m MountUtil) GetDiskPath() (string, error) {
 		return "", err
 	}
 	return devPath, err
-}
+}*/
 
 // getPartitionName read mounts file and returns partition name which is mounted on mount point
-func (m MountUtil) getPartitionName() (string, error) {
+func (m MountUtil) getMountAttr() (MountAttr, error) {
+	mountAttr := MountAttr{}
 	// Read file from filepath and get which partition is mounted on given mount point
-	file, err := os.Open(m.FilePath)
+	file, err := os.Open(hostMountFilePath)
 	if err != nil {
-		return "", err
+		return mountAttr, err
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	if err := scanner.Err(); err != nil {
-		return "", err
+		return mountAttr, err
 	}
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -75,14 +74,19 @@ func (m MountUtil) getPartitionName() (string, error) {
 			read each line of given file in below format -
 			/dev/sda4 / ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
 			/dev/sda4 /var/lib/docker/aufs ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
-			1st entry is partition or file system 2nd is mount point
 		*/
-		if parts := strings.Split(line, " "); parts[1] == m.MountPoint {
-			// /dev/ by default added with partition name we want to get only sda1 / sdc2 ..
-			return strings.Replace(parts[0], "/dev/", "", 1), nil
+		// we are interested only in lines that start with /dev
+		if !strings.HasPrefix(line, "/dev") {
+			continue
+		}
+		// 1st entry is partition or file system 2nd is mount point
+		if parts := strings.Split(line, " "); parts[0] == m.devPath {
+			mountAttr.MountPoint = parts[1]
+			mountAttr.FileSystem = parts[2]
+			return mountAttr, nil
 		}
 	}
-	return "", errors.New("error while geting os partition name")
+	return mountAttr, fmt.Errorf("could not get mount attributes, %s not mounted", m.devPath)
 }
 
 /*
