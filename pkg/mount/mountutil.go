@@ -20,7 +20,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -38,28 +37,11 @@ func newMountUtil(filePath, devPath string) MountUtil {
 	return MountUtil
 }
 
-/*// GetDiskPath returns os disk devpath
-func (m MountUtil) GetDiskPath() (string, error) {
-	partition, err := m.getPartitionName()
-	if err != nil {
-		return "", err
-	}
-	devPath, err := getDiskDevPath(partition)
-	if err != nil {
-		return "", err
-	}
-	_, err = filepath.EvalSymlinks(devPath)
-	if err != nil {
-		return "", err
-	}
-	return devPath, err
-}*/
-
 // getPartitionName read mounts file and returns partition name which is mounted on mount point
 func (m MountUtil) getMountAttr() (MountAttr, error) {
 	mountAttr := MountAttr{}
 	// Read file from filepath and get which partition is mounted on given mount point
-	file, err := os.Open(hostMountFilePath)
+	file, err := os.Open(m.filePath)
 	if err != nil {
 		return mountAttr, err
 	}
@@ -70,11 +52,13 @@ func (m MountUtil) getMountAttr() (MountAttr, error) {
 	}
 	for scanner.Scan() {
 		line := scanner.Text()
+
 		/*
 			read each line of given file in below format -
 			/dev/sda4 / ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
 			/dev/sda4 /var/lib/docker/aufs ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
 		*/
+
 		// we are interested only in lines that start with /dev
 		if !strings.HasPrefix(line, "/dev") {
 			continue
@@ -87,30 +71,4 @@ func (m MountUtil) getMountAttr() (MountAttr, error) {
 		}
 	}
 	return mountAttr, fmt.Errorf("could not get mount attributes, %s not mounted", m.devPath)
-}
-
-/*
-	getDiskSysPath takes disk/partition name as input (sda, sda1, sdb, sdb2 ...) and
-	returns syspath of that disk from which we can generate ndm given uuid of that disk.
-*/
-func getDiskDevPath(partition string) (string, error) {
-	// dev path be like /dev/sda4 we need to remove /dev/ from this string to get sys block path.
-	var diskName string
-	softlink := "/sys/class/block/" + partition
-	link, err := filepath.EvalSymlinks(softlink)
-	if err != nil {
-		return "", err
-	}
-	/*
-		link looks - /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
-		parent disk is present after block then partition of that disk
-	*/
-	parts := strings.Split(link, "/")
-	for i, part := range parts {
-		if part == "block" {
-			diskName = parts[i+1]
-			break
-		}
-	}
-	return "/dev/" + diskName, nil
 }
