@@ -42,6 +42,19 @@ type DiskDevLink struct {
 	Links []string `json:"links"` // Links are the soft links of Type type
 }
 
+// Partition represents the partition information of the disk
+type Partition struct {
+	PartitionType string           `json:"partitionType"`
+	MountInfo     MountInformation `json:"mountInfo,omitempty"`
+}
+
+// MountInformation represents the mount related information like mountpoint and
+// filesystem on the disk or the partition
+type MountInformation struct {
+	MountPoint string `json:"mountPoint,omitempty"`
+	FileSystem string `json:"fileSystem,omitempty"`
+}
+
 // DiskStatus defines the observed state of Disk
 type DiskStatus struct {
 	State string `json:"state"` //current state of the disk (Active/Inactive)
@@ -86,11 +99,6 @@ type DiskList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Disk `json:"items"`
-}
-
-type Partition struct {
-	PartitionType  string `json:"partitionType"`
-	FileSystemType string `json:"fileSystemType"`
 }
 
 func init() {
