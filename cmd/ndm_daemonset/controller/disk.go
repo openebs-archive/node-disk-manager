@@ -86,7 +86,7 @@ type ProbeIdentifier struct {
 // on the partition
 type PartitionInfo struct {
 	PartitionType         string // Partition type like 83, 8e etc.
-	FileSystemInformation FSInfo
+	FileSystemInformation FSInfo // FileSystem related information like, filesystem type, mountpoint
 }
 
 // FSInfo defines the filesystem related information of block device/disk, like mountpoint and
