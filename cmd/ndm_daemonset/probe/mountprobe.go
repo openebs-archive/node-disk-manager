@@ -83,8 +83,8 @@ func (mp *mountProbe) FillDiskDetails(d *controller.DiskInfo) {
 		glog.Error(err)
 		return
 	}
-	d.MountInformation.MountPoint = basicMountInfo.MountPoint
-	if d.MountInformation.FileSystem == "" {
-		d.MountInformation.FileSystem = basicMountInfo.FileSystem
+	d.FileSystemInformation.MountPoint = basicMountInfo.MountPoint
+	if d.FileSystemInformation.FileSystem == "" {
+		d.FileSystemInformation.FileSystem = basicMountInfo.FileSystem
 	}
 }

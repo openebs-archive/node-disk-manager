@@ -177,21 +177,21 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
 	d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
 	d.DiskType = udevDiskDetails.DiskType
-	// mountinfo of the attached device. Only filesystem data will be filled in the struct,
+	// filesystem info of the attached device. Only filesystem data will be filled in the struct,
 	// as the mountpoint related information will be filled in by the mount probe
-	mountInfo := controller.MountInfo{
+	fileSystemInfo := controller.FSInfo{
 		FileSystem: udevDiskDetails.FileSystem,
 	}
 
 	// if the attached device is a disk, then the filesystem info will be at the the top level
 	if d.DiskType == libudevwrapper.UDEV_SYSTEM {
-		d.MountInformation = mountInfo
+		d.FileSystemInformation = fileSystemInfo
 	} else if d.DiskType == libudevwrapper.UDEV_PARTITION {
 		// if the attached device is a partition, the filesystem and partition information will go
 		// into the partition struct
 		d.PartitionData = append(d.PartitionData, controller.PartitionInfo{
-			PartitionType:    udevDiskDetails.PartitionType,
-			MountInformation: mountInfo,
+			PartitionType:         udevDiskDetails.PartitionType,
+			FileSystemInformation: fileSystemInfo,
 		})
 	}
 }
