@@ -30,6 +30,7 @@ const (
 var RegisteredProbes = []func(){
 	seachestProbeRegister,
 	smartProbeRegister,
+	mountProbeRegister,
 	udevProbeRegister,
 	capacityProbeRegister}
 

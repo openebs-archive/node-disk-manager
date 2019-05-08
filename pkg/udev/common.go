@@ -73,7 +73,9 @@ type UdevDiskDetails struct {
 	Path           string   // Path is Path of a disk.
 	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
+	DiskType       string   // DeviceType can be disk, partition
 	FileSystem     string   // FileSystem on the disk
+	PartitionType  string   // Partitiontype on the disk/device
 }
 
 // freeCharPtr frees c pointer
@@ -84,10 +86,6 @@ func freeCharPtr(s *C.char) {
 //DiskInfoFromLibudev returns disk attribute extracted using libudev apicalls.
 func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 	devLinks := device.GetDevLinks()
-	fileSystem := device.GetPropertyValue(UDEV_FS_TYPE)
-	if len(fileSystem) == 0 {
-		fileSystem = UDEV_FS_NONE
-	}
 	diskDetails := UdevDiskDetails{
 		Model:          device.GetPropertyValue(UDEV_MODEL),
 		Serial:         device.GetPropertyValue(UDEV_SERIAL),
@@ -95,7 +93,9 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 		Path:           device.GetPropertyValue(UDEV_DEVNAME),
 		ByIdDevLinks:   devLinks[BY_ID_LINK],
 		ByPathDevLinks: devLinks[BY_PATH_LINK],
-		FileSystem:     fileSystem,
+		DiskType:       device.GetDevtype(),
+		FileSystem:     device.GetFileSystemInfo(),
+		PartitionType:  device.GetPartitionType(),
 	}
 	return diskDetails
 }

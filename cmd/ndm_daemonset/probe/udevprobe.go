@@ -145,14 +145,6 @@ func (up *udevProbe) scan() error {
 			deviceDetails := &controller.DiskInfo{}
 			deviceDetails.ProbeIdentifiers.Uuid = uuid
 			deviceDetails.ProbeIdentifiers.UdevIdentifier = newUdevice.GetSyspath()
-			if newUdevice.IsParitition() {
-				partitionData := controller.PartitionInfo{
-					PartitionType: newUdevice.GetPartitionType(),
-					FileSystem:    newUdevice.GetFileSystemInfo(),
-				}
-				deviceDetails.PartitionData = append(deviceDetails.PartitionData, partitionData)
-				glog.Info("Partition Data for ", uuid, " : ", deviceDetails.PartitionData)
-			}
 			diskInfo = append(diskInfo, deviceDetails)
 		}
 		newUdevice.UdevDeviceUnref()
@@ -162,7 +154,6 @@ func (up *udevProbe) scan() error {
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,
 	}
-	glog.Info("Partition Data to channel: ", eventDetails.Devices[3].PartitionData)
 	udevevent.UdevEventMessageChannel <- eventDetails
 	return nil
 }
@@ -178,13 +169,31 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	defer udevDevice.free()
 	d.ProbeIdentifiers.SmartIdentifier = udevDiskDetails.Path
 	d.ProbeIdentifiers.SeachestIdentifier = udevDiskDetails.Path
+	d.ProbeIdentifiers.MountIdentifier = udevDiskDetails.Path
 	d.Model = udevDiskDetails.Model
 	d.Path = udevDiskDetails.Path
 	d.Serial = udevDiskDetails.Serial
 	d.Vendor = udevDiskDetails.Vendor
 	d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
 	d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
-	d.FileSystemInfo = udevDiskDetails.FileSystem
+	d.DiskType = udevDiskDetails.DiskType
+	// mountinfo of the attached device. Only filesystem data will be filled in the struct,
+	// as the mountpoint related information will be filled in by the mount probe
+	mountInfo := controller.MountInfo{
+		FileSystem: udevDiskDetails.FileSystem,
+	}
+
+	// if the attached device is a disk, then the filesystem info will be at the the top level
+	if d.DiskType == libudevwrapper.UDEV_SYSTEM {
+		d.MountInformation = mountInfo
+	} else if d.DiskType == libudevwrapper.UDEV_PARTITION {
+		// if the attached device is a partition, the filesystem and partition information will go
+		// into the partition struct
+		d.PartitionData = append(d.PartitionData, controller.PartitionInfo{
+			PartitionType:    udevDiskDetails.PartitionType,
+			MountInformation: mountInfo,
+		})
+	}
 }
 
 // listen listens for event message over UdevEventMessages channel
