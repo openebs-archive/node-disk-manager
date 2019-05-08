@@ -80,6 +80,7 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 		Model:          diskDetails.Model,
 		Serial:         diskDetails.Serial,
 		Vendor:         diskDetails.Vendor,
+		DiskType:       diskDetails.DevType,
 		Path:           diskDetails.DevNode,
 		ByIdDevLinks:   diskDetails.ByIdDevLinks,
 		ByPathDevLinks: diskDetails.ByPathDevLinks,

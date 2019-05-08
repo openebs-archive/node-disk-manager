@@ -83,7 +83,7 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.Vendor = device.GetPropertyValue(UDEV_VENDOR)
 	diskDetails.Wwn = device.GetPropertyValue(UDEV_WWN)
 	diskDetails.Uid = device.GetUid()
-	diskDetails.FileSystem = device.GetPropertyValue(UDEV_FS_TYPE)
+	diskDetails.FileSystem = UDEV_FS_NONE
 	diskDetails.Mountpoint = "/" // always take the disk mounted at /
 	devLinks := device.GetDevLinks()
 	diskDetails.ByIdDevLinks = devLinks[BY_ID_LINK]

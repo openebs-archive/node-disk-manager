@@ -106,6 +106,7 @@ func TestFillDiskDetails(t *testing.T) {
 	expectedDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsDiskDetails.SysPath
 	expectedDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevNode
 	expectedDiskInfo.ProbeIdentifiers.SeachestIdentifier = mockOsDiskDetails.DevNode
+	expectedDiskInfo.ProbeIdentifiers.MountIdentifier = mockOsDiskDetails.DevNode
 	expectedDiskInfo.Model = mockOsDiskDetails.Model
 	expectedDiskInfo.Path = mockOsDiskDetails.DevNode
 	expectedDiskInfo.Serial = mockOsDiskDetails.Serial
@@ -114,7 +115,6 @@ func TestFillDiskDetails(t *testing.T) {
 	expectedDiskInfo.ByIdDevLinks = mockOsDiskDetails.ByIdDevLinks
 	expectedDiskInfo.ByPathDevLinks = mockOsDiskDetails.ByPathDevLinks
 	expectedDiskInfo.FileSystemInformation.FileSystem = mockOsDiskDetails.FileSystem
-	expectedDiskInfo.FileSystemInformation.MountPoint = mockOsDiskDetails.Mountpoint
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
