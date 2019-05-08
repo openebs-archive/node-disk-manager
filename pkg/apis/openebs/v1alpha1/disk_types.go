@@ -12,23 +12,23 @@ import (
 
 // DiskSpec defines the desired state of Disk
 type DiskSpec struct {
-	Path             string        `json:"path"`                       //Path contain devpath (e.g. /dev/sdb)
-	Capacity         DiskCapacity  `json:"capacity"`                   //Capacity
-	Details          DiskDetails   `json:"details"`                    //Details contains static attributes (model, serial ..)
-	FileSystem       string        `json:"fileSystem,omitempty"`       //Contains the data about filesystem on the disk
-	PartitionDetails []Partition   `json:"partitionDetails,omitempty"` //Details of partitions in the disk (filesystem, partition type)
-	DevLinks         []DiskDevLink `json:"devlinks"`                   //DevLinks contains soft links of one disk
+	Path             string         `json:"path"`                       //Path contain devpath (e.g. /dev/sdb)
+	Capacity         DiskCapacity   `json:"capacity"`                   //Capacity
+	Details          DiskDetails    `json:"details"`                    //Details contains static attributes (model, serial ..)
+	DevLinks         []DiskDevLink  `json:"devlinks"`                   //DevLinks contains soft links of one disk
+	FileSystem       FileSystemInfo `json:"fileSystem,omitempty"`       //Contains the data about filesystem on the disk
+	PartitionDetails []Partition    `json:"partitionDetails,omitempty"` //Details of partitions in the disk (filesystem, partition type)
 }
 
 type DiskCapacity struct {
-	Storage            uint64 `json:"storage"`             // disk size in bytes
-	PhysicalSectorSize uint32 `json: "physicalSectorSize"` // disk physical-Sector size in bytes
-	LogicalSectorSize  uint32 `json:"logicalSectorSize"`   // disk logical-sector size in bytes
+	Storage            uint64 `json:"storage"`            // disk size in bytes
+	PhysicalSectorSize uint32 `json:"physicalSectorSize"` // disk physical-Sector size in bytes
+	LogicalSectorSize  uint32 `json:"logicalSectorSize"`  // disk logical-sector size in bytes
 }
 
 type DiskDetails struct {
-	RotationRate     uint16 `json: "rotationRate"`    // Disk rotation speed if disk is not SSD
-	DriveType        string `json: "driveType"`       // DriveType represents the type of drive like SSD, HDD etc.,
+	RotationRate     uint16 `json:"rotationRate"`     // Disk rotation speed if disk is not SSD
+	DriveType        string `json:"driveType"`        // DriveType represents the type of drive like SSD, HDD etc.,
 	Model            string `json:"model"`            // Model is model of disk
 	Compliance       string `json:"compliance"`       // Implemented standards/specifications version such as SPC-1, SPC-2, etc
 	Serial           string `json:"serial"`           // Serial is serial no of disk
@@ -44,15 +44,8 @@ type DiskDevLink struct {
 
 // Partition represents the partition information of the disk
 type Partition struct {
-	PartitionType string           `json:"partitionType"`
-	MountInfo     MountInformation `json:"mountInfo,omitempty"`
-}
-
-// MountInformation represents the mount related information like mountpoint and
-// filesystem on the disk or the partition
-type MountInformation struct {
-	MountPoint string `json:"mountPoint,omitempty"`
-	FileSystem string `json:"fileSystem,omitempty"`
+	PartitionType string         `json:"partitionType"`
+	FileSystem    FileSystemInfo `json:"fileSystem,omitempty"`
 }
 
 // DiskStatus defines the observed state of Disk
@@ -75,7 +68,7 @@ type DiskStat struct {
 }
 
 type DeviceInfo struct {
-	DeviceUID string `json: "BlockDevice UID"` //Cross reference to BlockDevice CR backed by this disk
+	DeviceUID string `json:"blockDeviceUID"` //Cross reference to BlockDevice CR backed by this disk
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -88,8 +81,8 @@ type Disk struct {
 
 	Spec   DiskSpec   `json:"spec,omitempty"`
 	Status DiskStatus `json:"status,omitempty"`
-	Stats  DiskStat   `json:"stats"`
-	Device DeviceInfo `json: "deviceInfo"`
+	Stats  DiskStat   `json:"stats,omitempty"`
+	Device DeviceInfo `json:"deviceInfo"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
