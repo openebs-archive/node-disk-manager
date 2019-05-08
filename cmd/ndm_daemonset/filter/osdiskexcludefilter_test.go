@@ -40,8 +40,8 @@ func TestOsDiskFilterRegister(t *testing.T) {
 	}()
 	oSDiskExcludeFilterRegister()
 	var fi controller.FilterInterface = &oSDiskExcludeFilter{
-		controller:     fakeController,
-		excludeDevPath: diskDetails.DevNode,
+		controller:         fakeController,
+		excludeMountPoints: []string{diskDetails.Mountpoint},
 	}
 	filter := &controller.Filter{
 		Name:      oSDiskExcludeFilterName,
@@ -63,13 +63,15 @@ func TestOsDiskFilterRegister(t *testing.T) {
 }
 
 func TestOsDiskExcludeFilterExclude(t *testing.T) {
-	fakeDiskPath := "fake-disk-path"
-	ignoreDiskPath := "ignore-disk-path"
-	fakeOsDiskFilter := oSDiskExcludeFilter{excludeDevPath: ignoreDiskPath}
+	fakeDiskMountPoint := "/home"
+	ignoreDiskMountPoint := "/boot"
+	fakeOsDiskFilter := oSDiskExcludeFilter{excludeMountPoints: []string{ignoreDiskMountPoint}}
 	disk1 := &controller.DiskInfo{}
-	disk1.Path = fakeDiskPath
+	disk1.FileSystemInformation.MountPoint = fakeDiskMountPoint
+	disk1.DiskType = libudevwrapper.UDEV_SYSTEM
 	disk2 := &controller.DiskInfo{}
-	disk2.Path = ignoreDiskPath
+	disk2.FileSystemInformation.MountPoint = ignoreDiskMountPoint
+	disk2.DiskType = libudevwrapper.UDEV_SYSTEM
 	tests := map[string]struct {
 		disk     *controller.DiskInfo
 		actual   bool
@@ -86,13 +88,15 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 }
 
 func TestOsDiskExcludeFilterInclude(t *testing.T) {
-	fakeDiskPath := "fake-disk-path"
-	ignoreDiskPath := "ignore-disk-path"
-	fakeOsDiskFilter := oSDiskExcludeFilter{excludeDevPath: ignoreDiskPath}
+	fakeDiskMountPoint := "/home"
+	ignoreDiskMountPoint := "/boot"
+	fakeOsDiskFilter := oSDiskExcludeFilter{excludeMountPoints: []string{ignoreDiskMountPoint}}
 	disk1 := &controller.DiskInfo{}
-	disk1.Path = fakeDiskPath
+	disk1.FileSystemInformation.MountPoint = fakeDiskMountPoint
+	disk1.DiskType = libudevwrapper.UDEV_SYSTEM
 	disk2 := &controller.DiskInfo{}
-	disk2.Path = ignoreDiskPath
+	disk2.FileSystemInformation.MountPoint = ignoreDiskMountPoint
+	disk2.DiskType = libudevwrapper.UDEV_SYSTEM
 	tests := map[string]struct {
 		disk     *controller.DiskInfo
 		actual   bool

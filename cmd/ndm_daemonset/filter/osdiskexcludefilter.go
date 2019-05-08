@@ -17,9 +17,9 @@ limitations under the License.
 package filter
 
 import (
+	"github.com/openebs/node-disk-manager/pkg/udev"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
@@ -29,9 +29,7 @@ const (
 )
 
 var (
-	defaultMountFilePath     = "/proc/self/mounts"
-	mountPoints              = []string{"/", "/etc/hosts"}
-	hostMountFilePath        = "/host/proc/1/mounts"    // hostMountFilePath is the file path mounted inside container
+	excludeMountPoints       = "/"
 	oSDiskExcludeFilterName  = "os disk exclude filter" // filter name
 	oSDiskExcludeFilterState = defaultEnabled           // filter state
 )
@@ -47,7 +45,7 @@ var oSDiskExcludeFilterRegister = func() {
 			if filterConfig.Key == osDiskExcludeFilterKey {
 				oSDiskExcludeFilterName = filterConfig.Name
 				oSDiskExcludeFilterState = util.CheckTruthy(filterConfig.State)
-				mountPoints = strings.Split(filterConfig.Exclude, ",")
+				excludeMountPoints = filterConfig.Exclude
 				break
 			}
 		}
@@ -64,8 +62,8 @@ var oSDiskExcludeFilterRegister = func() {
 
 // oSDiskExcludeFilter controller and path of os disk
 type oSDiskExcludeFilter struct {
-	controller     *controller.Controller
-	excludeDevPath string
+	controller         *controller.Controller
+	excludeMountPoints []string
 }
 
 // newOsDiskFilter returns new pointer osDiskFilter
@@ -77,31 +75,11 @@ func newNonOsDiskFilter(ctrl *controller.Controller) *oSDiskExcludeFilter {
 
 // Start set os disk devPath in nonOsDiskFilter pointer
 func (odf *oSDiskExcludeFilter) Start() {
-	/*
-		process1 check for mentioned mountpoint in host's /proc/1/mounts file
-		host's /proc/1/mounts file mounted inside container it checks for
-		every mentioned mountpoints if it is able to get parent disk's devpath
-		it adds it in Controller struct and make isOsDiskFilterSet true
-	*/
-	for _, mountPoint := range mountPoints {
-		mountPointUtil := util.NewMountUtil(hostMountFilePath, mountPoint)
-		if devPath, err := mountPointUtil.GetDiskPath(); err == nil {
-			odf.excludeDevPath = devPath
-			return
-		}
+	odf.excludeMountPoints = make([]string, 0)
+	if excludeMountPoints != "" {
+		odf.excludeMountPoints = strings.Split(excludeMountPoints, ",")
 	}
-	/*
-		process2 check for mountpoints in /proc/self/mounts file if it is able to get
-		disk's path of it adds it in Controller struct and make isOsDiskFilterSet true
-	*/
-	for _, mountPoint := range mountPoints {
-		mountPointUtil := util.NewMountUtil(defaultMountFilePath, mountPoint)
-		if devPath, err := mountPointUtil.GetDiskPath(); err == nil {
-			odf.excludeDevPath = devPath
-			return
-		}
-	}
-	glog.Error("unable to apply os disk filter")
+
 }
 
 // Include contains nothing by default it returns false
@@ -109,7 +87,15 @@ func (odf *oSDiskExcludeFilter) Include(d *controller.DiskInfo) bool {
 	return true
 }
 
-// Exclude returns true if disk devpath matches with excludeDevPath
+// Exclude returns true if disk mountPoint doesn't match with excludeMountPoints
 func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
-	return odf.excludeDevPath != d.Path
+	if len(odf.excludeMountPoints) == 0 {
+		return true
+	}
+	if d.DiskType == udev.UDEV_SYSTEM {
+		return !util.MatchIgnoredCase(odf.excludeMountPoints, d.FileSystemInformation.MountPoint)
+	} else if d.DiskType == udev.UDEV_PARTITION {
+		return !util.MatchIgnoredCase(odf.excludeMountPoints, d.PartitionData[0].FileSystemInformation.MountPoint)
+	}
+	return true
 }
