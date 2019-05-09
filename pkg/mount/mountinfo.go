@@ -10,9 +10,10 @@ type Identifier struct {
 	DevPath string
 }
 
-// MountAttr contains mount point and device mount attributes
+// DeviceAttr is the struct used for returning all available mount related information like
+// mount point, filesystem type etc.
 // It helps to find mountpoint of a partition/block
-type MountAttr struct {
+type DeviceAttr struct {
 	DevPath    string // DevPath of the device/block
 	MountPoint string // MountPoint of the the device/block
 	FileSystem string // FileSystem in the device that is mounted
@@ -22,8 +23,8 @@ type MountAttr struct {
 // attributes include the filesystem type, mountpoint, device path etc. These mount attributes
 // are fetched by parsing a mounts file (/proc/1/mounts) and getting the relevant data. If the
 // device is not mounted, then the function will return an error.
-func (I *Identifier) DeviceBasicMountInfo() (MountAttr, error) {
+func (I *Identifier) DeviceBasicMountInfo() (DeviceAttr, error) {
 	mountUtil := NewMountUtil(hostMountFilePath, I.DevPath, "")
-	mountAttr, err := mountUtil.getMountAttr(mountUtil.getMountName)
+	mountAttr, err := mountUtil.getDeviceMountAttr(mountUtil.getMountName)
 	return mountAttr, err
 }

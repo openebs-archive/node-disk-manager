@@ -63,25 +63,25 @@ func TestGetMountAttr(t *testing.T) {
 
 	mountAttrTests := map[string]struct {
 		devPath           string
-		expectedMountAttr MountAttr
+		expectedMountAttr DeviceAttr
 		expectedError     error
 		fileContent       []byte
 	}{
 		"sda4 mounted at /": {
 			"/dev/sda4",
-			MountAttr{MountPoint: "/", FileSystem: "ext4"},
+			DeviceAttr{MountPoint: "/", FileSystem: "ext4"},
 			nil,
 			fileContent1,
 		},
 		"sda3 mounted at /home": {
 			"/dev/sda3",
-			MountAttr{MountPoint: "/home", FileSystem: "ext4"},
+			DeviceAttr{MountPoint: "/home", FileSystem: "ext4"},
 			nil,
 			fileContent2,
 		},
 		"device is not mounted": {
 			"/dev/sda3",
-			MountAttr{},
+			DeviceAttr{},
 			errors.New("could not get mount attributes"),
 			fileContent3,
 		},
@@ -96,7 +96,7 @@ func TestGetMountAttr(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			mountAttr, err := mountUtil.getMountAttr(mountUtil.getMountName)
+			mountAttr, err := mountUtil.getDeviceMountAttr(mountUtil.getMountName)
 
 			assert.Equal(t, test.expectedMountAttr, mountAttr)
 			assert.Equal(t, test.expectedError, err)
@@ -105,11 +105,11 @@ func TestGetMountAttr(t *testing.T) {
 			os.Remove(filePath)
 		})
 	}
-	// TODO tests that use mountUtil.getPartitionName in getMountAttr
+	// TODO tests that use mountUtil.getPartitionName in getDeviceMountAttr
 
 	// invalid path mountAttrTests
 	mountUtil := NewMountUtil(filePath, "/dev/sda3", "")
-	_, err := mountUtil.getMountAttr(mountUtil.getMountName)
+	_, err := mountUtil.getDeviceMountAttr(mountUtil.getMountName)
 	assert.NotNil(t, err)
 }
 
@@ -118,12 +118,12 @@ func TestGetPartitionName(t *testing.T) {
 	mountPoint1 := "/home"
 	mountPoint2 := "/"
 	tests := map[string]struct {
-		expectedAttr MountAttr
+		expectedAttr DeviceAttr
 		expectedOk   bool
 		mountPoint   string
 	}{
-		"mount point is present in line":     {MountAttr{DevPath: "sda4"}, true, mountPoint1},
-		"mount point is not present in line": {MountAttr{}, false, mountPoint2},
+		"mount point is present in line":     {DeviceAttr{DevPath: "sda4"}, true, mountPoint1},
+		"mount point is not present in line": {DeviceAttr{}, false, mountPoint2},
 	}
 
 	for name, test := range tests {
@@ -143,12 +143,12 @@ func TestGetMountName(t *testing.T) {
 	fsType := "ext4"
 	mountPoint := "/home"
 	tests := map[string]struct {
-		expectedMountAttr MountAttr
+		expectedMountAttr DeviceAttr
 		expectedOk        bool
 		devPath           string
 	}{
-		"device sda4 is mounted":     {MountAttr{MountPoint: mountPoint, FileSystem: fsType}, true, devPath1},
-		"device sda3 is not mounted": {MountAttr{}, false, devPath2},
+		"device sda4 is mounted":     {DeviceAttr{MountPoint: mountPoint, FileSystem: fsType}, true, devPath1},
+		"device sda3 is not mounted": {DeviceAttr{}, false, devPath2},
 	}
 
 	for name, test := range tests {
