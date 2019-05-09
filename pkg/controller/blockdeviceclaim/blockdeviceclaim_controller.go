@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/api/core/v1"
+	"strconv"
 
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -92,6 +93,7 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, err
 	}
 
+	reqLogger.Info("BlockDeviceClaim State is:" + string(instance.Status.Phase))
 	switch instance.Status.Phase {
 	case v1alpha1.BlockDeviceClaimStatusPending:
 		fallthrough
@@ -161,7 +163,7 @@ func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(instance *v1alpha1.Bl
 	//Check if listDVR is null or not
 	length := len(listDVR.Items)
 	if length == 0 {
-		err = fmt.Errorf("No blockdevice found with matching criteria")
+		err = fmt.Errorf("No blockdevice found on the given node")
 		return nil, err
 	}
 	return listDVR, nil
@@ -184,7 +186,6 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 		}
 		return err
 	}
-
 	//Get BlockDevice list for particular host
 	listDVR, err := r.getListofDevicesOnHost(instance, reqLogger)
 	if err != nil {
@@ -212,11 +213,13 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 		instance.Spec.BlockDeviceName = selectedDevice.Name
 		instance.Status.Phase = v1alpha1.BlockDeviceClaimStatusDone
 	} else {
+		reqLogger.Info("Could not find a BlockDevice which satisfies the claim. Changing to pending state")
 		instance.Status.Phase = v1alpha1.BlockDeviceClaimStatusPending
 	}
 
 	// set finalizer string on instance if claim status is Done
 	if instance.Status.Phase == v1alpha1.BlockDeviceClaimStatusDone {
+		reqLogger.Info("Added finalizers to BDC:" + instance.Name)
 		instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer)
 	}
 	// Update BlockDeviceClaim CR
@@ -319,7 +322,7 @@ func (r *ReconcileBlockDeviceClaim) deleteClaimedBlockDevice(
 func (r *ReconcileBlockDeviceClaim) getMatchingBlockDevices(
 	instance *v1alpha1.BlockDeviceClaim, bdList *v1alpha1.BlockDeviceList, reqLogger logr.Logger) v1alpha1.BlockDeviceList {
 	checkDeviceType := false
-	if len(instance.Spec.DeviceType) == 0 {
+	if len(instance.Spec.DeviceType) != 0 {
 		checkDeviceType = true
 	}
 
@@ -336,6 +339,7 @@ func (r *ReconcileBlockDeviceClaim) getMatchingBlockDevices(
 		}
 		matchingBlockDevices.Items = append(matchingBlockDevices.Items, bd)
 	}
+	reqLogger.Info("No of matching devices based on Spec : " + strconv.Itoa(len(matchingBlockDevices.Items)))
 	return matchingBlockDevices
 }
 
