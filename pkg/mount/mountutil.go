@@ -20,25 +20,48 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 type MountUtil struct {
-	filePath string
-	devPath  string
+	filePath   string
+	devPath    string
+	mountPoint string
 }
 
-// newMountUtil returns MountUtil struct for given mounts file path and mount point
-func newMountUtil(filePath, devPath string) MountUtil {
+type getMountData func(string) (MountAttr, bool)
+
+// NewMountUtil returns MountUtil struct for given mounts file path and mount point
+func NewMountUtil(filePath, devPath, mountPoint string) MountUtil {
 	MountUtil := MountUtil{
-		filePath: filePath,
-		devPath:  devPath,
+		filePath:   filePath,
+		devPath:    devPath,
+		mountPoint: mountPoint,
 	}
 	return MountUtil
 }
 
-// getPartitionName read mounts file and returns partition name which is mounted on mount point
-func (m MountUtil) getMountAttr() (MountAttr, error) {
+// GetDiskPath returns os disk devpath
+func (m MountUtil) GetDiskPath() (string, error) {
+	mountAttr, err := m.getMountAttr(m.getPartitionName)
+	if err != nil {
+		return "", err
+	}
+	devPath, err := getDiskDevPath(mountAttr.DevPath)
+	if err != nil {
+		return "", err
+	}
+	_, err = filepath.EvalSymlinks(devPath)
+	if err != nil {
+		return "", err
+	}
+	return devPath, err
+}
+
+// getMountAttr read mounts file and returns mount attributes, which includes partition name,
+// mountpoint and filesystem
+func (m MountUtil) getMountAttr(fn getMountData) (MountAttr, error) {
 	mountAttr := MountAttr{}
 	// Read file from filepath and get which partition is mounted on given mount point
 	file, err := os.Open(m.filePath)
@@ -63,12 +86,58 @@ func (m MountUtil) getMountAttr() (MountAttr, error) {
 		if !strings.HasPrefix(line, "/dev") {
 			continue
 		}
-		// 1st entry is partition or file system 2nd is mount point
-		if parts := strings.Split(line, " "); parts[0] == m.devPath {
-			mountAttr.MountPoint = parts[1]
-			mountAttr.FileSystem = parts[2]
+		if mountAttr, ok := fn(line); ok {
 			return mountAttr, nil
 		}
 	}
-	return mountAttr, fmt.Errorf("could not get mount attributes, %s not mounted", m.devPath)
+	return mountAttr, fmt.Errorf("could not get mount attributes")
+}
+
+//	getDiskSysPath takes disk/partition name as input (sda, sda1, sdb, sdb2 ...) and
+//	returns syspath of that disk from which we can generate ndm given uuid of that disk.
+func getDiskDevPath(partition string) (string, error) {
+	// dev path be like /dev/sda4 we need to remove /dev/ from this string to get sys block path.
+	var diskName string
+	softlink := "/sys/class/block/" + partition
+	link, err := filepath.EvalSymlinks(softlink)
+	if err != nil {
+		return "", err
+	}
+	/*
+		link looks - /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
+		parent disk is present after block then partition of that disk
+	*/
+	parts := strings.Split(link, "/")
+	for i, part := range parts {
+		if part == "block" {
+			diskName = parts[i+1]
+			break
+		}
+	}
+	return "/dev/" + diskName, nil
+}
+
+// getPartitionName gets the partition name from the mountpoint. Each line of a mounts file
+// is passed to the function, which is parsed and partition name is obtained
+func (m *MountUtil) getPartitionName(mountLine string) (MountAttr, bool) {
+	mountAttr := MountAttr{}
+	isValid := false
+	if parts := strings.Split(mountLine, " "); parts[1] == m.mountPoint {
+		mountAttr.DevPath = strings.Replace(parts[0], "/dev/", "", 1)
+		isValid = true
+	}
+	return mountAttr, isValid
+}
+
+// getMountName gets the mountpoint, filesystem etc from the partition name. Each line of a mounts
+// file is passed to the function, which is parsed to get the information
+func (m *MountUtil) getMountName(mountLine string) (MountAttr, bool) {
+	mountAttr := MountAttr{}
+	isValid := false
+	if parts := strings.Split(mountLine, " "); parts[0] == m.devPath {
+		mountAttr.MountPoint = parts[1]
+		mountAttr.FileSystem = parts[2]
+		isValid = true
+	}
+	return mountAttr, isValid
 }

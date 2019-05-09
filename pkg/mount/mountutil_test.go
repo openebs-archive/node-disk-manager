@@ -20,6 +20,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,17 +29,23 @@ import (
 func TestNewMountUtil(t *testing.T) {
 	filePath := "/host/proc/1/mounts"
 	devPath := "/dev/sda"
-
-	expectedMountUtil := MountUtil{
+	mountPoint := "/home"
+	// TODO
+	expectedMountUtil1 := MountUtil{
 		filePath: filePath,
 		devPath:  devPath,
+	}
+	expectedMountUtil2 := MountUtil{
+		filePath:   filePath,
+		mountPoint: mountPoint,
 	}
 
 	tests := map[string]struct {
 		actualMU   MountUtil
 		expectedMU MountUtil
 	}{
-		"test for generated mount util": {newMountUtil(filePath, devPath), expectedMountUtil},
+		"test for generated mount util with devPath":    {NewMountUtil(filePath, devPath, ""), expectedMountUtil1},
+		"test for generated mount util with mountpoint": {NewMountUtil(filePath, "", mountPoint), expectedMountUtil2},
 	}
 
 	for name, test := range tests {
@@ -54,7 +61,7 @@ func TestGetMountAttr(t *testing.T) {
 	fileContent2 := []byte("/dev/sda3 /home ext4 rw,relatime,errors=remount-ro,data=ordered 0 0")
 	fileContent3 := []byte("sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0")
 
-	tests := map[string]struct {
+	mountAttrTests := map[string]struct {
 		devPath           string
 		expectedMountAttr MountAttr
 		expectedError     error
@@ -62,27 +69,26 @@ func TestGetMountAttr(t *testing.T) {
 	}{
 		"sda4 mounted at /": {
 			"/dev/sda4",
-			MountAttr{"/", "ext4"},
+			MountAttr{MountPoint: "/", FileSystem: "ext4"},
 			nil,
 			fileContent1,
 		},
 		"sda3 mounted at /home": {
 			"/dev/sda3",
-			MountAttr{"/home", "ext4"},
+			MountAttr{MountPoint: "/home", FileSystem: "ext4"},
 			nil,
 			fileContent2,
 		},
 		"device is not mounted": {
 			"/dev/sda3",
 			MountAttr{},
-			errors.New("could not get mount attributes, /dev/sda3 not mounted"),
+			errors.New("could not get mount attributes"),
 			fileContent3,
 		},
 	}
-
-	for name, test := range tests {
+	for name, test := range mountAttrTests {
 		t.Run(name, func(t *testing.T) {
-			mountUtil := newMountUtil(filePath, test.devPath)
+			mountUtil := NewMountUtil(filePath, test.devPath, "")
 
 			// create the temp file which will be read for getting attributes
 			err := ioutil.WriteFile(filePath, test.fileContent, 0644)
@@ -90,7 +96,7 @@ func TestGetMountAttr(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			mountAttr, err := mountUtil.getMountAttr()
+			mountAttr, err := mountUtil.getMountAttr(mountUtil.getMountName)
 
 			assert.Equal(t, test.expectedMountAttr, mountAttr)
 			assert.Equal(t, test.expectedError, err)
@@ -99,9 +105,80 @@ func TestGetMountAttr(t *testing.T) {
 			os.Remove(filePath)
 		})
 	}
+	// TODO tests that use mountUtil.getPartitionName in getMountAttr
 
-	// invalid path tests
-	mountUtil := newMountUtil(filePath, "/dev/sda3")
-	_, err := mountUtil.getMountAttr()
+	// invalid path mountAttrTests
+	mountUtil := NewMountUtil(filePath, "/dev/sda3", "")
+	_, err := mountUtil.getMountAttr(mountUtil.getMountName)
 	assert.NotNil(t, err)
+}
+
+func TestGetPartitionName(t *testing.T) {
+	mountLine := "/dev/sda4 /home ext4 rw,relatime,errors=remount-ro,data=ordered 0 0"
+	mountPoint1 := "/home"
+	mountPoint2 := "/"
+	tests := map[string]struct {
+		expectedAttr MountAttr
+		expectedOk   bool
+		mountPoint   string
+	}{
+		"mount point is present in line":     {MountAttr{DevPath: "sda4"}, true, mountPoint1},
+		"mount point is not present in line": {MountAttr{}, false, mountPoint2},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mountPointUtil := NewMountUtil("", "", test.mountPoint)
+			mountAttr, ok := mountPointUtil.getPartitionName(mountLine)
+			assert.Equal(t, test.expectedAttr, mountAttr)
+			assert.Equal(t, test.expectedOk, ok)
+		})
+	}
+}
+
+func TestGetMountName(t *testing.T) {
+	mountLine := "/dev/sda4 /home ext4 rw,relatime,errors=remount-ro,data=ordered 0 0"
+	devPath1 := "/dev/sda4"
+	devPath2 := "/dev/sda3"
+	fsType := "ext4"
+	mountPoint := "/home"
+	tests := map[string]struct {
+		expectedMountAttr MountAttr
+		expectedOk        bool
+		devPath           string
+	}{
+		"device sda4 is mounted":     {MountAttr{MountPoint: mountPoint, FileSystem: fsType}, true, devPath1},
+		"device sda3 is not mounted": {MountAttr{}, false, devPath2},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mountPointUtil := NewMountUtil("", test.devPath, "")
+			attr, ok := mountPointUtil.getMountName(mountLine)
+			assert.Equal(t, test.expectedMountAttr, attr)
+			assert.Equal(t, test.expectedOk, ok)
+		})
+	}
+}
+
+func TestOsDiskPath(t *testing.T) {
+	filePath := "/proc/self/mounts"
+	mountPointUtil := NewMountUtil(filePath, "", "/")
+	path, err := mountPointUtil.GetDiskPath()
+	tests := map[string]struct {
+		actualPath    string
+		actualError   error
+		expectedError error
+	}{
+		"test case for os disk path": {actualPath: path, actualError: err, expectedError: nil},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			_, err := filepath.EvalSymlinks(test.actualPath)
+			if err != nil {
+				t.Error(err)
+			}
+			assert.Equal(t, test.expectedError, test.actualError)
+		})
+	}
 }
