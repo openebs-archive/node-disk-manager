@@ -90,7 +90,7 @@ func (m MountUtil) getDeviceMountAttr(fn getMountData) (DeviceAttr, error) {
 			return mountAttr, nil
 		}
 	}
-	return mountAttr, fmt.Errorf("could not get mount attributes")
+	return mountAttr, fmt.Errorf("could not get device mount attributes, Path/MountPoint not present in mounts file")
 }
 
 //	getDiskSysPath takes disk/partition name as input (sda, sda1, sdb, sdb2 ...) and
