@@ -82,7 +82,7 @@ func TestGetMountAttr(t *testing.T) {
 		"device is not mounted": {
 			"/dev/sda3",
 			DeviceAttr{},
-			errors.New("could not get mount attributes"),
+			errors.New("could not get device mount attributes, Path/MountPoint not present in mounts file"),
 			fileContent3,
 		},
 	}
