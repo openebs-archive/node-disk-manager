@@ -63,25 +63,25 @@ func TestGetMountAttr(t *testing.T) {
 
 	mountAttrTests := map[string]struct {
 		devPath           string
-		expectedMountAttr DeviceAttr
+		expectedMountAttr DeviceMountAttr
 		expectedError     error
 		fileContent       []byte
 	}{
 		"sda4 mounted at /": {
 			"/dev/sda4",
-			DeviceAttr{MountPoint: "/", FileSystem: "ext4"},
+			DeviceMountAttr{MountPoint: "/", FileSystem: "ext4"},
 			nil,
 			fileContent1,
 		},
 		"sda3 mounted at /home": {
 			"/dev/sda3",
-			DeviceAttr{MountPoint: "/home", FileSystem: "ext4"},
+			DeviceMountAttr{MountPoint: "/home", FileSystem: "ext4"},
 			nil,
 			fileContent2,
 		},
 		"device is not mounted": {
 			"/dev/sda3",
-			DeviceAttr{},
+			DeviceMountAttr{},
 			errors.New("could not get device mount attributes, Path/MountPoint not present in mounts file"),
 			fileContent3,
 		},
@@ -118,12 +118,12 @@ func TestGetPartitionName(t *testing.T) {
 	mountPoint1 := "/home"
 	mountPoint2 := "/"
 	tests := map[string]struct {
-		expectedAttr DeviceAttr
+		expectedAttr DeviceMountAttr
 		expectedOk   bool
 		mountPoint   string
 	}{
-		"mount point is present in line":     {DeviceAttr{DevPath: "sda4"}, true, mountPoint1},
-		"mount point is not present in line": {DeviceAttr{}, false, mountPoint2},
+		"mount point is present in line":     {DeviceMountAttr{DevPath: "sda4"}, true, mountPoint1},
+		"mount point is not present in line": {DeviceMountAttr{}, false, mountPoint2},
 	}
 
 	for name, test := range tests {
@@ -143,12 +143,12 @@ func TestGetMountName(t *testing.T) {
 	fsType := "ext4"
 	mountPoint := "/home"
 	tests := map[string]struct {
-		expectedMountAttr DeviceAttr
+		expectedMountAttr DeviceMountAttr
 		expectedOk        bool
 		devPath           string
 	}{
-		"device sda4 is mounted":     {DeviceAttr{MountPoint: mountPoint, FileSystem: fsType}, true, devPath1},
-		"device sda3 is not mounted": {DeviceAttr{}, false, devPath2},
+		"device sda4 is mounted":     {DeviceMountAttr{MountPoint: mountPoint, FileSystem: fsType}, true, devPath1},
+		"device sda3 is not mounted": {DeviceMountAttr{}, false, devPath2},
 	}
 
 	for name, test := range tests {

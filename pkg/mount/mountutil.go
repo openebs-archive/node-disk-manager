@@ -30,7 +30,7 @@ type MountUtil struct {
 	mountPoint string
 }
 
-type getMountData func(string) (DeviceAttr, bool)
+type getMountData func(string) (DeviceMountAttr, bool)
 
 // NewMountUtil returns MountUtil struct for given mounts file path and mount point
 func NewMountUtil(filePath, devPath, mountPoint string) MountUtil {
@@ -61,8 +61,8 @@ func (m MountUtil) GetDiskPath() (string, error) {
 
 // getDeviceMountAttr read mounts file and returns device mount attributes, which includes partition name,
 // mountpoint and filesystem
-func (m MountUtil) getDeviceMountAttr(fn getMountData) (DeviceAttr, error) {
-	mountAttr := DeviceAttr{}
+func (m MountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, error) {
+	mountAttr := DeviceMountAttr{}
 	// Read file from filepath and get which partition is mounted on given mount point
 	file, err := os.Open(m.filePath)
 	if err != nil {
@@ -119,8 +119,8 @@ func getDiskDevPath(partition string) (string, error) {
 
 // getPartitionName gets the partition name from the mountpoint. Each line of a mounts file
 // is passed to the function, which is parsed and partition name is obtained
-func (m *MountUtil) getPartitionName(mountLine string) (DeviceAttr, bool) {
-	mountAttr := DeviceAttr{}
+func (m *MountUtil) getPartitionName(mountLine string) (DeviceMountAttr, bool) {
+	mountAttr := DeviceMountAttr{}
 	isValid := false
 	if parts := strings.Split(mountLine, " "); parts[1] == m.mountPoint {
 		mountAttr.DevPath = strings.Replace(parts[0], "/dev/", "", 1)
@@ -131,8 +131,8 @@ func (m *MountUtil) getPartitionName(mountLine string) (DeviceAttr, bool) {
 
 // getMountName gets the mountpoint, filesystem etc from the partition name. Each line of a mounts
 // file is passed to the function, which is parsed to get the information
-func (m *MountUtil) getMountName(mountLine string) (DeviceAttr, bool) {
-	mountAttr := DeviceAttr{}
+func (m *MountUtil) getMountName(mountLine string) (DeviceMountAttr, bool) {
+	mountAttr := DeviceMountAttr{}
 	isValid := false
 	if parts := strings.Split(mountLine, " "); parts[0] == m.devPath {
 		mountAttr.MountPoint = parts[1]
