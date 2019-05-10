@@ -24,6 +24,8 @@ import (
 	"strings"
 )
 
+// MountUtil contains the mountfile path, devpath/mountpoint which can be used to
+// detect partition of a mountpoint or mountpoint of a partition.
 type MountUtil struct {
 	filePath   string
 	devPath    string
