@@ -122,6 +122,9 @@ func getDiskDevPath(partition string) (string, error) {
 func (m *MountUtil) getPartitionName(mountLine string) (DeviceMountAttr, bool) {
 	mountAttr := DeviceMountAttr{}
 	isValid := false
+	if len(mountLine) == 0 {
+		return mountAttr, isValid
+	}
 	if parts := strings.Split(mountLine, " "); parts[1] == m.mountPoint {
 		mountAttr.DevPath = strings.Replace(parts[0], "/dev/", "", 1)
 		isValid = true
@@ -134,6 +137,9 @@ func (m *MountUtil) getPartitionName(mountLine string) (DeviceMountAttr, bool) {
 func (m *MountUtil) getMountName(mountLine string) (DeviceMountAttr, bool) {
 	mountAttr := DeviceMountAttr{}
 	isValid := false
+	if len(mountLine) == 0 {
+		return mountAttr, isValid
+	}
 	if parts := strings.Split(mountLine, " "); parts[0] == m.devPath {
 		mountAttr.MountPoint = parts[1]
 		mountAttr.FileSystem = parts[2]

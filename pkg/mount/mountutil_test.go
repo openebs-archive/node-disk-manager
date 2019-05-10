@@ -121,15 +121,17 @@ func TestGetPartitionName(t *testing.T) {
 		expectedAttr DeviceMountAttr
 		expectedOk   bool
 		mountPoint   string
+		line         string
 	}{
-		"mount point is present in line":     {DeviceMountAttr{DevPath: "sda4"}, true, mountPoint1},
-		"mount point is not present in line": {DeviceMountAttr{}, false, mountPoint2},
+		"mount point is present in line":     {DeviceMountAttr{DevPath: "sda4"}, true, mountPoint1, mountLine},
+		"mount point is not present in line": {DeviceMountAttr{}, false, mountPoint2, mountLine},
+		"mountline is empty":                 {DeviceMountAttr{}, false, mountPoint2, ""},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			mountPointUtil := NewMountUtil("", "", test.mountPoint)
-			mountAttr, ok := mountPointUtil.getPartitionName(mountLine)
+			mountAttr, ok := mountPointUtil.getPartitionName(test.line)
 			assert.Equal(t, test.expectedAttr, mountAttr)
 			assert.Equal(t, test.expectedOk, ok)
 		})
@@ -146,15 +148,17 @@ func TestGetMountName(t *testing.T) {
 		expectedMountAttr DeviceMountAttr
 		expectedOk        bool
 		devPath           string
+		line              string
 	}{
-		"device sda4 is mounted":     {DeviceMountAttr{MountPoint: mountPoint, FileSystem: fsType}, true, devPath1},
-		"device sda3 is not mounted": {DeviceMountAttr{}, false, devPath2},
+		"device sda4 is mounted":     {DeviceMountAttr{MountPoint: mountPoint, FileSystem: fsType}, true, devPath1, mountLine},
+		"device sda3 is not mounted": {DeviceMountAttr{}, false, devPath2, mountLine},
+		"mount line is empty":        {DeviceMountAttr{}, false, devPath2, ""},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			mountPointUtil := NewMountUtil("", test.devPath, "")
-			attr, ok := mountPointUtil.getMountName(mountLine)
+			attr, ok := mountPointUtil.getMountName(test.line)
 			assert.Equal(t, test.expectedMountAttr, attr)
 			assert.Equal(t, test.expectedOk, ok)
 		})
