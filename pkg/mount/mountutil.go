@@ -121,12 +121,16 @@ func getDiskDevPath(partition string) (string, error) {
 
 // getPartitionName gets the partition name from the mountpoint. Each line of a mounts file
 // is passed to the function, which is parsed and partition name is obtained
+// A mountLine contains data in the order:
+// 		device  mountpoint  filesystem  mountoptions
+//		eg: /dev/sda4 / ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
 func (m *MountUtil) getPartitionName(mountLine string) (DeviceMountAttr, bool) {
 	mountAttr := DeviceMountAttr{}
 	isValid := false
 	if len(mountLine) == 0 {
 		return mountAttr, isValid
 	}
+	// mountoptions are ignored. device-path and mountpoint is used
 	if parts := strings.Split(mountLine, " "); parts[1] == m.mountPoint {
 		mountAttr.DevPath = strings.Replace(parts[0], "/dev/", "", 1)
 		isValid = true
@@ -136,12 +140,16 @@ func (m *MountUtil) getPartitionName(mountLine string) (DeviceMountAttr, bool) {
 
 // getMountName gets the mountpoint, filesystem etc from the partition name. Each line of a mounts
 // file is passed to the function, which is parsed to get the information
+// A mountLine contains data in the order:
+// 		device  mountpoint  filesystem  mountoptions
+//		eg: /dev/sda4 / ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
 func (m *MountUtil) getMountName(mountLine string) (DeviceMountAttr, bool) {
 	mountAttr := DeviceMountAttr{}
 	isValid := false
 	if len(mountLine) == 0 {
 		return mountAttr, isValid
 	}
+	// mountoptions are ignored. devicepath, mountpoint and filesystem is used
 	if parts := strings.Split(mountLine, " "); parts[0] == m.devPath {
 		mountAttr.MountPoint = parts[1]
 		mountAttr.FileSystem = parts[2]
