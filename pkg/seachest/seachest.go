@@ -80,13 +80,13 @@ func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, int) 
 
 	err := int(C.get_Device(str, &device))
 	if err != 0 {
-		glog.Error("Unable to get device info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
+		glog.Errorf("Unable to get device info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
 		return nil, err
 	}
 
 	err = int(C.get_SCSI_Drive_Information(&device, &Drive))
 	if err != 0 {
-		glog.Error("Unable to get derive info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
+		glog.Errorf("Unable to get derive info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
 		return nil, err
 	}
 

@@ -17,10 +17,11 @@ limitations under the License.
 package filter
 
 import (
+	"github.com/golang/glog"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
@@ -84,7 +85,7 @@ func (odf *oSDiskExcludeFilter) Start() {
 		it adds it in Controller struct and make isOsDiskFilterSet true
 	*/
 	for _, mountPoint := range mountPoints {
-		mountPointUtil := util.NewMountUtil(hostMountFilePath, mountPoint)
+		mountPointUtil := mount.NewMountUtil(hostMountFilePath, "", mountPoint)
 		if devPath, err := mountPointUtil.GetDiskPath(); err == nil {
 			odf.excludeDevPath = devPath
 			return
@@ -95,7 +96,7 @@ func (odf *oSDiskExcludeFilter) Start() {
 		disk's path of it adds it in Controller struct and make isOsDiskFilterSet true
 	*/
 	for _, mountPoint := range mountPoints {
-		mountPointUtil := util.NewMountUtil(defaultMountFilePath, mountPoint)
+		mountPointUtil := mount.NewMountUtil(defaultMountFilePath, "", mountPoint)
 		if devPath, err := mountPointUtil.GetDiskPath(); err == nil {
 			odf.excludeDevPath = devPath
 			return

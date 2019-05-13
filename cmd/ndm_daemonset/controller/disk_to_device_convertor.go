@@ -39,6 +39,7 @@ func (c *Controller) NewDeviceInfoFromDiskInfo(diskDetails *DiskInfo) *DeviceInf
 	deviceDetails.PhysicalSectorSize = diskDetails.PhysicalSectorSize
 	deviceDetails.Compliance = diskDetails.Compliance
 	deviceDetails.DeviceType = diskDetails.DriveType
-
+	deviceDetails.FileSystemInfo.FileSystem = diskDetails.FileSystemInformation.FileSystem
+	deviceDetails.FileSystemInfo.MountPoint = diskDetails.FileSystemInformation.MountPoint
 	return deviceDetails
 }

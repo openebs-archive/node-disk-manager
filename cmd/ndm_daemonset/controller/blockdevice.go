@@ -40,6 +40,8 @@ type DeviceInfo struct {
 	PhysicalSectorSize uint32   // PhysicalSectorSize is the Physical size of blockdevice sector in bytes
 	Compliance         string   // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
 	DeviceType         string   // DeviceType represents the type of backing disk
+	PartitionType      string   // Partition type if the blockdevice is a partition
+	FileSystemInfo     FSInfo   // FileSystem info of the blockdevice like FSType and MountPoint
 }
 
 // NewDeviceInfo returns a pointer of empty DeviceInfo
@@ -114,6 +116,7 @@ func (di *DeviceInfo) getDeviceSpec() apis.DeviceSpec {
 	deviceSpec.Capacity = di.getDeviceCapacity()
 	deviceSpec.DevLinks = di.getDeviceLinks()
 	deviceSpec.Partitioned = NDMNotPartitioned
+	deviceSpec.FileSystem = di.FileSystemInfo.getFileSystemInfo()
 	return deviceSpec
 }
 

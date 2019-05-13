@@ -29,25 +29,25 @@ import (
 // that struct. At the end it is converted to Disk struct which will push to
 // etcd as a CR of that disk.
 type DiskInfo struct {
-	ProbeIdentifiers   ProbeIdentifier // ProbeIdentifiers contains some keys to uniquely identify each disk by probe
-	HostName           string          // HostName contains the node's hostname in which this disk is attached.
-	Uuid               string          // Uuid is the unique id given by ndm
-	Capacity           uint64          // Capacity is capacity of a disk
-	Model              string          // Model is model no of a disk
-	Serial             string          // Serial is serial no of a disk
-	Vendor             string          // Vendor is vendor of a disk
-	Path               string          // Path is dev path of a disk like /dev/sda
-	ByIdDevLinks       []string        // ByIdDevLinks contains by-id devlinks
-	ByPathDevLinks     []string        // ByPathDevLinks contains by-path devlinks
-	FirmwareRevision   string          // FirmwareRevision is the firmware revision for a disk
-	LogicalSectorSize  uint32          // LogicalSectorSize is the Logical size of disk sector in bytes
-	PhysicalSectorSize uint32          // PhysicalSectorSize is the Physical size of disk sector in bytes
-	RotationRate       uint16          // 0 = not reported. 1 = SSD, everything else is an RPM
-	Compliance         string          // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
-	DiskType           string          // DiskType represents the type of disk like Disk, Sparse etc.,
-	DriveType          string          // DriveType represents the type of disk like HHD, HDD etc.,
-	FileSystemInfo     string          // FileSystemInfo stores the filesystem on the disk. Can be none, xfs, ext4 etc
-	PartitionData      []PartitionInfo // Information of the partitions on the disk
+	ProbeIdentifiers      ProbeIdentifier // ProbeIdentifiers contains some keys to uniquely identify each disk by probe
+	HostName              string          // HostName contains the node's hostname in which this disk is attached.
+	Uuid                  string          // Uuid is the unique id given by ndm
+	Capacity              uint64          // Capacity is capacity of a disk
+	Model                 string          // Model is model no of a disk
+	Serial                string          // Serial is serial no of a disk
+	Vendor                string          // Vendor is vendor of a disk
+	Path                  string          // Path is dev path of a disk like /dev/sda
+	ByIdDevLinks          []string        // ByIdDevLinks contains by-id devlinks
+	ByPathDevLinks        []string        // ByPathDevLinks contains by-path devlinks
+	FirmwareRevision      string          // FirmwareRevision is the firmware revision for a disk
+	LogicalSectorSize     uint32          // LogicalSectorSize is the Logical size of disk sector in bytes
+	PhysicalSectorSize    uint32          // PhysicalSectorSize is the Physical size of disk sector in bytes
+	RotationRate          uint16          // 0 = not reported. 1 = SSD, everything else is an RPM
+	Compliance            string          // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
+	DiskType              string          // DiskType represents the type of disk like Disk, Sparse etc.,
+	DriveType             string          // DriveType represents the type of disk like HHD, HDD etc.,
+	FileSystemInformation FSInfo          // FileSystemInformation stores the FS related information like filesystem type and mountpoint
+	PartitionData         []PartitionInfo // Information of the partitions on the disk
 
 	//Stats of disk which keep changing
 	TotalBytesRead        uint64
@@ -79,11 +79,21 @@ type ProbeIdentifier struct {
 	UdevIdentifier     string // UdevIdentifier(syspath) used to identify disk by udevprobe.
 	SmartIdentifier    string // SmartIdentifier (devPath) is used to identify disk by smartprobe.
 	SeachestIdentifier string // SeachestIdentifier (devPath) is used to identify disk by seachest.
+	MountIdentifier    string // MountIdentifier (devPath) is used to identify disks by mountprobe
 }
 
+// PartitionInfo defines the partition related information like partition type, filesystem etc
+// on the partition
 type PartitionInfo struct {
-	PartitionType string // Partition type like 83, 8e etc.
-	FileSystem    string // Filesystem of partition. can be none, xfs etc.
+	PartitionType         string // Partition type like 83, 8e etc.
+	FileSystemInformation FSInfo // FileSystem related information like, filesystem type, mountpoint
+}
+
+// FSInfo defines the filesystem related information of block device/disk, like mountpoint and
+// filesystem
+type FSInfo struct {
+	FileSystem string // Filesystem on the block device
+	MountPoint string // MountPoint of the block device
 }
 
 // NewDiskInfo returns a pointer of empty diskInfo struct which will
@@ -98,9 +108,9 @@ func NewDiskInfo() *DiskInfo {
 // ToDisk convert diskInfo struct to api.Disk type which will be pushed to etcd
 func (di *DiskInfo) ToDisk() apis.Disk {
 	dr := apis.Disk{}
-	dr.Spec = di.getDiskSpec()
-	dr.ObjectMeta = di.getObjectMeta()
 	dr.TypeMeta = di.getTypeMeta()
+	dr.ObjectMeta = di.getObjectMeta()
+	dr.Spec = di.getDiskSpec()
 	dr.Status = di.getStatus()
 	dr.Stats = di.getStats()
 	return dr
@@ -112,7 +122,7 @@ func (di *DiskInfo) ToPartition() []apis.Partition {
 	partition := make([]apis.Partition, 0)
 	for _, partitionData := range di.PartitionData {
 		partition = append(partition, apis.Partition{PartitionType: partitionData.PartitionType,
-			FileSystemType: partitionData.FileSystem})
+			FileSystem: partitionData.FileSystemInformation.getFileSystemInfo()})
 	}
 	return partition
 }
@@ -157,12 +167,10 @@ func (di *DiskInfo) getStatus() apis.DiskStatus {
 func (di *DiskInfo) getDiskSpec() apis.DiskSpec {
 	diskSpec := apis.DiskSpec{}
 	diskSpec.Path = di.getPath()
-	diskSpec.Details = di.getDiskDetails()
 	diskSpec.Capacity = di.getDiskCapacity()
-	if di.FileSystemInfo != udev.UDEV_FS_NONE {
-		diskSpec.FileSystem = di.FileSystemInfo
-	}
+	diskSpec.Details = di.getDiskDetails()
 	diskSpec.DevLinks = di.getDiskLinks()
+	diskSpec.FileSystem = di.FileSystemInformation.getFileSystemInfo()
 	return diskSpec
 }
 
@@ -238,4 +246,13 @@ func (di *DiskInfo) getStats() apis.DiskStat {
 		diskStat.TempInfo.LowestTemperature = di.TemperatureInfo.LowestTemperature
 	}
 	return diskStat
+}
+
+func (fs *FSInfo) getFileSystemInfo() apis.FileSystemInfo {
+	fsInfo := apis.FileSystemInfo{}
+	if fs.FileSystem != udev.UDEV_FS_NONE {
+		fsInfo.Type = fs.FileSystem
+		fsInfo.Mountpoint = fs.MountPoint
+	}
+	return fsInfo
 }

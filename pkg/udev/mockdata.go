@@ -43,6 +43,7 @@ type MockOsDiskDetails struct {
 	Wwn            string
 	Uid            string
 	FileSystem     string
+	Mountpoint     string
 	ByIdDevLinks   []string
 	ByPathDevLinks []string
 }
@@ -83,6 +84,7 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.Wwn = device.GetPropertyValue(UDEV_WWN)
 	diskDetails.Uid = device.GetUid()
 	diskDetails.FileSystem = UDEV_FS_NONE
+	diskDetails.Mountpoint = "/" // always take the disk mounted at /
 	devLinks := device.GetDevLinks()
 	diskDetails.ByIdDevLinks = devLinks[BY_ID_LINK]
 	diskDetails.ByPathDevLinks = devLinks[BY_PATH_LINK]
