@@ -24,9 +24,9 @@ import (
 	"strings"
 )
 
-// MountUtil contains the mountfile path, devpath/mountpoint which can be used to
+// DiskMountUtil contains the mountfile path, devpath/mountpoint which can be used to
 // detect partition of a mountpoint or mountpoint of a partition.
-type MountUtil struct {
+type DiskMountUtil struct {
 	filePath   string
 	devPath    string
 	mountPoint string
@@ -34,9 +34,9 @@ type MountUtil struct {
 
 type getMountData func(string) (DeviceMountAttr, bool)
 
-// NewMountUtil returns MountUtil struct for given mounts file path and mount point
-func NewMountUtil(filePath, devPath, mountPoint string) MountUtil {
-	MountUtil := MountUtil{
+// NewMountUtil returns DiskMountUtil struct for given mounts file path and mount point
+func NewMountUtil(filePath, devPath, mountPoint string) DiskMountUtil {
+	MountUtil := DiskMountUtil{
 		filePath:   filePath,
 		devPath:    devPath,
 		mountPoint: mountPoint,
@@ -45,7 +45,7 @@ func NewMountUtil(filePath, devPath, mountPoint string) MountUtil {
 }
 
 // GetDiskPath returns os disk devpath
-func (m MountUtil) GetDiskPath() (string, error) {
+func (m DiskMountUtil) GetDiskPath() (string, error) {
 	mountAttr, err := m.getDeviceMountAttr(m.getPartitionName)
 	if err != nil {
 		return "", err
@@ -63,7 +63,7 @@ func (m MountUtil) GetDiskPath() (string, error) {
 
 // getDeviceMountAttr read mounts file and returns device mount attributes, which includes partition name,
 // mountpoint and filesystem
-func (m MountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, error) {
+func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, error) {
 	mountAttr := DeviceMountAttr{}
 	// Read file from filepath and get which partition is mounted on given mount point
 	file, err := os.Open(m.filePath)
@@ -124,7 +124,7 @@ func getDiskDevPath(partition string) (string, error) {
 // A mountLine contains data in the order:
 // 		device  mountpoint  filesystem  mountoptions
 //		eg: /dev/sda4 / ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
-func (m *MountUtil) getPartitionName(mountLine string) (DeviceMountAttr, bool) {
+func (m *DiskMountUtil) getPartitionName(mountLine string) (DeviceMountAttr, bool) {
 	mountAttr := DeviceMountAttr{}
 	isValid := false
 	if len(mountLine) == 0 {
@@ -143,7 +143,7 @@ func (m *MountUtil) getPartitionName(mountLine string) (DeviceMountAttr, bool) {
 // A mountLine contains data in the order:
 // 		device  mountpoint  filesystem  mountoptions
 //		eg: /dev/sda4 / ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
-func (m *MountUtil) getMountName(mountLine string) (DeviceMountAttr, bool) {
+func (m *DiskMountUtil) getMountName(mountLine string) (DeviceMountAttr, bool) {
 	mountAttr := DeviceMountAttr{}
 	isValid := false
 	if len(mountLine) == 0 {

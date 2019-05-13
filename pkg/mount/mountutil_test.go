@@ -31,18 +31,18 @@ func TestNewMountUtil(t *testing.T) {
 	devPath := "/dev/sda"
 	mountPoint := "/home"
 	// TODO
-	expectedMountUtil1 := MountUtil{
+	expectedMountUtil1 := DiskMountUtil{
 		filePath: filePath,
 		devPath:  devPath,
 	}
-	expectedMountUtil2 := MountUtil{
+	expectedMountUtil2 := DiskMountUtil{
 		filePath:   filePath,
 		mountPoint: mountPoint,
 	}
 
 	tests := map[string]struct {
-		actualMU   MountUtil
-		expectedMU MountUtil
+		actualMU   DiskMountUtil
+		expectedMU DiskMountUtil
 	}{
 		"test for generated mount util with devPath":    {NewMountUtil(filePath, devPath, ""), expectedMountUtil1},
 		"test for generated mount util with mountpoint": {NewMountUtil(filePath, "", mountPoint), expectedMountUtil2},
