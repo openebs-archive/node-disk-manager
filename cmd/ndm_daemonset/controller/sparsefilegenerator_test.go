@@ -24,6 +24,7 @@ import (
 
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 // TestGetSparseFileDir verifies that a valid sparse file directory
@@ -166,6 +167,42 @@ func TestGetActiveSparseBlockDevicesUUID(t *testing.T) {
 			os.Setenv(EnvSparseFileDir, test.sparseFileDir)
 			assert.Equal(t, test.expectedSparseBlockDeviceUUID, GetActiveSparseBlockDevicesUUID("instance-1"))
 			os.Unsetenv(EnvSparseFileDir)
+		})
+	}
+}
+
+func TestInitializeSparseFile(t *testing.T) {
+
+}
+
+func TestMarkSparseBlockDeviceStateActive(t *testing.T) {
+	fakeNdmClient := CreateFakeClient(t)
+	fakeKubeClient := fake.NewSimpleClientset()
+	fakeController := &Controller{
+		HostName:      fakeHostName,
+		KubeClientset: fakeKubeClient,
+		Clientset:     fakeNdmClient,
+	}
+	sparseFile := "/tmp/0-ndm-sparse.img"
+	sparseUUID := "sparse-11063db4a4bfd3d0443d0b9d98391707"
+	if _, err := os.Create(sparseFile); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(sparseFile)
+	tests := map[string]struct {
+		sparseFileName             string
+		expectedSparseResourceUUID string
+	}{
+		"correct sparse file path is given": {sparseFile, sparseUUID},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			fakeController.MarkSparseBlockDeviceStateActive(test.sparseFileName, 10000)
+			sparseBlockDevice, err := fakeController.GetBlockDevice(test.expectedSparseResourceUUID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			assert.NotNil(t, sparseBlockDevice)
 		})
 	}
 }
