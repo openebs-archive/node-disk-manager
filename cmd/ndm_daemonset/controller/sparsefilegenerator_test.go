@@ -142,7 +142,7 @@ func TestCheckAndCreateSparseFile(t *testing.T) {
 	util.SparseFileDelete(testFile)
 }
 
-func TestGetActiveSparseDisksUuids(t *testing.T) {
+func TestGetActiveSparseBlockDevicesUUID(t *testing.T) {
 	if _, err := os.Create("/tmp/0-ndm-sparse.img"); err != nil {
 		t.Fatal(err)
 	}
@@ -155,16 +155,16 @@ func TestGetActiveSparseDisksUuids(t *testing.T) {
 	sparseUids = append(sparseUids, "sparse-2b3468d4b928c7e048ad8747ba710e4c")
 	sparseUids = append(sparseUids, "sparse-af2cd3d402e3447e315aadb7e7b46a34")
 	tests := map[string]struct {
-		expectedSparseDiskUuids []string
-		sparseFileDir           string
+		expectedSparseBlockDeviceUUID []string
+		sparseFileDir                 string
 	}{
-		"When dir is valid":                  {sparseFileDir: "/tmp", expectedSparseDiskUuids: sparseUids},
-		"When dir is invalid or not present": {sparseFileDir: "/invalid", expectedSparseDiskUuids: make([]string, 0)},
+		"When dir is valid":                  {sparseFileDir: "/tmp", expectedSparseBlockDeviceUUID: sparseUids},
+		"When dir is invalid or not present": {sparseFileDir: "/invalid", expectedSparseBlockDeviceUUID: make([]string, 0)},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			os.Setenv(EnvSparseFileDir, test.sparseFileDir)
-			assert.Equal(t, test.expectedSparseDiskUuids, GetActiveSparseDisksUuids("instance-1"))
+			assert.Equal(t, test.expectedSparseBlockDeviceUUID, GetActiveSparseBlockDevicesUUID("instance-1"))
 			os.Unsetenv(EnvSparseFileDir)
 		})
 	}
