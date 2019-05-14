@@ -161,8 +161,8 @@ func (c *Controller) InitializeSparseFiles() {
 }
 
 // CheckAndCreateSparseFile will reuse the existing sparse file if it already exists,
-//   for handling cases where NDM is upgraded or restarted. If the file doesn't exist
-//   a new file will be created.
+// for handling cases where NDM is upgraded or restarted. If the file doesn't exist
+// a new file will be created.
 func CheckAndCreateSparseFile(sparseFile string, sparseFileSize int64) error {
 	sparseFileInfo, err := util.SparseFileInfo(sparseFile)
 	if err != nil {
@@ -176,7 +176,7 @@ func CheckAndCreateSparseFile(sparseFile string, sparseFileSize int64) error {
 }
 
 // GetSparseBlockDeviceUUID returns a fixed UUID for the sparse
-//  disk on a given node.
+// disk on a given node.
 func GetSparseBlockDeviceUUID(hostname, sparseFile string) string {
 	return SparseBlockDevicePrefix + util.Hash(hostname+sparseFile)
 }

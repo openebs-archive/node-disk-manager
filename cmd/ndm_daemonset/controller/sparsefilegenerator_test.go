@@ -172,6 +172,39 @@ func TestGetActiveSparseBlockDevicesUUID(t *testing.T) {
 }
 
 func TestInitializeSparseFile(t *testing.T) {
+	fakeNdmClient := CreateFakeClient(t)
+	fakeKubeClient := fake.NewSimpleClientset()
+	fakeController := &Controller{
+		HostName:      fakeHostName,
+		KubeClientset: fakeKubeClient,
+		Clientset:     fakeNdmClient,
+	}
+
+	sparseFileDir := "/tmp"
+	sparseUUID := "sparse-11063db4a4bfd3d0443d0b9d98391707"
+	tests := map[string]struct {
+		sparseFileCount            string
+		expectedSparseResourceUUID string
+	}{
+		"create one sparse file": {"1", sparseUUID},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			os.Setenv(EnvSparseFileCount, test.sparseFileCount)
+			os.Setenv(EnvSparseFileDir, sparseFileDir)
+			os.Setenv(EnvSparseFileSize, "1000")
+			fakeController.InitializeSparseFiles()
+			sparseBlockDevice, err := fakeController.GetBlockDevice(test.expectedSparseResourceUUID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			assert.NotNil(t, sparseBlockDevice)
+			os.Unsetenv(EnvSparseFileCount)
+			os.Unsetenv(EnvSparseFileDir)
+			os.Unsetenv(EnvSparseFileSize)
+		})
+	}
 
 }
 
