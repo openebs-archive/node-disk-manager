@@ -177,7 +177,7 @@ func CheckAndCreateSparseFile(sparseFile string, sparseFileSize int64) error {
 
 // GetSparseBlockDeviceUUID returns a fixed UUID for the sparse
 //  disk on a given node.
-func GetSparseBlockDeviceUUID(hostname string, sparseFile string) string {
+func GetSparseBlockDeviceUUID(hostname, sparseFile string) string {
 	return SparseBlockDevicePrefix + util.Hash(hostname+sparseFile)
 }
 
