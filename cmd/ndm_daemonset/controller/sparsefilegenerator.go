@@ -68,9 +68,9 @@ const (
 	//SparseFileDefaultCount defines the default sparse count files
 	SparseFileDefaultCount = "1"
 
-	//SparseBlockDeviceType defines sparse disk type
+	//SparseBlockDeviceType defines sparse device type
 	SparseBlockDeviceType = "sparse"
-	//SparseBlockDevicePrefix defines the prefix for the sparse disk
+	//SparseBlockDevicePrefix defines the prefix for the sparse device
 	SparseBlockDevicePrefix = "sparse-"
 )
 
@@ -138,7 +138,7 @@ func GetSparseFileSize() int64 {
 }
 
 // InitializeSparseFiles will check if the sparse file exist or have to be
-//  created and will update or create the associated Disk CR accordingly
+// created and will update or create the associated Disk CR accordingly
 func (c *Controller) InitializeSparseFiles() {
 	sparseFileDir := GetSparseFileDir()
 	sparseFileSize := GetSparseFileSize()
@@ -188,7 +188,7 @@ func GetActiveSparseBlockDevicesUUID(hostname string) []string {
 	sparseUuids := make([]string, 0)
 	files, err := ioutil.ReadDir(sparseFileLocation)
 	if err != nil {
-		glog.Error("Failed to read sperse file names : ", err)
+		glog.Error("Failed to read sparse file names : ", err)
 		return sparseUuids
 	}
 	for _, file := range files {
@@ -222,7 +222,6 @@ func (c *Controller) MarkSparseBlockDeviceStateActive(sparseFile string, sparseF
 	BlockDeviceDetails.Capacity = uint64(sparseFileInfo.Size())
 
 	//If a BlockDevice CR already exits, update it. If not create a new one.
-	glog.Info("Updating the BlockDevice CR for Sparse Disk: ", BlockDeviceDetails.UUID)
+	glog.Info("Updating the BlockDevice CR for Sparse file: ", BlockDeviceDetails.UUID)
 	c.CreateBlockDevice(BlockDeviceDetails.ToDevice())
-
 }
