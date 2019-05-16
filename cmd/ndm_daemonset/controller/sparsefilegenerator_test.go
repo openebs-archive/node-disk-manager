@@ -24,6 +24,7 @@ import (
 
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 // TestGetSparseFileDir verifies that a valid sparse file directory
@@ -142,7 +143,7 @@ func TestCheckAndCreateSparseFile(t *testing.T) {
 	util.SparseFileDelete(testFile)
 }
 
-func TestGetActiveSparseDisksUuids(t *testing.T) {
+func TestGetActiveSparseBlockDevicesUUID(t *testing.T) {
 	if _, err := os.Create("/tmp/0-ndm-sparse.img"); err != nil {
 		t.Fatal(err)
 	}
@@ -155,17 +156,86 @@ func TestGetActiveSparseDisksUuids(t *testing.T) {
 	sparseUids = append(sparseUids, "sparse-2b3468d4b928c7e048ad8747ba710e4c")
 	sparseUids = append(sparseUids, "sparse-af2cd3d402e3447e315aadb7e7b46a34")
 	tests := map[string]struct {
-		expectedSparseDiskUuids []string
-		sparseFileDir           string
+		expectedSparseBlockDeviceUUID []string
+		sparseFileDir                 string
 	}{
-		"When dir is valid":                  {sparseFileDir: "/tmp", expectedSparseDiskUuids: sparseUids},
-		"When dir is invalid or not present": {sparseFileDir: "/invalid", expectedSparseDiskUuids: make([]string, 0)},
+		"When dir is valid":                  {sparseFileDir: "/tmp", expectedSparseBlockDeviceUUID: sparseUids},
+		"When dir is invalid or not present": {sparseFileDir: "/invalid", expectedSparseBlockDeviceUUID: make([]string, 0)},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			os.Setenv(EnvSparseFileDir, test.sparseFileDir)
-			assert.Equal(t, test.expectedSparseDiskUuids, GetActiveSparseDisksUuids("instance-1"))
+			assert.Equal(t, test.expectedSparseBlockDeviceUUID, GetActiveSparseBlockDevicesUUID("instance-1"))
 			os.Unsetenv(EnvSparseFileDir)
+		})
+	}
+}
+
+func TestInitializeSparseFile(t *testing.T) {
+	fakeNdmClient := CreateFakeClient(t)
+	fakeKubeClient := fake.NewSimpleClientset()
+	fakeController := &Controller{
+		HostName:      fakeHostName,
+		KubeClientset: fakeKubeClient,
+		Clientset:     fakeNdmClient,
+	}
+
+	sparseFileDir := "/tmp"
+	sparseUUID := "sparse-11063db4a4bfd3d0443d0b9d98391707"
+	tests := map[string]struct {
+		sparseFileCount            string
+		expectedSparseResourceUUID string
+	}{
+		"create one sparse file": {"1", sparseUUID},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			os.Setenv(EnvSparseFileCount, test.sparseFileCount)
+			os.Setenv(EnvSparseFileDir, sparseFileDir)
+			os.Setenv(EnvSparseFileSize, "1000")
+			fakeController.InitializeSparseFiles()
+			sparseBlockDevice, err := fakeController.GetBlockDevice(test.expectedSparseResourceUUID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			assert.NotNil(t, sparseBlockDevice)
+			os.Unsetenv(EnvSparseFileCount)
+			os.Unsetenv(EnvSparseFileDir)
+			os.Unsetenv(EnvSparseFileSize)
+		})
+	}
+
+}
+
+func TestMarkSparseBlockDeviceStateActive(t *testing.T) {
+	fakeNdmClient := CreateFakeClient(t)
+	fakeKubeClient := fake.NewSimpleClientset()
+	fakeController := &Controller{
+		HostName:      fakeHostName,
+		KubeClientset: fakeKubeClient,
+		Clientset:     fakeNdmClient,
+	}
+	sparseFile := "/tmp/0-ndm-sparse.img"
+	sparseUUID := "sparse-11063db4a4bfd3d0443d0b9d98391707"
+	if _, err := os.Create(sparseFile); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(sparseFile)
+	tests := map[string]struct {
+		sparseFileName             string
+		expectedSparseResourceUUID string
+	}{
+		"correct sparse file path is given": {sparseFile, sparseUUID},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			fakeController.MarkSparseBlockDeviceStateActive(test.sparseFileName, 10000)
+			sparseBlockDevice, err := fakeController.GetBlockDevice(test.expectedSparseResourceUUID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			assert.NotNil(t, sparseBlockDevice)
 		})
 	}
 }

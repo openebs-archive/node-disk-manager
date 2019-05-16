@@ -176,7 +176,7 @@ func (c *Controller) GetExistingBlockDeviceResource(blockDeviceList *apis.BlockD
 // list of active resources. Active resource which is present in etcd not in
 // system that will be marked as inactive.
 func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
-	listDevices := append(devices, GetActiveSparseDisksUuids(c.HostName)...)
+	listDevices := append(devices, GetActiveSparseBlockDevicesUUID(c.HostName)...)
 	blockDeviceList, err := c.ListBlockDeviceResource()
 	if err != nil {
 		glog.Error(err)

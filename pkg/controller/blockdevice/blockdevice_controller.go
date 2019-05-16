@@ -107,6 +107,12 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 	instance *openebsv1alpha1.BlockDevice, nameSpace string, reqLogger logr.Logger) error {
 
+	// If the BlockDevice is of type sparse, then we need not check the backing disk
+	// status, As sparse block devices does not have a backing disk.
+	if instance.Spec.Details.DeviceType == ndm.SparseBlockDeviceType {
+		return nil
+	}
+
 	// Find the name of diskCR that need to be read from etcd
 	// TODO: This need to be changed, Currently name of disk and blockdevice
 	// are using same string except prefix which would be "blockdevice"/"disk"

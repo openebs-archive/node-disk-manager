@@ -46,13 +46,11 @@ On Shutdown, the status of the sparse file Disk CR will be marked as Unknown.
 
 const (
 
-	/*
-	 * EnvSparseFileDir - defines a sparse directory
-	 * if it is specified as a environment variable,
-	 * a sparse file with specified size (EnvSparseFileSize) will
-	 * be created inside specified directory (EnvSparseFileDir)
-	 * and an associated Disk CR will be added to Kubernetes.
-	 */
+	// EnvSparseFileDir - defines a sparse directory.
+	// if it is specified as a environment variable,
+	// a sparse file with specified size (EnvSparseFileSize) will
+	// be created inside specified directory (EnvSparseFileDir)
+	// and an associated BlockDevice CR will be added to Kubernetes.
 	EnvSparseFileDir = "SPARSE_FILE_DIR"
 	//EnvSparseFileSize define the size of created sparse file
 	EnvSparseFileSize = "SPARSE_FILE_SIZE"
@@ -68,14 +66,14 @@ const (
 	//SparseFileDefaultCount defines the default sparse count files
 	SparseFileDefaultCount = "1"
 
-	//SparseDiskType defines sparse disk type
-	SparseDiskType = "sparse"
-	//SparseDiskPrefix defines the prefix for the sparse disk
-	SparseDiskPrefix = "sparse-"
+	//SparseBlockDeviceType defines sparse device type
+	SparseBlockDeviceType = "sparse"
+	//SparseBlockDevicePrefix defines the prefix for the sparse device
+	SparseBlockDevicePrefix = "sparse-"
 )
 
 // GetSparseFileDir returns the full path to the sparse
-//  file directory on the node.
+// file directory on the node.
 func GetSparseFileDir() string {
 
 	sparseFileDir := os.Getenv(EnvSparseFileDir)
@@ -138,7 +136,7 @@ func GetSparseFileSize() int64 {
 }
 
 // InitializeSparseFiles will check if the sparse file exist or have to be
-//  created and will update or create the associated Disk CR accordingly
+// created and will update or create the associated Disk CR accordingly
 func (c *Controller) InitializeSparseFiles() {
 	sparseFileDir := GetSparseFileDir()
 	sparseFileSize := GetSparseFileSize()
@@ -156,13 +154,13 @@ func (c *Controller) InitializeSparseFiles() {
 			glog.Info("Error creating sparse file: ", sparseFile, "Error: ", err)
 			continue
 		}
-		c.MarkSparseDiskStateActive(sparseFile, sparseFileSize)
+		c.MarkSparseBlockDeviceStateActive(sparseFile, sparseFileSize)
 	}
 }
 
 // CheckAndCreateSparseFile will reuse the existing sparse file if it already exists,
-//   for handling cases where NDM is upgraded or restarted. If the file doesn't exist
-//   a new file will be created.
+// for handling cases where NDM is upgraded or restarted. If the file doesn't exist
+// a new file will be created.
 func CheckAndCreateSparseFile(sparseFile string, sparseFileSize int64) error {
 	sparseFileInfo, err := util.SparseFileInfo(sparseFile)
 	if err != nil {
@@ -175,54 +173,53 @@ func CheckAndCreateSparseFile(sparseFile string, sparseFileSize int64) error {
 	return err
 }
 
-// GetSparseDiskUUID returns a fixed UUID for the sparse
-//  disk on a given node.
-func GetSparseDiskUUID(hostname string, sparseFile string) string {
-	return SparseDiskPrefix + util.Hash(hostname+sparseFile)
+// GetSparseBlockDeviceUUID returns a fixed UUID for the sparse
+// disk on a given node.
+func GetSparseBlockDeviceUUID(hostname, sparseFile string) string {
+	return SparseBlockDevicePrefix + util.Hash(hostname+sparseFile)
 }
 
-// GetActiveSparseDisksUuids returns UUIDs for the sparse
+// GetActiveSparseBlockDevicesUUID returns UUIDs for the sparse
 // disks present in a given node.
-func GetActiveSparseDisksUuids(hostname string) []string {
+func GetActiveSparseBlockDevicesUUID(hostname string) []string {
 	sparseFileLocation := GetSparseFileDir()
 	sparseUuids := make([]string, 0)
 	files, err := ioutil.ReadDir(sparseFileLocation)
 	if err != nil {
-		glog.Error("Failed to read sperse file names : ", err)
+		glog.Error("Failed to read sparse file names : ", err)
 		return sparseUuids
 	}
 	for _, file := range files {
 		if strings.HasSuffix(file.Name(), SparseFileName) {
 			fileName := path.Join(sparseFileLocation, file.Name())
-			sparseUuids = append(sparseUuids, GetSparseDiskUUID(hostname, fileName))
+			sparseUuids = append(sparseUuids, GetSparseBlockDeviceUUID(hostname, fileName))
 		}
 	}
 	return sparseUuids
 }
 
-// MarkSparseDiskStateActive will either create a Disk CR if it doesn't exist, or it will
-//   update the state of the existing CR as Active.  Note that, when the NDM is going being
-//   gracefully shutdown, all its Disk CRs are marked with State as Unknown.
-func (c *Controller) MarkSparseDiskStateActive(sparseFile string, sparseFileSize int64) {
+// MarkSparseBlockDeviceStateActive will either create a BlockDevice CR if it doesn't exist, or it will
+// update the state of the existing CR as Active.  Note that, when the NDM is going being
+// gracefully shutdown, all its BlockDevice CRs are marked with State as Unknown.
+func (c *Controller) MarkSparseBlockDeviceStateActive(sparseFile string, sparseFileSize int64) {
 	// Fill in the details of the sparse disk
-	diskDetails := NewDiskInfo()
-	diskDetails.Uuid = GetSparseDiskUUID(c.HostName, sparseFile)
-	diskDetails.HostName = c.HostName
+	BlockDeviceDetails := NewDeviceInfo()
+	BlockDeviceDetails.UUID = GetSparseBlockDeviceUUID(c.HostName, sparseFile)
+	BlockDeviceDetails.HostName = c.HostName
 
-	diskDetails.DiskType = SparseDiskType
-	diskDetails.Path = sparseFile
+	BlockDeviceDetails.DeviceType = SparseBlockDeviceType
+	BlockDeviceDetails.Path = sparseFile
 
 	sparseFileInfo, err := util.SparseFileInfo(sparseFile)
 	if err != nil {
 		glog.Info("Error fetching the size of sparse file: ", err)
-		glog.Error("Failed to create a disk CR for sparse file: ", sparseFile)
+		glog.Error("Failed to create a block device CR for sparse file: ", sparseFile)
 		return
 	}
 
-	diskDetails.Capacity = uint64(sparseFileInfo.Size())
+	BlockDeviceDetails.Capacity = uint64(sparseFileInfo.Size())
 
-	//If a Disk CR already exits, update it. If not create a new one.
-	glog.Info("Updating the Disk CR for Sparse Disk: ", diskDetails.Uuid)
-	c.CreateDisk(diskDetails.ToDisk())
-
+	//If a BlockDevice CR already exits, update it. If not create a new one.
+	glog.Info("Updating the BlockDevice CR for Sparse file: ", BlockDeviceDetails.UUID)
+	c.CreateBlockDevice(BlockDeviceDetails.ToDevice())
 }
