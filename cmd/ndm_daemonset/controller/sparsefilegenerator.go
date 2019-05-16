@@ -46,13 +46,11 @@ On Shutdown, the status of the sparse file Disk CR will be marked as Unknown.
 
 const (
 
-	/*
-	 * EnvSparseFileDir - defines a sparse directory
-	 * if it is specified as a environment variable,
-	 * a sparse file with specified size (EnvSparseFileSize) will
-	 * be created inside specified directory (EnvSparseFileDir)
-	 * and an associated Disk CR will be added to Kubernetes.
-	 */
+	// EnvSparseFileDir - defines a sparse directory.
+	// if it is specified as a environment variable,
+	// a sparse file with specified size (EnvSparseFileSize) will
+	// be created inside specified directory (EnvSparseFileDir)
+	// and an associated BlockDevice CR will be added to Kubernetes.
 	EnvSparseFileDir = "SPARSE_FILE_DIR"
 	//EnvSparseFileSize define the size of created sparse file
 	EnvSparseFileSize = "SPARSE_FILE_SIZE"
@@ -75,7 +73,7 @@ const (
 )
 
 // GetSparseFileDir returns the full path to the sparse
-//  file directory on the node.
+// file directory on the node.
 func GetSparseFileDir() string {
 
 	sparseFileDir := os.Getenv(EnvSparseFileDir)
