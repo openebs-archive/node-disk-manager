@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	"github.com/openebs/node-disk-manager/pkg/selector/verify"
+	"github.com/openebs/node-disk-manager/pkg/resourceselector/verify"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -45,6 +45,10 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 		// check for active and unclaimed devices
 		if bd.Status.State != controller.NDMActive ||
 			bd.Status.ClaimState != apis.BlockDeviceUnclaimed {
+			continue
+		}
+		// sparse devices can be claimed only by manual selection
+		if !c.ManualSelection && bd.Spec.Details.DeviceType == controller.SparseDiskType {
 			continue
 		}
 		if verifyDeviceType && bd.Spec.Details.DeviceType != c.ClaimSpec.DeviceType {
