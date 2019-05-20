@@ -3,7 +3,7 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
-	"github.com/golang/glog"
+	controller2 "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/selector/blockdeviceselect"
 	"github.com/openebs/node-disk-manager/pkg/selector/verify"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -150,10 +150,10 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 	} else {
 		instance.Spec.BlockDeviceName = selectedDevice.Name
 		instance.Status.Phase = apis.BlockDeviceClaimStatusDone
-	}
-	err = r.claimBlockDevice(selectedDevice, instance, reqLogger)
-	if err != nil {
-		return err
+		err = r.claimBlockDevice(selectedDevice, instance, reqLogger)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = r.updateClaimStatus(instance.Status.Phase, instance)
@@ -294,10 +294,8 @@ func (r *ReconcileBlockDeviceClaim) GetBlockDevice(name string) (*apis.BlockDevi
 		client.ObjectKey{Namespace: "", Name: name}, bd)
 
 	if err != nil {
-		glog.Error("Unable to get blockdevice object : ", err)
 		return nil, err
 	}
-	glog.Info("Got blockdevice object : ", name)
 	return bd, nil
 }
 
@@ -317,7 +315,7 @@ func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(hostName string) (*ap
 
 	//Set filter option, in our case we are filtering based on hostname/node
 	opts := &client.ListOptions{}
-	filter := hostName + "=" + hostName
+	filter := controller2.NDMHostKey + "=" + hostName
 
 	opts.SetLabelSelector(filter)
 

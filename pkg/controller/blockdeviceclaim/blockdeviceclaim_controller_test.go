@@ -354,7 +354,7 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 		},
 	}
 
-	deviceRequestCR := GetFakeBlockDeviceClaimObject()
+	deviceClaimR := GetFakeBlockDeviceClaimObject()
 	deviceclaimList := &openebsv1alpha1.BlockDeviceClaimList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDeviceClaim",
@@ -362,17 +362,17 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 		},
 	}
 
-	diskObjs := []runtime.Object{diskR}
+	objects := []runtime.Object{diskR, deviceR, deviceClaimR}
 	s := scheme.Scheme
 
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, diskR)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, diskList)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceR)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceList)
-	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceRequestCR)
+	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceClaimR)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceclaimList)
 
-	fakeNdmClient := fake.NewFakeClient(diskObjs...)
+	fakeNdmClient := fake.NewFakeClient(objects...)
 	if fakeNdmClient == nil {
 		fmt.Println("NDMClient is not created")
 	}
@@ -384,7 +384,7 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 	}
 
 	// Create a new deviceclaim obj
-	err = fakeNdmClient.Create(context.TODO(), deviceRequestCR)
+	err = fakeNdmClient.Create(context.TODO(), deviceClaimR)
 	if err != nil {
 		fmt.Println("BlockDeviceClaim object is not created")
 	}
