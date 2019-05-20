@@ -101,7 +101,7 @@ func TestRemoveString(t *testing.T) {
 	}
 }
 
-func TestMatchRegex(t *testing.T) {
+func TestIsMatchRegex(t *testing.T) {
 	tests := map[string]struct {
 		regex    string
 		str      string
