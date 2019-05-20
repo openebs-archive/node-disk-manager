@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// BlockDeviceSelector selects a single block device from a list of block devices
 func (c *Config) BlockDeviceSelector(bdList *apis.BlockDeviceList) (*apis.BlockDevice, error) {
 	candidateDevices, err := c.getCandidateDevices(bdList)
 	if err != nil {
@@ -21,6 +22,8 @@ func (c *Config) BlockDeviceSelector(bdList *apis.BlockDeviceList) (*apis.BlockD
 	return selectedDevice, nil
 }
 
+// getCandidateDevices selects a list of blockdevices from a given block device
+// list based on criteria specified in the claim spec
 func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockDeviceList, error) {
 	verifyDeviceType := false
 	if c.ClaimSpec.DeviceType != "" {
@@ -57,6 +60,8 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 	return candidateBD, nil
 }
 
+// getSelectedDevice selects a single a block device based on the resource requirements
+// requested by the claim
 func (c *Config) getSelectedDevice(bdList *apis.BlockDeviceList) (*apis.BlockDevice, error) {
 	if c.ManualSelection {
 		return &bdList.Items[0], nil
