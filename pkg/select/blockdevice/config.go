@@ -1,4 +1,4 @@
-package blockdeviceselect
+package blockdevice
 
 import (
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"

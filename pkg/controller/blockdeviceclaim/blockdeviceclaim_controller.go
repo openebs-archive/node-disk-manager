@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	"github.com/openebs/node-disk-manager/pkg/resourceselector/blockdeviceselect"
-	"github.com/openebs/node-disk-manager/pkg/resourceselector/verify"
+	"github.com/openebs/node-disk-manager/pkg/select/blockdevice"
+	"github.com/openebs/node-disk-manager/pkg/select/verify"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/reference"
@@ -143,8 +143,8 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 		return err
 	}
 
-	config := blockdeviceselect.NewConfig(&instance.Spec, r.client)
-	selectedDevice, err := config.BlockDeviceSelector(bdList)
+	config := blockdevice.NewConfig(&instance.Spec, r.client)
+	selectedDevice, err := config.FilterFrom(bdList)
 	if err != nil {
 		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 	} else {

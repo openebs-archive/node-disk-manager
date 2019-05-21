@@ -1,16 +1,16 @@
-package blockdeviceselect
+package blockdevice
 
 import (
 	"fmt"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	"github.com/openebs/node-disk-manager/pkg/resourceselector/verify"
+	"github.com/openebs/node-disk-manager/pkg/select/verify"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// BlockDeviceSelector selects a single block device from a list of block devices
-func (c *Config) BlockDeviceSelector(bdList *apis.BlockDeviceList) (*apis.BlockDevice, error) {
+// FilterFrom selects a single block device from a list of block devices
+func (c *Config) FilterFrom(bdList *apis.BlockDeviceList) (*apis.BlockDevice, error) {
 	candidateDevices, err := c.getCandidateDevices(bdList)
 	if err != nil {
 		return nil, err
