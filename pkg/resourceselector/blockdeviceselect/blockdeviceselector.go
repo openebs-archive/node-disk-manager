@@ -50,7 +50,7 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 				continue
 			}
 			// sparse disk can be selected only by manual selection
-			if bd.Spec.Details.DeviceType == controller.SparseDiskType {
+			if bd.Spec.Details.DeviceType == controller.SparseBlockDeviceType {
 				continue
 			}
 			if verifyDeviceType && bd.Spec.Details.DeviceType != c.ClaimSpec.DeviceType {
