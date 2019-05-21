@@ -35,26 +35,29 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
-
+	// iterate through each BlockDevice and gets all the eligible devices.
+	// in case of manual selection, all other checks are skipped, only the name is
+	// matched
 	for _, bd := range bdList.Items {
-		// if manual selection is enabled, we select the device and breaks the iteration
-		if c.ManualSelection && bd.Name == c.ClaimSpec.BlockDeviceName {
+		if c.ManualSelection {
+			if bd.Name == c.ClaimSpec.BlockDeviceName {
+				candidateBD.Items = append(candidateBD.Items, bd)
+				break
+			}
+		} else {
+			if bd.Status.State != controller.NDMActive ||
+				bd.Status.ClaimState != apis.BlockDeviceUnclaimed {
+				continue
+			}
+			// sparse disk can be selected only by manual selection
+			if bd.Spec.Details.DeviceType == controller.SparseDiskType {
+				continue
+			}
+			if verifyDeviceType && bd.Spec.Details.DeviceType != c.ClaimSpec.DeviceType {
+				continue
+			}
 			candidateBD.Items = append(candidateBD.Items, bd)
-			break
 		}
-		// check for active and unclaimed devices
-		if bd.Status.State != controller.NDMActive ||
-			bd.Status.ClaimState != apis.BlockDeviceUnclaimed {
-			continue
-		}
-		// sparse devices can be claimed only by manual selection
-		if !c.ManualSelection && bd.Spec.Details.DeviceType == controller.SparseDiskType {
-			continue
-		}
-		if verifyDeviceType && bd.Spec.Details.DeviceType != c.ClaimSpec.DeviceType {
-			continue
-		}
-		candidateBD.Items = append(candidateBD.Items, bd)
 	}
 
 	if len(candidateBD.Items) == 0 {
