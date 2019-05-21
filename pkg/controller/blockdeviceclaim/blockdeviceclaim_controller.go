@@ -3,7 +3,7 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
-	controller2 "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/resourceselector/blockdeviceselect"
 	"github.com/openebs/node-disk-manager/pkg/resourceselector/verify"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -315,7 +315,7 @@ func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(hostName string) (*ap
 
 	//Set filter option, in our case we are filtering based on hostname/node
 	opts := &client.ListOptions{}
-	filter := controller2.NDMHostKey + "=" + hostName
+	filter := ndm.NDMHostKey + "=" + hostName
 
 	opts.SetLabelSelector(filter)
 
