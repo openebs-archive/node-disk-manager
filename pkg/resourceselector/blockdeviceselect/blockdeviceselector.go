@@ -39,16 +39,18 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 	// in case of manual selection, all other checks are skipped, only the name is
 	// matched
 	for _, bd := range bdList.Items {
+		// select only active and unclaimed block devices
+		if bd.Status.State != controller.NDMActive ||
+			bd.Status.ClaimState != apis.BlockDeviceUnclaimed {
+			continue
+		}
+		// for manual selection, only name needs to be checked.
 		if c.ManualSelection {
 			if bd.Name == c.ClaimSpec.BlockDeviceName {
 				candidateBD.Items = append(candidateBD.Items, bd)
 				break
 			}
 		} else {
-			if bd.Status.State != controller.NDMActive ||
-				bd.Status.ClaimState != apis.BlockDeviceUnclaimed {
-				continue
-			}
 			// sparse disk can be selected only by manual selection
 			if bd.Spec.Details.DeviceType == controller.SparseBlockDeviceType {
 				continue
