@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"regexp"
 	"strings"
 )
 
@@ -62,4 +63,11 @@ func RemoveString(slice []string, s string) (result []string) {
 		}
 	}
 	return result
+}
+
+// IsMatchRegex is a utility function which returns true if the string -s
+// matches with the regex specified.
+func IsMatchRegex(regex, s string) bool {
+	r := regexp.MustCompile(regex)
+	return r.MatchString(s)
 }
