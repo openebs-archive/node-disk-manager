@@ -36,8 +36,8 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 		},
 	}
 	// iterate through each BlockDevice and gets all the eligible devices.
-	// in case of manual selection, all other checks are skipped, only the name is
-	// matched
+	// in case of manual selection, all other checks are skipped, except network
+	// only the name is matched
 	for _, bd := range bdList.Items {
 		// select only active and unclaimed block devices
 		if bd.Status.State != controller.NDMActive ||
