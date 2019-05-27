@@ -15,14 +15,14 @@ type NDMYaml string
 
 // Path to various YAMLs used for integration testing
 const (
-	ConfigMapYAML          NDMYaml = "../yamls/configmap.yaml"
-	ServiceAccountYAML     NDMYaml = "../yamls/serviceaccount.yaml"
-	ClusterRoleYAML        NDMYaml = "../yamls/clusterrole.yaml"
-	ClusterRoleBindingYAML NDMYaml = "../yamls/clusterrolebinding.yaml"
-	DiskCRDYAML            NDMYaml = "../yamls/diskCR.yaml"
-	DeviceCRDYAML          NDMYaml = "../yamls/deviceCR.yaml"
-	DeviceRequestCRDYAML   NDMYaml = "../yamls/deviceRequestCR.yaml"
-	DaemonSetYAML          NDMYaml = "../yamls/daemonset.yaml"
+	ConfigMapYAML           NDMYaml = "../yamls/configmap.yaml"
+	ServiceAccountYAML      NDMYaml = "../yamls/serviceaccount.yaml"
+	ClusterRoleYAML         NDMYaml = "../yamls/clusterrole.yaml"
+	ClusterRoleBindingYAML  NDMYaml = "../yamls/clusterrolebinding.yaml"
+	DiskCRDYAML             NDMYaml = "../yamls/diskCR.yaml"
+	BlockDeviceCRDYAML      NDMYaml = "../yamls/blockDeviceCR.yaml"
+	BlockDeviceClaimCRDYAML NDMYaml = "../yamls/blockDeviceClaimCR.yaml"
+	DaemonSetYAML           NDMYaml = "../yamls/daemonset.yaml"
 )
 
 // GetConfigMap generates the ConfigMap object for NDM from the yaml file

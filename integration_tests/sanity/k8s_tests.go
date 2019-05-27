@@ -8,12 +8,15 @@ import (
 )
 
 const (
-	// SparseDiskName is the name given disk CRs created for a
+	// SparseBlockDeviceName is the name given to blockDevice CRs created for a
 	// sparse image
-	SparseDiskName = "sparse-"
+	SparseBlockDeviceName = "sparse-"
 	// DiskName is the name of the disk CRs created corresponding to
-	// physical/virtual disks
+	// physical disks
 	DiskName = "disk-"
+	// BlockDeviceName is the name of the blockDevice CRs created corresponding to
+	// physical/virtual disks or blockdevices
+	BlockDeviceName = "blockdevice-"
 	// ActiveState stores the active state of Disk/Device resource
 	ActiveState = "Active"
 	// InactiveState stores the deactivated state of Disk/Device resource

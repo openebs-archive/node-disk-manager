@@ -40,19 +40,19 @@ func GetClientSet() (k8sClient, error) {
 	if err != nil {
 		return clientSet, err
 	}
-	// clientSet-go clientSet
+	// client-go clientSet
 	clientSet.ClientSet, err = kubernetes.NewForConfig(config)
 	if err != nil {
 		return clientSet, err
 	}
 
-	// clientSet for creating CRDs
+	// client for creating CRDs
 	clientSet.APIextClient, err = apiextensionsclient.NewForConfig(config)
 	if err != nil {
 		return clientSet, err
 	}
 
-	// controller-runtime clientSet
+	// controller-runtime client
 	mgr, err := manager.New(config, manager.Options{Namespace: namespace})
 	if err != nil {
 		return clientSet, err

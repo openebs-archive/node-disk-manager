@@ -63,6 +63,23 @@ func (c k8sClient) ListDisk() (*v1alpha1.DiskList, error) {
 	return diskList, nil
 }
 
+// ListBlockDevices returns list of BlockDeviceCR in the cluster
+func (c k8sClient) ListBlockDevices() (*v1alpha1.BlockDeviceList, error) {
+	bdList := &v1alpha1.BlockDeviceList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "BlockDevice",
+			APIVersion: "openebs.io/v1alpha1",
+		},
+	}
+
+	var err error
+	err = c.RunTimeClient.List(context.TODO(), &client.ListOptions{}, bdList)
+	if err != nil {
+		return nil, fmt.Errorf("cannot list disks. Error :%v", err)
+	}
+	return bdList, nil
+}
+
 // CreateConfigMap creates a config map
 func (c k8sClient) CreateConfigMap(configMap v1.ConfigMap) error {
 	err := c.RunTimeClient.Create(context.Background(), &configMap)

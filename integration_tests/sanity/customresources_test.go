@@ -33,21 +33,19 @@ var _ = Describe("Device Discovery Tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 		})
-		It("should have one sparse disk per node", func() {
-			diskList, err := k8sClient.ListDisk()
+		It("should have one sparse block device per node", func() {
+			bdList, err := k8sClient.ListBlockDevices()
 			Expect(err).NotTo(HaveOccurred())
-			noOfDisks := len(diskList.Items)
-			Expect(noOfDisks).NotTo(BeZero())
 
-			noOfSparseDisks := 0
-			// Get the no.of sparse disks from disk List
-			for _, disk := range diskList.Items {
-				if strings.Contains(disk.Name, SparseDiskName) {
-					Expect(disk.Status.State).To(Equal(ActiveState))
-					noOfSparseDisks++
+			noOfSparseBlockDevices := 0
+			// Get the no.of sparse block devices from block device list
+			for _, blockDevice := range bdList.Items {
+				if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
+					Expect(blockDevice.Status.State).To(Equal(ActiveState))
+					noOfSparseBlockDevices++
 				}
 			}
-			Expect(noOfSparseDisks).To(Equal(noOfNodes))
+			Expect(noOfSparseBlockDevices).To(Equal(noOfNodes))
 		})
 	})
 
@@ -67,44 +65,64 @@ var _ = Describe("Device Discovery Tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 		})
-		It("should have 2 DiskCRs per node", func() {
+		It("should have 1 DiskCR and 2 BlockDeviceCR per node", func() {
+			// should have 2 block device CR, one for sparse disk and one for the
+			// external disk
+			bdList, err := k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
+
+			// should have single DiskCR which corresponds to the external disk attached
 			diskList, err := k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
-			noOfDisks := len(diskList.Items)
-			Expect(noOfDisks).NotTo(BeZero())
 
-			noOfSparseDiskCR := 0
 			noOfPhysicalDiskCR := 0
-			// Get no.of sparse disk and disk CR from disk List
+			noOfSparseBlockDeviceCR := 0
+			noOfPhysicalBlockDeviceCR := 0
+
+			// Get no.of sparse blockdevices and physical blockdevices from bdList
+			for _, blockDevice := range bdList.Items {
+				if strings.Contains(blockDevice.Name, BlockDeviceName) && blockDevice.Spec.Path == physicalDisk.Name {
+					noOfPhysicalBlockDeviceCR++
+				} else if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
+					noOfSparseBlockDeviceCR++
+				}
+				Expect(blockDevice.Status.State).To(Equal(ActiveState))
+			}
+
+			// Get no of physical disk CRs from diskList
 			for _, disk := range diskList.Items {
 				if strings.Contains(disk.Name, DiskName) && disk.Spec.Path == physicalDisk.Name {
 					noOfPhysicalDiskCR++
-				} else if strings.Contains(disk.Name, SparseDiskName) {
-					noOfSparseDiskCR++
 				}
 				Expect(disk.Status.State).To(Equal(ActiveState))
 			}
-			Expect(noOfSparseDiskCR).To(Equal(noOfNodes))
-			Expect(noOfPhysicalDiskCR).To(Equal(noOfNodes))
+
+			Expect(noOfPhysicalDiskCR).To(Equal(1))
+			Expect(noOfSparseBlockDeviceCR).To(Equal(noOfNodes))
+			Expect(noOfPhysicalBlockDeviceCR).To(Equal(1))
 		})
-		It("should have physical disk cr inactive when disk is detached", func() {
+		It("should have diskCR && blockdeviceCR inactive when disk is detached", func() {
 			err = physicalDisk.DetachDisk()
 			k8s.WaitForStateChange()
 
 			diskList, err := k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
-			noOfDisks := len(diskList.Items)
-			Expect(noOfDisks).NotTo(BeZero())
 
-			noOfPhysicalDiskCR := 0
-			// Get no. of disk CRs from disk List
+			bdList, err := k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
+
+			// the disk CR should be inactive
 			for _, disk := range diskList.Items {
 				if strings.Contains(disk.Name, DiskName) && disk.Spec.Path == physicalDisk.Name {
-					noOfPhysicalDiskCR++
 					Expect(disk.Status.State).To(Equal(InactiveState))
 				}
 			}
-			Expect(noOfPhysicalDiskCR).To(Equal(noOfNodes))
+
+			for _, bd := range bdList.Items {
+				if strings.Contains(bd.Name, BlockDeviceName) && bd.Spec.Path == physicalDisk.Name {
+					Expect(bd.Status.State).To(Equal(InactiveState))
+				}
+			}
 		})
 	})
 	Context("Setup with a single external disk attached at runtime", func() {
@@ -122,11 +140,14 @@ var _ = Describe("Device Discovery Tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForStateChange()
 		})
-		It("should have one additional disk CR after we attach a disk", func() {
+		It("should have one additional Disk and BlockDevice CR after we attach a disk", func() {
 			diskList, err := k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
 			noOfDiskCR := len(diskList.Items)
-			Expect(noOfDiskCR).NotTo(BeZero())
+
+			bdList, err := k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
+			noOfBlockDeviceCR := len(bdList.Items)
 
 			err = physicalDisk.AttachDisk()
 			Expect(err).NotTo(HaveOccurred())
@@ -134,7 +155,11 @@ var _ = Describe("Device Discovery Tests", func() {
 
 			diskList, err = k8sClient.ListDisk()
 			Expect(err).NotTo(HaveOccurred())
+			bdList, err = k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
+
 			Expect(len(diskList.Items)).To(Equal(noOfDiskCR + 1))
+			Expect(len(bdList.Items)).To(Equal(noOfBlockDeviceCR + 1))
 		})
 	})
 })

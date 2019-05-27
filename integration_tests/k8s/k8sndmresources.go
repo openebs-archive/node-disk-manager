@@ -150,7 +150,7 @@ func (c k8sClient) CreateNDMDiskCRD() error {
 
 // CreateNDMDeviceCRD creates the CustomResourceDefinition for a Device type
 func (c k8sClient) CreateNDMDeviceCRD() error {
-	devicecrd, err := GetCustomResourceDefinition(DeviceCRDYAML)
+	devicecrd, err := GetCustomResourceDefinition(BlockDeviceCRDYAML)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func (c k8sClient) CreateNDMDeviceCRD() error {
 
 // CreateNDMDeviceRequestCRD creates the CustomResourceDefinition for a DeviceRequest type
 func (c k8sClient) CreateNDMDeviceRequestCRD() error {
-	deviceRequestcrd, err := GetCustomResourceDefinition(DeviceRequestCRDYAML)
+	deviceRequestcrd, err := GetCustomResourceDefinition(BlockDeviceClaimCRDYAML)
 	if err != nil {
 		return err
 	}
@@ -222,7 +222,7 @@ func (c k8sClient) DeleteNDMDiskCRD() error {
 
 // DeleteNDMDeviceCRD deletes the CustomResourceDefinition for a Device type
 func (c k8sClient) DeleteNDMDeviceCRD() error {
-	devicecrd, err := GetCustomResourceDefinition(DeviceCRDYAML)
+	devicecrd, err := GetCustomResourceDefinition(BlockDeviceCRDYAML)
 	if err != nil {
 		return err
 	}
@@ -231,7 +231,7 @@ func (c k8sClient) DeleteNDMDeviceCRD() error {
 
 // DeleteNDMDeviceRequestCRD deletes the CustomResourceDefinition for a DeviceRequest type
 func (c k8sClient) DeleteNDMDeviceRequestCRD() error {
-	devicerequestcrd, err := GetCustomResourceDefinition(DeviceRequestCRDYAML)
+	devicerequestcrd, err := GetCustomResourceDefinition(BlockDeviceClaimCRDYAML)
 	if err != nil {
 		return err
 	}
