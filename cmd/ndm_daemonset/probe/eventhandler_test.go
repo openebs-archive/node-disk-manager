@@ -61,6 +61,23 @@ func mockEmptyDiskCr() apis.Disk {
 	return fakeDr
 }
 
+func mockEmptyBlockDeviceCr() apis.BlockDevice {
+	fakeBDr := apis.BlockDevice{}
+	fakeObjectMeta := metav1.ObjectMeta{
+		Labels: make(map[string]string),
+		Name:   mockuid,
+	}
+	fakeTypeMeta := metav1.TypeMeta{
+		Kind:       controller.NDMBlockDeviceKind,
+		APIVersion: controller.NDMVersion,
+	}
+	fakeBDr.ObjectMeta = fakeObjectMeta
+	fakeBDr.TypeMeta = fakeTypeMeta
+	fakeBDr.Status.State = controller.NDMActive
+	fakeBDr.Spec.DevLinks = make([]apis.DeviceDevLink, 0)
+	return fakeBDr
+}
+
 func CreateFakeClient(t *testing.T) client.Client {
 	diskR := &apis.Disk{
 		ObjectMeta: metav1.ObjectMeta{
@@ -214,6 +231,13 @@ func TestDeleteDiskEvent(t *testing.T) {
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 	fakeController.CreateDisk(fakeDr)
 
+	// Create one fake block device resource
+	fakeBDr := mockEmptyBlockDeviceCr()
+	fakeBDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeBDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = fakeDiskType
+	fakeBDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
+	fakeController.CreateBlockDevice(fakeBDr)
+
 	probeEvent := &ProbeEvent{
 		Controller: fakeController,
 	}
@@ -227,21 +251,26 @@ func TestDeleteDiskEvent(t *testing.T) {
 	}
 	probeEvent.deleteDiskEvent(eventDetails)
 
-	// Retrieve disk resource
+	// Retrieve resources
 	cdr1, err1 := fakeController.GetDisk(mockuid)
+	bdR1, err1 := fakeController.GetBlockDevice(mockuid)
 
 	fakeDr.Status.State = controller.NDMInactive
+	fakeBDr.Status.State = controller.NDMInactive
 	tests := map[string]struct {
 		actualDisk    apis.Disk
 		expectedDisk  apis.Disk
+		actualBD      apis.BlockDevice
+		expectedBD    apis.BlockDevice
 		actualError   error
 		expectedError error
 	}{
-		"remove resource with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"remove resource with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualBD: *bdR1, expectedBD: fakeBDr, actualError: err1, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			assert.Equal(t, test.expectedDisk, test.actualDisk)
+			assert.Equal(t, test.expectedBD, test.actualBD)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
