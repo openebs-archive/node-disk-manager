@@ -102,11 +102,16 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 	}
 }
 
-// deleteDiskEvent deactivate disk resource using uuid from etcd
+// deleteDiskEvent deactivate disk/blockdevice resource using uuid from etcd
 func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
-	diskList, err := pe.Controller.ListDiskResource()
-	if err != nil {
-		glog.Error(err)
+	diskList, err1 := pe.Controller.ListDiskResource()
+	bdList, err2 := pe.Controller.ListBlockDeviceResource()
+	if err1 != nil || err2 != nil {
+		if err1 == nil {
+			glog.Error(err1)
+		} else {
+			glog.Error(err2)
+		}
 		go pe.initOrErrorEvent()
 		return
 	}
@@ -115,13 +120,16 @@ func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
 	// entry related that disk not present in etcd in that case it
 	// again rescan full system and update etcd accordingly.
 	for _, diskDetails := range msg.Devices {
-		oldDr := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
-		if oldDr == nil {
+		oldDiskResource := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
+		oldBDResource := pe.Controller.GetExistingBlockDeviceResource(bdList, diskDetails.ProbeIdentifiers.Uuid)
+		if oldDiskResource == nil || oldBDResource == nil {
 			mismatch = true
 			continue
 		}
-		pe.Controller.DeactivateDisk(*oldDr)
+		pe.Controller.DeactivateDisk(*oldDiskResource)
+		pe.Controller.DeactivateBlockDevice(*oldBDResource)
 	}
+
 	if mismatch {
 		go pe.initOrErrorEvent()
 	}
