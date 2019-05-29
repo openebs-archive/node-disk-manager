@@ -3,6 +3,7 @@ package k8s
 import (
 	"github.com/ghodss/yaml"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
@@ -23,6 +24,7 @@ const (
 	BlockDeviceCRDYAML      NDMYaml = "../yamls/blockDeviceCR.yaml"
 	BlockDeviceClaimCRDYAML NDMYaml = "../yamls/blockDeviceClaimCR.yaml"
 	DaemonSetYAML           NDMYaml = "../yamls/daemonset.yaml"
+	DeploymentYAML          NDMYaml = "../yamls/deployment.yaml"
 )
 
 // GetConfigMap generates the ConfigMap object for NDM from the yaml file
@@ -108,4 +110,18 @@ func GetDaemonSet() (v1beta1.DaemonSet, error) {
 		return daemonSet, err
 	}
 	return daemonSet, err
+}
+
+// GetDeployment generates the NDO Deployment object from the yaml file
+func GetDeployment() (appsv1.Deployment, error) {
+	var deployment appsv1.Deployment
+	yamlstring, err := utils.GetYAMLString(string(DeploymentYAML))
+	if err != nil {
+		return deployment, err
+	}
+	err = yaml.Unmarshal([]byte(yamlstring), &deployment)
+	if err != nil {
+		return deployment, err
+	}
+	return deployment, err
 }

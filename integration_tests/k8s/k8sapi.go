@@ -3,11 +3,14 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
@@ -15,6 +18,9 @@ import (
 
 // The wait time for all k8s API related operations
 const k8sWaitTime = 30 * time.Second
+
+// The wait time for reconcilation loop to run
+const k8sReconcileTime = 10 * time.Second
 
 // ListPodStatus returns the list of all pods in the given namespace along
 // with their status
@@ -47,8 +53,8 @@ func (c k8sClient) ListNodeStatus() (map[string]string, error) {
 }
 
 // ListDisk returns list of DiskCR in the cluster
-func (c k8sClient) ListDisk() (*v1alpha1.DiskList, error) {
-	diskList := &v1alpha1.DiskList{
+func (c k8sClient) ListDisk() (*apis.DiskList, error) {
+	diskList := &apis.DiskList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Disk",
 			APIVersion: "openebs.io/v1alpha1",
@@ -64,8 +70,8 @@ func (c k8sClient) ListDisk() (*v1alpha1.DiskList, error) {
 }
 
 // ListBlockDevices returns list of BlockDeviceCR in the cluster
-func (c k8sClient) ListBlockDevices() (*v1alpha1.BlockDeviceList, error) {
-	bdList := &v1alpha1.BlockDeviceList{
+func (c k8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
+	bdList := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -78,6 +84,42 @@ func (c k8sClient) ListBlockDevices() (*v1alpha1.BlockDeviceList, error) {
 		return nil, fmt.Errorf("cannot list disks. Error :%v", err)
 	}
 	return bdList, nil
+}
+
+// ListBlockDeviceClaims returns list of BlockDeviceClaims in the cluster
+func (c k8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
+	bdcList := &apis.BlockDeviceClaimList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "BlockDeviceClaim",
+			APIVersion: "openebs.io/v1alpha1",
+		},
+	}
+	err := c.RunTimeClient.List(context.TODO(), &client.ListOptions{}, bdcList)
+	if err != nil {
+		return nil, fmt.Errorf("cannot list block device claims. Error :%v", err)
+	}
+	return bdcList, nil
+}
+
+func NewBDC(bdcName string) *apis.BlockDeviceClaim {
+	bdcRequirements := apis.DeviceClaimRequirements{
+		Requests: make(map[corev1.ResourceName]resource.Quantity),
+	}
+	bdcSpec := apis.DeviceClaimSpec{
+		Requirements: bdcRequirements,
+	}
+	bdc := &apis.BlockDeviceClaim{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "BlockDeviceClaim",
+			APIVersion: "openebs.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: make(map[string]string),
+			Name:   bdcName,
+		},
+		Spec: bdcSpec,
+	}
+	return bdc
 }
 
 // CreateConfigMap creates a config map
@@ -98,7 +140,7 @@ func (c k8sClient) CreateServiceAccount(serviceAccount v1.ServiceAccount) error 
 	return err
 }
 
-// DeleteServiceAccount deletes the service account
+// DeleteServiceAc[2050]:4589616count deletes the service account
 func (c k8sClient) DeleteServiceAccount(serviceAccount v1.ServiceAccount) error {
 	err := c.RunTimeClient.Delete(context.Background(), &serviceAccount)
 	return err
@@ -151,5 +193,31 @@ func (c k8sClient) CreateDaemonSet(daemonset v1beta1.DaemonSet) error {
 func (c k8sClient) DeleteDaemonSet(daemonset v1beta1.DaemonSet) error {
 	daemonset.Namespace = namespace
 	err := c.RunTimeClient.Delete(context.Background(), &daemonset, client.PropagationPolicy(metav1.DeletePropagationForeground))
+	return err
+}
+
+// CreateDeployment creates a deployment
+func (c k8sClient) CreateDeployment(deployment appsv1.Deployment) error {
+	deployment.Namespace = namespace
+	err := c.RunTimeClient.Create(context.Background(), &deployment)
+	return err
+}
+
+// DeleteDeployment deletes a deployment
+func (c k8sClient) DeleteDeployment(deployment appsv1.Deployment) error {
+	deployment.Namespace = namespace
+	err := c.RunTimeClient.Delete(context.Background(), &deployment)
+	return err
+}
+
+// CreateBlockDeviceClaim creates a BDC
+func (c k8sClient) CreateBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
+	err := c.RunTimeClient.Create(context.Background(), claim)
+	return err
+}
+
+// DeleteBlockDeviceClaim deletes a BDC
+func (c k8sClient) DeleteBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
+	err := c.RunTimeClient.Delete(context.Background(), claim)
 	return err
 }
