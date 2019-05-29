@@ -55,7 +55,7 @@ var _ = Describe("NDM Setup Tests", func() {
 					noOfPods++
 				}
 			}
-			Expect(noOfPods).To(Equal(noOfNodes))
+			Expect(noOfPods).To(Equal(noOfNodes + 1))
 		})
 		It("should not have any ndm pods after deletion", func() {
 			err = k8sClient.DeleteNDMYAML()
