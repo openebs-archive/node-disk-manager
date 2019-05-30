@@ -11,6 +11,10 @@ import (
 
 // FilterFrom selects a single block device from a list of block devices
 func (c *Config) FilterFrom(bdList *apis.BlockDeviceList) (*apis.BlockDevice, error) {
+	if len(bdList.Items) == 0 {
+		return nil, fmt.Errorf("no blockdevices found")
+	}
+
 	candidateDevices, err := c.getCandidateDevices(bdList)
 	if err != nil {
 		return nil, err

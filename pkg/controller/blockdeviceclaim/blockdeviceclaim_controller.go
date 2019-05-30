@@ -137,13 +137,14 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 		return err
 	}
 
+	config := blockdevice.NewConfig(&instance.Spec, r.client)
+
 	//select block device from list of devices.
-	bdList, err := r.getListofDevicesOnHost(instance.Spec.HostName)
+	bdList, err := r.getListofDevices(instance.Spec.HostName, config.ManualSelection)
 	if err != nil {
 		return err
 	}
 
-	config := blockdevice.NewConfig(&instance.Spec, r.client)
 	selectedDevice, err := config.FilterFrom(bdList)
 	if err != nil {
 		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
@@ -244,8 +245,13 @@ func (r *ReconcileBlockDeviceClaim) deleteClaimedBlockDevice(
 
 	reqLogger.Info("Deleting external dependencies for CR:" + instance.Name)
 
+	manualSelection := false
+	if instance.Spec.BlockDeviceName != "" {
+		manualSelection = true
+	}
+
 	//Get BlockDevice list for particular host
-	listDVR, err := r.getListofDevicesOnHost(instance.Spec.HostName)
+	listDVR, err := r.getListofDevices(instance.Spec.HostName, manualSelection)
 	if err != nil {
 		return err
 	}
@@ -299,11 +305,11 @@ func (r *ReconcileBlockDeviceClaim) GetBlockDevice(name string) (*apis.BlockDevi
 	return bd, nil
 }
 
-// getListofDevicesOnHost gets the list of block devices on the node to which BlockDeviceClaim is made
+// getListofDevices gets the list of block devices on the node to which BlockDeviceClaim is made
 // TODO:
 //  ListBlockDeviceResource in package cmd/ndm_daemonset/controller has the same functionality.
 //  Need to merge these 2 functions.
-func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(hostName string) (*apis.BlockDeviceList, error) {
+func (r *ReconcileBlockDeviceClaim) getListofDevices(hostName string, ManualSelection bool) (*apis.BlockDeviceList, error) {
 
 	//Initialize a deviceList object.
 	listBlockDevice := &apis.BlockDeviceList{
@@ -313,11 +319,15 @@ func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(hostName string) (*ap
 		},
 	}
 
-	//Set filter option, in our case we are filtering based on hostname/node
 	opts := &client.ListOptions{}
-	filter := ndm.NDMHostKey + "=" + hostName
-
-	opts.SetLabelSelector(filter)
+	// Set filter option, in our case we are filtering based on hostname/node
+	// Filter is only applied when its auto selection. In Manual selection, all
+	// blockdevices are listed.
+	// TODO for manual selection, instead of listing all BDs, only get the BD with given name
+	if !ManualSelection {
+		filter := ndm.NDMHostKey + "=" + hostName
+		opts.SetLabelSelector(filter)
+	}
 
 	//Fetch deviceList with matching criteria
 	err := r.client.List(context.TODO(), opts, listBlockDevice)
@@ -325,9 +335,5 @@ func (r *ReconcileBlockDeviceClaim) getListofDevicesOnHost(hostName string) (*ap
 		return nil, err
 	}
 
-	//Check if listDVR is null or not
-	if len(listBlockDevice.Items) == 0 {
-		return nil, fmt.Errorf("no blockdevice found on the given node")
-	}
 	return listBlockDevice, nil
 }
