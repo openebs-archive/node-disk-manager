@@ -66,16 +66,10 @@ func (di *DeviceInfo) ToDevice() apis.BlockDevice {
 // labels and Name of resource. It is used to populate data
 // of BlockDevice struct of BlockDevice CR.
 func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
-	/*
-		namespace, err := k8sutil.GetWatchNamespace()
-		if err != nil && namespace == "" {
-			namespace = "default"
-		}
-	*/
 	objectMeta := metav1.ObjectMeta{
-		Labels: make(map[string]string),
-		Name:   di.UUID,
-		//Namespace: namespace,
+		Labels:    make(map[string]string),
+		Name:      di.UUID,
+		Namespace: Namespace,
 	}
 	objectMeta.Labels[NDMHostKey] = di.HostName
 	objectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType

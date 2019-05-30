@@ -29,7 +29,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/signals"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -77,6 +76,9 @@ const (
 	CRDRetryInterval = 10 * time.Second
 )
 
+// Namespace is the namespace in which NDM is installed
+var Namespace string
+
 // ControllerBroadcastChannel is used to send a copy of controller object to each probe.
 // Each probe can get the copy of controller struct any time they need to read the channel.
 var ControllerBroadcastChannel = make(chan *Controller)
@@ -114,15 +116,13 @@ func NewController(kubeconfig string) (*Controller, error) {
 	controller.Probes = make([]*Probe, 0)
 	controller.Mutex = &sync.Mutex{}
 
-	// Create a new Cmd to provide shared dependencies and start components
-	namespace, err := k8sutil.GetWatchNamespace()
-	if err != nil && namespace == "" {
-		namespace = "default"
-	} else if err != nil {
+	// get the namespace in which NDM is installed
+	Namespace, err = getNamespace()
+	if err != nil {
 		return controller, err
 	}
 
-	controller.mgr, err = manager.New(cfg, manager.Options{Namespace: namespace})
+	controller.mgr, err = manager.New(cfg, manager.Options{Namespace: Namespace})
 	if err != nil {
 		return controller, err
 	}
@@ -192,6 +192,15 @@ func (c *Controller) setNodeName() error {
 	}
 	c.HostName = host
 	return nil
+}
+
+// getNamespace get Namespace from env, else it returns error
+func getNamespace() (string, error) {
+	ns, ok := os.LookupEnv("NAMESPACE")
+	if !ok {
+		return "", errors.New("error getting namespace")
+	}
+	return ns, nil
 }
 
 // WaitForDiskCRD will block till the CRDs are loaded
