@@ -53,6 +53,29 @@ func TestSetNodeName(t *testing.T) {
 	}
 }
 
+func TestSetNamespace(t *testing.T) {
+	fakeNamespace := "openebs"
+	ns1, err1 := getNamespace()
+	os.Setenv("NAMESPACE", fakeNamespace)
+	ns2, err2 := getNamespace()
+	expectedErr2 := errors.New("error getting namespace")
+	tests := map[string]struct {
+		actualNamespace   string
+		expectedNamespace string
+		actualError       error
+		expectedError     error
+	}{
+		"call setNamespace when env variable not present": {actualNamespace: ns1, actualError: err1, expectedNamespace: "", expectedError: expectedErr2},
+		"call setNamespace when env variable present":     {actualNamespace: ns2, actualError: err2, expectedNamespace: fakeNamespace, expectedError: nil},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expectedNamespace, test.actualNamespace)
+			assert.Equal(t, test.expectedError, test.actualError)
+		})
+	}
+}
+
 /*
 	Broadcast start broadcasting controller pointer in ControllerBroadcastChannel channel
 	In this test case read ControllerBroadcastChannel channel and match controller pointer

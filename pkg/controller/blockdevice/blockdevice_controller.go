@@ -91,8 +91,7 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, err
 	}
 
-	err = r.CheckBackingDiskStatusAndUpdateDeviceCR(instance,
-		request.NamespacedName.Namespace, reqLogger)
+	err = r.CheckBackingDiskStatusAndUpdateDeviceCR(instance, reqLogger)
 
 	if err != nil {
 		// Error while reading, updating object - requeue the request.
@@ -105,7 +104,7 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 // the status of Block Device. If the backing Disk of a block-device is marked inactive, then all block devices
 // which use that disk should be marked inactive.
 func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
-	instance *openebsv1alpha1.BlockDevice, nameSpace string, reqLogger logr.Logger) error {
+	instance *openebsv1alpha1.BlockDevice, reqLogger logr.Logger) error {
 
 	// If the BlockDevice is of type sparse, then we need not check the backing disk
 	// status, As sparse block devices does not have a backing disk.
@@ -121,7 +120,7 @@ func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 
 	// Fetch the Disk CR
 	diskInstance := &openebsv1alpha1.Disk{}
-	err := r.client.Get(context.TODO(), types.NamespacedName{Name: Name, Namespace: nameSpace}, diskInstance)
+	err := r.client.Get(context.TODO(), types.NamespacedName{Name: Name}, diskInstance)
 	if err != nil {
 		reqLogger.Error(err, "Error while getting Disk-CR", "Disk-CR:", Name)
 		if errors.IsNotFound(err) {
