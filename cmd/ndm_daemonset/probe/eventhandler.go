@@ -102,37 +102,53 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 	}
 }
 
-// deleteDiskEvent deactivate disk/blockdevice resource using uuid from etcd
-func (pe *ProbeEvent) deleteDiskEvent(msg controller.EventMessage) {
-	diskList, err1 := pe.Controller.ListDiskResource()
-	bdList, err2 := pe.Controller.ListBlockDeviceResource()
-	if err1 != nil || err2 != nil {
-		if err1 == nil {
-			glog.Error(err1)
-		} else {
-			glog.Error(err2)
-		}
-		go pe.initOrErrorEvent()
-		return
-	}
-	mismatch := false
-	// set mismatch = true when one disk is removed from node and
-	// entry related that disk not present in etcd in that case it
+// deleteEvent deactivate disk/blockdevice resource using uuid from etcd
+func (pe *ProbeEvent) deleteEvent(msg controller.EventMessage) {
+	diskOk := pe.deleteDisk(msg)
+	blockDeviceOk := pe.deleteBlockDevice(msg)
+
+	// when one disk is removed from node and entry related to
+	// that disk is not present in etcd,  in that case it
 	// again rescan full system and update etcd accordingly.
+	if !diskOk || !blockDeviceOk {
+		go pe.initOrErrorEvent()
+	}
+}
+
+func (pe *ProbeEvent) deleteBlockDevice(msg controller.EventMessage) bool {
+	bdList, err := pe.Controller.ListBlockDeviceResource()
+	if err != nil {
+		glog.Error(err)
+		return false
+	}
+	ok := true
+	for _, diskDetails := range msg.Devices {
+		oldBDResource := pe.Controller.GetExistingBlockDeviceResource(bdList, diskDetails.ProbeIdentifiers.Uuid)
+		if oldBDResource == nil {
+			ok = false
+			continue
+		}
+		pe.Controller.DeactivateBlockDevice(*oldBDResource)
+	}
+	return ok
+}
+
+func (pe *ProbeEvent) deleteDisk(msg controller.EventMessage) bool {
+	diskList, err := pe.Controller.ListDiskResource()
+	if err != nil {
+		glog.Error(err)
+		return false
+	}
+	ok := true
 	for _, diskDetails := range msg.Devices {
 		oldDiskResource := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
-		oldBDResource := pe.Controller.GetExistingBlockDeviceResource(bdList, diskDetails.ProbeIdentifiers.Uuid)
-		if oldDiskResource == nil || oldBDResource == nil {
-			mismatch = true
+		if oldDiskResource == nil {
+			ok = false
 			continue
 		}
 		pe.Controller.DeactivateDisk(*oldDiskResource)
-		pe.Controller.DeactivateBlockDevice(*oldBDResource)
 	}
-
-	if mismatch {
-		go pe.initOrErrorEvent()
-	}
+	return ok
 }
 
 // initOrErrorEvent rescan system and update disk resource this is

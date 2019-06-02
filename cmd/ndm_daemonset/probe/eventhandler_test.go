@@ -249,7 +249,7 @@ func TestDeleteDiskEvent(t *testing.T) {
 		Action:  libudevwrapper.UDEV_ACTION_REMOVE,
 		Devices: eventmsg,
 	}
-	probeEvent.deleteDiskEvent(eventDetails)
+	probeEvent.deleteEvent(eventDetails)
 
 	// Retrieve resources
 	cdr1, err1 := fakeController.GetDisk(mockuid)
