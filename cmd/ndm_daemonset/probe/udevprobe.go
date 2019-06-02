@@ -214,7 +214,7 @@ func (up *udevProbe) listen() {
 		case string(AttachEA):
 			probeEvent.addDiskEvent(msg)
 		case string(DetachEA):
-			probeEvent.deleteDiskEvent(msg)
+			probeEvent.deleteEvent(msg)
 		}
 	}
 }
