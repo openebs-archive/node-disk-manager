@@ -9,5 +9,5 @@ spec:
     listKind: BlockDeviceClaimList
     plural: blockdeviceclaims
     singular: blockdeviceclaim
-  scope: Cluster
+  scope: Namespaced
   version: v1alpha1

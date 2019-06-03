@@ -9,5 +9,5 @@ spec:
     listKind: BlockDeviceList
     plural: blockdevices
     singular: blockdevice
-  scope: Cluster
+  scope: Namespaced
   version: v1alpha1
