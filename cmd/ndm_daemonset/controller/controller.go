@@ -171,7 +171,7 @@ func (c *Controller) setKubeClient(cfg *rest.Config) error {
 	return nil
 }
 
-// setClientset set Clientset field in Controller struct
+// newClientSet set Clientset field in Controller struct
 // if it gets Client from config. It returns the generated
 // client, else it returns error
 func (c *Controller) newClientSet() (client.Client, error) {
