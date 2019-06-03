@@ -132,7 +132,7 @@ func NewController(kubeconfig string) (*Controller, error) {
 		return controller, err
 	}
 
-	err = controller.setClientSet()
+	_, err = controller.newClientSet()
 	if err != nil {
 		return controller, err
 	}
@@ -172,14 +172,15 @@ func (c *Controller) setKubeClient(cfg *rest.Config) error {
 }
 
 // setClientset set Clientset field in Controller struct
-// if it gets Client from config else it returns error
-func (c *Controller) setClientSet() error {
+// if it gets Client from config. It returns the generated
+// client, else it returns error
+func (c *Controller) newClientSet() (client.Client, error) {
 	clientSet, err := client.New(c.config, client.Options{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	c.Clientset = clientSet
-	return nil
+	return clientSet, nil
 }
 
 // setNodeName set HostName field in Controller struct
@@ -210,7 +211,7 @@ func (c *Controller) WaitForDiskCRD() {
 		if err != nil {
 			glog.Errorf("Disk CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
 			time.Sleep(CRDRetryInterval)
-			c.setClientSet()
+			c.newClientSet()
 			continue
 		}
 		glog.Info("Disk CRD is available")
@@ -226,7 +227,7 @@ func (c *Controller) WaitForBlockDeviceCRD() {
 		if err != nil {
 			glog.Errorf("BlockDevice CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
 			time.Sleep(CRDRetryInterval)
-			c.setClientSet()
+			c.newClientSet()
 			continue
 		}
 		glog.Info("BlockDevice CRD is available")
