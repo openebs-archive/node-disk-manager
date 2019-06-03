@@ -88,6 +88,7 @@ type Controller struct {
 	HostName      string               // HostName is host name in which disk is attached
 	KubeClientset kubernetes.Interface // KubeClientset is standard kubernetes clientset
 	mgr           manager.Manager
+	config        *rest.Config // config is the generated config using kubeconfig/incluster config
 	Clientset     client.Client
 	NDMConfig     *NodeDiskManagerConfig // NDMConfig contains custom config for ndm
 	Mutex         *sync.Mutex            // Mutex is used to lock and unlock Controller
@@ -102,12 +103,11 @@ func NewController(kubeconfig string) (*Controller, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := controller.setKubeClient(cfg); err != nil {
+	controller.config = cfg
+	if err := controller.setKubeClient(controller.config); err != nil {
 		return nil, err
 	}
-	//if err := controller.setClientSet(cfg); err != nil {
-	//	return nil, err
-	//}
+
 	if err := controller.setNodeName(); err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func NewController(kubeconfig string) (*Controller, error) {
 		return controller, err
 	}
 
-	controller.mgr, err = manager.New(cfg, manager.Options{Namespace: Namespace})
+	controller.mgr, err = manager.New(controller.config, manager.Options{Namespace: Namespace})
 	if err != nil {
 		return controller, err
 	}
@@ -132,7 +132,7 @@ func NewController(kubeconfig string) (*Controller, error) {
 		return controller, err
 	}
 
-	controller.Clientset, err = client.New(cfg, client.Options{})
+	err = controller.setClientSet()
 	if err != nil {
 		return controller, err
 	}
@@ -171,17 +171,16 @@ func (c *Controller) setKubeClient(cfg *rest.Config) error {
 	return nil
 }
 
-/*
 // setClientset set Clientset field in Controller struct
-// if it gets Clientiset from cfg else it returns error
-func (c *Controller) setClientSet(cfg *rest.Config) error {
-	crdClient, err := clientset.NewForConfig(cfg)
+// if it gets Client from config else it returns error
+func (c *Controller) setClientSet() error {
+	clientSet, err := client.New(c.config, client.Options{})
 	if err != nil {
 		return err
 	}
-	c.Clientset = crdClient
+	c.Clientset = clientSet
 	return nil
-}*/
+}
 
 // setNodeName set HostName field in Controller struct
 // if it gets from env else it returns error
@@ -211,6 +210,7 @@ func (c *Controller) WaitForDiskCRD() {
 		if err != nil {
 			glog.Errorf("Disk CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
 			time.Sleep(CRDRetryInterval)
+			c.setClientSet()
 			continue
 		}
 		glog.Info("Disk CRD is available")
@@ -226,6 +226,7 @@ func (c *Controller) WaitForBlockDeviceCRD() {
 		if err != nil {
 			glog.Errorf("BlockDevice CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
 			time.Sleep(CRDRetryInterval)
+			c.setClientSet()
 			continue
 		}
 		glog.Info("BlockDevice CRD is available")
