@@ -101,6 +101,8 @@ func (c k8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
 	return bdcList, nil
 }
 
+// NewBDC creates a sample device claim which can be used for
+// claiming a block device.
 func NewBDC(bdcName string) *apis.BlockDeviceClaim {
 	bdcRequirements := apis.DeviceClaimRequirements{
 		Requests: make(map[corev1.ResourceName]resource.Quantity),
