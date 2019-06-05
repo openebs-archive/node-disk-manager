@@ -20,7 +20,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
-	"strings"
 )
 
 // EventAction action type for disk events like attach or detach events
@@ -124,8 +123,7 @@ func (pe *ProbeEvent) deleteBlockDevice(msg controller.EventMessage) bool {
 	}
 	ok := true
 	for _, diskDetails := range msg.Devices {
-		UUID := strings.TrimPrefix(diskDetails.ProbeIdentifiers.Uuid, libudevwrapper.NDMDiskPrefix)
-		bdUUID := libudevwrapper.NDMBlockDevicePrefix + UUID
+		bdUUID := pe.Controller.DiskToDeviceUUID(diskDetails.ProbeIdentifiers.Uuid)
 		oldBDResource := pe.Controller.GetExistingBlockDeviceResource(bdList, bdUUID)
 		if oldBDResource == nil {
 			ok = false
