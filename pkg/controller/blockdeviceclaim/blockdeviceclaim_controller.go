@@ -123,21 +123,24 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 	instance *apis.BlockDeviceClaim, reqLogger logr.Logger) error {
 
-	// perform verification of the claim, like capacity
-	// Get the capacity requested in the claim
-	_, err := verify.GetRequestedCapacity(instance.Spec.Requirements.Requests)
-	if err != nil {
-		//Update deviceClaim CR with error string
-		instance.Status.Phase = apis.BlockDeviceClaimStatusInvalidCapacity
-		err1 := r.client.Delete(context.TODO(), instance)
-		if err1 != nil {
-			reqLogger.Error(err1, "Invalid capacity requested, deletion failed", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
-			return err1
-		}
-		return err
-	}
-
 	config := blockdevice.NewConfig(&instance.Spec, r.client)
+
+	// check for capacity only in auto selection
+	if !config.ManualSelection {
+		// perform verification of the claim, like capacity
+		// Get the capacity requested in the claim
+		_, err := verify.GetRequestedCapacity(instance.Spec.Requirements.Requests)
+		if err != nil {
+			//Update deviceClaim CR with error string
+			instance.Status.Phase = apis.BlockDeviceClaimStatusInvalidCapacity
+			err1 := r.updateClaimStatus(instance.Status.Phase, instance)
+			if err1 != nil {
+				reqLogger.Error(err1, "Invalid Capacity requested")
+				return err1
+			}
+			return err
+		}
+	}
 
 	//select block device from list of devices.
 	bdList, err := r.getListofDevices(instance.Spec.HostName, config.ManualSelection)
@@ -206,7 +209,7 @@ func (r *ReconcileBlockDeviceClaim) updateClaimStatus(phase apis.DeviceClaimPhas
 	// Update BlockDeviceClaim CR
 	err := r.client.Update(context.TODO(), instance)
 	if err != nil {
-		return fmt.Errorf("error updating BDC : %s, %v", instance.ObjectMeta.Name, err)
+		return fmt.Errorf("error updating status of BDC : %s, %v", instance.ObjectMeta.Name, err)
 	}
 
 	return nil
