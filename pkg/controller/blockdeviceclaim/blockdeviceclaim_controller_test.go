@@ -27,7 +27,7 @@ var (
 	deviceName                     = "blockdevice-example"
 	blockDeviceClaimName           = "blockdeviceclaim-example"
 	blockDeviceClaimUID  types.UID = "blockDeviceClaim-example-UID"
-	namespace                      = ""
+	namespace                      = "default"
 	capacity             uint64    = 1024000
 	claimCapacity                  = resource.MustParse("1024000")
 )
@@ -63,7 +63,7 @@ func TestBlockDeviceClaimController(t *testing.T) {
 	r.InvalidCapacityTest(t, req)
 
 	// Create new BlockDeviceClaim CR with right capacity,
-	// trigger reconilation event. This time, it should
+	// trigger reconcilation event. This time, it should
 	// bound.
 	blockDeviceClaimCR := GetFakeBlockDeviceClaimObject()
 	err := r.client.Create(context.TODO(), blockDeviceClaimCR)
@@ -208,11 +208,13 @@ func (r *ReconcileBlockDeviceClaim) InvalidCapacityTest(t *testing.T,
 
 	dvC := &openebsv1alpha1.BlockDeviceClaim{}
 	err = r.client.Get(context.TODO(), req.NamespacedName, dvC)
-	if errors.IsNotFound(err) {
-		t.Logf("BlockDeviceClaim is deleted, expected")
-		err = nil
-	} else if err != nil {
+	if err != nil {
 		t.Errorf("Get devRequestInst: (%v)", err)
+	}
+	if dvC.Status.Phase == openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity {
+		t.Log("BlockDeviceClaim is in Invalid Capacity State")
+	} else {
+		t.Errorf("BlockDeviceClaim has unexpected phase : %s", dvC.Status.Phase)
 	}
 }
 
