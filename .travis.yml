@@ -27,6 +27,9 @@ install:
       mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/openebs;
       cd $GOPATH/src/github.com/openebs/node-disk-manager;
     fi
+  - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.0.0/minikube-linux-amd64
+  - sudo chmod +x minikube
+  - sudo mv minikube /usr/local/bin/
   # we need openSeaChest repo to build node-disk-manager
   - pushd .
   - cd ..
@@ -39,6 +42,15 @@ install:
   - sudo cp opensea-transport/Make/gcc/lib/libopensea-transport.a /usr/lib
   - popd 
 
+before_script:
+  - sudo minikube start --vm-driver=none --cpus=1 --memory=1024
+  - sudo minikube update-context
+  # By default root is the owner of the .minikube directory. This is changed to $USER so that
+  # from the integration tests which run as a non-root user can access the files and connect
+  # to the minikube cluster
+  - sudo chown -R $USER $HOME/.minikube
+  - sudo chown -R $USER $HOME/.kube
+
 script:
   - make
   # Here sudo -E env "PATH=$PATH" make test is required for running tests with
@@ -46,6 +58,7 @@ script:
   # which could be fetched for a SCSI device with sudo permissions only since to access
   # a particular scsi device, sudo or root permissions are required.
   - sudo -E env "PATH=$PATH" make test
+  - make integration-test
 
 after_success:
   - DIMAGE=openebs/node-disk-manager-$ARCH ./build/push;
