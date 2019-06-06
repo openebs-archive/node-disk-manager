@@ -71,7 +71,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 
 			for _, bdc := range bdcList.Items {
 				if bdc.Name == bdcName {
-					Expect(bdc.Status.Phase).To(Equal(apis.BlockDeviceClaimStatusEmpty))
+					Expect(bdc.Status.Phase).To(Equal(apis.BlockDeviceClaimStatusPending))
 				}
 			}
 		})
