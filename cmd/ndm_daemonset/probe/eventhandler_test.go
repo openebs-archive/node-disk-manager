@@ -34,13 +34,15 @@ import (
 )
 
 var (
-	mockuid        = "fake-disk-uid"
+	mockDiskuid    = "disk-fake-uid"
+	mockBDuid      = "blockdevice-fake-uid"
 	ignoreDiskUuid = "ignore-disk-uuid"
 	fakeHostName   = "node-name"
 	fakeModel      = "fake-disk-model"
 	fakeSerial     = "fake-disk-serial"
 	fakeVendor     = "fake-disk-vendor"
 	fakeDiskType   = "disk"
+	fakeBDType     = "blockdevice"
 )
 
 // mockEmptyDiskCr returns empty diskCr
@@ -48,7 +50,7 @@ func mockEmptyDiskCr() apis.Disk {
 	fakeDr := apis.Disk{}
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   mockuid,
+		Name:   mockDiskuid,
 	}
 	fakeTypeMeta := metav1.TypeMeta{
 		Kind:       controller.NDMDiskKind,
@@ -65,7 +67,7 @@ func mockEmptyBlockDeviceCr() apis.BlockDevice {
 	fakeBDr := apis.BlockDevice{}
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   mockuid,
+		Name:   mockBDuid,
 	}
 	fakeTypeMeta := metav1.TypeMeta{
 		Kind:       controller.NDMBlockDeviceKind,
@@ -167,7 +169,7 @@ func TestAddDiskEvent(t *testing.T) {
 	// blockdevice-1 details
 	eventmsg := make([]*controller.DiskInfo, 0)
 	device1Details := &controller.DiskInfo{}
-	device1Details.ProbeIdentifiers.Uuid = mockuid
+	device1Details.ProbeIdentifiers.Uuid = mockDiskuid
 	eventmsg = append(eventmsg, device1Details)
 	// blockdevice-2 details
 	device2Details := &controller.DiskInfo{}
@@ -180,7 +182,7 @@ func TestAddDiskEvent(t *testing.T) {
 	}
 	probeEvent.addDiskEvent(eventDetails)
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(mockuid)
+	cdr1, err1 := fakeController.GetDisk(mockDiskuid)
 
 	// Retrieve disk resource
 	cdr2, _ := fakeController.GetDisk(ignoreDiskUuid)
@@ -234,7 +236,7 @@ func TestDeleteDiskEvent(t *testing.T) {
 	// Create one fake block device resource
 	fakeBDr := mockEmptyBlockDeviceCr()
 	fakeBDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
-	fakeBDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = fakeDiskType
+	fakeBDr.ObjectMeta.Labels[controller.NDMDeviceTypeKey] = fakeBDType
 	fakeBDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 	fakeController.CreateBlockDevice(fakeBDr)
 
@@ -243,7 +245,7 @@ func TestDeleteDiskEvent(t *testing.T) {
 	}
 	eventmsg := make([]*controller.DiskInfo, 0)
 	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockuid
+	deviceDetails.ProbeIdentifiers.Uuid = mockDiskuid
 	eventmsg = append(eventmsg, deviceDetails)
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_REMOVE,
@@ -252,8 +254,8 @@ func TestDeleteDiskEvent(t *testing.T) {
 	probeEvent.deleteEvent(eventDetails)
 
 	// Retrieve resources
-	cdr1, err1 := fakeController.GetDisk(mockuid)
-	bdR1, err1 := fakeController.GetBlockDevice(mockuid)
+	cdr1, err1 := fakeController.GetDisk(mockDiskuid)
+	bdR1, err1 := fakeController.GetBlockDevice(mockBDuid)
 
 	fakeDr.Status.State = controller.NDMInactive
 	fakeBDr.Status.State = controller.NDMInactive

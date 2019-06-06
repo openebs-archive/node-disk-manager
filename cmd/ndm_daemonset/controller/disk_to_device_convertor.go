@@ -26,8 +26,7 @@ func (c *Controller) NewDeviceInfoFromDiskInfo(diskDetails *DiskInfo) *DeviceInf
 	deviceDetails := NewDeviceInfo()
 
 	deviceDetails.HostName = c.HostName
-	Uuid := strings.TrimPrefix(diskDetails.ProbeIdentifiers.Uuid, udev.NDMDiskPrefix)
-	deviceDetails.UUID = udev.NDMBlockDevicePrefix + Uuid
+	deviceDetails.UUID = c.DiskToDeviceUUID(diskDetails.ProbeIdentifiers.Uuid)
 	deviceDetails.Capacity = diskDetails.Capacity
 	deviceDetails.Model = diskDetails.Model
 	deviceDetails.Serial = diskDetails.Serial
@@ -42,4 +41,11 @@ func (c *Controller) NewDeviceInfoFromDiskInfo(diskDetails *DiskInfo) *DeviceInf
 	deviceDetails.FileSystemInfo.FileSystem = diskDetails.FileSystemInformation.FileSystem
 	deviceDetails.FileSystemInfo.MountPoint = diskDetails.FileSystemInformation.MountPoint
 	return deviceDetails
+}
+
+// DiskToDeviceUUID converts a disk UUID (disk-xxx) to a block-
+// device UUID (blockdevice-xxx)
+func (c *Controller) DiskToDeviceUUID(diskUUID string) string {
+	uuid := strings.TrimPrefix(diskUUID, udev.NDMDiskPrefix)
+	return udev.NDMBlockDevicePrefix + uuid
 }

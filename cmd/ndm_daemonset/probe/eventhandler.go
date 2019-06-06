@@ -123,7 +123,8 @@ func (pe *ProbeEvent) deleteBlockDevice(msg controller.EventMessage) bool {
 	}
 	ok := true
 	for _, diskDetails := range msg.Devices {
-		oldBDResource := pe.Controller.GetExistingBlockDeviceResource(bdList, diskDetails.ProbeIdentifiers.Uuid)
+		bdUUID := pe.Controller.DiskToDeviceUUID(diskDetails.ProbeIdentifiers.Uuid)
+		oldBDResource := pe.Controller.GetExistingBlockDeviceResource(bdList, bdUUID)
 		if oldBDResource == nil {
 			ok = false
 			continue
