@@ -10,3 +10,9 @@ import (
 func WaitForStateChange() {
 	time.Sleep(k8sWaitTime)
 }
+
+// WaitForReconcilation sleeps the process for a fixed duration so
+// that the reconcile loop can run and fetch the required changes
+func WaitForReconcilation() {
+	time.Sleep(k8sReconcileTime)
+}

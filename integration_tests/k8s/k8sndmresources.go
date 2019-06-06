@@ -49,8 +49,14 @@ func (c k8sClient) CreateNDMYAML() error {
 		return err
 	}
 
-	// creating NDM daemonset
-	return c.CreateNDMDaemonSet()
+	// creating ndm daemon-set
+	err = c.CreateNDMDaemonSet()
+	if err != nil {
+		return err
+	}
+
+	// creating NDO Deployment
+	return c.CreateNDODeployment()
 }
 
 // DeleteNDMYAML deletes all the objects specified in the NDM operator YAML.
@@ -99,8 +105,14 @@ func (c k8sClient) DeleteNDMYAML() error {
 		return err
 	}
 
-	// deleting NDM daemonset
-	return c.DeleteNDMDaemonSet()
+	// deleting ndm daemon-set
+	err = c.DeleteNDMDaemonSet()
+	if err != nil {
+		return err
+	}
+
+	// deleting NDO Deployment
+	return c.DeleteNDODeployment()
 }
 
 // CreateNDMConfigMap creates the ConfigMap required for NDM
@@ -245,4 +257,20 @@ func (c k8sClient) DeleteNDMDaemonSet() error {
 		return err
 	}
 	return c.DeleteDaemonSet(daemonset)
+}
+
+func (c k8sClient) CreateNDODeployment() error {
+	deployment, err := GetDeployment()
+	if err != nil {
+		return err
+	}
+	return c.CreateDeployment(deployment)
+}
+
+func (c k8sClient) DeleteNDODeployment() error {
+	deployment, err := GetDeployment()
+	if err != nil {
+		return err
+	}
+	return c.DeleteDeployment(deployment)
 }
