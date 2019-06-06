@@ -104,8 +104,7 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 			return reconcile.Result{}, err
 		}
 	case apis.BlockDeviceClaimStatusInvalidCapacity:
-		// currently for invalid capacity, the device claim will be deleted
-		fallthrough
+		// currently for invalid capacity, the BDC will remain in that state
 	case apis.BlockDeviceClaimStatusDone:
 		reqLogger.Info("In process of deleting block device claim")
 		err := r.FinalizerHandling(instance, reqLogger)
@@ -199,12 +198,6 @@ func (r *ReconcileBlockDeviceClaim) updateClaimStatus(phase apis.DeviceClaimPhas
 	switch phase {
 	case apis.BlockDeviceClaimStatusDone:
 		instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer)
-	case apis.BlockDeviceClaimStatusInvalidCapacity:
-		err := r.client.Delete(context.TODO(), instance)
-		if err != nil {
-			return fmt.Errorf("invalid capacity requested, deletion failed for BDC:%s, %v", instance.ObjectMeta.Name, err)
-		}
-		return nil
 	}
 	// Update BlockDeviceClaim CR
 	err := r.client.Update(context.TODO(), instance)
