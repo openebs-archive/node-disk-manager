@@ -10,6 +10,15 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
+const (
+	// DefaultNamespace is the default namespace in a k8s cluster
+	DefaultNamespace = "default"
+	// HostName is the hostname in which the tests are performed
+	HostName = "minikube"
+	// FakeHostName is a generated fake hostname
+	FakeHostName = "fake-minikube"
+)
+
 var (
 	BDCUnavailableCapacity = resource.MustParse("10Gi")
 	BDCAvailableCapacity   = resource.MustParse("1Gi")
@@ -48,7 +57,8 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("BD is not available on the host", func() {
-			blockDeviceClaim.Spec.HostName = "fake-minikube"
+			blockDeviceClaim.Spec.HostName = FakeHostName
+			blockDeviceClaim.Namespace = DefaultNamespace
 			blockDeviceClaim.Spec.Requirements.Requests[apis.ResourceCapacity] = BDCAvailableCapacity
 
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
@@ -66,7 +76,8 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			}
 		})
 		It("BD with resource requirement is not available on the host", func() {
-			blockDeviceClaim.Spec.HostName = "minikube"
+			blockDeviceClaim.Spec.HostName = HostName
+			blockDeviceClaim.Namespace = DefaultNamespace
 			blockDeviceClaim.Spec.Requirements.Requests[apis.ResourceCapacity] = BDCUnavailableCapacity
 
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
@@ -96,7 +107,8 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("has matching BD on the node", func() {
-			blockDeviceClaim.Spec.HostName = "minikube"
+			blockDeviceClaim.Spec.HostName = HostName
+			blockDeviceClaim.Namespace = DefaultNamespace
 			blockDeviceClaim.Spec.Requirements.Requests[apis.ResourceCapacity] = BDCAvailableCapacity
 
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
@@ -132,7 +144,8 @@ var _ = Describe("BlockDevice Claim tests", func() {
 		It("unclaimes a BD when BDC is deleted", func() {
 			bdcName := "test-blockdeviceclaim"
 			blockDeviceClaim := k8s.NewBDC(bdcName)
-			blockDeviceClaim.Spec.HostName = "minikube"
+			blockDeviceClaim.Spec.HostName = HostName
+			blockDeviceClaim.Namespace = DefaultNamespace
 			blockDeviceClaim.Spec.Requirements.Requests[apis.ResourceCapacity] = BDCAvailableCapacity
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
