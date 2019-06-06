@@ -27,14 +27,13 @@ var (
 	deviceName                     = "blockdevice-example"
 	blockDeviceClaimName           = "blockdeviceclaim-example"
 	blockDeviceClaimUID  types.UID = "blockDeviceClaim-example-UID"
-	namespace                      = "default"
+	namespace                      = ""
 	capacity             uint64    = 1024000
 	claimCapacity                  = resource.MustParse("1024000")
 )
 
 // TestBlockDeviceClaimController runs ReconcileBlockDeviceClaim.Reconcile() against a
 // fake client that tracks a BlockDeviceClaim object.
-// Test description:
 func TestBlockDeviceClaimController(t *testing.T) {
 
 	// Set the logger to development mode for verbose logs.
@@ -65,10 +64,18 @@ func TestBlockDeviceClaimController(t *testing.T) {
 	// Create new BlockDeviceClaim CR with right capacity,
 	// trigger reconcilation event. This time, it should
 	// bound.
-	blockDeviceClaimCR := GetFakeBlockDeviceClaimObject()
-	err := r.client.Create(context.TODO(), blockDeviceClaimCR)
+	deviceClaim := &openebsv1alpha1.BlockDeviceClaim{}
+	err := r.client.Get(context.TODO(), req.NamespacedName, deviceClaim)
 	if err != nil {
-		t.Errorf("BlockDeviceClaim object is not created")
+		t.Errorf("Get deviceClaim: (%v)", err)
+	}
+
+	deviceClaim.Spec.Requirements.Requests[openebsv1alpha1.ResourceCapacity] = claimCapacity
+	// resetting status to empty
+	deviceClaim.Status.Phase = openebsv1alpha1.BlockDeviceClaimStatusEmpty
+	err = r.client.Update(context.TODO(), deviceClaim)
+	if err != nil {
+		t.Errorf("Update deviceClaim: (%v)", err)
 	}
 
 	res, err := r.Reconcile(req)
@@ -211,11 +218,7 @@ func (r *ReconcileBlockDeviceClaim) InvalidCapacityTest(t *testing.T,
 	if err != nil {
 		t.Errorf("Get devRequestInst: (%v)", err)
 	}
-	if dvC.Status.Phase == openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity {
-		t.Log("BlockDeviceClaim is in Invalid Capacity State")
-	} else {
-		t.Errorf("BlockDeviceClaim has unexpected phase : %s", dvC.Status.Phase)
-	}
+	r.CheckBlockDeviceClaimStatus(t, req, openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity)
 }
 
 func (r *ReconcileBlockDeviceClaim) CheckBlockDeviceClaimStatus(t *testing.T,
@@ -382,13 +385,13 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 	// Create a new blockdevice obj
 	err := fakeNdmClient.Create(context.TODO(), deviceR)
 	if err != nil {
-		fmt.Println("BlockDevice object is not created")
+		fmt.Println("BlockDevice object is not created", err)
 	}
 
 	// Create a new deviceclaim obj
 	err = fakeNdmClient.Create(context.TODO(), deviceClaimR)
 	if err != nil {
-		fmt.Println("BlockDeviceClaim object is not created")
+		fmt.Println("BlockDeviceClaim object is not created", err)
 	}
 	return fakeNdmClient, s
 }
