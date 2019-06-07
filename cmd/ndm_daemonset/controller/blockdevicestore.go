@@ -88,6 +88,8 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 	}
 
 	blockDeviceCopy.ObjectMeta.ResourceVersion = oldBlockDevice.ObjectMeta.ResourceVersion
+	blockDeviceCopy.Spec.ClaimRef = oldBlockDevice.Spec.ClaimRef
+	blockDeviceCopy.Status.ClaimState = oldBlockDevice.Status.ClaimState
 	err = c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
 		glog.Error("Unable to update blockdevice object : ", err)
