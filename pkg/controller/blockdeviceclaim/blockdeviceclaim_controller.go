@@ -3,6 +3,7 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
+
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/select/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
@@ -128,7 +129,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 	if !config.ManualSelection {
 		// perform verification of the claim, like capacity
 		// Get the capacity requested in the claim
-		_, err := verify.GetRequestedCapacity(instance.Spec.Requirements.Requests)
+		_, err := verify.GetRequestedCapacity(instance.Spec.Resources.Requests)
 		if err != nil {
 			//Update deviceClaim CR with error string
 			instance.Status.Phase = apis.BlockDeviceClaimStatusInvalidCapacity

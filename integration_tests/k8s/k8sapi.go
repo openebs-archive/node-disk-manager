@@ -3,17 +3,18 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"time"
+
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
 // The wait time for all k8s API related operations
@@ -104,11 +105,11 @@ func (c k8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
 // NewBDC creates a sample device claim which can be used for
 // claiming a block device.
 func NewBDC(bdcName string) *apis.BlockDeviceClaim {
-	bdcRequirements := apis.DeviceClaimRequirements{
+	bdcResources := apis.DeviceClaimResources{
 		Requests: make(map[corev1.ResourceName]resource.Quantity),
 	}
 	bdcSpec := apis.DeviceClaimSpec{
-		Requirements: bdcRequirements,
+		Resources: bdcResources,
 	}
 	bdc := &apis.BlockDeviceClaim{
 		TypeMeta: metav1.TypeMeta{

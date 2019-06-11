@@ -1,13 +1,14 @@
 package blockdevice
 
 import (
+	"testing"
+
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 func TestMatchResourceRequirements(t *testing.T) {
@@ -32,10 +33,10 @@ func TestMatchResourceRequirements(t *testing.T) {
 		expected    bool
 	}{
 		"block device capacity greater than requested capacity": {blockDevice,
-			v1.ResourceList{apis.ResourceCapacity: resource.MustParse("1024000")},
+			v1.ResourceList{apis.ResourceStorage: resource.MustParse("1024000")},
 			true},
 		"block device capacity is less than requested capacity": {blockDevice,
-			v1.ResourceList{apis.ResourceCapacity: resource.MustParse("404800000")},
+			v1.ResourceList{apis.ResourceStorage: resource.MustParse("404800000")},
 			false},
 	}
 	for name, test := range tests {

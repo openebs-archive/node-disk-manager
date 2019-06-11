@@ -59,7 +59,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 		It("BD is not available on the host", func() {
 			blockDeviceClaim.Spec.HostName = FakeHostName
 			blockDeviceClaim.Namespace = DefaultNamespace
-			blockDeviceClaim.Spec.Requirements.Requests[apis.ResourceCapacity] = BDCAvailableCapacity
+			blockDeviceClaim.Spec.Resources.Requests[apis.ResourceStorage] = BDCAvailableCapacity
 
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
@@ -78,7 +78,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 		It("BD with resource requirement is not available on the host", func() {
 			blockDeviceClaim.Spec.HostName = HostName
 			blockDeviceClaim.Namespace = DefaultNamespace
-			blockDeviceClaim.Spec.Requirements.Requests[apis.ResourceCapacity] = BDCUnavailableCapacity
+			blockDeviceClaim.Spec.Resources.Requests[apis.ResourceStorage] = BDCUnavailableCapacity
 
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
@@ -109,7 +109,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 		It("has matching BD on the node", func() {
 			blockDeviceClaim.Spec.HostName = HostName
 			blockDeviceClaim.Namespace = DefaultNamespace
-			blockDeviceClaim.Spec.Requirements.Requests[apis.ResourceCapacity] = BDCAvailableCapacity
+			blockDeviceClaim.Spec.Resources.Requests[apis.ResourceStorage] = BDCAvailableCapacity
 
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
@@ -146,7 +146,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			blockDeviceClaim := k8s.NewBDC(bdcName)
 			blockDeviceClaim.Spec.HostName = HostName
 			blockDeviceClaim.Namespace = DefaultNamespace
-			blockDeviceClaim.Spec.Requirements.Requests[apis.ResourceCapacity] = BDCAvailableCapacity
+			blockDeviceClaim.Spec.Resources.Requests[apis.ResourceStorage] = BDCAvailableCapacity
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForReconcilation()
