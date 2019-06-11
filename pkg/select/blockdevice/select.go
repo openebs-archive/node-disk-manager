@@ -2,6 +2,7 @@ package blockdevice
 
 import (
 	"fmt"
+
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
@@ -80,7 +81,7 @@ func (c *Config) getSelectedDevice(bdList *apis.BlockDeviceList) (*apis.BlockDev
 		return &bdList.Items[0], nil
 	}
 	for _, bd := range bdList.Items {
-		if matchResourceRequirements(bd, c.ClaimSpec.Requirements.Requests) {
+		if matchResourceRequirements(bd, c.ClaimSpec.Resources.Requests) {
 			return &bd, nil
 		}
 	}

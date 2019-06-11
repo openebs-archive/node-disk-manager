@@ -3,10 +3,11 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
-	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"testing"
 	"time"
+
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
@@ -70,7 +71,7 @@ func TestBlockDeviceClaimController(t *testing.T) {
 		t.Errorf("Get deviceClaim: (%v)", err)
 	}
 
-	deviceClaim.Spec.Requirements.Requests[openebsv1alpha1.ResourceCapacity] = claimCapacity
+	deviceClaim.Spec.Resources.Requests[openebsv1alpha1.ResourceStorage] = claimCapacity
 	// resetting status to empty
 	deviceClaim.Status.Phase = openebsv1alpha1.BlockDeviceClaimStatusEmpty
 	err = r.client.Update(context.TODO(), deviceClaim)
@@ -197,7 +198,7 @@ func (r *ReconcileBlockDeviceClaim) InvalidCapacityTest(t *testing.T,
 		t.Errorf("Get devRequestInst: (%v)", err)
 	}
 
-	devRequestInst.Spec.Requirements.Requests[openebsv1alpha1.ResourceCapacity] = resource.MustParse("0")
+	devRequestInst.Spec.Resources.Requests[openebsv1alpha1.ResourceStorage] = resource.MustParse("0")
 	err = r.client.Update(context.TODO(), devRequestInst)
 	if err != nil {
 		t.Errorf("Update devRequestInst: (%v)", err)
@@ -255,16 +256,16 @@ func GetFakeBlockDeviceClaimObject() *openebsv1alpha1.BlockDeviceClaim {
 		UID:       blockDeviceClaimUID,
 	}
 
-	Requests := v1.ResourceList{openebsv1alpha1.ResourceCapacity: claimCapacity}
+	Requests := corev1.ResourceList{openebsv1alpha1.ResourceStorage: claimCapacity}
 
-	Requirements := openebsv1alpha1.DeviceClaimRequirements{
+	Requirements := openebsv1alpha1.DeviceClaimResources{
 		Requests: Requests,
 	}
 
 	Spec := openebsv1alpha1.DeviceClaimSpec{
-		Requirements: Requirements,
-		DeviceType:   "",
-		HostName:     fakeHostName,
+		Resources:  Requirements,
+		DeviceType: "",
+		HostName:   fakeHostName,
 	}
 
 	deviceRequestCR.ObjectMeta = ObjectMeta
