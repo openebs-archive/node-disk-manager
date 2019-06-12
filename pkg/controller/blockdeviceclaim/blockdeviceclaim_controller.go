@@ -262,7 +262,7 @@ func (r *ReconcileBlockDeviceClaim) deleteClaimedBlockDevice(
 		// ObjRef and mark blockdevice unclaimed in etcd
 		dvr := item.DeepCopy()
 		dvr.Spec.ClaimRef = nil
-		dvr.Status.ClaimState = apis.BlockDeviceUnclaimed
+		dvr.Status.ClaimState = apis.BlockDeviceReleased
 		err := r.client.Update(context.TODO(), dvr)
 		if err != nil {
 			reqLogger.Error(err, "Error while updating ObjRef", "BlockDevice-CR:", dvr.ObjectMeta.Name)
