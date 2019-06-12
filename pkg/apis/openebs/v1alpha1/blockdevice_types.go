@@ -63,8 +63,12 @@ type DeviceStatus struct {
 type DeviceClaimState string
 
 const (
-	// BlockDeviceUnclaimed represents that the block device is not bound to any BDC
+	// BlockDeviceUnclaimed represents that the block device is not bound to any BDC,
+	// all cleanup jobs have been completed and is available for claiming.
 	BlockDeviceUnclaimed = "Unclaimed"
+	// BlockDeviceReleased represents that the block device is released from the BDC,
+	// pending cleanup jobs
+	BlockDeviceReleased = "Released"
 	// BlockDeviceClaimed represents that the block device is bound to a BDC
 	BlockDeviceClaimed = "Claimed"
 )
