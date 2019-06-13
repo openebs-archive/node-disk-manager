@@ -27,7 +27,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
 )
@@ -79,8 +79,10 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 	if volMode == VolumeModeBlock {
 		input := "if=/dev/zero"
 		output := "of=" + bd.Spec.Path
-		blockSize := "1"
-		count := strconv.FormatUint(bd.Spec.Capacity.Storage, 10)
+		blockSize := "bs=1M"
+		// get no of blocks required for a block size of 1M
+		blockCount := bd.Spec.Capacity.Storage / 1024 / 1024
+		count := "count=" + strconv.FormatUint(blockCount, 10)
 		jobContainer.Command = getCommand(BlockCleanerCommand, input, output, blockSize, count)
 	} else if volMode == VolumeModeFileSystem {
 		deleteOptions := "-rf"
@@ -115,7 +117,7 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 		BDLabel:               bd.Name,
 	}
 
-	podTemplate.ObjectMeta = v12.ObjectMeta{
+	podTemplate.ObjectMeta = metav1.ObjectMeta{
 		Name:      generateCleaningJobName(bd.Name),
 		Namespace: namespace,
 		Labels:    labels,
@@ -178,7 +180,8 @@ func (c *jobController) RemoveJob(bdName string) (CleanupState, error) {
 		return CleanupStateRunning, nil
 	}
 
-	if err = c.client.Delete(context.TODO(), job); err != nil {
+	err = c.client.Delete(context.TODO(), job, client.PropagationPolicy(metav1.DeletePropagationForeground))
+	if err != nil {
 		return CleanupStateUnknown, err
 	}
 
