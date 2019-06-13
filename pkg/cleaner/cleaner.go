@@ -6,19 +6,30 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// CleanupState represents the current state of the cleanup job
 type CleanupState int
 
 const (
+	// CleanupStateUnknown represents an unknown state of the cleanup job
 	CleanupStateUnknown CleanupState = iota + 1
+	// CleanupStateNotFound defines the state when a job does not exist
 	CleanupStateNotFound
+	// CleanupStateRunning represents a running cleanup job
 	CleanupStateRunning
+	// CleanupStateSucceeded represents that the cleanup job has been completed successfully
 	CleanupStateSucceeded
 )
 
+// VolumeMode defines the volume mode of the BlockDevice. It can be either block mode or
+// filesystem mode
 type VolumeMode string
 
 const (
-	VolumeModeBlock      = "BlockVolumeMode"
+	// VolumeModeBlock defines a raw block volume mode which means the block device should
+	// be treated as raw block device
+	VolumeModeBlock = "BlockVolumeMode"
+	// VolumeModeFileSystem defines that the blockdevice should be treated as a block
+	// formatted with filesystem and is mounted
 	VolumeModeFileSystem = "FileSystemVolumeMode"
 )
 

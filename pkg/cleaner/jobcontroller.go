@@ -34,6 +34,8 @@ type jobController struct {
 	namespace string
 }
 
+// NewCleanupJob creates a new cleanup job in the  namespace. It returns a Job object which can be used to
+// start the job
 func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace string) (*batchv1.Job, error) {
 	nodeName := bd.Labels[controller.NDMHostKey]
 
@@ -95,6 +97,8 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 	return job, nil
 }
 
+// NewJobController returns a job controller struct which can be used to get the status
+// of the running job
 func NewJobController(client client.Client, namespace string) *jobController {
 	return &jobController{
 		client:    client,
