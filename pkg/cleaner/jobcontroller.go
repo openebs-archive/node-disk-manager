@@ -1,3 +1,19 @@
+/*
+Copyright 2019 OpenEBS Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package cleaner
 
 import (
@@ -14,12 +30,17 @@ import (
 
 const (
 	// JobContainerName is the name of the cleanup job container
-	JobContainerName    = "cleaner"
-	JobNamePrefix       = "cleanup-"
-	JobImageName        = "busybox"
-	BDLabel             = "blockdevice"
+	JobContainerName = "cleaner"
+	// JobNamePrefix is the prefix for the cleanup job name
+	JobNamePrefix = "cleanup-"
+	// JobImageName is the image to be used for the cleanup job container
+	JobImageName = "busybox"
+	// BDLabel is the label set on the job for identification of the BD
+	BDLabel = "blockdevice"
+	// BlockCleanerCommand is the command used to clean raw block
 	BlockCleanerCommand = "dd"
-	FSCleanerCommand    = "rm"
+	// FSCleanerCommand is the command to clear data on the filesystem
+	FSCleanerCommand = "rm"
 )
 
 // JobController defines the interface for the job controller.
@@ -164,8 +185,11 @@ func generateCleaningJobName(bdName string) string {
 	return JobNamePrefix + bdName
 }
 
-func getCommand(cmd string, options ...string) []string {
+func getCommand(cmd string, args ...string) []string {
 	var command []string
 	command = append(command, cmd)
-	return append(command, options)
+	for _, arg := range args {
+		command = append(command, arg)
+	}
+	return command
 }
