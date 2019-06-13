@@ -10,6 +10,7 @@ type CleanupState int
 
 const (
 	CleanupStateUnknown CleanupState = iota + 1
+	CleanupStateNotFound
 	CleanupStateRunning
 	CleanupStateSucceeded
 )

@@ -18,7 +18,7 @@ const (
 	JobImageName        = "busybox"
 	BDLabel             = "blockdevice"
 	BlockCleanerCommand = "dd if=/dev/zero of="
-	FSCleanerCommand    = "rm -rf /tmp"
+	FSCleanerCommand    = "rm -rf /tmp/*"
 )
 
 // JobController defines the interface for the job controller.
@@ -52,7 +52,7 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 		jobContainer.Command = getCommand(BlockCleanerCommand + bd.Spec.Path)
 	} else if volMode == VolumeModeFileSystem {
 		jobContainer.Command = getCommand(FSCleanerCommand)
-		mountName := "fsMount"
+		mountName := "vol-mount"
 		volumes := []v1.Volume{
 			{
 				Name: mountName,
@@ -133,6 +133,9 @@ func (c *jobController) RemoveJob(bdName string) (CleanupState, error) {
 
 	err := c.client.Get(context.TODO(), objKey, job)
 	if err != nil {
+		if errors.IsNotFound(err) {
+			return CleanupStateNotFound, nil
+		}
 		return CleanupStateUnknown, err
 	}
 	if job.Status.Succeeded == 0 {

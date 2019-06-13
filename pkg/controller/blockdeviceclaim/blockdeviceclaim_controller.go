@@ -177,7 +177,7 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 	// The object is being deleted
 	if util.Contains(instance.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer) {
 		// Finalizer is set, lets handle external dependency
-		if err := r.deleteClaimedBlockDevice(instance, reqLogger); err != nil {
+		if err := r.releaseClaimedBlockDevice(instance, reqLogger); err != nil {
 			reqLogger.Error(err, "Could not delete external dependency", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
 			return err
 		}
@@ -235,8 +235,8 @@ func (r *ReconcileBlockDeviceClaim) isDeviceRequestedByThisDeviceClaim(
 	return true
 }
 
-// deleteClaimedBlockDevice unclaims the block device claimed by this BlockDeviceClaim
-func (r *ReconcileBlockDeviceClaim) deleteClaimedBlockDevice(
+// releaseClaimedBlockDevice releases the block device claimed by this BlockDeviceClaim
+func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 	instance *apis.BlockDeviceClaim, reqLogger logr.Logger) error {
 
 	reqLogger.Info("Deleting external dependencies for CR:" + instance.Name)
@@ -254,12 +254,12 @@ func (r *ReconcileBlockDeviceClaim) deleteClaimedBlockDevice(
 
 	// Check if same deviceclaim holding the ObjRef
 	for _, item := range listDVR.Items {
-		if r.isDeviceRequestedByThisDeviceClaim(instance, item, reqLogger) == false {
+		if !r.isDeviceRequestedByThisDeviceClaim(instance, item, reqLogger) {
 			continue
 		}
 
 		// Found a blockdevice ObjRef with BlockDeviceClaim, Clear
-		// ObjRef and mark blockdevice unclaimed in etcd
+		// ObjRef and mark blockdevice released in etcd
 		dvr := item.DeepCopy()
 		dvr.Spec.ClaimRef = nil
 		dvr.Status.ClaimState = apis.BlockDeviceReleased
