@@ -45,6 +45,7 @@ type DeviceDetails struct {
 type FileSystemInfo struct {
 	Type       string `json:"fsType,omitempty"`     //Type represents the FileSystem type of the block device
 	Mountpoint string `json:"mountPoint,omitempty"` //MountPoint represents the mountpoint of the block device.
+	IsFormated bool   `json:"isFormated,omitempty"` // IsFormated represents if file system is formated or not.
 }
 
 // DeviceDevLink holds the maping between type and links like by-id type or by-path type link

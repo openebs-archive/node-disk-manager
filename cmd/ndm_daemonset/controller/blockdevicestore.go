@@ -27,6 +27,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+func (c *Controller) isFormated(bd apis.BlockDevice) bool {
+	return bd.Spec.FileSystem.IsFormated
+}
+
 // CreateBlockDevice creates the BlockDevice resource in etcd
 // This API will be called for each new addDiskEvent
 // blockDevice is DeviceResource-CR
@@ -37,6 +41,10 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 	if err == nil {
 		glog.Info("Created blockdevice object in etcd: ",
 			blockDeviceCopy.ObjectMeta.Name)
+		if !c.isFormated(blockDevice) {
+			glog.Warning("Unformated disk is required")
+		}
+
 		return
 	}
 

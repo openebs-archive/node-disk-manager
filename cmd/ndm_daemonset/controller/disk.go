@@ -253,6 +253,11 @@ func (fs *FSInfo) getFileSystemInfo() apis.FileSystemInfo {
 	if fs.FileSystem != udev.UDEV_FS_NONE {
 		fsInfo.Type = fs.FileSystem
 		fsInfo.Mountpoint = fs.MountPoint
+		fsInfo.IsFormated = true
+	}
+
+	if fs.FileSystem == udev.UDEV_FS_NONE {
+		fsInfo.IsFormated = false
 	}
 	return fsInfo
 }
