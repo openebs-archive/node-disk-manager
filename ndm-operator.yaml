@@ -61,7 +61,7 @@ metadata:
   name: openebs-ndm-operator
 rules:
 - apiGroups: ["*"]
-  resources: ["disks", "blockdevices", "blockdeviceclaims", "pods", "services", "endpoints", "events", "configmaps", "secrets"]
+  resources: ["disks", "blockdevices", "blockdeviceclaims", "pods", "services", "endpoints", "events", "configmaps", "secrets", "jobs"]
   verbs:
   - '*'
 - apiGroups:
