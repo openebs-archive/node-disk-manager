@@ -60,6 +60,7 @@ func mockEmptyDiskCr() apis.Disk {
 	fakeDr.TypeMeta = fakeTypeMeta
 	fakeDr.Status.State = controller.NDMActive
 	fakeDr.Spec.DevLinks = make([]apis.DiskDevLink, 0)
+	fakeDr.Spec.FileSystem.IsFormated = true
 	return fakeDr
 }
 

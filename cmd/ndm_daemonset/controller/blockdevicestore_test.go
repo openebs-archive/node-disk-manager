@@ -42,6 +42,9 @@ func mockEmptyDeviceCr() apis.BlockDevice {
 	fakeDeviceSpec := apis.DeviceSpec{
 		DevLinks:    make([]apis.DeviceDevLink, 0),
 		Partitioned: NDMNotPartitioned,
+		FileSystem: apis.FileSystemInfo{
+			IsFormated: true,
+		},
 	}
 
 	fakeDevice.ObjectMeta = fakeObjectMeta

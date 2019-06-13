@@ -261,6 +261,7 @@ func TestToDisk(t *testing.T) {
 	fakeObjectMeta.Labels[NDMManagedKey] = TrueString
 	expectedDisk.ObjectMeta = fakeObjectMeta
 	expectedDisk.Spec.DevLinks = fakeDevLinks
+	expectedDisk.Spec.FileSystem.IsFormated = true
 	expectedDisk.Status.State = NDMActive
 
 	tests := map[string]struct {

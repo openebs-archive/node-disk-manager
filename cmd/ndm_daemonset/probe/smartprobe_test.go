@@ -54,6 +54,9 @@ func mockOsDiskToAPIBySmart() (apis.Disk, error) {
 	fakeObj := apis.DiskSpec{
 		Capacity: fakeCapacity,
 		Details:  fakeDetails,
+		FileSystem: apis.FileSystemInfo{
+			IsFormated: true,
+		},
 	}
 
 	devLinks := make([]apis.DiskDevLink, 0)
