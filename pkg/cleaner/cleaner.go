@@ -108,7 +108,6 @@ func (c *Cleaner) runJob(bd *v1alpha1.BlockDevice, volumeMode VolumeMode) error 
 func getVolumeMode(spec v1alpha1.DeviceSpec) VolumeMode {
 	if spec.FileSystem.Mountpoint != "" {
 		return VolumeModeFileSystem
-	} else {
-		return VolumeModeBlock
 	}
+	return VolumeModeBlock
 }

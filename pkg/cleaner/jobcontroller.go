@@ -9,16 +9,17 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
+	"strconv"
 )
 
 const (
+	// JobContainerName is the name of the cleanup job container
 	JobContainerName    = "cleaner"
 	JobNamePrefix       = "cleanup-"
 	JobImageName        = "busybox"
 	BDLabel             = "blockdevice"
-	BlockCleanerCommand = "dd if=/dev/zero of="
-	FSCleanerCommand    = "rm -rf /tmp/*"
+	BlockCleanerCommand = "dd"
+	FSCleanerCommand    = "rm"
 )
 
 // JobController defines the interface for the job controller.
@@ -51,9 +52,15 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 	podSpec := v1.PodSpec{}
 
 	if volMode == VolumeModeBlock {
-		jobContainer.Command = getCommand(BlockCleanerCommand + bd.Spec.Path)
+		input := "if=/dev/zero"
+		output := "of=" + bd.Spec.Path
+		blockSize := "1"
+		count := strconv.FormatUint(bd.Spec.Capacity.Storage, 10)
+		jobContainer.Command = getCommand(BlockCleanerCommand, input, output, blockSize, count)
 	} else if volMode == VolumeModeFileSystem {
-		jobContainer.Command = getCommand(FSCleanerCommand)
+		deleteOptions := "-rf"
+		directory := "/tmp/*"
+		jobContainer.Command = getCommand(FSCleanerCommand, deleteOptions, directory)
 		mountName := "vol-mount"
 		volumes := []v1.Volume{
 			{
@@ -157,6 +164,8 @@ func generateCleaningJobName(bdName string) string {
 	return JobNamePrefix + bdName
 }
 
-func getCommand(cmd string) []string {
-	return strings.Split(cmd, " ")
+func getCommand(cmd string, options ...string) []string {
+	var command []string
+	command = append(command, cmd)
+	return append(command, options)
 }
