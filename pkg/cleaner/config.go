@@ -19,10 +19,13 @@ package cleaner
 import "os"
 
 const (
+	// EnvCleanUpJobImage is the environment variable for getting the
+	// job container image
 	EnvCleanUpJobImage = "CLEANUP_JOB_IMAGE"
 )
 
 var (
+	// defaultCleanUpJobImage is the default job container image
 	defaultCleanUpJobImage = "quay.io/openebs/openebs-tools:3.8"
 )
 
