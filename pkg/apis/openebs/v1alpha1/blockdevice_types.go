@@ -65,12 +65,12 @@ type DeviceClaimState string
 const (
 	// BlockDeviceUnclaimed represents that the block device is not bound to any BDC,
 	// all cleanup jobs have been completed and is available for claiming.
-	BlockDeviceUnclaimed = "Unclaimed"
+	BlockDeviceUnclaimed DeviceClaimState = "Unclaimed"
 	// BlockDeviceReleased represents that the block device is released from the BDC,
 	// pending cleanup jobs
-	BlockDeviceReleased = "Released"
+	BlockDeviceReleased DeviceClaimState = "Released"
 	// BlockDeviceClaimed represents that the block device is bound to a BDC
-	BlockDeviceClaimed = "Claimed"
+	BlockDeviceClaimed DeviceClaimState = "Claimed"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
