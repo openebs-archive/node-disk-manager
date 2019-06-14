@@ -37,8 +37,6 @@ const (
 	JobContainerName = "cleaner"
 	// JobNamePrefix is the prefix for the cleanup job name
 	JobNamePrefix = "cleanup-"
-	// JobImageName is the image to be used for the cleanup job container
-	JobImageName = "busybox"
 	// BDLabel is the label set on the job for identification of the BD
 	BDLabel = "blockdevice"
 	// BlockCleanerCommand is the command used to clean raw block
@@ -68,7 +66,7 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 	priv := true
 	jobContainer := v1.Container{
 		Name:  JobContainerName,
-		Image: JobImageName,
+		Image: getCleanUpImage(),
 		SecurityContext: &v1.SecurityContext{
 			Privileged: &priv,
 		},

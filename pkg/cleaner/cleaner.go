@@ -82,10 +82,12 @@ func NewCleaner(client client.Client, namespace string, cleanupTracker *CleanupS
 // job is in unknown state
 func (c *Cleaner) Clean(blockDevice *v1alpha1.BlockDevice) (bool, error) {
 	bdName := blockDevice.Name
+	// check if a cleanup job for the bd already exists and return
 	if c.CleanupStatus.InProgress(bdName) {
 		return false, nil
 	}
-	// Check if cleaning was just completed.
+	// Check if cleaning was just completed. if job was completed, it will be removed,
+	// The state of the job will be returned.
 	state, err := c.CleanupStatus.RemoveStatus(bdName)
 	if err != nil {
 		return false, nil
@@ -94,10 +96,13 @@ func (c *Cleaner) Clean(blockDevice *v1alpha1.BlockDevice) (bool, error) {
 	switch state {
 	case CleanupStateSucceeded:
 		return true, nil
+	case CleanupStateNotFound:
+		// we are starting the job, since no job for the BD was found
 	}
 
 	volMode := getVolumeMode(blockDevice.Spec)
 
+	// create a new job for the blockdevice
 	err = c.runJob(blockDevice, volMode)
 
 	return false, err
