@@ -2,7 +2,6 @@ package blockdevice
 
 import (
 	"fmt"
-
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
@@ -30,10 +29,23 @@ func (c *Config) FilterFrom(bdList *apis.BlockDeviceList) (*apis.BlockDevice, er
 // getCandidateDevices selects a list of blockdevices from a given block device
 // list based on criteria specified in the claim spec
 func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockDeviceList, error) {
-	verifyDeviceType := false
-	if c.ClaimSpec.DeviceType != "" {
-		verifyDeviceType = true
+
+	verifyFSType := false
+
+	mountPoint := c.ClaimSpec.Details.MountPoint
+	fstype := c.ClaimSpec.Details.DeviceFormat
+
+	if c.ClaimSpec.Details.BlockVolumeMode != "" {
+		verifyFSType = true
+		if c.ClaimSpec.Details.BlockVolumeMode == apis.VolumeModeBlock {
+			// mark fields as empty if its block mode
+			mountPoint = ""
+			fstype = ""
+		}
 	}
+
+	verifyDeviceType := c.ClaimSpec.DeviceType != ""
+
 	candidateBD := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
@@ -61,6 +73,12 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 				continue
 			}
 			if verifyDeviceType && bd.Spec.Details.DeviceType != c.ClaimSpec.DeviceType {
+				continue
+			}
+			if verifyFSType && bd.Spec.FileSystem.Type != fstype {
+				continue
+			}
+			if verifyFSType && bd.Spec.FileSystem.Mountpoint != mountPoint {
 				continue
 			}
 			candidateBD.Items = append(candidateBD.Items, bd)

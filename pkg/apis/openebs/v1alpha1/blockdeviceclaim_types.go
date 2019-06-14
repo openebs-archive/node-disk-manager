@@ -59,10 +59,25 @@ const (
 
 // DeviceClaimDetails defines the details of the block device that should be claimed
 type DeviceClaimDetails struct {
-	DeviceFormat   string `json:"formatType,omitempty"`     //Format of the device required, eg:ext4, xfs
-	MountPoint     string `json:"mountPoint,omitempty"`     //MountPoint of the device required. Claim device from the specified mountpoint.
-	AllowPartition bool   `json:"allowPartition,omitempty"` //AllowPartition represents whether to claim a full block device or a device that is a partition
+	// BlockVolumeMode represents whether to claim a device in Block mode or Filesystem mode.
+	// These are use cases of BlockVolumeMode:
+	// 1) Not specified: DeviceFormat and MountPoint will not be considered
+	// 2) VolumeModeBlock: DeviceFormat and MountPoint checks will be used as empty strings irrespective
+	//    of the value they hold
+	// 3) VolumeModeFileSystem: DeviceFormat and MountPoint will be used for exact matches
+	BlockVolumeMode BlockDeviceVolumeMode `json:"blockVolumeMode, omitempty"`
+	DeviceFormat    string                `json:"formatType,omitempty"`     //Format of the device required, eg:ext4, xfs
+	MountPoint      string                `json:"mountPoint,omitempty"`     //MountPoint of the device required. Claim device from the specified mountpoint.
+	AllowPartition  bool                  `json:"allowPartition,omitempty"` //AllowPartition represents whether to claim a full block device or a device that is a partition
 }
+
+// BlockDeviceVolumeMode
+type BlockDeviceVolumeMode string
+
+const (
+	VolumeModeBlock      BlockDeviceVolumeMode = "Block"
+	VolumeModeFileSystem BlockDeviceVolumeMode = "FileSystem"
+)
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
