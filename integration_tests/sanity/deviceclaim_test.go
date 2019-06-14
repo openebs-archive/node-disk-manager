@@ -134,7 +134,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 
 			for _, bd := range bdList.Items {
 				if bd.Name == bdName {
-					Expect(string(bd.Status.ClaimState)).To(Equal(apis.BlockDeviceClaimed))
+					Expect(bd.Status.ClaimState).To(Equal(apis.BlockDeviceClaimed))
 				}
 			}
 
@@ -170,7 +170,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 
 			for _, bd := range bdList.Items {
 				if bd.Name == bdName {
-					Expect(string(bd.Status.ClaimState)).To(Equal(apis.BlockDeviceClaimed))
+					Expect(bd.Status.ClaimState).To(Equal(apis.BlockDeviceClaimed))
 				}
 			}
 
@@ -183,7 +183,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			for _, bd := range bdList.Items {
 				if bd.Name == bdName {
-					Expect(string(bd.Status.ClaimState)).To(Equal(apis.BlockDeviceReleased))
+					Expect(bd.Status.ClaimState).To(Equal(apis.BlockDeviceUnclaimed))
 				}
 			}
 
