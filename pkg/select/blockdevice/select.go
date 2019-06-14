@@ -70,7 +70,7 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 				continue
 			}
 
-			if !isBlockVolumeMatch(*c.ClaimSpec, bd.Spec, verifyVolumeMode, verifyFSType) {
+			if isBlockVolumeMatch(*c.ClaimSpec, bd.Spec, verifyVolumeMode, verifyFSType) {
 				continue
 			}
 
