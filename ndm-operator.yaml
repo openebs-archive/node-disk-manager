@@ -269,3 +269,5 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "node-disk-operator"
+            - name: CLEANUP_JOB_IMAGE
+              value: "openebs/openebs-tools:3.8"
