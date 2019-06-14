@@ -41,8 +41,6 @@ const (
 	BDLabel = "blockdevice"
 	// BlockCleanerCommand is the command used to clean raw block
 	BlockCleanerCommand = "dd"
-	// FSCleanerCommand is the command to clear data on the filesystem
-	FSCleanerCommand = "rm"
 )
 
 // JobController defines the interface for the job controller.
@@ -83,9 +81,8 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 		count := "count=" + strconv.FormatUint(blockCount, 10)
 		jobContainer.Command = getCommand(BlockCleanerCommand, input, output, blockSize, count)
 	} else if volMode == VolumeModeFileSystem {
-		deleteOptions := "-rf"
-		directory := "/tmp/*"
-		jobContainer.Command = getCommand(FSCleanerCommand, deleteOptions, directory)
+		jobContainer.Command = []string{"/bin/sh", "-c"}
+		jobContainer.Args = []string{"find /tmp -mindepth 1 -maxdepth 1 -print0 | xargs -0 rm -rf"}
 		mountName := "vol-mount"
 		volumes := []v1.Volume{
 			{
