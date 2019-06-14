@@ -67,15 +67,16 @@ type DeviceClaimDetails struct {
 	// 3) VolumeModeFileSystem: DeviceFormat and MountPoint will be used for exact matches
 	BlockVolumeMode BlockDeviceVolumeMode `json:"blockVolumeMode, omitempty"`
 	DeviceFormat    string                `json:"formatType,omitempty"`     //Format of the device required, eg:ext4, xfs
-	MountPoint      string                `json:"mountPoint,omitempty"`     //MountPoint of the device required. Claim device from the specified mountpoint.
 	AllowPartition  bool                  `json:"allowPartition,omitempty"` //AllowPartition represents whether to claim a full block device or a device that is a partition
 }
 
-// BlockDeviceVolumeMode
+// BlockDeviceVolumeMode specifies the type in which the BlockDevice can be used
 type BlockDeviceVolumeMode string
 
 const (
-	VolumeModeBlock      BlockDeviceVolumeMode = "Block"
+	// VolumeModeBlock specifies that the block device needs to be used as a raw block
+	VolumeModeBlock BlockDeviceVolumeMode = "Block"
+	// VolumeModeFileSystem specifies that block device will be used with a filesystem already existing
 	VolumeModeFileSystem BlockDeviceVolumeMode = "FileSystem"
 )
 

@@ -29,21 +29,15 @@ func (c *Config) FilterFrom(bdList *apis.BlockDeviceList) (*apis.BlockDevice, er
 // getCandidateDevices selects a list of blockdevices from a given block device
 // list based on criteria specified in the claim spec
 func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockDeviceList, error) {
-
+	verifyVolumeMode := false
 	verifyFSType := false
 
-	mountPoint := c.ClaimSpec.Details.MountPoint
-	fstype := c.ClaimSpec.Details.DeviceFormat
-
 	if c.ClaimSpec.Details.BlockVolumeMode != "" {
-		verifyFSType = true
-		if c.ClaimSpec.Details.BlockVolumeMode == apis.VolumeModeBlock {
-			// mark fields as empty if its block mode
-			mountPoint = ""
-			fstype = ""
+		verifyVolumeMode = true
+		if c.ClaimSpec.Details.BlockVolumeMode == apis.VolumeModeFileSystem {
+			verifyFSType = true
 		}
 	}
-
 	verifyDeviceType := c.ClaimSpec.DeviceType != ""
 
 	candidateBD := &apis.BlockDeviceList{
@@ -75,12 +69,11 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 			if verifyDeviceType && bd.Spec.Details.DeviceType != c.ClaimSpec.DeviceType {
 				continue
 			}
-			if verifyFSType && bd.Spec.FileSystem.Type != fstype {
+
+			if !isBlockVolumeMatch(*c.ClaimSpec, bd.Spec, verifyVolumeMode, verifyFSType) {
 				continue
 			}
-			if verifyFSType && bd.Spec.FileSystem.Mountpoint != mountPoint {
-				continue
-			}
+
 			candidateBD.Items = append(candidateBD.Items, bd)
 		}
 	}
@@ -110,4 +103,23 @@ func (c *Config) getSelectedDevice(bdList *apis.BlockDeviceList) (*apis.BlockDev
 func matchResourceRequirements(bd apis.BlockDevice, list v1.ResourceList) bool {
 	capacity, _ := verify.GetRequestedCapacity(list)
 	return bd.Spec.Capacity.Storage >= uint64(capacity)
+}
+
+// isBlockVolumeMatch returns true if volume mode in claim spec matches volume mode in BD spec
+func isBlockVolumeMatch(bdcSpec apis.DeviceClaimSpec, bdSpec apis.DeviceSpec, verifyVolMode, verifyFSType bool) bool {
+
+	if verifyVolMode {
+		if bdcSpec.Details.BlockVolumeMode == apis.VolumeModeBlock {
+			// if filesystem or mountpoint exists on bd, should return false
+			if bdSpec.FileSystem.Mountpoint != "" || bdSpec.FileSystem.Type != "" {
+				return false
+			}
+		} else {
+			// in FSMode, either there should be no filesystem or given filesystem should match in the claim spec
+			if bdSpec.FileSystem.Type == "" || (verifyFSType && bdSpec.FileSystem.Type != bdcSpec.Details.DeviceFormat) {
+				return false
+			}
+		}
+	}
+	return true
 }
