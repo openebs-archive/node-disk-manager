@@ -61,7 +61,7 @@ metadata:
   name: openebs-ndm-operator
 rules:
 - apiGroups: ["*"]
-  resources: ["disks", "blockdevices", "blockdeviceclaims", "pods", "services", "endpoints", "events", "configmaps", "secrets"]
+  resources: ["disks", "blockdevices", "blockdeviceclaims", "pods", "services", "endpoints", "events", "configmaps", "secrets", "jobs"]
   verbs:
   - '*'
 - apiGroups:
@@ -269,3 +269,5 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "node-disk-operator"
+            - name: CLEANUP_JOB_IMAGE
+              value: "quay.io/openebs/openebs-tools:3.8"

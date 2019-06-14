@@ -5,6 +5,7 @@ import (
 	"github.com/go-logr/logr"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	"github.com/openebs/node-disk-manager/pkg/cleaner"
 	"github.com/openebs/node-disk-manager/pkg/udev"
 	"k8s.io/apimachinery/pkg/types"
 	"strings"
@@ -91,6 +92,24 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, err
 	}
 
+	switch instance.Status.ClaimState {
+	case openebsv1alpha1.BlockDeviceReleased:
+		jobController := cleaner.NewJobController(r.client, request.Namespace)
+		cleanupTracker := &cleaner.CleanupStatusTracker{JobController: jobController}
+		bdCleaner := cleaner.NewCleaner(r.client, request.Namespace, cleanupTracker)
+		ok, err := bdCleaner.Clean(instance)
+		if err != nil {
+			reqLogger.Error(err, "error while cleaning")
+			break
+		}
+		if ok {
+			err := r.updateBDStatus(openebsv1alpha1.BlockDeviceUnclaimed, instance)
+			if err != nil {
+				reqLogger.Error(err, "marking blockdevice "+instance.Name+" as Unclaimed failed")
+			}
+		}
+	}
+
 	err = r.CheckBackingDiskStatusAndUpdateDeviceCR(instance, reqLogger)
 
 	if err != nil {
@@ -151,6 +170,15 @@ func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 			return err
 		}
 		reqLogger.Info("BlockDevice-CR marked Inactive", "BlockDevice:", instance.ObjectMeta.Name)
+	}
+	return nil
+}
+
+func (r *ReconcileBlockDevice) updateBDStatus(state openebsv1alpha1.DeviceClaimState, instance *openebsv1alpha1.BlockDevice) error {
+	instance.Status.ClaimState = state
+	err := r.client.Update(context.TODO(), instance)
+	if err != nil {
+		return err
 	}
 	return nil
 }

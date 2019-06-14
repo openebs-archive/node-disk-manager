@@ -134,7 +134,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 
 			for _, bd := range bdList.Items {
 				if bd.Name == bdName {
-					Expect(string(bd.Status.ClaimState)).To(Equal(apis.BlockDeviceClaimed))
+					Expect(bd.Status.ClaimState).To(Equal(apis.BlockDeviceClaimed))
 				}
 			}
 
@@ -170,7 +170,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 
 			for _, bd := range bdList.Items {
 				if bd.Name == bdName {
-					Expect(string(bd.Status.ClaimState)).To(Equal(apis.BlockDeviceClaimed))
+					Expect(bd.Status.ClaimState).To(Equal(apis.BlockDeviceClaimed))
 				}
 			}
 
@@ -178,12 +178,12 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForReconcilation()
 
-			// check status of BD again to check it has been unclaimed
+			// check status of BD again to check it has been released
 			bdList, err = k8sClient.ListBlockDevices()
 			Expect(err).NotTo(HaveOccurred())
 			for _, bd := range bdList.Items {
 				if bd.Name == bdName {
-					Expect(string(bd.Status.ClaimState)).To(Equal(apis.BlockDeviceUnclaimed))
+					Expect(bd.Status.ClaimState).To(Equal(apis.BlockDeviceReleased))
 				}
 			}
 
