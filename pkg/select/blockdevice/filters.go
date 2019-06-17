@@ -132,9 +132,15 @@ func filterVolumeMode(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSp
 			}
 
 		case apis.VolumeModeFileSystem:
-			// if FSVolume mode, either FSType should be blank or FStype should
-			// match with format given in claimspec
-			if bd.Spec.FileSystem.Type != "" && bd.Spec.FileSystem.Type != spec.Details.DeviceFormat {
+			// in FSVolume Mode,
+			// In BD: FS and Mountpoint should not be empty. If empty the BD
+			// is removed by filter
+			if bd.Spec.FileSystem.Type == "" || bd.Spec.FileSystem.Mountpoint == "" {
+				continue
+			}
+			// In BDC: If DeviceFormat is specified, then it should match with BD,
+			// else do not compare FSType. If the check fails, the BD is removed by the filter.
+			if spec.Details.DeviceFormat != "" && bd.Spec.FileSystem.Type != spec.Details.DeviceFormat {
 				continue
 			}
 		}
