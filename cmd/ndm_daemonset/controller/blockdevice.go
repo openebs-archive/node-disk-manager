@@ -73,6 +73,7 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 	}
 	objectMeta.Labels[NDMHostKey] = di.HostName
 	objectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
+	objectMeta.Labels[NDMManagedKey] = TrueString
 	return objectMeta
 }
 

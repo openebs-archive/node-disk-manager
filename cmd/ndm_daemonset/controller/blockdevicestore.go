@@ -155,6 +155,7 @@ func (c *Controller) ListBlockDeviceResource() (*apis.BlockDeviceList, error) {
 	}
 
 	filter := NDMHostKey + "=" + c.HostName
+	filter = filter + "," + NDMManagedKey + "!=" + FalseString
 	opts := &client.ListOptions{}
 	opts.SetLabelSelector(filter)
 	err := c.Clientset.List(context.TODO(), opts, blockDeviceList)
