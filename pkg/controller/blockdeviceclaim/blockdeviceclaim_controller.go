@@ -148,8 +148,9 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 		return err
 	}
 
-	selectedDevice, err := config.FilterFrom(bdList)
+	selectedDevice, err := config.Filter(bdList)
 	if err != nil {
+		reqLogger.Info("Error selecting devices", err)
 		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 	} else {
 		instance.Spec.BlockDeviceName = selectedDevice.Name

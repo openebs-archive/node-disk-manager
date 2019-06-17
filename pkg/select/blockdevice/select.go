@@ -2,15 +2,11 @@ package blockdevice
 
 import (
 	"fmt"
-	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	"github.com/openebs/node-disk-manager/pkg/select/verify"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// FilterFrom selects a single block device from a list of block devices
-func (c *Config) FilterFrom(bdList *apis.BlockDeviceList) (*apis.BlockDevice, error) {
+// Filter selects a single block device from a list of block devices
+func (c *Config) Filter(bdList *apis.BlockDeviceList) (*apis.BlockDevice, error) {
 	if len(bdList.Items) == 0 {
 		return nil, fmt.Errorf("no blockdevices found")
 	}
@@ -29,54 +25,23 @@ func (c *Config) FilterFrom(bdList *apis.BlockDeviceList) (*apis.BlockDevice, er
 // getCandidateDevices selects a list of blockdevices from a given block device
 // list based on criteria specified in the claim spec
 func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockDeviceList, error) {
-	verifyVolumeMode := false
-	verifyFSType := false
 
-	if c.ClaimSpec.Details.BlockVolumeMode != "" {
-		verifyVolumeMode = true
-		if c.ClaimSpec.Details.BlockVolumeMode == apis.VolumeModeFileSystem {
-			verifyFSType = true
-		}
+	// filterKeys to be used for filtering, by default active and unclaimed filter is present
+	filterKeys := []string{FilterActive, FilterUnclaimed}
+
+	if c.ManualSelection {
+		filterKeys = append(filterKeys, FilterBlockDeviceName)
+	} else {
+		filterKeys = append(filterKeys,
+			// Sparse BDs can be claimed only by manual selection. Therefore, all
+			// sparse BDs will be filtered out in auto mode
+			FilterOutSparseBlockDevices,
+			FilterDeviceType,
+			FilterVolumeMode,
+		)
 	}
-	verifyDeviceType := c.ClaimSpec.DeviceType != ""
 
-	candidateBD := &apis.BlockDeviceList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "BlockDevice",
-			APIVersion: "openebs.io/v1alpha1",
-		},
-	}
-	// iterate through each BlockDevice and gets all the eligible devices.
-	// in case of manual selection, all other checks are skipped, except network
-	// only the name is matched
-	for _, bd := range bdList.Items {
-		// select only active and unclaimed block devices
-		if bd.Status.State != controller.NDMActive ||
-			bd.Status.ClaimState != apis.BlockDeviceUnclaimed {
-			continue
-		}
-		// for manual selection, only name needs to be checked.
-		if c.ManualSelection {
-			if bd.Name == c.ClaimSpec.BlockDeviceName {
-				candidateBD.Items = append(candidateBD.Items, bd)
-				break
-			}
-		} else {
-			// sparse disk can be selected only by manual selection
-			if bd.Spec.Details.DeviceType == controller.SparseBlockDeviceType {
-				continue
-			}
-			if verifyDeviceType && bd.Spec.Details.DeviceType != c.ClaimSpec.DeviceType {
-				continue
-			}
-
-			if isBlockVolumeMatch(*c.ClaimSpec, bd.Spec, verifyVolumeMode, verifyFSType) {
-				continue
-			}
-
-			candidateBD.Items = append(candidateBD.Items, bd)
-		}
-	}
+	candidateBD := c.ApplyFilters(bdList, filterKeys...)
 
 	if len(candidateBD.Items) == 0 {
 		return nil, fmt.Errorf("no devices found matching the criteria")
@@ -91,35 +56,16 @@ func (c *Config) getSelectedDevice(bdList *apis.BlockDeviceList) (*apis.BlockDev
 	if c.ManualSelection {
 		return &bdList.Items[0], nil
 	}
-	for _, bd := range bdList.Items {
-		if matchResourceRequirements(bd, c.ClaimSpec.Resources.Requests) {
-			return &bd, nil
-		}
+
+	// filterKeys for filtering based on resource requirements
+	filterKeys := []string{FilterResourceStorage}
+
+	selectedDevices := c.ApplyFilters(bdList, filterKeys...)
+
+	if len(selectedDevices.Items) == 0 {
+		return nil, fmt.Errorf("could not find a device with matching resource requirements")
 	}
-	return nil, fmt.Errorf("could not find a device with matching requirements")
-}
 
-// matchResourceRequirements matches a block device with a ResourceList
-func matchResourceRequirements(bd apis.BlockDevice, list v1.ResourceList) bool {
-	capacity, _ := verify.GetRequestedCapacity(list)
-	return bd.Spec.Capacity.Storage >= uint64(capacity)
-}
-
-// isBlockVolumeMatch returns true if volume mode in claim spec matches volume mode in BD spec
-func isBlockVolumeMatch(bdcSpec apis.DeviceClaimSpec, bdSpec apis.DeviceSpec, verifyVolMode, verifyFSType bool) bool {
-
-	if verifyVolMode {
-		if bdcSpec.Details.BlockVolumeMode == apis.VolumeModeBlock {
-			// if filesystem or mountpoint exists on bd, should return false
-			if bdSpec.FileSystem.Mountpoint != "" || bdSpec.FileSystem.Type != "" {
-				return false
-			}
-		} else {
-			// in FSMode, either there should be no filesystem or given filesystem should match in the claim spec
-			if bdSpec.FileSystem.Type == "" || (verifyFSType && bdSpec.FileSystem.Type != bdcSpec.Details.DeviceFormat) {
-				return false
-			}
-		}
-	}
-	return true
+	// will use the first available block device
+	return &selectedDevices.Items[0], nil
 }
