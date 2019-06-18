@@ -71,6 +71,7 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 	}
 
 	podSpec := v1.PodSpec{}
+	mountName := "vol-mount"
 
 	if volMode == VolumeModeBlock {
 		input := "if=/dev/zero"
@@ -80,25 +81,22 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 		blockCount := bd.Spec.Capacity.Storage / 1024 / 1024
 		count := "count=" + strconv.FormatUint(blockCount, 10)
 		jobContainer.Command = getCommand(BlockCleanerCommand, input, output, blockSize, count)
+
+		// in case of sparse disk, need to mount the sparse file directory
+		// and clear the sparse file
+		if bd.Spec.Details.DeviceType == controller.SparseBlockDeviceType {
+			volume, volumeMount := getVolumeMounts(bd.Spec.Path, bd.Spec.Path, mountName)
+			jobContainer.VolumeMounts = []v1.VolumeMount{volumeMount}
+			podSpec.Volumes = []v1.Volume{volume}
+		}
+
 	} else if volMode == VolumeModeFileSystem {
 		jobContainer.Command = []string{"/bin/sh", "-c"}
 		jobContainer.Args = []string{"find /tmp -mindepth 1 -maxdepth 1 -print0 | xargs -0 rm -rf"}
-		mountName := "vol-mount"
-		volumes := []v1.Volume{
-			{
-				Name: mountName,
-				VolumeSource: v1.VolumeSource{
-					HostPath: &v1.HostPathVolumeSource{
-						Path: bd.Spec.FileSystem.Mountpoint,
-					},
-				},
-			},
-		}
-		jobContainer.VolumeMounts = []v1.VolumeMount{{
-			Name:      mountName,
-			MountPath: "/tmp",
-		}}
-		podSpec.Volumes = volumes
+		volume, volumeMount := getVolumeMounts(bd.Spec.FileSystem.Mountpoint, "/tmp", mountName)
+
+		jobContainer.VolumeMounts = []v1.VolumeMount{volumeMount}
+		podSpec.Volumes = []v1.Volume{volume}
 	}
 
 	podSpec.Containers = []v1.Container{jobContainer}
@@ -194,4 +192,24 @@ func getCommand(cmd string, args ...string) []string {
 		command = append(command, arg)
 	}
 	return command
+}
+
+// getVolumeMounts returns the volume and volume mount for the given hostpath and
+// mountpath
+func getVolumeMounts(hostPath, mountPath, mountName string) (v1.Volume, v1.VolumeMount) {
+	volumes := v1.Volume{
+		Name: mountName,
+		VolumeSource: v1.VolumeSource{
+			HostPath: &v1.HostPathVolumeSource{
+				Path: hostPath,
+			},
+		},
+	}
+
+	volumeMount := v1.VolumeMount{
+		Name:      mountName,
+		MountPath: mountPath,
+	}
+
+	return volumes, volumeMount
 }
