@@ -7,6 +7,7 @@ import (
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/cleaner"
 	"github.com/openebs/node-disk-manager/pkg/udev"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/apimachinery/pkg/types"
 	"strings"
 
@@ -128,6 +129,11 @@ func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 	// If the BlockDevice is of type sparse, then we need not check the backing disk
 	// status, As sparse block devices does not have a backing disk.
 	if instance.Spec.Details.DeviceType == ndm.SparseBlockDeviceType {
+		return nil
+	}
+
+	// if NDM managed label
+	if util.CheckFalsy(instance.Labels[ndm.NDMManagedKey]) {
 		return nil
 	}
 

@@ -395,6 +395,7 @@ func TestPushDeviceResource(t *testing.T) {
 	fakeDr := mockEmptyDeviceCr()
 	fakeDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
 	fakeDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
+	fakeDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 
 	// Pass 1st argument as nil then it creates one disk resource
 	fakeController.PushBlockDeviceResource(nil, deviceDetails)

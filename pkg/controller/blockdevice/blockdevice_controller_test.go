@@ -116,14 +116,14 @@ func TestDeviceController(t *testing.T) {
 
 func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {
 	device := &openebsv1alpha1.BlockDevice{}
+	labels := map[string]string{ndm.NDMManagedKey: ndm.TrueString}
 
 	TypeMeta := metav1.TypeMeta{
 		Kind:       ndm.NDMBlockDeviceKind,
 		APIVersion: ndm.NDMVersion,
 	}
-
 	ObjectMeta := metav1.ObjectMeta{
-		Labels:    make(map[string]string),
+		Labels:    labels,
 		Name:      deviceName,
 		Namespace: namespace,
 	}
