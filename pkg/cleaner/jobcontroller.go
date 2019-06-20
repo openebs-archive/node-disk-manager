@@ -76,10 +76,7 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 		// wipefs erases the filesystem signature from the block
 		// -a    wipe all magic strings
 		// -f    force erasure
-		wipeCommand := BlockCleanerCommand + " -af " + bd.Spec.Path
-
-		jobContainer.Command = []string{"/bin/sh", "-c"}
-		jobContainer.Args = []string{wipeCommand}
+		jobContainer.Command = getCommand(BlockCleanerCommand, "-af", bd.Spec.Path)
 
 		// in case of sparse disk, need to mount the sparse file directory
 		// and clear the sparse file
