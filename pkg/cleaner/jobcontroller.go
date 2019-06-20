@@ -29,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strconv"
 )
 
 const (
@@ -40,7 +39,7 @@ const (
 	// BDLabel is the label set on the job for identification of the BD
 	BDLabel = "blockdevice"
 	// BlockCleanerCommand is the command used to clean raw block
-	BlockCleanerCommand = "dd"
+	BlockCleanerCommand = "wipefs"
 )
 
 // JobController defines the interface for the job controller.
@@ -74,13 +73,13 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 	mountName := "vol-mount"
 
 	if volMode == VolumeModeBlock {
-		input := "if=/dev/zero"
-		output := "of=" + bd.Spec.Path
-		blockSize := "bs=1M"
-		// get no of blocks required for a block size of 1M
-		blockCount := bd.Spec.Capacity.Storage / 1024 / 1024
-		count := "count=" + strconv.FormatUint(blockCount, 10)
-		jobContainer.Command = getCommand(BlockCleanerCommand, input, output, blockSize, count)
+		// wipefs erases the filesystem signature from the block
+		// -a    wipe all magic strings
+		// -f    force erasure
+		wipeCommand := BlockCleanerCommand + " -af " + bd.Spec.Path
+
+		jobContainer.Command = []string{"/bin/sh", "-c"}
+		jobContainer.Args = []string{wipeCommand}
 
 		// in case of sparse disk, need to mount the sparse file directory
 		// and clear the sparse file
