@@ -83,6 +83,8 @@ func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, int) 
 		glog.Errorf("Unable to get device info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
 		return nil, err
 	}
+	// close the device, once all info is fetched
+	defer closeDevice(&device, I.DevPath)
 
 	err = int(C.get_SCSI_Drive_Information(&device, &Drive))
 	if err != 0 {
@@ -90,10 +92,15 @@ func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, int) 
 		return nil, err
 	}
 
-	// Added for cross verification, can be removed later on.
-	//C.print_SAS_Sata_Device_Information(&Drive)
-
 	return &Drive, err
+}
+
+// closeDevice closes the device and log the error if any
+func closeDevice(device *C.tDevice, devPath string) {
+	err := int(C.close_Device(device))
+	if err != 0 {
+		glog.Errorf("unable to close device: %s with error: %s", devPath, SeachestErrors(err))
+	}
 }
 
 func (I *Identifier) GetHostName(driveInfo *C.driveInformationSAS_SATA) string {
