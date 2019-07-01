@@ -83,6 +83,8 @@ func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, int) 
 		glog.Errorf("Unable to get device info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
 		return nil, err
 	}
+	// close the device, once all info is fetched
+	defer C.close_Device(&device)
 
 	err = int(C.get_SCSI_Drive_Information(&device, &Drive))
 	if err != 0 {
