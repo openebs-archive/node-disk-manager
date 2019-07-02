@@ -16,7 +16,7 @@ limitations under the License.
 package seachest
 
 /*
-#cgo LDFLAGS: -lopensea-operations -lopensea-transport -lopensea-common
+#cgo LDFLAGS: -lopensea-operations -lopensea-transport -lopensea-common -lm
 #cgo CFLAGS: -I../../../openSeaChest/include -I../../../openSeaChest/opensea-common/include -I../../../openSeaChest/opensea-operations/include -I../../../openSeaChest/opensea-transport/include
 #include "common.h"
 #include "openseachest_util_options.h"
