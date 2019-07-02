@@ -33,7 +33,8 @@ install:
   # we need openSeaChest repo to build node-disk-manager
   - pushd .
   - cd ..
-  - git clone --recursive --branch Release-18.10 https://github.com/openebs/openSeaChest.git
+  # Hotfix-Makefile_fix is the Release-19.06 with certain fixes in Makefile
+  - git clone --recursive --branch Hotfix-Makefile_fix https://github.com/openebs/openSeaChest.git
   - cd openSeaChest/Make/gcc 
   - make release
   - cd ../../
