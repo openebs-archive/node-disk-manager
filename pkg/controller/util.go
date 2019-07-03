@@ -11,14 +11,17 @@ import (
 	"time"
 )
 
+// CreateDiskCRD creates a Disk CRD
 func CreateDiskCRD(clientset *apiextclient.Clientset) error {
 	return createCRD(clientset, v1alpha1.DiskCRD())
 }
 
+// CreateBlockDeviceCRD creates a BlockDevice CRD
 func CreateBlockDeviceCRD(clientset *apiextclient.Clientset) error {
 	return createCRD(clientset, v1alpha1.BlockDeviceCRD())
 }
 
+// CreateBlockDeviceClaimCRD creates a BlockDeviceClaim CRD
 func CreateBlockDeviceClaimCRD(clientset *apiextclient.Clientset) error {
 	return createCRD(clientset, v1alpha1.BlockDeviceClaimCRD())
 }
