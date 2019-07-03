@@ -10,9 +10,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/runtime/scheme"
 )
 
+const (
+	GroupName  = "openebs.io"
+	APIVersion = "v1alpha1"
+)
+
 var (
 	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: "openebs.io", Version: "v1alpha1"}
+	SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: APIVersion}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
