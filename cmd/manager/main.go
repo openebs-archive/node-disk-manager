@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/openebs/node-disk-manager/pkg/setup"
 	"os"
 	"runtime"
 	"time"
@@ -14,7 +15,6 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/ready"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
-	apiextclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -77,27 +77,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Info("Getting API Extensions client")
-
-	// Get the client for creating CRDs
-	apiExtClient, err := apiextclient.NewForConfig(cfg)
+	// get a new install setup
+	setupConfig, err := setup.NewInstallSetup(cfg)
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}
 
-	log.Info("Creating CRDs")
-	// Create the required CRDs - Disk, BlockDevice and BlockDeviceClaim
-	if err = controller.CreateDiskCRD(apiExtClient); err != nil {
+	// install the components
+	if err = setupConfig.Install(); err != nil {
 		log.Error(err, "")
-	}
-
-	if err = controller.CreateBlockDeviceCRD(apiExtClient); err != nil {
-		log.Error(err, "")
-	}
-
-	if err = controller.CreateBlockDeviceClaimCRD(apiExtClient); err != nil {
-		log.Error(err, "")
+		os.Exit(1)
 	}
 
 	log.Info("Registering Components")
