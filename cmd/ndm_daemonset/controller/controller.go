@@ -28,7 +28,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/apis"
-	"github.com/openebs/node-disk-manager/pkg/signals"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
