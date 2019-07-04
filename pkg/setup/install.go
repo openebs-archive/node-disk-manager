@@ -2,6 +2,7 @@ package setup
 
 import "fmt"
 
+// Install installs the components based on configuration provided
 func (sc Config) Install() error {
 
 	var err error
