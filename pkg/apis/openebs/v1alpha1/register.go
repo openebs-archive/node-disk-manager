@@ -11,7 +11,9 @@ import (
 )
 
 const (
-	GroupName  = "openebs.io"
+	// GroupName is the group of apis
+	GroupName = "openebs.io"
+	// APIVersion is the version for the apis
 	APIVersion = "v1alpha1"
 )
 
