@@ -10,7 +10,7 @@ func (sc Config) Install() error {
 	if err = sc.createDiskCRD(); err != nil {
 		return fmt.Errorf("disk CRD creation failed : %v", err)
 	}
-	if err = sc.createBlockDeviceClaimCRD(); err != nil {
+	if err = sc.createBlockDeviceCRD(); err != nil {
 		return fmt.Errorf("block device CRD creation failed : %v", err)
 	}
 	if err = sc.createBlockDeviceClaimCRD(); err != nil {

@@ -77,6 +77,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	log.Info("Installing the components")
 	// get a new install setup
 	setupConfig, err := setup.NewInstallSetup(cfg)
 	if err != nil {
