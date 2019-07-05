@@ -2,7 +2,6 @@ package setup
 
 import (
 	"fmt"
-	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,17 +10,29 @@ import (
 
 // createDiskCRD creates a Disk CRD
 func (sc Config) createDiskCRD() error {
-	return sc.createCRD(v1alpha1.DiskCRD())
+	diskCRD, err := buildDiskCRD()
+	if err != nil {
+		return err
+	}
+	return sc.createCRD(diskCRD)
 }
 
 // createBlockDeviceCRD creates a BlockDevice CRD
 func (sc Config) createBlockDeviceCRD() error {
-	return sc.createCRD(v1alpha1.BlockDeviceCRD())
+	blockDeviceCRD, err := buildBlockDeviceCRD()
+	if err != nil {
+		return err
+	}
+	return sc.createCRD(blockDeviceCRD)
 }
 
 // createBlockDeviceClaimCRD creates a BlockDeviceClaim CRD
 func (sc Config) createBlockDeviceClaimCRD() error {
-	return sc.createCRD(v1alpha1.BlockDeviceClaimCRD())
+	blockDeviceClaimCRD, err := buildBlockDeviceClaimCRD()
+	if err != nil {
+		return err
+	}
+	return sc.createCRD(blockDeviceClaimCRD)
 }
 
 // createCRD creates a CRD in the cluster and waits for it to get into active state
