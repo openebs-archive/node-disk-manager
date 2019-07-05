@@ -6,6 +6,7 @@ import (
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
 
+// buildDiskCRD is used to build the disk CRD
 func buildDiskCRD() (*apiext.CustomResourceDefinition, error) {
 	crdBuilder := crds.NewBuilder()
 	crdBuilder.WithName(apis.DiskResourceName).
@@ -22,6 +23,7 @@ func buildDiskCRD() (*apiext.CustomResourceDefinition, error) {
 	return crdBuilder.Build()
 }
 
+// buildBlockDeviceCRD is used to build the blockdevice CRD
 func buildBlockDeviceCRD() (*apiext.CustomResourceDefinition, error) {
 	crdBuilder := crds.NewBuilder()
 	crdBuilder.WithName(apis.BlockDeviceResourceName).
@@ -39,6 +41,7 @@ func buildBlockDeviceCRD() (*apiext.CustomResourceDefinition, error) {
 	return crdBuilder.Build()
 }
 
+// buildBlockDeviceClaimCRD is used to build the blockdevice claim CRD
 func buildBlockDeviceClaimCRD() (*apiext.CustomResourceDefinition, error) {
 	crdBuilder := crds.NewBuilder()
 	crdBuilder.WithName(apis.BlockDeviceClaimResourceName).

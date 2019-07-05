@@ -6,15 +6,18 @@ import (
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
 
+// Builder is struct used to build the CRD object
 type Builder struct {
 	crd  *CustomResource
 	errs []error
 }
 
+// NewBuilder returns a new builder for creating CRD
 func NewBuilder() *Builder {
 	return &Builder{crd: &CustomResource{object: &apiext.CustomResourceDefinition{}}}
 }
 
+// WithName is used to add name field to the CRD
 func (b *Builder) WithName(name string) *Builder {
 	if len(name) == 0 {
 		b.errs = append(b.errs, errors.New("failed to build CRD. missing CRD name"))
@@ -24,6 +27,7 @@ func (b *Builder) WithName(name string) *Builder {
 	return b
 }
 
+// WithGroup is used to add group field to the CRD
 func (b *Builder) WithGroup(groupName string) *Builder {
 	if len(groupName) == 0 {
 		b.errs = append(b.errs, errors.New("failed to build CRD. missing CRD group"))
@@ -33,6 +37,7 @@ func (b *Builder) WithGroup(groupName string) *Builder {
 	return b
 }
 
+// WithVersion is used to add version field to the CRD
 func (b *Builder) WithVersion(version string) *Builder {
 	if len(version) == 0 {
 		b.errs = append(b.errs, errors.New("failed to build CRD. missing CRD version"))
@@ -42,6 +47,7 @@ func (b *Builder) WithVersion(version string) *Builder {
 	return b
 }
 
+// WithKind is used to add kind field to the CRD
 func (b *Builder) WithKind(kind string) *Builder {
 	if len(kind) == 0 {
 		b.errs = append(b.errs, errors.New("failed to build CRD. missing CRD kind"))
@@ -51,6 +57,7 @@ func (b *Builder) WithKind(kind string) *Builder {
 	return b
 }
 
+// WithListKind is used to add listkind field to the CRD
 func (b *Builder) WithListKind(listKind string) *Builder {
 	if len(listKind) == 0 {
 		b.errs = append(b.errs, errors.New("failed to build CRD. missing CRD list kind"))
@@ -60,6 +67,7 @@ func (b *Builder) WithListKind(listKind string) *Builder {
 	return b
 }
 
+// WithPlural is used to add plural field to the CRD
 func (b *Builder) WithPlural(plural string) *Builder {
 	if len(plural) == 0 {
 		b.errs = append(b.errs, errors.New("failed to build CRD. missing CRD plural name"))
@@ -69,6 +77,7 @@ func (b *Builder) WithPlural(plural string) *Builder {
 	return b
 }
 
+// WithShortNames is used to add shortnames field to the CRD
 func (b *Builder) WithShortNames(shortNames []string) *Builder {
 	if len(shortNames) == 0 {
 		b.errs = append(b.errs, errors.New("failed to build CRD. missing CRD shortnames"))
@@ -78,11 +87,13 @@ func (b *Builder) WithShortNames(shortNames []string) *Builder {
 	return b
 }
 
+// WithScope is used to add scope field to the CRD
 func (b *Builder) WithScope(scope apiext.ResourceScope) *Builder {
 	b.crd.object.Spec.Scope = scope
 	return b
 }
 
+// WithPrinterColumns is used to add printercolumns field to the CRD
 func (b *Builder) WithPrinterColumns(columnName, columnType, jsonPath string) *Builder {
 	if len(columnName) == 0 {
 		b.errs = append(b.errs,
@@ -108,9 +119,10 @@ func (b *Builder) WithPrinterColumns(columnName, columnType, jsonPath string) *B
 	return b
 }
 
+// Build returns the CustomResourceDefinition from the builder
 func (b *Builder) Build() (*apiext.CustomResourceDefinition, error) {
 	if len(b.errs) > 0 {
 		return nil, fmt.Errorf("%+v", b.errs)
 	}
-	return b.crd.object, nil
+	return b.crd.GetAPIObject(), nil
 }
