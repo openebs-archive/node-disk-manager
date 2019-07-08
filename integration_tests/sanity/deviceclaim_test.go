@@ -183,7 +183,10 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			for _, bd := range bdList.Items {
 				if bd.Name == bdName {
-					Expect(bd.Status.ClaimState).To(Equal(apis.BlockDeviceReleased))
+					// BlockDevice can be in either released or unclaimed
+					// depending on the time required for cleanup
+					Expect(bd.Status.ClaimState).To(Or(Equal(apis.BlockDeviceReleased),
+						Equal(apis.BlockDeviceUnclaimed)))
 				}
 			}
 
