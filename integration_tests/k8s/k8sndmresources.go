@@ -31,24 +31,6 @@ func (c k8sClient) CreateNDMYAML() error {
 		return err
 	}
 
-	// creating disk crd
-	err = c.CreateNDMDiskCRD()
-	if err != nil {
-		return err
-	}
-
-	// creating device crd
-	err = c.CreateNDMDeviceCRD()
-	if err != nil {
-		return err
-	}
-
-	// creating device request crd
-	err = c.CreateNDMDeviceRequestCRD()
-	if err != nil {
-		return err
-	}
-
 	// creating ndm daemon-set
 	err = c.CreateNDMDaemonSet()
 	if err != nil {

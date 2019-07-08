@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/openebs/node-disk-manager/pkg/setup"
 	"os"
 	"runtime"
 	"time"
@@ -72,6 +73,20 @@ func main() {
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &reconInterval})
 	if err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+
+	log.Info("Installing the components")
+	// get a new install setup
+	setupConfig, err := setup.NewInstallSetup(cfg)
+	if err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+
+	// install the components
+	if err = setupConfig.Install(); err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}
