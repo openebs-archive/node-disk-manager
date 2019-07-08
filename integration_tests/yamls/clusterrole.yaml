@@ -4,6 +4,19 @@ metadata:
   namespace: default
   name: openebs-ndm-operator
 rules:
-- apiGroups: ["*"]
-  resources: ["disks", "blockdevices", "blockdeviceclaims"]
-  verbs: ["*"]
+  - apiGroups: ["*"]
+    resources: ["disks", "blockdevices", "blockdeviceclaims", "pods", "services", "endpoints", "events", "configmaps", "secrets", "jobs"]
+    verbs:
+      - '*'
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs:
+      - '*'
+  - apiGroups:
+      - openebs.io
+    resources:
+      - '*'
+      - blockdevices
+      - blockdeviceclaims
+    verbs:
+      - '*'
