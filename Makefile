@@ -9,7 +9,7 @@ BUILD_PATH_NDM=ndm_daemonset
 BUILD_PATH_NDO=manager
 
 # Build the node-disk-manager image.
-build: clean vet fmt shellcheck version ndm docker_ndm ndo docker_ndo
+build: clean vet fmt shellcheck license-check-go version ndm docker_ndm ndo docker_ndo
 
 NODE_DISK_MANAGER?=ndm
 NODE_DISK_OPERATOR?=ndo
@@ -122,6 +122,18 @@ clean: header
 	rm -rf ${GOPATH}/bin/${NODE_DISK_OPERATOR}
 	rm -rf ${GOPATH}/pkg/*
 	@echo '--> Done cleaning.'
+	@echo
+
+license-check-go:
+	@echo "--> Checking license header..."
+	@licRes=$$(for file in $$(find . -type f -iname '*.go' ! -path './vendor/*' ) ; do \
+               awk 'NR<=3' $$file | grep -Eq "(Copyright|generated|GENERATED)" || echo $$file; \
+       done); \
+       if [ -n "$${licRes}" ]; then \
+               echo "license header checking failed:"; echo "$${licRes}"; \
+               exit 1; \
+       fi
+	@echo "--> Done checking license."
 	@echo
 
 .PHONY: build
