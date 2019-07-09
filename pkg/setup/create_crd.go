@@ -1,10 +1,12 @@
 package setup
 
 import (
+	"encoding/json"
 	"fmt"
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -41,10 +43,15 @@ func (sc Config) createBlockDeviceClaimCRD() error {
 func (sc Config) createCRD(crd *apiext.CustomResourceDefinition) error {
 	if _, err := sc.apiExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd); err != nil {
 		if errors.IsAlreadyExists(err) {
-			// CRD is already present, no need to do anything
-			// In future can implement upgrade of CRDs here.
-			// For upgrade, a patch can be created which can then be
-			// used to upgrade the CRD
+			// if CRD already exists, we patch it with the new changes.
+			// This will also handle the upgrades of CRDs
+			patch, err := json.Marshal(crd)
+			if err != nil {
+				return fmt.Errorf("could not marshal new customResourceDefintion: %v", err)
+			}
+			if _, err := sc.apiExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().Patch(crd.Name, types.MergePatchType, patch); err != nil {
+				return fmt.Errorf("could not update customResourceDefinition: %v", err)
+			}
 		} else {
 			return err
 		}
