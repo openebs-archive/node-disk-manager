@@ -47,10 +47,10 @@ func (sc Config) createCRD(crd *apiext.CustomResourceDefinition) error {
 			// This will also handle the upgrades of CRDs
 			patch, err := json.Marshal(crd)
 			if err != nil {
-				return fmt.Errorf("could not marshal new customResourceDefintion: %v", err)
+				return fmt.Errorf("could not marshal new customResourceDefintion for %s : %v", crd.Name, err)
 			}
 			if _, err := sc.apiExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().Patch(crd.Name, types.MergePatchType, patch); err != nil {
-				return fmt.Errorf("could not update customResourceDefinition: %v", err)
+				return fmt.Errorf("could not update customResourceDefinition for %s : %v", crd.Name, err)
 			}
 		} else {
 			return err
