@@ -187,6 +187,8 @@ metadata:
   name: node-disk-operator
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       name: node-disk-operator
