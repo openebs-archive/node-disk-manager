@@ -1,5 +1,3 @@
-// +build linux,cgo
-
 /*
 Copyright 2018 OpenEBS Authors.
 
