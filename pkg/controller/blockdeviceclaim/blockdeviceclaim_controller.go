@@ -46,7 +46,7 @@ var log = logf.Log.WithName("controller_deviceclaim")
 
 const (
 	// BlockDeviceClaimFinalizer is the finalizer name for the block device claim
-	BlockDeviceClaimFinalizer = "blockdeviceclaim.finalizer"
+	BlockDeviceClaimFinalizer = "openebs.io/bdc-protection"
 )
 
 // Add creates a new BlockDeviceClaim Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -193,7 +193,11 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 		return nil
 	}
 	// The object is being deleted
-	if util.Contains(instance.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer) {
+	// Check if the BDC has only NDM finalizer present. If yes, it means that the BDC
+	// was deleted by the owner itself, and NDM can proceed with releasing the BD and
+	// removing the NDM finalizer
+	if len(instance.ObjectMeta.Finalizers) == 1 &&
+		util.Contains(instance.ObjectMeta.Finalizers, BlockDeviceClaimFinalizer) {
 		// Finalizer is set, lets handle external dependency
 		if err := r.releaseClaimedBlockDevice(instance, reqLogger); err != nil {
 			reqLogger.Error(err, "Could not delete external dependency", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
