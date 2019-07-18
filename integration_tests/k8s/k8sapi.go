@@ -34,7 +34,7 @@ import (
 )
 
 // The wait time for all k8s API related operations
-const k8sWaitTime = 30 * time.Second
+const k8sWaitTime = 40 * time.Second
 
 // The wait time for reconcilation loop to run
 const k8sReconcileTime = 10 * time.Second
