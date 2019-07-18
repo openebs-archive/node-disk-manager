@@ -94,7 +94,6 @@ type ReconcileBlockDeviceClaim struct {
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	reqLogger.Info("Reconciling BlockDeviceClaim")
 
 	// Fetch the BlockDeviceClaim instance
 	instance := &apis.BlockDeviceClaim{}
@@ -110,11 +109,11 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, err
 	}
 
-	reqLogger.Info("BlockDeviceClaim State is:" + string(instance.Status.Phase))
 	switch instance.Status.Phase {
 	case apis.BlockDeviceClaimStatusPending:
 		fallthrough
 	case apis.BlockDeviceClaimStatusEmpty:
+		reqLogger.Info("BlockDeviceClaim State is:" + string(instance.Status.Phase))
 		err := r.claimDeviceForBlockDeviceClaim(instance, reqLogger)
 		if err != nil {
 			reqLogger.Error(err, "BlockDeviceClaim "+instance.ObjectMeta.Name+" failed")
@@ -122,8 +121,8 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 		}
 	case apis.BlockDeviceClaimStatusInvalidCapacity:
 		// currently for invalid capacity, the BDC will remain in that state
+		reqLogger.Info("BlockDeviceClaim State is:" + string(instance.Status.Phase))
 	case apis.BlockDeviceClaimStatusDone:
-		reqLogger.Info("In process of deleting block device claim")
 		err := r.FinalizerHandling(instance, reqLogger)
 		if err != nil {
 			reqLogger.Error(err, "Finalizer handling failed", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)

@@ -90,7 +90,6 @@ type ReconcileDisk struct {
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileDisk) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	reqLogger.Info("Reconciling Disk")
 
 	// Fetch the Disk instance
 	instance := &openebsv1alpha1.Disk{}

@@ -18,6 +18,8 @@ package blockdevice
 
 import (
 	"context"
+	"strings"
+
 	"github.com/go-logr/logr"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
@@ -25,7 +27,6 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/apimachinery/pkg/types"
-	"strings"
 
 	//corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -93,8 +94,6 @@ type ReconcileBlockDevice struct {
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	reqLogger.Info("Reconciling BlockDevice")
-
 	// Fetch the BlockDevice instance
 	instance := &openebsv1alpha1.BlockDevice{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
@@ -181,8 +180,6 @@ func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 		return err
 	}
 
-	reqLogger.Info("Disk-CR found", "Disk Name:",
-		diskInstance.ObjectMeta.Name, "State:", diskInstance.Status.State)
 	if strings.Compare(diskInstance.Status.State, ndm.NDMInactive) == 0 {
 		dcpyInstance := instance.DeepCopy()
 		dcpyInstance.Status.State = ndm.NDMInactive
