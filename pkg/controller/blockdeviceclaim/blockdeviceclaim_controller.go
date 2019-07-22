@@ -165,7 +165,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 
 	selectedDevice, err := config.Filter(bdList)
 	if err != nil {
-		reqLogger.Info("Error selecting devices", err)
+		reqLogger.Error(err, "Error selecting device")
 		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 	} else {
 		instance.Spec.BlockDeviceName = selectedDevice.Name
@@ -188,7 +188,6 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 	instance *apis.BlockDeviceClaim, reqLogger logr.Logger) error {
 
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
-		reqLogger.Info("No Deletion Time Stamp set on device claim")
 		return nil
 	}
 	// The object is being deleted
@@ -235,22 +234,18 @@ func (r *ReconcileBlockDeviceClaim) isDeviceRequestedByThisDeviceClaim(
 	reqLogger logr.Logger) bool {
 
 	if item.Status.ClaimState != apis.BlockDeviceClaimed {
-		reqLogger.Info("Found blockdevice which yet to be claimed")
 		return false
 	}
 
 	if item.Spec.ClaimRef.Name != instance.ObjectMeta.Name {
-		reqLogger.Info("ClaimRef Name mismatch")
 		return false
 	}
 
 	if item.Spec.ClaimRef.UID != instance.ObjectMeta.UID {
-		reqLogger.Info("BlockDeviceClaim UID mismatch")
 		return false
 	}
 
 	if item.Spec.ClaimRef.Kind != instance.TypeMeta.Kind {
-		reqLogger.Info("Kind mismatch")
 		return false
 	}
 	return true
