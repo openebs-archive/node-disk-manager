@@ -110,6 +110,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	log.Info("Registering Components")
+
+	// Setup Scheme for all resources
+	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+
 	// Upgrade the components if required
 	k8sClient, err := client.New(cfg, client.Options{})
 	if err != nil {
@@ -117,16 +125,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	log.Info("Performing upgrade operation")
 	err = performUpgrade(k8sClient)
 	if err != nil {
 		log.Error(err, "Upgrade failed")
-	}
-
-	log.Info("Registering Components")
-
-	// Setup Scheme for all resources
-	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
-		log.Error(err, "")
 		os.Exit(1)
 	}
 
