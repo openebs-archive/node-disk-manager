@@ -33,6 +33,8 @@ const (
 	HostName = "minikube"
 	// FakeHostName is a generated fake hostname
 	FakeHostName = "fake-minikube"
+	// FakeBlockDevice is a generated fake block device name
+	FakeBlockDevice = "fake-BD"
 )
 
 var (
