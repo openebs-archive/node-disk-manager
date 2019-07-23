@@ -54,6 +54,7 @@ var _ = Describe("Pre upgrade tests", func() {
 		})
 		It("has only the old BDC finalizer", func() {
 			blockDeviceClaim.Finalizers = append(blockDeviceClaim.ObjectMeta.Finalizers, oldBDCFinalizer)
+			blockDeviceClaim.Namespace = DefaultNamespace
 			blockDeviceClaim.Spec.BlockDeviceName = FakeBlockDevice
 
 			// create the BDC with old finalizer
