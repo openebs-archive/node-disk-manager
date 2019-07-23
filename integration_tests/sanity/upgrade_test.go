@@ -70,7 +70,7 @@ var _ = Describe("Pre upgrade tests", func() {
 			// list BDC and check for new finalizer
 			bdcList, err := k8sClient.ListBlockDeviceClaims()
 			Expect(err).NotTo(HaveOccurred())
-			Expect(bdcList.Items).To(Equal(1))
+			Expect(len(bdcList.Items)).To(Equal(1))
 
 			for _, bdc := range bdcList.Items {
 				Expect(bdc.Finalizers).To(Equal(newBDCFinalizer))
