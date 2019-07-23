@@ -19,6 +19,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
@@ -116,6 +117,20 @@ func (c k8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
 		return nil, fmt.Errorf("cannot list block device claims. Error :%v", err)
 	}
 	return bdcList, nil
+}
+
+// RestartPod the given pod
+func (c k8sClient) RestartPod(name string) error {
+	pods, err := c.ListPodStatus()
+	if err != nil {
+		return nil
+	}
+	for pod, _ := range pods {
+		if strings.Contains(pod, name) {
+			return c.ClientSet.CoreV1().Pods(namespace).Delete(pod, &metav1.DeleteOptions{})
+		}
+	}
+	return fmt.Errorf("could not find given pod")
 }
 
 // NewBDC creates a sample device claim which can be used for

@@ -40,10 +40,17 @@ var _ = Describe("Pre upgrade tests", func() {
 			blockDeviceClaim.Finalizers = append(blockDeviceClaim.ObjectMeta.Finalizers, oldBDCFinalizer)
 			blockDeviceClaim.Spec.BlockDeviceName = FakeBlockDevice
 
+			// create the BDC with old finalizer
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
 			k8s.WaitForReconcilation()
 
+			// restart the ndm operator pod
+			err = k8sClient.RestartPod("node-disk-operator")
+			Expect(err).NotTo(HaveOccurred())
+			k8s.WaitForStateChange()
+
+			// list BDC and check for new finalizer
 			bdcList, err := k8sClient.ListBlockDeviceClaims()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(bdcList.Items).To(Equal(1))
