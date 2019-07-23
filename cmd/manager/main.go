@@ -147,6 +147,7 @@ func main() {
 	}
 }
 
+// performUpgrade performs the upgrade operations
 func performUpgrade(client client.Client) error {
 	//TODO: this task should be named for release, not for upgrade steps
 	preUpgradeTask := preupgrade.NewPreUpgradeTask("1.0", "1.1", client)
