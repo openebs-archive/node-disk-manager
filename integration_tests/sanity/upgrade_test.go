@@ -73,7 +73,7 @@ var _ = Describe("Pre upgrade tests", func() {
 			Expect(len(bdcList.Items)).To(Equal(1))
 
 			for _, bdc := range bdcList.Items {
-				Expect(bdc.Finalizers).To(Equal(newBDCFinalizer))
+				Expect(bdc.Finalizers).To(ContainElement(newBDCFinalizer))
 			}
 
 		})
