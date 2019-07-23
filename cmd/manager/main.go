@@ -125,7 +125,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Info("Performing upgrade operation")
+	log.Info("Check if CR has to be upgraded, and perform upgrade")
 	err = performUpgrade(k8sClient)
 	if err != nil {
 		log.Error(err, "Upgrade failed")
