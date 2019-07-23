@@ -16,9 +16,9 @@ limitations under the License.
 
 package upgrade
 
-// UpgradeTask interfaces gives a set of methods to be implemented
+// Task interfaces gives a set of methods to be implemented
 // for performing an upgrade
-type UpgradeTask interface {
+type Task interface {
 	FromVersion() string
 	ToVersion() string
 	IsSuccess() error
@@ -28,7 +28,7 @@ type UpgradeTask interface {
 }
 
 // RunUpgrade runs all the upgrade tasks required
-func RunUpgrade(tasks ...UpgradeTask) error {
+func RunUpgrade(tasks ...Task) error {
 	for _, task := range tasks {
 		_ = task.PreUpgrade() && task.Upgrade() && task.PostUpgrade()
 		if err := task.IsSuccess(); err != nil {
