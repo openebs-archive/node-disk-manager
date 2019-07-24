@@ -114,10 +114,15 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 		fallthrough
 	case apis.BlockDeviceClaimStatusEmpty:
 		reqLogger.Info("BlockDeviceClaim State is:" + string(instance.Status.Phase))
-		err := r.claimDeviceForBlockDeviceClaim(instance, reqLogger)
-		if err != nil {
-			reqLogger.Error(err, "BlockDeviceClaim "+instance.ObjectMeta.Name+" failed")
-			return reconcile.Result{}, err
+		// claim the BD only if deletion time stamp is not set.
+		// since BDC can now have multiple finalizers, we should not claim a
+		// BD if its deletiontime stamp is set.
+		if instance.DeletionTimestamp.IsZero() {
+			err := r.claimDeviceForBlockDeviceClaim(instance, reqLogger)
+			if err != nil {
+				reqLogger.Error(err, "BlockDeviceClaim "+instance.ObjectMeta.Name+" failed")
+				return reconcile.Result{}, err
+			}
 		}
 	case apis.BlockDeviceClaimStatusInvalidCapacity:
 		// currently for invalid capacity, the BDC will remain in that state
