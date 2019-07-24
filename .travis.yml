@@ -34,7 +34,7 @@ install:
   - pushd .
   - cd ..
   # Hotfix-Makefile_fix is the Release-19.06 with certain fixes in Makefile
-  - git clone --recursive --branch Hotfix-Makefile_fix https://github.com/openebs/openSeaChest.git
+  - git clone --recursive --branch Release-19.06.02 https://github.com/openebs/openSeaChest.git
   - cd openSeaChest/Make/gcc 
   - make release
   - cd ../../
