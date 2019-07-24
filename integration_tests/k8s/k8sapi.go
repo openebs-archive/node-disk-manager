@@ -125,7 +125,7 @@ func (c k8sClient) RestartPod(name string) error {
 	if err != nil {
 		return nil
 	}
-	for pod, _ := range pods {
+	for pod := range pods {
 		if strings.Contains(pod, name) {
 			return c.ClientSet.CoreV1().Pods(namespace).Delete(pod, &metav1.DeleteOptions{})
 		}
