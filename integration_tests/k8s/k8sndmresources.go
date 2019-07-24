@@ -87,22 +87,6 @@ func (c k8sClient) DeleteNDMYAML() error {
 		return err
 	}
 
-	// deleting disk crd
-	err = c.DeleteNDMDiskCRD()
-	if err != nil {
-		return err
-	}
-	// deleting device crd
-	err = c.DeleteNDMDeviceCRD()
-	if err != nil {
-		return err
-	}
-	// deleting device request crd
-	err = c.DeleteNDMDeviceRequestCRD()
-	if err != nil {
-		return err
-	}
-
 	// deleting ndm daemon-set
 	err = c.DeleteNDMDaemonSet()
 	if err != nil {

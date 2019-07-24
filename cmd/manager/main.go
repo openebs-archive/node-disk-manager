@@ -21,8 +21,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/openebs/node-disk-manager/pkg/setup"
+	"github.com/openebs/node-disk-manager/pkg/upgrade"
 	"os"
 	"runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
 	"github.com/openebs/node-disk-manager/pkg/apis"
@@ -115,6 +117,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Upgrade the components if required
+	k8sClient, err := client.New(cfg, client.Options{})
+	if err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+
+	log.Info("Check if CR has to be upgraded, and perform upgrade")
+	err = performUpgrade(k8sClient)
+	if err != nil {
+		log.Error(err, "Upgrade failed")
+		os.Exit(1)
+	}
+
 	// Setup all Controllers
 	if err := controller.AddToManager(mgr); err != nil {
 		log.Error(err, "")
@@ -128,4 +144,11 @@ func main() {
 		log.Error(err, "manager exited non-zero")
 		os.Exit(1)
 	}
+}
+
+// performUpgrade performs the upgrade operations
+func performUpgrade(client client.Client) error {
+	//TODO: this task should be named for release, not for upgrade steps
+	preUpgradeTask := upgrade.NewPreUpgradeTask("1.0", "1.1", client)
+	return upgrade.RunUpgrade(preUpgradeTask)
 }
