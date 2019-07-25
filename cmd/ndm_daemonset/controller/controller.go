@@ -187,8 +187,8 @@ func (c *Controller) newClientSet() (client.Client, error) {
 	return clientSet, nil
 }
 
-// getNodeName set HostName field in Controller struct
-// if it gets from env else it returns error
+// setHostName set HostName field in Controller struct
+// from the labels in node object
 func (c *Controller) setHostName() error {
 	nodeName, err := getNodeName()
 	if err != nil {
@@ -205,6 +205,8 @@ func (c *Controller) setHostName() error {
 	return nil
 }
 
+// getNodeName gets the node name from env, else
+// returns an error
 func getNodeName() (string, error) {
 	nodeName, ok := os.LookupEnv("NODE_NAME")
 	if !ok {
