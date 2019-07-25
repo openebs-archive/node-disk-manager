@@ -25,29 +25,27 @@ import (
 )
 
 /*
-	set environment variable "NODE_NAME" with some value and setNodeName
-	unset environment variable "NODE_NAME" with some value and setNodeName
+	set environment variable "NODE_NAME" with some value and getNodeName
+	unset environment variable "NODE_NAME" with some value and getNodeName
 */
-func TestSetNodeName(t *testing.T) {
+func TestGetNodeName(t *testing.T) {
 	fakeNodeName := "fake-node-name"
-	ctrl1 := &Controller{}
-	ctrl2 := &Controller{}
-	err1 := ctrl1.setNodeName()
+	nodeName1, err1 := getNodeName()
 	os.Setenv("NODE_NAME", fakeNodeName)
-	err2 := ctrl2.setNodeName()
-	expectedErr2 := errors.New("error building hostname")
+	nodeName2, err2 := getNodeName()
+	expectedErr2 := errors.New("error getting node name")
 	tests := map[string]struct {
-		actualController *Controller
-		expectedHostName string
+		actualNodeName   string
+		expectedNodeName string
 		actualError      error
 		expectedError    error
 	}{
-		"call setNodeName when env variable not present": {actualController: ctrl1, actualError: err1, expectedHostName: "", expectedError: expectedErr2},
-		"call setNodeName when env variable present":     {actualController: ctrl2, actualError: err2, expectedHostName: fakeNodeName, expectedError: nil},
+		"call getNodeName when env variable not present": {actualNodeName: nodeName1, actualError: err1, expectedNodeName: "", expectedError: expectedErr2},
+		"call getNodeName when env variable present":     {actualNodeName: nodeName2, actualError: err2, expectedNodeName: fakeNodeName, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedHostName, test.actualController.HostName)
+			assert.Equal(t, test.expectedNodeName, test.actualNodeName)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}

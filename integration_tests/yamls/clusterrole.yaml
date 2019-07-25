@@ -5,7 +5,7 @@ metadata:
   name: openebs-ndm-operator
 rules:
   - apiGroups: ["*"]
-    resources: ["pods", "services", "endpoints", "events", "configmaps", "secrets", "jobs"]
+    resources: ["nodes", "pods", "services", "endpoints", "events", "configmaps", "secrets", "jobs"]
     verbs:
       - '*'
   - apiGroups: ["apiextensions.k8s.io"]

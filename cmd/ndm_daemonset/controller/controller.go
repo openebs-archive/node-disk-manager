@@ -17,7 +17,10 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	v1 "k8s.io/api/core/v1"
 	"os"
 	"sync"
 	"time"
@@ -28,9 +31,9 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/apis"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 )
 
 const (
@@ -108,20 +111,6 @@ func NewController(kubeconfig string) (*Controller, error) {
 		return nil, err
 	}
 
-	if err := controller.setNodeName(); err != nil {
-		return nil, err
-	}
-	controller.SetNDMConfig()
-	controller.Filters = make([]*Filter, 0)
-	controller.Probes = make([]*Probe, 0)
-	controller.Mutex = &sync.Mutex{}
-
-	// get the namespace in which NDM is installed
-	Namespace, err = getNamespace()
-	if err != nil {
-		return controller, err
-	}
-
 	controller.mgr, err = manager.New(controller.config, manager.Options{Namespace: Namespace})
 	if err != nil {
 		return controller, err
@@ -135,6 +124,21 @@ func NewController(kubeconfig string) (*Controller, error) {
 	_, err = controller.newClientSet()
 	if err != nil {
 		return controller, err
+	}
+
+	controller.SetNDMConfig()
+	controller.Filters = make([]*Filter, 0)
+	controller.Probes = make([]*Probe, 0)
+	controller.Mutex = &sync.Mutex{}
+
+	// get the namespace in which NDM is installed
+	Namespace, err = getNamespace()
+	if err != nil {
+		return controller, err
+	}
+
+	if err := controller.setHostName(); err != nil {
+		return nil, err
 	}
 
 	controller.WaitForDiskCRD()
@@ -183,15 +187,39 @@ func (c *Controller) newClientSet() (client.Client, error) {
 	return clientSet, nil
 }
 
-// setNodeName set HostName field in Controller struct
-// if it gets from env else it returns error
-func (c *Controller) setNodeName() error {
-	host, ret := os.LookupEnv("NODE_NAME")
-	if ret != true {
-		return errors.New("error building hostname")
+// setHostName set HostName field in Controller struct
+// from the labels in node object
+func (c *Controller) setHostName() error {
+	nodeName, err := getNodeName()
+	if err != nil {
+		return fmt.Errorf("unable to get hostname: %v", err)
 	}
-	c.HostName = host
+	// get the node object and fetch the hostname label from the
+	// node object
+	node := &v1.Node{}
+	err = c.Clientset.Get(context.TODO(), client.ObjectKey{Namespace: "", Name: nodeName}, node)
+	if err != nil {
+		return err
+	}
+
+	// if the label is not present, or hostname is an empty string,
+	// use nodename as hostname
+	if hostName, ok := node.Labels[NDMHostKey]; !ok || hostName == "" {
+		c.HostName = nodeName
+	} else {
+		c.HostName = hostName
+	}
 	return nil
+}
+
+// getNodeName gets the node name from env, else
+// returns an error
+func getNodeName() (string, error) {
+	nodeName, ok := os.LookupEnv("NODE_NAME")
+	if !ok {
+		return "", errors.New("error getting node name")
+	}
+	return nodeName, nil
 }
 
 // getNamespace get Namespace from env, else it returns error
