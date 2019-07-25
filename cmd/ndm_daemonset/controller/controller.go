@@ -201,7 +201,14 @@ func (c *Controller) setHostName() error {
 	if err != nil {
 		return err
 	}
-	c.HostName = node.Labels[NDMHostKey]
+
+	// if the label is not present, or hostname is an empty string,
+	// use nodename as hostname
+	if hostName, ok := node.Labels[NDMHostKey]; !ok || hostName == "" {
+		c.HostName = nodeName
+	} else {
+		c.HostName = hostName
+	}
 	return nil
 }
 
