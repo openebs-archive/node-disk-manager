@@ -200,7 +200,6 @@ spec:
       serviceAccountName: openebs-ndm-operator
       containers:
         - name: node-disk-operator
-          # Replace this with the built image name
           image: openebs/node-disk-operator-amd64:ci
           ports:
           - containerPort: 8080
@@ -223,6 +222,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            # the service account of this pod
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
             - name: OPERATOR_NAME
               value: "node-disk-operator"
             - name: CLEANUP_JOB_IMAGE
