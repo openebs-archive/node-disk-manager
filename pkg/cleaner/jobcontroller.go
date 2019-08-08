@@ -95,6 +95,7 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 		podSpec.Volumes = []v1.Volume{volume}
 	}
 
+	podSpec.ServiceAccountName = getServiceAccount()
 	podSpec.Containers = []v1.Container{jobContainer}
 	podSpec.NodeSelector = map[string]string{controller.NDMHostKey: nodeName}
 
