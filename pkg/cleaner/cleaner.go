@@ -55,7 +55,7 @@ const (
 
 // Cleaner handles BD cleanup
 // For filesystem/mount based block devices, it deletes the contents of the directory
-// For raw block devices, a `dd` command will be issued.
+// For raw block devices, a `wipefs` command will be issued.
 type Cleaner struct {
 	Client        client.Client
 	Namespace     string

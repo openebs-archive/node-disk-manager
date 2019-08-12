@@ -22,6 +22,9 @@ const (
 	// EnvCleanUpJobImage is the environment variable for getting the
 	// job container image
 	EnvCleanUpJobImage = "CLEANUP_JOB_IMAGE"
+	// ServiceAccountName is the service account in which the operator pod
+	// is running. The cleanup job, pod will be started with this service account
+	ServiceAccountName = "SERVICE_ACCOUNT"
 )
 
 var (
@@ -36,4 +39,10 @@ func getCleanUpImage() string {
 		return defaultCleanUpJobImage
 	}
 	return image
+}
+
+// getServiceAccount gets the service account in which the pod is running
+// TODO move env variable operations to a separate pkg
+func getServiceAccount() string {
+	return os.Getenv(ServiceAccountName)
 }
