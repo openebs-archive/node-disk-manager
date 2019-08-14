@@ -66,8 +66,21 @@ type Partition struct {
 
 // DiskStatus defines the observed state of Disk
 type DiskStatus struct {
-	State string `json:"state"` //current state of the disk (Active/Inactive)
+	State DiskState `json:"state"` //current state of the disk (Active/Inactive)
 }
+
+// DiskState defines the observed state of the disk
+type DiskState string
+
+const (
+	// DiskActive is the state for a physical disk that is connected to the node
+	DiskActive DiskState = "Active"
+	// DiskInactive is the state for a physical disk that is disconnected from a node
+	DiskInactive DiskState = "Inactive"
+	// DiskUnknown is the state for a physical disk whose state (attached/detached) cannot
+	// be determined at this time.
+	DiskUnknown DiskState = "Unknown"
+)
 
 type Temperature struct {
 	CurrentTemperature int16 `json:"currentTemperature"`
