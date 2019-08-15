@@ -72,20 +72,20 @@ type DeviceDevLink struct {
 // DeviceStatus defines the observed state of BlockDevice
 type DeviceStatus struct {
 	ClaimState DeviceClaimState `json:"claimState"` // claim state of the block device
-	State      BlockDiskState   `json:"state"`      // current state of the blockdevice (Active/Inactive)
+	State      BlockDeviceState `json:"state"`      // current state of the blockdevice (Active/Inactive)
 }
 
 // BlockDeviceState defines the observed state of the disk
-type BlockDiskState string
+type BlockDeviceState string
 
 const (
 	// BlockDeviceActive is the state for a block device that is connected to the node
-	BlockDeviceActive BlockDiskState = "Active"
+	BlockDeviceActive BlockDeviceState = "Active"
 	// BlockDeviceInactive is the state for a block device that is disconnected from a node
-	BlockDeviceInactive BlockDiskState = "Inactive"
+	BlockDeviceInactive BlockDeviceState = "Inactive"
 	// BlockDeviceUnknown is the state for a block device whose state (attached/detached) cannot
 	// be determined at this time.
-	BlockDeviceUnknown BlockDiskState = "Unknown"
+	BlockDeviceUnknown BlockDeviceState = "Unknown"
 )
 
 // DeviceClaimState defines the observed claim state of BlockDevice
