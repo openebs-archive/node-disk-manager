@@ -108,6 +108,7 @@ func (di *DeviceInfo) getStatus() apis.DeviceStatus {
 // It is used to populate data of BlockDevice struct of blockdevice CR.
 func (di *DeviceInfo) getDeviceSpec() apis.DeviceSpec {
 	deviceSpec := apis.DeviceSpec{}
+	deviceSpec.NodeAttributes.NodeName = di.NodeAttributes[NDMNodeKey]
 	deviceSpec.Path = di.getPath()
 	deviceSpec.Details = di.getDeviceDetails()
 	deviceSpec.Capacity = di.getDeviceCapacity()
