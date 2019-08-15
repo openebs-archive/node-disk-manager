@@ -45,6 +45,7 @@ const (
 // JobController defines the interface for the job controller.
 type JobController interface {
 	IsCleaningJobRunning(bdName string) bool
+	CancelJob(bdName string) error
 	RemoveJob(bdName string) (CleanupState, error)
 }
 
@@ -170,12 +171,27 @@ func (c *jobController) RemoveJob(bdName string) (CleanupState, error) {
 		return CleanupStateRunning, nil
 	}
 
-	err = c.client.Delete(context.TODO(), job, client.PropagationPolicy(metav1.DeletePropagationForeground))
+	// cancel the job
+	err = c.CancelJob(bdName)
 	if err != nil {
 		return CleanupStateUnknown, err
 	}
 
 	return CleanupStateSucceeded, nil
+}
+
+// CancelJob deletes a job, if it is present. if the job is not present, it will return an error.
+func (c *jobController) CancelJob(bdName string) error {
+	jobName := generateCleaningJobName(bdName)
+	objKey := client.ObjectKey{
+		Namespace: c.namespace,
+		Name:      jobName,
+	}
+	job := &batchv1.Job{}
+	err := c.client.Get(context.TODO(), objKey, job)
+
+	err = c.client.Delete(context.TODO(), job, client.PropagationPolicy(metav1.DeletePropagationForeground))
+	return err
 }
 
 func generateCleaningJobName(bdName string) string {

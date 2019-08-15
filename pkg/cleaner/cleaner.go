@@ -84,6 +84,11 @@ func (c *Cleaner) Clean(blockDevice *v1alpha1.BlockDevice) (bool, error) {
 	bdName := blockDevice.Name
 	// check if a cleanup job for the bd already exists and return
 	if c.CleanupStatus.InProgress(bdName) {
+		// check if the BD for which the cleanup is performed is still active,
+		// if not, cancel the cleanup job
+		if blockDevice.Status.State != v1alpha1.BlockDeviceActive {
+			// cancel the job
+		}
 		return false, nil
 	}
 	// Check if cleaning was just completed. if job was completed, it will be removed,
@@ -97,7 +102,12 @@ func (c *Cleaner) Clean(blockDevice *v1alpha1.BlockDevice) (bool, error) {
 	case CleanupStateSucceeded:
 		return true, nil
 	case CleanupStateNotFound:
-		// we are starting the job, since no job for the BD was found
+		// if the BD is not active, do not start the job
+		if blockDevice.Status.State != v1alpha1.BlockDeviceActive {
+			return false, nil
+		}
+		// we are starting the job, since no job for the BD was found and
+		// BD is in active state
 	}
 
 	volMode := getVolumeMode(blockDevice.Spec)
