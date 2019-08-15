@@ -26,7 +26,9 @@ import (
 // future). At the end it is converted to BlockDevice struct which will be pushed to
 // etcd as a CR of that blockdevice.
 type DeviceInfo struct {
-	HostName           string   // Node's name to which backing disk is attached.
+	// NodeAttributes is the attributes of the node to which this block device is attached,
+	// like hostname, nodename
+	NodeAttributes     NodeAttribute
 	UUID               string   // UUID of backing disk
 	Capacity           uint64   // Capacity of blockdevice
 	Model              string   // Do blockdevice have model ??
@@ -71,7 +73,7 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 		Name:      di.UUID,
 		Namespace: Namespace,
 	}
-	objectMeta.Labels[NDMHostKey] = di.HostName
+	objectMeta.Labels[NDMHostKey] = di.NodeAttributes[NDMHostKey]
 	objectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	objectMeta.Labels[NDMManagedKey] = TrueString
 	return objectMeta

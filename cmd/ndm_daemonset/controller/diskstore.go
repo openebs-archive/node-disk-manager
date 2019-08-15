@@ -138,7 +138,7 @@ func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
 		},
 	}
 
-	filter := NDMHostKey + "=" + c.HostName
+	filter := NDMHostKey + "=" + c.NodeAttributes[NDMHostKey]
 	filter = filter + "," + NDMManagedKey + "!=" + FalseString
 	opts := &client.ListOptions{}
 	opts.SetLabelSelector(filter)
@@ -178,7 +178,6 @@ func (c *Controller) DeactivateStaleDiskResource(disks []string) {
 // present or not. If it presents in etcd then it updates the resource
 // else it creates one new disk resource in etcd
 func (c *Controller) PushDiskResource(oldDr *apis.Disk, diskDetails *DiskInfo) {
-	diskDetails.HostName = c.HostName
 	diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
 	diskApi := diskDetails.ToDisk()
 	if oldDr != nil {

@@ -49,6 +49,8 @@ const (
 	NDMVersion = "openebs.io/v1alpha1"
 	// NDMHostKey is host name label prefix.
 	NDMHostKey = "kubernetes.io/hostname"
+	// NDMNodeKey is the node name label prefix
+	NDMNodeKey = "openebs.io/nodename"
 	// NDMNotPartitioned is used to say blockdevice does not have any partition.
 	NDMNotPartitioned = "No"
 	// NDMPartitioned is used to say blockdevice has some partitions.
@@ -88,7 +90,7 @@ var ControllerBroadcastChannel = make(chan *Controller)
 
 // Controller is the controller implementation for disk resources
 type Controller struct {
-	HostName      string               // HostName is host name in which disk is attached
+	HostName      string
 	KubeClientset kubernetes.Interface // KubeClientset is standard kubernetes clientset
 	mgr           manager.Manager
 	config        *rest.Config // config is the generated config using kubeconfig/incluster config
@@ -97,6 +99,9 @@ type Controller struct {
 	Mutex         *sync.Mutex            // Mutex is used to lock and unlock Controller
 	Filters       []*Filter              // Filters are the registered filters like os disk filter
 	Probes        []*Probe               // Probes are the registered probes like udev/smart
+	// NodeAttribute is a map of various attributes of the node in which this daemon is running.
+	// The attributes can be hostname, nodename, zone, failure-domain etc
+	NodeAttributes map[string]string
 }
 
 // NewController returns a controller pointer for any error case it will return nil
@@ -137,7 +142,7 @@ func NewController(kubeconfig string) (*Controller, error) {
 		return controller, err
 	}
 
-	if err := controller.setHostName(); err != nil {
+	if err := controller.setNodeAttributes(); err != nil {
 		return nil, err
 	}
 
@@ -187,17 +192,29 @@ func (c *Controller) newClientSet() (client.Client, error) {
 	return clientSet, nil
 }
 
-// setHostName set HostName field in Controller struct
-// from the labels in node object
-func (c *Controller) setHostName() error {
+func (c *Controller) setNodeAttributes() error {
+	// sets the node name label
 	nodeName, err := getNodeName()
 	if err != nil {
-		return fmt.Errorf("unable to get hostname: %v", err)
+		return fmt.Errorf("unable to set node attributes: %v", err)
 	}
+	c.NodeAttributes[NDMNodeKey] = nodeName
+
+	// set the hostname label
+	if err = c.setHostName(); err != nil {
+		return fmt.Errorf("unable to set node attributes:%v", err)
+	}
+	return nil
+}
+
+// setHostName set NodeAttribute field in Controller struct
+// from the labels in node object
+func (c *Controller) setHostName() error {
+	nodeName := c.NodeAttributes[NDMNodeKey]
 	// get the node object and fetch the hostname label from the
 	// node object
 	node := &v1.Node{}
-	err = c.Clientset.Get(context.TODO(), client.ObjectKey{Namespace: "", Name: nodeName}, node)
+	err := c.Clientset.Get(context.TODO(), client.ObjectKey{Namespace: "", Name: nodeName}, node)
 	if err != nil {
 		return err
 	}
@@ -205,9 +222,9 @@ func (c *Controller) setHostName() error {
 	// if the label is not present, or hostname is an empty string,
 	// use nodename as hostname
 	if hostName, ok := node.Labels[NDMHostKey]; !ok || hostName == "" {
-		c.HostName = nodeName
+		c.NodeAttributes[NDMHostKey] = nodeName
 	} else {
-		c.HostName = hostName
+		c.NodeAttributes[NDMHostKey] = hostName
 	}
 	return nil
 }
