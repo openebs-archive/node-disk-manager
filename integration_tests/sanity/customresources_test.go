@@ -111,7 +111,7 @@ var _ = Describe("Device Discovery Tests", func() {
 				if strings.Contains(disk.Name, DiskName) && disk.Spec.Path == physicalDisk.Name {
 					noOfPhysicalDiskCR++
 				}
-				Expect(disk.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
+				Expect(disk.Status.State).To(Equal(v1alpha1.DiskActive))
 			}
 
 			Expect(noOfPhysicalDiskCR).To(Equal(1))
@@ -137,7 +137,7 @@ var _ = Describe("Device Discovery Tests", func() {
 
 			for _, bd := range bdList.Items {
 				if strings.Contains(bd.Name, BlockDeviceName) && bd.Spec.Path == physicalDisk.Name {
-					Expect(bd.Status.State).To(Equal(v1alpha1.DiskInactive))
+					Expect(bd.Status.State).To(Equal(v1alpha1.BlockDeviceInactive))
 				}
 			}
 		})
