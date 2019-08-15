@@ -180,7 +180,7 @@ func (r *ReconcileBlockDevice) CheckBackingDiskStatusAndUpdateDeviceCR(
 		return err
 	}
 
-	if strings.Compare(diskInstance.Status.State, ndm.NDMInactive) == 0 {
+	if diskInstance.Status.State == ndm.NDMInactive {
 		dcpyInstance := instance.DeepCopy()
 		dcpyInstance.Status.State = ndm.NDMInactive
 		err := r.client.Update(context.TODO(), dcpyInstance)
