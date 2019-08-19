@@ -136,7 +136,8 @@ func (di *DiskInfo) getObjectMeta() metav1.ObjectMeta {
 		Labels: make(map[string]string),
 		Name:   di.Uuid,
 	}
-	objectMeta.Labels[NDMHostKey] = di.NodeAttributes[NDMHostKey]
+	kubernetesHostNameKey := KubernetesLabelPrefix + HostNameKey
+	objectMeta.Labels[kubernetesHostNameKey] = di.NodeAttributes[HostNameKey]
 	objectMeta.Labels[NDMDiskTypeKey] = di.DiskType
 	objectMeta.Labels[NDMManagedKey] = TrueString
 	return objectMeta

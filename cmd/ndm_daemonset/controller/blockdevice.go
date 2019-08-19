@@ -73,7 +73,8 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 		Name:      di.UUID,
 		Namespace: Namespace,
 	}
-	objectMeta.Labels[NDMHostKey] = di.NodeAttributes[NDMHostKey]
+	kubernetesHostNameKey := KubernetesLabelPrefix + HostNameKey
+	objectMeta.Labels[kubernetesHostNameKey] = di.NodeAttributes[HostNameKey]
 	objectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	objectMeta.Labels[NDMManagedKey] = TrueString
 	return objectMeta
@@ -108,7 +109,7 @@ func (di *DeviceInfo) getStatus() apis.DeviceStatus {
 // It is used to populate data of BlockDevice struct of blockdevice CR.
 func (di *DeviceInfo) getDeviceSpec() apis.DeviceSpec {
 	deviceSpec := apis.DeviceSpec{}
-	deviceSpec.NodeAttributes.NodeName = di.NodeAttributes[NDMNodeKey]
+	deviceSpec.NodeAttributes.NodeName = di.NodeAttributes[NodeNameKey]
 	deviceSpec.Path = di.getPath()
 	deviceSpec.Details = di.getDeviceDetails()
 	deviceSpec.Capacity = di.getDeviceCapacity()

@@ -138,7 +138,8 @@ func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
 		},
 	}
 
-	filter := NDMHostKey + "=" + c.NodeAttributes[NDMHostKey]
+	kubernetesHostNameKey := KubernetesLabelPrefix + HostNameKey
+	filter := kubernetesHostNameKey + "=" + c.NodeAttributes[HostNameKey]
 	filter = filter + "," + NDMManagedKey + "!=" + FalseString
 	opts := &client.ListOptions{}
 	opts.SetLabelSelector(filter)

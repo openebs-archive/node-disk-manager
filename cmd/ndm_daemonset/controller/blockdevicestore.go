@@ -153,8 +153,8 @@ func (c *Controller) ListBlockDeviceResource() (*apis.BlockDeviceList, error) {
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
-
-	filter := NDMHostKey + "=" + c.NodeAttributes[NDMHostKey]
+	kubernetesHostNameKey := KubernetesLabelPrefix + HostNameKey
+	filter := kubernetesHostNameKey + "=" + c.NodeAttributes[HostNameKey]
 	filter = filter + "," + NDMManagedKey + "!=" + FalseString
 	opts := &client.ListOptions{}
 	opts.SetLabelSelector(filter)
@@ -179,7 +179,7 @@ func (c *Controller) GetExistingBlockDeviceResource(blockDeviceList *apis.BlockD
 // list of active resources. Active resource which is present in etcd not in
 // system that will be marked as inactive.
 func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
-	listDevices := append(devices, GetActiveSparseBlockDevicesUUID(c.NodeAttributes[NDMHostKey])...)
+	listDevices := append(devices, GetActiveSparseBlockDevicesUUID(c.NodeAttributes[HostNameKey])...)
 	blockDeviceList, err := c.ListBlockDeviceResource()
 	if err != nil {
 		glog.Error(err)

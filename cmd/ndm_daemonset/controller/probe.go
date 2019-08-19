@@ -98,8 +98,7 @@ func (c *Controller) ListProbe() []*Probe {
 
 // FillDiskDetails lists registered probes and fills details from each probe
 func (c *Controller) FillDiskDetails(diskDetails *DiskInfo) {
-	diskDetails.NodeAttributes[NDMHostKey] = c.NodeAttributes[NDMHostKey]
-	diskDetails.NodeAttributes[NDMNodeKey] = c.NodeAttributes[NDMNodeKey]
+	diskDetails.NodeAttributes = c.NodeAttributes
 	diskDetails.DiskType = NDMDefaultDiskType
 	diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
 	probes := c.ListProbe()

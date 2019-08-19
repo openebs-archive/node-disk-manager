@@ -44,12 +44,16 @@ const (
 	NDMDiskKind = "Disk"
 	// NDMBlockDeviceKind is the Device kind CR.
 	NDMBlockDeviceKind = "BlockDevice"
+	// Kubernetes label prefix
+	KubernetesLabelPrefix = "kubernetes.io/"
+	// OpenEBS label prefix
+	OpenEBSLabelPrefix = "openebs.io/"
+	// HostNameKey is the key for hostname
+	HostNameKey = "hostname"
+	// NodeNameKey is the node name label prefix
+	NodeNameKey = "nodename"
 	// NDMVersion is the CR version.
-	NDMVersion = "openebs.io/v1alpha1"
-	// NDMHostKey is host name label prefix.
-	NDMHostKey = "kubernetes.io/hostname"
-	// NDMNodeKey is the node name label prefix
-	NDMNodeKey = "openebs.io/nodename"
+	NDMVersion = OpenEBSLabelPrefix + "v1alpha1"
 	// NDMNotPartitioned is used to say blockdevice does not have any partition.
 	NDMNotPartitioned = "No"
 	// NDMPartitioned is used to say blockdevice has some partitions.
@@ -181,7 +185,7 @@ func (c *Controller) setNodeAttributes() error {
 	if err != nil {
 		return fmt.Errorf("unable to set node attributes: %v", err)
 	}
-	c.NodeAttributes[NDMNodeKey] = nodeName
+	c.NodeAttributes[NodeNameKey] = nodeName
 
 	// set the hostname label
 	if err = c.setHostName(); err != nil {
@@ -193,7 +197,7 @@ func (c *Controller) setNodeAttributes() error {
 // setHostName set NodeAttribute field in Controller struct
 // from the labels in node object
 func (c *Controller) setHostName() error {
-	nodeName := c.NodeAttributes[NDMNodeKey]
+	nodeName := c.NodeAttributes[NodeNameKey]
 	// get the node object and fetch the hostname label from the
 	// node object
 	node := &v1.Node{}
@@ -204,10 +208,10 @@ func (c *Controller) setHostName() error {
 
 	// if the label is not present, or hostname is an empty string,
 	// use nodename as hostname
-	if hostName, ok := node.Labels[NDMHostKey]; !ok || hostName == "" {
-		c.NodeAttributes[NDMHostKey] = nodeName
+	if hostName, ok := node.Labels[HostNameKey]; !ok || hostName == "" {
+		c.NodeAttributes[HostNameKey] = nodeName
 	} else {
-		c.NodeAttributes[NDMHostKey] = hostName
+		c.NodeAttributes[HostNameKey] = hostName
 	}
 	return nil
 }
