@@ -25,7 +25,6 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -90,15 +89,13 @@ var ControllerBroadcastChannel = make(chan *Controller)
 
 // Controller is the controller implementation for disk resources
 type Controller struct {
-	HostName      string
-	KubeClientset kubernetes.Interface // KubeClientset is standard kubernetes clientset
-	mgr           manager.Manager
-	config        *rest.Config // config is the generated config using kubeconfig/incluster config
-	Clientset     client.Client
-	NDMConfig     *NodeDiskManagerConfig // NDMConfig contains custom config for ndm
-	Mutex         *sync.Mutex            // Mutex is used to lock and unlock Controller
-	Filters       []*Filter              // Filters are the registered filters like os disk filter
-	Probes        []*Probe               // Probes are the registered probes like udev/smart
+	config *rest.Config // config is the generated config using kubeconfig/incluster config
+	// Clientset is the client used to interface with API server
+	Clientset client.Client
+	NDMConfig *NodeDiskManagerConfig // NDMConfig contains custom config for ndm
+	Mutex     *sync.Mutex            // Mutex is used to lock and unlock Controller
+	Filters   []*Filter              // Filters are the registered filters like os disk filter
+	Probes    []*Probe               // Probes are the registered probes like udev/smart
 	// NodeAttribute is a map of various attributes of the node in which this daemon is running.
 	// The attributes can be hostname, nodename, zone, failure-domain etc
 	NodeAttributes map[string]string
@@ -112,17 +109,14 @@ func NewController(kubeconfig string) (*Controller, error) {
 		return nil, err
 	}
 	controller.config = cfg
-	if err := controller.setKubeClient(controller.config); err != nil {
-		return nil, err
-	}
 
-	controller.mgr, err = manager.New(controller.config, manager.Options{Namespace: Namespace})
+	mgr, err := manager.New(controller.config, manager.Options{Namespace: Namespace})
 	if err != nil {
 		return controller, err
 	}
 
 	// Setup Scheme for all resources
-	if err := apis.AddToScheme(controller.mgr.GetScheme()); err != nil {
+	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
 		return controller, err
 	}
 
@@ -167,17 +161,6 @@ func getCfg(kubeconfig string) (*rest.Config, error) {
 		return nil, err
 	}
 	return cfg, err
-}
-
-// setKubeClient set KubeClientset field in Controller struct
-// if it gets kubeClient from cfg else it returns error
-func (c *Controller) setKubeClient(cfg *rest.Config) error {
-	kubeClient, err := kubernetes.NewForConfig(cfg)
-	if err != nil {
-		return err
-	}
-	c.KubeClientset = kubeClient
-	return nil
 }
 
 // newClientSet set Clientset field in Controller struct
