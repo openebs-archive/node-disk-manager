@@ -33,10 +33,6 @@ const (
 	// BlockDeviceName is the name of the blockDevice CRs created corresponding to
 	// physical/virtual disks or blockdevices
 	BlockDeviceName = "blockdevice-"
-	// ActiveState stores the active state of Disk/Device resource
-	ActiveState = "Active"
-	// InactiveState stores the deactivated state of Disk/Device resource
-	InactiveState = "Inactive"
 	// DiskImageSize is the default file size(1GB) used while creating backing image
 	DiskImageSize = 1073741824
 )

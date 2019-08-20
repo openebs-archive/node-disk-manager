@@ -21,6 +21,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
+	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"strings"
 )
 
@@ -57,7 +58,7 @@ var _ = Describe("Device Discovery Tests", func() {
 			// Get the no.of sparse block devices from block device list
 			for _, blockDevice := range bdList.Items {
 				if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
-					Expect(blockDevice.Status.State).To(Equal(ActiveState))
+					Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
 					noOfSparseBlockDevices++
 				}
 			}
@@ -102,7 +103,7 @@ var _ = Describe("Device Discovery Tests", func() {
 				} else if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
 					noOfSparseBlockDeviceCR++
 				}
-				Expect(blockDevice.Status.State).To(Equal(ActiveState))
+				Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
 			}
 
 			// Get no of physical disk CRs from diskList
@@ -110,7 +111,7 @@ var _ = Describe("Device Discovery Tests", func() {
 				if strings.Contains(disk.Name, DiskName) && disk.Spec.Path == physicalDisk.Name {
 					noOfPhysicalDiskCR++
 				}
-				Expect(disk.Status.State).To(Equal(ActiveState))
+				Expect(disk.Status.State).To(Equal(v1alpha1.DiskActive))
 			}
 
 			Expect(noOfPhysicalDiskCR).To(Equal(1))
@@ -130,13 +131,13 @@ var _ = Describe("Device Discovery Tests", func() {
 			// the disk CR should be inactive
 			for _, disk := range diskList.Items {
 				if strings.Contains(disk.Name, DiskName) && disk.Spec.Path == physicalDisk.Name {
-					Expect(disk.Status.State).To(Equal(InactiveState))
+					Expect(disk.Status.State).To(Equal(v1alpha1.DiskInactive))
 				}
 			}
 
 			for _, bd := range bdList.Items {
 				if strings.Contains(bd.Name, BlockDeviceName) && bd.Spec.Path == physicalDisk.Name {
-					Expect(bd.Status.State).To(Equal(InactiveState))
+					Expect(bd.Status.State).To(Equal(v1alpha1.BlockDeviceInactive))
 				}
 			}
 		})
