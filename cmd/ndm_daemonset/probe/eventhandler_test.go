@@ -27,7 +27,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ndmFakeClientset "sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -137,14 +136,14 @@ func (nf *fakeFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
 
 func TestAddDiskEvent(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string)
+	nodeAttributes[controller.HostNameKey] = fakeHostName
 	fakeController := &controller.Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
-		Mutex:         &sync.Mutex{},
-		Filters:       make([]*controller.Filter, 0),
-		Probes:        make([]*controller.Probe, 0),
+		Clientset:      fakeNdmClient,
+		Mutex:          &sync.Mutex{},
+		Filters:        make([]*controller.Filter, 0),
+		Probes:         make([]*controller.Probe, 0),
+		NodeAttributes: nodeAttributes,
 	}
 	//add one filter
 	filter := &fakeFilter{}
@@ -191,7 +190,7 @@ func TestAddDiskEvent(t *testing.T) {
 	}
 	// Create one fake disk resource
 	fakeDr := mockEmptyDiskCr()
-	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
 	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = fakeDiskType
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 	fakeDr.Spec.Details.Model = fakeModel
@@ -216,26 +215,26 @@ func TestAddDiskEvent(t *testing.T) {
 
 func TestDeleteDiskEvent(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
+	nodeAttributes := make(map[string]string)
+	nodeAttributes[controller.HostNameKey] = fakeHostName
 	mutex := &sync.Mutex{}
 	fakeController := &controller.Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
-		Probes:        probes,
-		Mutex:         mutex,
+		Clientset:      fakeNdmClient,
+		Probes:         probes,
+		Mutex:          mutex,
+		NodeAttributes: nodeAttributes,
 	}
 	// Create one fake disk resource
 	fakeDr := mockEmptyDiskCr()
-	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
 	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = fakeDiskType
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 	fakeController.CreateDisk(fakeDr)
 
 	// Create one fake block device resource
 	fakeBDr := mockEmptyBlockDeviceCr()
-	fakeBDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeBDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
 	fakeBDr.ObjectMeta.Labels[controller.NDMDeviceTypeKey] = fakeBDType
 	fakeBDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 	fakeController.CreateBlockDevice(fakeBDr)
