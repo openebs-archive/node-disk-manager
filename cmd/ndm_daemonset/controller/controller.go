@@ -44,9 +44,9 @@ const (
 	NDMDiskKind = "Disk"
 	// NDMBlockDeviceKind is the Device kind CR.
 	NDMBlockDeviceKind = "BlockDevice"
-	// Kubernetes label prefix
+	// KubernetesLabelPrefix is the prefix for k8s labels
 	KubernetesLabelPrefix = "kubernetes.io/"
-	// OpenEBS label prefix
+	// OpenEBSLabelPrefix is the label prefix for openebs labels
 	OpenEBSLabelPrefix = "openebs.io/"
 	// HostNameKey is the key for hostname
 	HostNameKey = "hostname"

@@ -65,6 +65,8 @@ type DiskInfo struct {
 	}
 }
 
+// NodeAttribute is a map of string, which stores various attributes like hostname, node name, failure domain
+// etc of a node
 type NodeAttribute map[string]string
 
 // ProbeIdentifier contains some keys to enable probes to uniquely identify each disk.
