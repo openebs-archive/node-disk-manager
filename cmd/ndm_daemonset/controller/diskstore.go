@@ -138,8 +138,7 @@ func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
 		},
 	}
 
-	kubernetesHostNameKey := KubernetesLabelPrefix + HostNameKey
-	filter := kubernetesHostNameKey + "=" + c.NodeAttributes[HostNameKey]
+	filter := KubernetesHostNameLabel + "=" + c.NodeAttributes[HostNameKey]
 	filter = filter + "," + NDMManagedKey + "!=" + FalseString
 	opts := &client.ListOptions{}
 	opts.SetLabelSelector(filter)
@@ -180,6 +179,7 @@ func (c *Controller) DeactivateStaleDiskResource(disks []string) {
 // else it creates one new disk resource in etcd
 func (c *Controller) PushDiskResource(oldDr *apis.Disk, diskDetails *DiskInfo) {
 	diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
+	diskDetails.NodeAttributes = c.NodeAttributes
 	diskApi := diskDetails.ToDisk()
 	if oldDr != nil {
 		c.UpdateDisk(diskApi, oldDr)

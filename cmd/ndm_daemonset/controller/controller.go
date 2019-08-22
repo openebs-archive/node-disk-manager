@@ -52,6 +52,8 @@ const (
 	HostNameKey = "hostname"
 	// NodeNameKey is the node name label prefix
 	NodeNameKey = "nodename"
+	// KubernetesHostNameLabel is the hostname label used by k8s
+	KubernetesHostNameLabel = KubernetesLabelPrefix + HostNameKey
 	// NDMVersion is the CR version.
 	NDMVersion = OpenEBSLabelPrefix + "v1alpha1"
 	// NDMNotPartitioned is used to say blockdevice does not have any partition.

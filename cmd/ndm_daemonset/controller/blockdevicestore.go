@@ -153,8 +153,7 @@ func (c *Controller) ListBlockDeviceResource() (*apis.BlockDeviceList, error) {
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
-	kubernetesHostNameKey := KubernetesLabelPrefix + HostNameKey
-	filter := kubernetesHostNameKey + "=" + c.NodeAttributes[HostNameKey]
+	filter := KubernetesHostNameLabel + "=" + c.NodeAttributes[HostNameKey]
 	filter = filter + "," + NDMManagedKey + "!=" + FalseString
 	opts := &client.ListOptions{}
 	opts.SetLabelSelector(filter)
@@ -197,6 +196,7 @@ func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
 // else it creates new blockdevice resource in etcd
 func (c *Controller) PushBlockDeviceResource(oldBlockDevice *apis.BlockDevice,
 	deviceDetails *DeviceInfo) {
+	deviceDetails.NodeAttributes = c.NodeAttributes
 	deviceAPI := deviceDetails.ToDevice()
 	if oldBlockDevice != nil {
 		c.UpdateBlockDevice(deviceAPI, oldBlockDevice)

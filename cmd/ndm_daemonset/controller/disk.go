@@ -102,7 +102,10 @@ type FSInfo struct {
 // be field by different probes each probe will responsible for
 // populate some specific fields of DiskInfo struct.
 func NewDiskInfo() *DiskInfo {
-	diskInfo := &DiskInfo{}
+	nodeAttribute := make(NodeAttribute)
+	diskInfo := &DiskInfo{
+		NodeAttributes: nodeAttribute,
+	}
 	diskInfo.DiskType = NDMDefaultDiskType
 	return diskInfo
 }
@@ -136,8 +139,7 @@ func (di *DiskInfo) getObjectMeta() metav1.ObjectMeta {
 		Labels: make(map[string]string),
 		Name:   di.Uuid,
 	}
-	kubernetesHostNameKey := KubernetesLabelPrefix + HostNameKey
-	objectMeta.Labels[kubernetesHostNameKey] = di.NodeAttributes[HostNameKey]
+	objectMeta.Labels[KubernetesHostNameLabel] = di.NodeAttributes[HostNameKey]
 	objectMeta.Labels[NDMDiskTypeKey] = di.DiskType
 	objectMeta.Labels[NDMManagedKey] = TrueString
 	return objectMeta

@@ -22,7 +22,6 @@ import (
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
 // mockEmptyDiskCr returns Disk object with minimum attributes it is used in unit test cases.
@@ -45,16 +44,17 @@ func mockEmptyDiskCr() apis.Disk {
 
 func TestCreateDisk(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
+
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create disk resource dr1
 	dr1 := fakeDr
-	dr1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr1.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr1.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr1.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr1)
@@ -64,7 +64,7 @@ func TestCreateDisk(t *testing.T) {
 
 	// Create resource which is already present, it should update
 	dr2 := fakeDr
-	dr2.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr2.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr2.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr2.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr2)
@@ -74,7 +74,7 @@ func TestCreateDisk(t *testing.T) {
 
 	// Create disk resource dr3
 	dr3 := newFakeDr
-	dr3.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr3.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr3.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr3.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr3)
@@ -102,16 +102,17 @@ func TestCreateDisk(t *testing.T) {
 
 func TestUpdateDisk(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
+
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Update a resource which is not present
 	dr := fakeDr
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	err := fakeController.UpdateDisk(dr, nil)
@@ -172,16 +173,16 @@ func TestUpdateDisk(t *testing.T) {
 
 func TestDeactivateDisk(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create one resource and deactivate it.
 	dr := fakeDr
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
@@ -192,14 +193,14 @@ func TestDeactivateDisk(t *testing.T) {
 
 	// Deactivate one resource which is not present it should return error
 	dr1 := newFakeDr
-	dr1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr1.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr1.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr1.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.DeactivateDisk(dr1)
 
 	// Create another resource and deactivate it.
 	newDr := newFakeDr
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
@@ -228,16 +229,17 @@ func TestDeactivateDisk(t *testing.T) {
 
 func TestDeleteDisk(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
+
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create one resource and delete it
 	dr := fakeDr
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
@@ -251,7 +253,7 @@ func TestDeleteDisk(t *testing.T) {
 
 	// Create another resource and delete it
 	newDr := newFakeDr
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
@@ -280,16 +282,17 @@ func TestDeleteDisk(t *testing.T) {
 
 func TestListDiskResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
+
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create disk resource dr
 	dr := fakeDr
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
@@ -300,7 +303,7 @@ func TestListDiskResource(t *testing.T) {
 
 	// Create disk resource newDr
 	newDr := newFakeDr
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
@@ -336,23 +339,24 @@ func TestListDiskResource(t *testing.T) {
 
 func TestGetExistingDiskResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
+
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create disk resource dr
 	dr := fakeDr
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
 
 	// Create disk resource newDr
 	newDr := newFakeDr
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
@@ -386,11 +390,12 @@ func TestGetExistingDiskResource(t *testing.T) {
  */
 func TestPushDiskResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
+
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// create one DiskInfo struct with mock uuid
@@ -400,7 +405,7 @@ func TestPushDiskResource(t *testing.T) {
 
 	// Create one fake Disk struct
 	fakeDr := mockEmptyDiskCr()
-	fakeDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	fakeDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 
@@ -435,23 +440,24 @@ func TestPushDiskResource(t *testing.T) {
 
 func TestDeactivateStaleDiskResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
+
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create disk resource dr
 	dr := fakeDr
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)
 
 	// Create disk resource newDr
 	newDr := newFakeDr
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	newDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(newDr)
@@ -487,14 +493,15 @@ func TestDeactivateStaleDiskResource(t *testing.T) {
 
 func TestMarkDiskStatusToUnknown(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
+
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 	dr := mockEmptyDiskCr()
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	dr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 	fakeController.CreateDisk(dr)

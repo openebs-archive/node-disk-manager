@@ -22,7 +22,6 @@ import (
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
 // mockEmptyDeviceCr returns BlockDevice object with minimum attributes it is used in unit test cases.
@@ -56,16 +55,16 @@ func mockEmptyDeviceCr() apis.BlockDevice {
 
 func TestCreateDevice(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create blockdevice resource devR1
 	devR1 := fakeDevice
-	devR1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	devR1.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	devR1.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(devR1)
 
@@ -74,7 +73,7 @@ func TestCreateDevice(t *testing.T) {
 
 	// Create resource which is already present, it should update
 	devR2 := fakeDevice
-	devR2.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	devR2.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	devR2.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(devR2)
 
@@ -83,7 +82,7 @@ func TestCreateDevice(t *testing.T) {
 
 	// Create blockdevice resource devR3
 	devR3 := newFakeDevice
-	devR3.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	devR3.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	devR3.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(devR3)
 
@@ -110,16 +109,16 @@ func TestCreateDevice(t *testing.T) {
 
 func TestUpdateDevice(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Update a resource which is not present
 	devR := fakeDevice
-	devR.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	devR.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	devR.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	err := fakeController.UpdateBlockDevice(devR, nil)
 	if err == nil {
@@ -179,16 +178,16 @@ func TestUpdateDevice(t *testing.T) {
 
 func TestDeactivateDevice(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create one resource and deactivate it.
 	dr := fakeDevice
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(dr)
 	fakeController.DeactivateBlockDevice(dr)
@@ -198,13 +197,13 @@ func TestDeactivateDevice(t *testing.T) {
 
 	// Deactivate one resource which is not present it should return error
 	dr1 := newFakeDevice
-	dr1.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr1.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr1.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.DeactivateBlockDevice(dr1)
 
 	// Create another resource and deactivate it.
 	newDr := newFakeDevice
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(newDr)
 	fakeController.DeactivateBlockDevice(newDr)
@@ -232,16 +231,16 @@ func TestDeactivateDevice(t *testing.T) {
 
 func TestDeleteDevice(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create one resource and delete it
 	dr := fakeDevice
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(dr)
 	fakeController.DeleteBlockDevice(fakeDeviceUID)
@@ -254,7 +253,7 @@ func TestDeleteDevice(t *testing.T) {
 
 	// Create another resource and delete it
 	newDr := newFakeDevice
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(newDr)
 	fakeController.DeleteBlockDevice(newFakeDeviceUID)
@@ -282,22 +281,22 @@ func TestDeleteDevice(t *testing.T) {
 
 func TestListDeviceResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create blockdevice resource dr
 	dr := fakeDevice
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(dr)
 
 	// Create blockdevice resource newDr
 	newDr := newFakeDevice
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(newDr)
 	listDevice, err := fakeController.ListBlockDeviceResource()
@@ -332,22 +331,22 @@ func TestListDeviceResource(t *testing.T) {
 
 func TestGetExistingDeviceResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create blockdevice resource dr
 	dr := fakeDevice
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(dr)
 
 	// Create blockdevice resource newDr
 	newDr := newFakeDevice
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(newDr)
 
@@ -380,20 +379,21 @@ func TestGetExistingDeviceResource(t *testing.T) {
  */
 func TestPushDeviceResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create one DeviceInfo struct with mock uuid
 	deviceDetails := &DeviceInfo{}
+	deviceDetails.NodeAttributes = make(map[string]string)
 	deviceDetails.UUID = fakeDeviceUID
 
 	// Create one fake BlockDevice struct
 	fakeDr := mockEmptyDeviceCr()
-	fakeDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	fakeDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeDr.ObjectMeta.Labels[NDMManagedKey] = TrueString
 
@@ -428,22 +428,22 @@ func TestPushDeviceResource(t *testing.T) {
 
 func TestDeactivateStaleDeviceResource(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	// Create blockdevice resource dr
 	dr := fakeDevice
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(dr)
 
 	// Create blockdevice resource newDr
 	newDr := newFakeDevice
-	newDr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(newDr)
 
@@ -478,15 +478,15 @@ func TestDeactivateStaleDeviceResource(t *testing.T) {
 
 func TestMarkDeviceStatusToUnknown(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	dr := mockEmptyDeviceCr()
-	dr.ObjectMeta.Labels[NDMHostKey] = fakeController.HostName
+	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(dr)
 

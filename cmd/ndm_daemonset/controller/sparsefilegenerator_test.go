@@ -24,7 +24,6 @@ import (
 
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
 // TestGetSparseFileDir verifies that a valid sparse file directory
@@ -173,11 +172,11 @@ func TestGetActiveSparseBlockDevicesUUID(t *testing.T) {
 
 func TestInitializeSparseFile(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 
 	sparseFileDir := "/tmp"
@@ -210,11 +209,11 @@ func TestInitializeSparseFile(t *testing.T) {
 
 func TestMarkSparseBlockDeviceStateActive(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
+	nodeAttributes := make(map[string]string, 0)
+	nodeAttributes[HostNameKey] = fakeHostName
 	fakeController := &Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
+		NodeAttributes: nodeAttributes,
+		Clientset:      fakeNdmClient,
 	}
 	sparseFile := "/tmp/0-ndm-sparse.img"
 	sparseUUID := "sparse-11063db4a4bfd3d0443d0b9d98391707"
