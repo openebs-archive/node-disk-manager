@@ -134,6 +134,7 @@ func NewController(kubeconfig string) (*Controller, error) {
 	controller.SetNDMConfig()
 	controller.Filters = make([]*Filter, 0)
 	controller.Probes = make([]*Probe, 0)
+	controller.NodeAttributes = make(map[string]string, 0)
 	controller.Mutex = &sync.Mutex{}
 
 	// get the namespace in which NDM is installed
