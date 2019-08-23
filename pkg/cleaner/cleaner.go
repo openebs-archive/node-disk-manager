@@ -133,6 +133,7 @@ func (c *CleanupStatusTracker) RemoveStatus(bdName string) (CleanupState, error)
 	return c.JobController.RemoveJob(bdName)
 }
 
+// CancelJob cancels a job without checking the status of the job.
 func (c *CleanupStatusTracker) CancelJob(bdName string) error {
 	return c.JobController.CancelJob(bdName)
 }
