@@ -88,6 +88,9 @@ func (c *Cleaner) Clean(blockDevice *v1alpha1.BlockDevice) (bool, error) {
 		// if not, cancel the cleanup job
 		if blockDevice.Status.State != v1alpha1.BlockDeviceActive {
 			// cancel the job
+			if err := c.CleanupStatus.CancelJob(bdName); err != nil {
+				return false, err
+			}
 		}
 		return false, nil
 	}
@@ -128,6 +131,10 @@ func (c *CleanupStatusTracker) InProgress(bdName string) bool {
 // be deleted
 func (c *CleanupStatusTracker) RemoveStatus(bdName string) (CleanupState, error) {
 	return c.JobController.RemoveJob(bdName)
+}
+
+func (c *CleanupStatusTracker) CancelJob(bdName string) error {
+	return c.JobController.CancelJob(bdName)
 }
 
 // runJob creates a new cleanup job in the namespace
