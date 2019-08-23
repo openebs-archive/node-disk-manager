@@ -268,7 +268,7 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 
 	reqLogger.Info("Deleting external dependencies for CR:" + instance.Name)
 
-	//Get BlockDevice list for
+	//Get BlockDevice list on all nodes
 	listDVR, err := r.getListofDevices()
 	if err != nil {
 		return err
