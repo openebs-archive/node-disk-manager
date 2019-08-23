@@ -34,6 +34,9 @@ type DeviceClaimSpec struct {
 	HostName        string               `json:"hostName"`                     // Node name from where blockdevice has to be claimed.
 	Details         DeviceClaimDetails   `json:"deviceClaimDetails,omitempty"` // Details of the device to be claimed
 	BlockDeviceName string               `json:"blockDeviceName,omitempty"`    // BlockDeviceName is the reference to the block-device backing this claim
+	// NodeAttributes is the attributes on the node from which a BD should
+	// be selected for this claim. It can include nodename, failure domain etc.
+	NodeAttributes NodeAttribute `json:"nodeAttributes,omitempty"`
 }
 
 // DeviceClaimStatus defines the observed state of BlockDeviceClaim
