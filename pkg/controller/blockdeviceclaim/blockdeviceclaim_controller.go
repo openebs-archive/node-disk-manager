@@ -165,8 +165,18 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 
 	//select block device from list of devices.
 	labelFilter := make([]string, 0)
+	var hostName string
 	if len(instance.Spec.HostName) != 0 {
-		labelFilter = append(labelFilter, ndm.NDMHostKey+"="+instance.Spec.HostName)
+		hostName = instance.Spec.HostName
+	}
+	// the hostname in NodeAttribute will override the hostname in spec, since spec.hostName
+	// will be deprecated shortly
+	if len(instance.Spec.BlockDeviceNodeAttributes.HostName) != 0 {
+		hostName = instance.Spec.BlockDeviceNodeAttributes.HostName
+	}
+	// only if any hostname is provided create the filter
+	if len(hostName) != 0 {
+		labelFilter = append(labelFilter, ndm.KubernetesHostNameLabel+"="+hostName)
 	}
 
 	bdList, err := r.getListofDevices(labelFilter...)

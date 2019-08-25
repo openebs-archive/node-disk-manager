@@ -226,7 +226,7 @@ func filterOutSparseBlockDevice(originalBD *apis.BlockDeviceList, spec *apis.Dev
 func filterNodeName(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
 
 	// if node name is not given in BDC, this filter will not work
-	if len(spec.NodeAttributes.NodeName) == 0 {
+	if len(spec.BlockDeviceNodeAttributes.NodeName) == 0 {
 		return originalBD
 	}
 
@@ -238,7 +238,7 @@ func filterNodeName(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec
 	}
 
 	for _, bd := range originalBD.Items {
-		if bd.Spec.NodeAttributes.NodeName == spec.NodeAttributes.NodeName {
+		if bd.Spec.NodeAttributes.NodeName == spec.BlockDeviceNodeAttributes.NodeName {
 			filteredBDList.Items = append(filteredBDList.Items, bd)
 		}
 	}
