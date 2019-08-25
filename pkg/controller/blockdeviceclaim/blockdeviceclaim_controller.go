@@ -342,7 +342,7 @@ func (r *ReconcileBlockDeviceClaim) getListofDevices(hostName string, ManualSele
 	// blockdevices are listed.
 	// TODO for manual selection, instead of listing all BDs, only get the BD with given name
 	if !ManualSelection {
-		filter := ndm.NDMHostKey + "=" + hostName
+		filter := ndm.KubernetesHostNameLabel + "=" + hostName
 		opts.SetLabelSelector(filter)
 	}
 

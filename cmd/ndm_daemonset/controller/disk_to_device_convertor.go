@@ -25,7 +25,7 @@ func (c *Controller) NewDeviceInfoFromDiskInfo(diskDetails *DiskInfo) *DeviceInf
 
 	deviceDetails := NewDeviceInfo()
 
-	deviceDetails.HostName = c.HostName
+	deviceDetails.NodeAttributes = diskDetails.NodeAttributes
 	deviceDetails.UUID = c.DiskToDeviceUUID(diskDetails.ProbeIdentifiers.Uuid)
 	deviceDetails.Capacity = diskDetails.Capacity
 	deviceDetails.Model = diskDetails.Model

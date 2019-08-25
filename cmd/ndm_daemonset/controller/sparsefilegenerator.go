@@ -204,8 +204,8 @@ func GetActiveSparseBlockDevicesUUID(hostname string) []string {
 func (c *Controller) MarkSparseBlockDeviceStateActive(sparseFile string, sparseFileSize int64) {
 	// Fill in the details of the sparse disk
 	BlockDeviceDetails := NewDeviceInfo()
-	BlockDeviceDetails.UUID = GetSparseBlockDeviceUUID(c.HostName, sparseFile)
-	BlockDeviceDetails.HostName = c.HostName
+	BlockDeviceDetails.UUID = GetSparseBlockDeviceUUID(c.NodeAttributes[HostNameKey], sparseFile)
+	BlockDeviceDetails.NodeAttributes = c.NodeAttributes
 
 	BlockDeviceDetails.DeviceType = SparseBlockDeviceType
 	BlockDeviceDetails.Path = sparseFile

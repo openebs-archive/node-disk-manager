@@ -106,9 +106,9 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 		glog.Infof("Path:%s filled by seachest.", d.Path)
 	}
 
-	if d.HostName == "" {
-		d.HostName = seachestProbe.SeachestIdentifier.GetHostName(driveInfo)
-		glog.Infof("Disk: %s HostName:%s filled by seachest.", d.Path, d.HostName)
+	if d.NodeAttributes[controller.HostNameKey] == "" {
+		d.NodeAttributes[controller.HostNameKey] = seachestProbe.SeachestIdentifier.GetHostName(driveInfo)
+		glog.Infof("Disk: %s NodeAttribute:%s filled by seachest.", d.Path, d.NodeAttributes[controller.HostNameKey])
 	}
 
 	if d.Model == "" {

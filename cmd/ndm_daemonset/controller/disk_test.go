@@ -140,14 +140,14 @@ func TestGetObjectMeta(t *testing.T) {
 	// add mock fields in diskInfo struct
 	fakeDiskInfo := NewDiskInfo()
 	fakeDiskInfo.Uuid = diskUid
-	fakeDiskInfo.HostName = hostName
+	fakeDiskInfo.NodeAttributes[HostNameKey] = hostName
 
 	//create fakeObjectMeta using mock data
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
 		Name:   diskUid,
 	}
-	fakeObjectMeta.Labels[NDMHostKey] = hostName
+	fakeObjectMeta.Labels[KubernetesHostNameLabel] = hostName
 	fakeObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeObjectMeta.Labels[NDMManagedKey] = TrueString
 
@@ -239,11 +239,12 @@ and get Disk value from ToDisk() and compare them
 func TestToDisk(t *testing.T) {
 	diskUid := "disk-uuid"
 	hostName := "host-name"
+
 	fakeDevLinks := make([]apis.DiskDevLink, 0)
 	// add mock fields in diskInfo struct
 	fakeDiskInfo := NewDiskInfo()
 	fakeDiskInfo.Uuid = diskUid
-	fakeDiskInfo.HostName = hostName
+	fakeDiskInfo.NodeAttributes[HostNameKey] = hostName
 
 	// Creating one Disk struct using mock value
 	expectedDisk := apis.Disk{}
@@ -256,7 +257,7 @@ func TestToDisk(t *testing.T) {
 		Labels: make(map[string]string),
 		Name:   diskUid,
 	}
-	fakeObjectMeta.Labels[NDMHostKey] = hostName
+	fakeObjectMeta.Labels[KubernetesHostNameLabel] = hostName
 	fakeObjectMeta.Labels[NDMDiskTypeKey] = NDMDefaultDiskType
 	fakeObjectMeta.Labels[NDMManagedKey] = TrueString
 	expectedDisk.ObjectMeta = fakeObjectMeta

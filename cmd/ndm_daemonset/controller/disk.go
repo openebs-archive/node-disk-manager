@@ -30,7 +30,7 @@ import (
 // etcd as a CR of that disk.
 type DiskInfo struct {
 	ProbeIdentifiers      ProbeIdentifier // ProbeIdentifiers contains some keys to uniquely identify each disk by probe
-	HostName              string          // HostName contains the node's hostname in which this disk is attached.
+	NodeAttributes        NodeAttribute   // NodeAttribute contains the node's attributes like hostname and nodename
 	Uuid                  string          // Uuid is the unique id given by ndm
 	Capacity              uint64          // Capacity is capacity of a disk
 	Model                 string          // Model is model no of a disk
@@ -64,6 +64,10 @@ type DiskInfo struct {
 		LowestTemperature    int16 //lifetime measured lowest
 	}
 }
+
+// NodeAttribute is a map of string, which stores various attributes like hostname, node name, failure domain
+// etc of a node
+type NodeAttribute map[string]string
 
 // ProbeIdentifier contains some keys to enable probes to uniquely identify each disk.
 // These keys are defined here in order to denote the identifier that a particular probe
@@ -100,7 +104,10 @@ type FSInfo struct {
 // be field by different probes each probe will responsible for
 // populate some specific fields of DiskInfo struct.
 func NewDiskInfo() *DiskInfo {
-	diskInfo := &DiskInfo{}
+	nodeAttribute := make(NodeAttribute)
+	diskInfo := &DiskInfo{
+		NodeAttributes: nodeAttribute,
+	}
 	diskInfo.DiskType = NDMDefaultDiskType
 	return diskInfo
 }
@@ -134,7 +141,7 @@ func (di *DiskInfo) getObjectMeta() metav1.ObjectMeta {
 		Labels: make(map[string]string),
 		Name:   di.Uuid,
 	}
-	objectMeta.Labels[NDMHostKey] = di.HostName
+	objectMeta.Labels[KubernetesHostNameLabel] = di.NodeAttributes[HostNameKey]
 	objectMeta.Labels[NDMDiskTypeKey] = di.DiskType
 	objectMeta.Labels[NDMManagedKey] = TrueString
 	return objectMeta

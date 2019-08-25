@@ -59,7 +59,7 @@ type jobController struct {
 // NewCleanupJob creates a new cleanup job in the  namespace. It returns a Job object which can be used to
 // start the job
 func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace string) (*batchv1.Job, error) {
-	nodeName := bd.Labels[controller.NDMHostKey]
+	nodeName := bd.Labels[controller.KubernetesHostNameLabel]
 
 	priv := true
 	jobContainer := v1.Container{
@@ -98,14 +98,14 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 
 	podSpec.ServiceAccountName = getServiceAccount()
 	podSpec.Containers = []v1.Container{jobContainer}
-	podSpec.NodeSelector = map[string]string{controller.NDMHostKey: nodeName}
+	podSpec.NodeSelector = map[string]string{controller.KubernetesHostNameLabel: nodeName}
 
 	podTemplate := v1.Pod{}
 	podTemplate.Spec = podSpec
 
 	labels := map[string]string{
-		controller.NDMHostKey: nodeName,
-		BDLabel:               bd.Name,
+		controller.KubernetesLabelPrefix: nodeName,
+		BDLabel:                          bd.Name,
 	}
 
 	podTemplate.ObjectMeta = metav1.ObjectMeta{

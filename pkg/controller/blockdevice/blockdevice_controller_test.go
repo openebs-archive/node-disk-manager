@@ -191,7 +191,7 @@ func GetFakeDiskObject() *openebsv1alpha1.Disk {
 			State: ndm.NDMActive,
 		},
 	}
-	disk.ObjectMeta.Labels[ndm.NDMHostKey] = fakeHostName
+	disk.ObjectMeta.Labels[ndm.KubernetesHostNameLabel] = fakeHostName
 	return disk
 }
 

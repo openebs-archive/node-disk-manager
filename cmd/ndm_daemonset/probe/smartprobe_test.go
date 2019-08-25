@@ -22,11 +22,10 @@ import (
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	smart "github.com/openebs/node-disk-manager/pkg/smart"
+	"github.com/openebs/node-disk-manager/pkg/smart"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
 func mockOsDiskToAPIBySmart() (apis.Disk, error) {
@@ -93,6 +92,7 @@ func TestFillDiskDetailsBySmart(t *testing.T) {
 	actualDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
 	sProbe.FillDiskDetails(actualDiskInfo)
 	expectedDiskInfo := &controller.DiskInfo{}
+	expectedDiskInfo.NodeAttributes = make(controller.NodeAttribute)
 	expectedDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
 	expectedDiskInfo.Capacity = mockOsDiskDetails.Capacity
 	expectedDiskInfo.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
@@ -114,17 +114,17 @@ func TestSmartProbe(t *testing.T) {
 
 	fakeHostName := "node-name"
 	fakeNdmClient := CreateFakeClient(t)
-	fakeKubeClient := fake.NewSimpleClientset()
 	probes := make([]*controller.Probe, 0)
 	filters := make([]*controller.Filter, 0)
+	nodeAttributes := make(map[string]string)
+	nodeAttributes[controller.HostNameKey] = fakeHostName
 	mutex := &sync.Mutex{}
 	fakeController := &controller.Controller{
-		HostName:      fakeHostName,
-		KubeClientset: fakeKubeClient,
-		Clientset:     fakeNdmClient,
-		Mutex:         mutex,
-		Probes:        probes,
-		Filters:       filters,
+		Clientset:      fakeNdmClient,
+		Mutex:          mutex,
+		Probes:         probes,
+		Filters:        filters,
+		NodeAttributes: nodeAttributes,
 	}
 
 	smartProbe := newSmartProbe("fakeController")
@@ -175,7 +175,7 @@ func TestSmartProbe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fakeDr.ObjectMeta.Labels[controller.NDMHostKey] = fakeController.HostName
+	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
 	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = "disk"
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 
