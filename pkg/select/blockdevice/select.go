@@ -54,6 +54,7 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 			FilterOutSparseBlockDevices,
 			FilterDeviceType,
 			FilterVolumeMode,
+			FilterNodeName,
 		)
 	}
 

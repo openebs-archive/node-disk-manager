@@ -39,6 +39,8 @@ const (
 	FilterResourceStorage = "filterResourceStorage"
 	// FilterOutSparseBlockDevices is used to filter out sparse BDs
 	FilterOutSparseBlockDevices = "filterSparseBlockDevice"
+	// FilterNodeName is used to filter based on nodename
+	FilterNodeName = "filterNodeName"
 )
 
 // filterFunc is the func type for the filter functions
@@ -52,6 +54,7 @@ var filterFuncMap = map[string]filterFunc{
 	FilterBlockDeviceName:       filterBlockDeviceName,
 	FilterResourceStorage:       filterResourceStorage,
 	FilterOutSparseBlockDevices: filterOutSparseBlockDevice,
+	FilterNodeName:              filterNodeName,
 }
 
 // ApplyFilters apply the filter specified in the filterkeys on the given BD List,
@@ -214,6 +217,28 @@ func filterOutSparseBlockDevice(originalBD *apis.BlockDeviceList, spec *apis.Dev
 
 	for _, bd := range originalBD.Items {
 		if bd.Spec.Details.DeviceType != controller.SparseBlockDeviceType {
+			filteredBDList.Items = append(filteredBDList.Items, bd)
+		}
+	}
+	return filteredBDList
+}
+
+func filterNodeName(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
+
+	// if node name is not given in BDC, this filter will not work
+	if len(spec.BlockDeviceNodeAttributes.NodeName) == 0 {
+		return originalBD
+	}
+
+	filteredBDList := &apis.BlockDeviceList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "BlockDevice",
+			APIVersion: "openebs.io/v1alpha1",
+		},
+	}
+
+	for _, bd := range originalBD.Items {
+		if bd.Spec.NodeAttributes.NodeName == spec.BlockDeviceNodeAttributes.NodeName {
 			filteredBDList.Items = append(filteredBDList.Items, bd)
 		}
 	}

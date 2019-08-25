@@ -4,6 +4,8 @@ metadata:
   name: example-blockdeviceclaim
 spec:
   hostName: "" # hostname of the node from which you want to get a BD
+  nodeAttributes:
+    nodeName: "" # node name of the k8s node. Output from `kubectl get nodes`
   blockDeviceName: "" # BD name, if you want to claim a specific block device
   resources:
     requests:

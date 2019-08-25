@@ -19,6 +19,7 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/select/blockdevice"
@@ -163,7 +164,22 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 	}
 
 	//select block device from list of devices.
-	bdList, err := r.getListofDevices(instance.Spec.HostName, config.ManualSelection)
+	labelFilter := make([]string, 0)
+	var hostName string
+	if len(instance.Spec.HostName) != 0 {
+		hostName = instance.Spec.HostName
+	}
+	// the hostname in NodeAttribute will override the hostname in spec, since spec.hostName
+	// will be deprecated shortly
+	if len(instance.Spec.BlockDeviceNodeAttributes.HostName) != 0 {
+		hostName = instance.Spec.BlockDeviceNodeAttributes.HostName
+	}
+	// only if any hostname is provided create the filter
+	if len(hostName) != 0 {
+		labelFilter = append(labelFilter, ndm.KubernetesHostNameLabel+"="+hostName)
+	}
+
+	bdList, err := r.getListofDevices(labelFilter...)
 	if err != nil {
 		return err
 	}
@@ -262,13 +278,8 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 
 	reqLogger.Info("Deleting external dependencies for CR:" + instance.Name)
 
-	manualSelection := false
-	if instance.Spec.BlockDeviceName != "" {
-		manualSelection = true
-	}
-
-	//Get BlockDevice list for particular host
-	listDVR, err := r.getListofDevices(instance.Spec.HostName, manualSelection)
+	//Get BlockDevice list on all nodes
+	listDVR, err := r.getListofDevices()
 	if err != nil {
 		return err
 	}
@@ -326,7 +337,7 @@ func (r *ReconcileBlockDeviceClaim) GetBlockDevice(name string) (*apis.BlockDevi
 // TODO:
 //  ListBlockDeviceResource in package cmd/ndm_daemonset/controller has the same functionality.
 //  Need to merge these 2 functions.
-func (r *ReconcileBlockDeviceClaim) getListofDevices(hostName string, ManualSelection bool) (*apis.BlockDeviceList, error) {
+func (r *ReconcileBlockDeviceClaim) getListofDevices(filters ...string) (*apis.BlockDeviceList, error) {
 
 	//Initialize a deviceList object.
 	listBlockDevice := &apis.BlockDeviceList{
@@ -337,13 +348,10 @@ func (r *ReconcileBlockDeviceClaim) getListofDevices(hostName string, ManualSele
 	}
 
 	opts := &client.ListOptions{}
-	// Set filter option, in our case we are filtering based on hostname/node
-	// Filter is only applied when its auto selection. In Manual selection, all
-	// blockdevices are listed.
-	// TODO for manual selection, instead of listing all BDs, only get the BD with given name
-	if !ManualSelection {
-		filter := ndm.KubernetesHostNameLabel + "=" + hostName
-		opts.SetLabelSelector(filter)
+
+	// if filter strings are present, apply them before querying etcd
+	if len(filters) != 0 {
+		opts.SetLabelSelector(strings.Join(filters, ","))
 	}
 
 	//Fetch deviceList with matching criteria
