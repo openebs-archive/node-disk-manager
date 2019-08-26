@@ -44,18 +44,18 @@ const (
 	NDMDiskKind = "Disk"
 	// NDMBlockDeviceKind is the Device kind CR.
 	NDMBlockDeviceKind = "BlockDevice"
-	// KubernetesLabelPrefix is the prefix for k8s labels
-	KubernetesLabelPrefix = "kubernetes.io/"
-	// OpenEBSLabelPrefix is the label prefix for openebs labels
-	OpenEBSLabelPrefix = "openebs.io/"
+	// kubernetesLabelPrefix is the prefix for k8s labels
+	kubernetesLabelPrefix = "kubernetes.io/"
+	// openEBSLabelPrefix is the label prefix for openebs labels
+	openEBSLabelPrefix = "openebs.io/"
 	// HostNameKey is the key for hostname
 	HostNameKey = "hostname"
 	// NodeNameKey is the node name label prefix
 	NodeNameKey = "nodename"
 	// KubernetesHostNameLabel is the hostname label used by k8s
-	KubernetesHostNameLabel = KubernetesLabelPrefix + HostNameKey
+	KubernetesHostNameLabel = kubernetesLabelPrefix + HostNameKey
 	// NDMVersion is the CR version.
-	NDMVersion = OpenEBSLabelPrefix + "v1alpha1"
+	NDMVersion = openEBSLabelPrefix + "v1alpha1"
 	// NDMNotPartitioned is used to say blockdevice does not have any partition.
 	NDMNotPartitioned = "No"
 	// NDMPartitioned is used to say blockdevice has some partitions.
