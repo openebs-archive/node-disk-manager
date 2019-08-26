@@ -104,8 +104,8 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 	podTemplate.Spec = podSpec
 
 	labels := map[string]string{
-		controller.KubernetesLabelPrefix: nodeName,
-		BDLabel:                          bd.Name,
+		controller.KubernetesHostNameLabel: nodeName,
+		BDLabel:                            bd.Name,
 	}
 
 	podTemplate.ObjectMeta = metav1.ObjectMeta{
