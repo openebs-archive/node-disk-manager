@@ -29,5 +29,4 @@ spec:
     - <link1> # like /dev/disk/by-path/virtio-pci-0000:00:03.0-scsi-0:0:2:0
   nodeAttributes:
     nodeName: <node name> # output of `kubectl get nodes` can be used
-  partitioned: # Yes or No
   path: <devpath> # like /dev/sdb
