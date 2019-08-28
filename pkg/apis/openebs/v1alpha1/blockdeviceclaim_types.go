@@ -21,26 +21,103 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 // Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 
-// DeviceClaimSpec defines the desired state of BlockDeviceClaim
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+
+// BlockDeviceClaim is the Schema for the BlockDeviceClaim CR
+type BlockDeviceClaim struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   DeviceClaimSpec   `json:"spec,omitempty"`
+	Status DeviceClaimStatus `json:"status,omitempty"`
+}
+
+// DeviceClaimSpec defines the request details for a BlockDevice
 type DeviceClaimSpec struct {
-	Resources       DeviceClaimResources `json:"resources"`                    // the resources in the claim like Capacity, IOPS
-	DeviceType      string               `json:"deviceType"`                   // DeviceType represents the type of drive like SSD, HDD etc.,
-	HostName        string               `json:"hostName"`                     // Node name from where blockdevice has to be claimed.
-	Details         DeviceClaimDetails   `json:"deviceClaimDetails,omitempty"` // Details of the device to be claimed
-	BlockDeviceName string               `json:"blockDeviceName,omitempty"`    // BlockDeviceName is the reference to the block-device backing this claim
+	// Resources will help with placing claims on Capacity, IOPS
+	Resources DeviceClaimResources `json:"resources"`
+
+	// DeviceType represents the type of drive like SSD, HDD etc.,
+	DeviceType string `json:"deviceType"`
+
+	// Node name from where blockdevice has to be claimed.
+	// TODO @akhilerm to be deprecated. Use NodeAttributes.HostName instead
+	HostName string `json:"hostName"`
+
+	// Details of the device to be claimed
+	Details DeviceClaimDetails `json:"deviceClaimDetails,omitempty"`
+
+	// BlockDeviceName is the reference to the block-device backing this claim
+	BlockDeviceName string `json:"blockDeviceName,omitempty"`
+
 	// BlockDeviceNodeAttributes is the attributes on the node from which a BD should
 	// be selected for this claim. It can include nodename, failure domain etc.
 	BlockDeviceNodeAttributes BlockDeviceNodeAttributes `json:"blockDeviceNodeAttributes,omitempty"`
 }
 
+// DeviceClaimResources defines the request by the claim, eg, Capacity, IOPS
+type DeviceClaimResources struct {
+	// Requests describes the minimum resources required. eg: if storage resource of 10G is
+	// requested minimum capacity of 10G should be available
+	Requests v1.ResourceList `json:"requests"`
+}
+
+const (
+	// ResourceStorage defines the storage required as v1.Quantity
+	ResourceStorage v1.ResourceName = "storage"
+)
+
+// DeviceClaimDetails defines the details of the block device that should be claimed
+type DeviceClaimDetails struct {
+	// BlockVolumeMode represents whether to claim a device in Block mode or Filesystem mode.
+	// These are use cases of BlockVolumeMode:
+	// 1) Not specified: VolumeMode check will not be effective
+	// 2) VolumeModeBlock: BD should not have any filesystem or mountpoint
+	// 3) VolumeModeFileSystem: BD should have a filesystem and mountpoint. If DeviceFormat is
+	//    specified then the format should match with the FSType in BD
+	BlockVolumeMode BlockDeviceVolumeMode `json:"blockVolumeMode,omitempty"`
+
+	//Format of the device required, eg:ext4, xfs
+	DeviceFormat string `json:"formatType,omitempty"`
+
+	//AllowPartition represents whether to claim a full block device or a device that is a partition
+	AllowPartition bool `json:"allowPartition,omitempty"`
+}
+
+// BlockDeviceVolumeMode specifies the type in which the BlockDevice can be used
+type BlockDeviceVolumeMode string
+
+const (
+	// VolumeModeBlock specifies that the block device needs to be used as a raw block
+	VolumeModeBlock BlockDeviceVolumeMode = "Block"
+
+	// VolumeModeFileSystem specifies that block device will be used with a filesystem
+	// already existing
+	VolumeModeFileSystem BlockDeviceVolumeMode = "FileSystem"
+)
+
+// BlockDeviceNodeAttributes contains the attributes of the node from which the BD should
+// be selected for claiming. A BDC can specify one or more attributes. When multiple values
+// are specified, the NDM Operator will claim a Block Device that matches all
+// the requested attributes.
+type BlockDeviceNodeAttributes struct {
+	// NodeName represents the name of the Kubernetes node resource
+	// where the BD should be present
+	NodeName string `json:"nodeName,omitempty"`
+
+	// HostName represents the hostname of the Kubernetes node resource
+	// where the BD should be present
+	HostName string `json:"hostName,omitempty"`
+}
+
 // DeviceClaimStatus defines the observed state of BlockDeviceClaim
 type DeviceClaimStatus struct {
+	// Phase represents the current phase of the claim
 	Phase DeviceClaimPhase `json:"phase"`
 }
 
@@ -63,60 +140,6 @@ const (
 	// BlockDeviceClaimStatusDone represents BlockDeviceClaim has been assigned backing blockdevice and ready for use.
 	BlockDeviceClaimStatusDone DeviceClaimPhase = "Bound"
 )
-
-// DeviceClaimResources defines the request by the claim, eg, Storage, IOPS
-type DeviceClaimResources struct {
-	// Requests describes the minimum resources required. eg: if storage resource of 10G is
-	// requested minimum capacity of 10G should be available
-	Requests v1.ResourceList `json:"requests"`
-}
-
-const (
-	// ResourceStorage defines the storage required as v1.Quantity
-	ResourceStorage v1.ResourceName = "storage"
-)
-
-// DeviceClaimDetails defines the details of the block device that should be claimed
-type DeviceClaimDetails struct {
-	// BlockVolumeMode represents whether to claim a device in Block mode or Filesystem mode.
-	// These are use cases of BlockVolumeMode:
-	// 1) Not specified: DeviceFormat and MountPoint will not be considered
-	// 2) VolumeModeBlock: DeviceFormat and MountPoint checks will be used as empty strings irrespective
-	//    of the value they hold
-	// 3) VolumeModeFileSystem: DeviceFormat and MountPoint will be used for exact matches
-	BlockVolumeMode BlockDeviceVolumeMode `json:"blockVolumeMode, omitempty"`
-	DeviceFormat    string                `json:"formatType,omitempty"`     //Format of the device required, eg:ext4, xfs
-	AllowPartition  bool                  `json:"allowPartition,omitempty"` //AllowPartition represents whether to claim a full block device or a device that is a partition
-}
-
-// BlockDeviceVolumeMode specifies the type in which the BlockDevice can be used
-type BlockDeviceVolumeMode string
-
-const (
-	// VolumeModeBlock specifies that the block device needs to be used as a raw block
-	VolumeModeBlock BlockDeviceVolumeMode = "Block"
-	// VolumeModeFileSystem specifies that block device will be used with a filesystem already existing
-	VolumeModeFileSystem BlockDeviceVolumeMode = "FileSystem"
-)
-
-// BlockDeviceNodeAttributes contains the attributes of the node from which the BD should
-// be selected for claiming
-type BlockDeviceNodeAttributes struct {
-	NodeName string `json:"nodeName,omitempty"`
-	HostName string `json:"hostName,omitempty"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:openapi-gen=true
-
-// BlockDeviceClaim is the Schema for the block device claim API
-type BlockDeviceClaim struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   DeviceClaimSpec   `json:"spec,omitempty"`
-	Status DeviceClaimStatus `json:"status,omitempty"`
-}
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
