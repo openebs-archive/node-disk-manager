@@ -62,8 +62,8 @@ type DeviceSpec struct {
 	// FileSystem contains mountpoint and filesystem type
 	FileSystem FileSystemInfo `json:"filesystem,omitempty"`
 
-	// Partitioned represents if BlockDevice has partions or not (YES/NO)
-	// Currently always default to NO.
+	// Partitioned represents if BlockDevice has partitions or not (Yes/No)
+	// Currently always default to No.
 	// TODO @kmova to be implemented/deprecated
 	Partitioned string `json:"partitioned"`
 
