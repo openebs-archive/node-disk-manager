@@ -16,6 +16,8 @@ limitations under the License.
 
 package upgrade
 
+import "fmt"
+
 // Task interfaces gives a set of methods to be implemented
 // for performing an upgrade
 type Task interface {
@@ -32,7 +34,10 @@ func RunUpgrade(tasks ...Task) error {
 	for _, task := range tasks {
 		_ = task.PreUpgrade() && task.Upgrade() && task.PostUpgrade()
 		if err := task.IsSuccess(); err != nil {
-			return err
+			return fmt.Errorf("upgrade from %s to %s failed. Error : %v",
+				task.FromVersion(),
+				task.ToVersion(),
+				err)
 		}
 	}
 	return nil

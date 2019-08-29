@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"github.com/openebs/node-disk-manager/pkg/setup"
 	"github.com/openebs/node-disk-manager/pkg/upgrade"
+	"github.com/openebs/node-disk-manager/pkg/upgrade/v040_041"
+	"github.com/openebs/node-disk-manager/pkg/upgrade/v041_042"
 	"os"
 	"runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -148,7 +150,7 @@ func main() {
 
 // performUpgrade performs the upgrade operations
 func performUpgrade(client client.Client) error {
-	//TODO: this task should be named for release, not for upgrade steps
-	preUpgradeTask := upgrade.NewPreUpgradeTask("1.0", "1.1", client)
-	return upgrade.RunUpgrade(preUpgradeTask)
+	v040_v041UpgradeTask := v040_041.NewUpgradeTask("0.4.0", "0.4.1", client)
+	v041_v042UpgradeTask := v041_042.NewUpgradeTask("0.4.1", "0.4.2", client)
+	return upgrade.RunUpgrade(v040_v041UpgradeTask, v041_v042UpgradeTask)
 }
