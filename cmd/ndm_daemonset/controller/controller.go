@@ -211,7 +211,7 @@ func (c *Controller) setHostName() error {
 
 	// if the label is not present, or hostname is an empty string,
 	// use nodename as hostname
-	if hostName, ok := node.Labels[HostNameKey]; !ok || hostName == "" {
+	if hostName, ok := node.Labels[KubernetesHostNameLabel]; !ok || hostName == "" {
 		c.NodeAttributes[HostNameKey] = nodeName
 	} else {
 		c.NodeAttributes[HostNameKey] = hostName
