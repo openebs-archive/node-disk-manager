@@ -55,7 +55,7 @@ func (p *UpgradeTask) ToVersion() string {
 	return p.to
 }
 
-// UpgradeTask runs the preupgrade tasks and returns whether it succeeded or not
+// PreUpgrade runs the preupgrade tasks and returns whether it succeeded or not
 func (p *UpgradeTask) PreUpgrade() bool {
 	var err error
 	bdcList := &apis.BlockDeviceClaimList{}
