@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package upgrade
+package v040_041
 
 import (
 	"context"
@@ -30,34 +30,33 @@ const (
 	newBDCFinalizer = "openebs.io/bdc-protection"
 )
 
-// PreUpgrade is the struct which implements the UpgradeTask interface
+// UpgradeTask is the struct which implements the Task interface
 // which can be used to perform the upgrade
-type PreUpgrade struct {
+type UpgradeTask struct {
 	from   string
 	to     string
 	client client.Client
 	err    error
 }
 
-// NewPreUpgradeTask creates a new preupgrade with given client
+// NewUpgradeTask creates a new preupgrade with given client
 // and specified `from` and `to` version
-func NewPreUpgradeTask(from, to string, c client.Client) *PreUpgrade {
-	return &PreUpgrade{from: from, to: to, client: c}
+func NewUpgradeTask(from, to string, c client.Client) *UpgradeTask {
+	return &UpgradeTask{from: from, to: to, client: c}
 }
 
 // FromVersion returns the version from which the components need to be updated
-func (p *PreUpgrade) FromVersion() string {
+func (p *UpgradeTask) FromVersion() string {
 	return p.from
 }
 
-// ToVersion returns the version to which components will be updated. This should be
-// the current version
-func (p *PreUpgrade) ToVersion() string {
+// ToVersion returns the version to which components will be updated.
+func (p *UpgradeTask) ToVersion() string {
 	return p.to
 }
 
-// PreUpgrade runs the preupgrade tasks and returns whether it succeeded or not
-func (p *PreUpgrade) PreUpgrade() bool {
+// UpgradeTask runs the preupgrade tasks and returns whether it succeeded or not
+func (p *UpgradeTask) PreUpgrade() bool {
 	var err error
 	bdcList := &apis.BlockDeviceClaimList{}
 	opts := &client.ListOptions{}
@@ -78,7 +77,7 @@ func (p *PreUpgrade) PreUpgrade() bool {
 }
 
 // Upgrade runs the main upgrade tasks and returns whether it succeeded or not
-func (p *PreUpgrade) Upgrade() bool {
+func (p *UpgradeTask) Upgrade() bool {
 	if p.err != nil {
 		return false
 	}
@@ -87,7 +86,7 @@ func (p *PreUpgrade) Upgrade() bool {
 
 // PostUpgrade runs the tasks that need to be performed after upgrade and returns
 // whether the tasks where success or not
-func (p *PreUpgrade) PostUpgrade() bool {
+func (p *UpgradeTask) PostUpgrade() bool {
 	if p.err != nil {
 		return false
 	}
@@ -96,12 +95,12 @@ func (p *PreUpgrade) PostUpgrade() bool {
 
 // IsSuccess returns error if the upgrade failed, at any step. Else nil will
 // be returned
-func (p *PreUpgrade) IsSuccess() error {
+func (p *UpgradeTask) IsSuccess() error {
 	return p.err
 }
 
 // renameFinalizer renames the finalizer from old to new in BDC
-func (p *PreUpgrade) renameFinalizer(claim *apis.BlockDeviceClaim) error {
+func (p *UpgradeTask) renameFinalizer(claim *apis.BlockDeviceClaim) error {
 	if util.Contains(claim.Finalizers, oldBDCFinalizer) {
 		claim.Finalizers = util.RemoveString(claim.Finalizers, oldBDCFinalizer)
 		claim.Finalizers = append(claim.Finalizers, newBDCFinalizer)
