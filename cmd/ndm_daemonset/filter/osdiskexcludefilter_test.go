@@ -118,6 +118,11 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			disk:     &controller.DiskInfo{Path: "/dev/vg0-lv0"},
 			expected: false,
 		},
+		"exclude path is empty and device path is /dev/sda": {
+			filter:   oSDiskExcludeFilter{excludeDevPath: ""},
+			disk:     &controller.DiskInfo{Path: "/dev/sda"},
+			expected: true,
+		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
