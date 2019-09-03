@@ -114,7 +114,7 @@ func (odf *oSDiskExcludeFilter) Include(d *controller.DiskInfo) bool {
 	return true
 }
 
-// Exclude returns true if disk devpath matches with excludeDevPath
+// Exclude returns true if disk devpath does not match with excludeDevPath
 func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
 	// The partitionRegex is chosen depending on whether the device uses
 	// the p[0-9] partition naming structure or not.
