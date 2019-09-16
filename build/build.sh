@@ -92,7 +92,7 @@ VERSION="beta"
 
 
 # Determine the arch/os combos we're building for
-XC_ARCH=${XC_ARCH:-"amd64"}
+XC_ARCH=${XC_ARCH:-"$(go env GOARCH)"}
 XC_OS=${XC_OS:-"linux"}
 
 XC_ARCHS=("${XC_ARCH// / }")

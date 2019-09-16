@@ -50,10 +50,14 @@ golint:
 
 # shellcheck target for checking shell scripts linting
 shellcheck: getshellcheck
+ifeq ($(XC_ARCH), amd64)
 	find . -type f -name "*.sh" | grep -v "./vendor/*" | xargs /tmp/shellcheck-latest/shellcheck
+endif
 
 getshellcheck:
+ifeq ($(XC_ARCH), amd64)
 	wget -c 'https://goo.gl/ZzKHFv' -O - | tar -xvJ -C /tmp/
+endif
 
 version:
 	@echo $(VERSION)
