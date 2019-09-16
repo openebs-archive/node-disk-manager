@@ -231,3 +231,33 @@ spec:
               value: "node-disk-operator"
             - name: CLEANUP_JOB_IMAGE
               value: "quay.io/openebs/linux-utils:3.9"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-disk-exporter
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      name: node-disk-exporter
+  template:
+    metadata:
+      labels:
+        name: node-disk-exporter
+    spec:
+      serviceAccountName: openebs-ndm-operator
+      containers:
+        - name: node-disk-exporter
+          image: openebs/node-disk-exporter-amd64:ci
+          command:
+            - /usr/local/bin/exporter
+          args: ["start", "--mode", "cluster"]
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: metrics
+          imagePullPolicy: Always
+---
