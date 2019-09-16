@@ -28,18 +28,25 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
+// Exporter contains the options for starting the exporter along with
+// clients to retrieve the metrics data
 type Exporter struct {
 	Client client.Client
 	ExporterOptions
 }
 
 const (
+	// ClusterLevel is the cluster mode operation of the exporter
 	ClusterLevel = "cluster"
-	NodeLevel    = "node"
-	Port         = ":8080"
-	MetricsPath  = "/metrics"
+	// NodeLevel is the node level mode operation of the exporter
+	NodeLevel = "node"
+	// Port is the default port on which to start http server
+	Port = ":8080"
+	// MetricsPath is the endpoint at which metrics will be available
+	MetricsPath = "/metrics"
 )
 
+// ExporterOptions is the options with which the exporter should be started
 type ExporterOptions struct {
 	// Mode to run the exporter. Can be either cluster or node
 	Mode string
@@ -51,6 +58,7 @@ type ExporterOptions struct {
 	MetricsPath string
 }
 
+// Run starts the exporter, depending on the mode of startup of the exporter
 func (e *Exporter) Run() error {
 	var err error
 	switch e.Mode {
@@ -76,6 +84,7 @@ func (e *Exporter) Run() error {
 	return nil
 }
 
+// runClusterExporter starts the cluster level ndm exporter
 func runClusterExporter() error {
 	glog.Info("Starting cluster level exporter . . .")
 
@@ -113,6 +122,7 @@ func runClusterExporter() error {
 	return nil
 }
 
+// runNodeExporter starts the node level ndm exporter
 func runNodeExporter() error {
 	glog.Info("Starting node level exporter . . .")
 	// TODO code for node exporter

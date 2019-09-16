@@ -22,6 +22,8 @@ import (
 )
 
 const (
+	// NodeNamespace is the namespace used for components on the node.
+	// This has been seen as a practice in node exporter.
 	NodeNamespace = "node"
 )
 

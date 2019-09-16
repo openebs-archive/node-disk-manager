@@ -27,6 +27,8 @@ import (
 	"sync"
 )
 
+// MetricCollector contains the metrics, concurrency handler and client to get the
+// static metrics
 type MetricCollector struct {
 	// Client is the k8s client which will be used to interface with etcd
 	Client client.Client
@@ -39,6 +41,8 @@ type MetricCollector struct {
 	*metrics
 }
 
+// New creates a new instance of MetricCollector which
+// implements Collector interface
 func New(client client.Client) prometheus.Collector {
 	return &MetricCollector{
 		Client: client,
@@ -48,18 +52,22 @@ func New(client client.Client) prometheus.Collector {
 	}
 }
 
+// setRequestProgressToFalse is used to set the progress flag, when a request is
+// processed or errored
 func (mc *MetricCollector) setRequestProgressToFalse() {
 	mc.Lock()
 	mc.requestInProgress = false
 	mc.Unlock()
 }
 
+// Describe is the implementation of Describe in prometheus.Collector
 func (mc *MetricCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, col := range mc.collectors() {
 		col.Describe(ch)
 	}
 }
 
+// collectors lists out all the collectors for which the metrics is exposed
 func (mc *MetricCollector) collectors() []prometheus.Collector {
 	return []prometheus.Collector{
 		mc.blockDeviceState,
@@ -67,6 +75,7 @@ func (mc *MetricCollector) collectors() []prometheus.Collector {
 	}
 }
 
+// Collect is the implementation of Collect in prometheus.Collector
 func (mc *MetricCollector) Collect(ch chan<- prometheus.Metric) {
 
 	// when a second request comes, and the first one is already in progress,
