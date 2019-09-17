@@ -43,9 +43,9 @@ type StaticMetricCollector struct {
 	metrics *static.Metrics
 }
 
-// New creates a new instance of StaticMetricCollector which
+// NewStaticMetricCollector creates a new instance of StaticMetricCollector which
 // implements Collector interface
-func New(client client.Client) prometheus.Collector {
+func NewStaticMetricCollector(client client.Client) prometheus.Collector {
 	return &StaticMetricCollector{
 		Client:  client,
 		metrics: static.NewMetrics(),

@@ -105,7 +105,7 @@ func runClusterExporter() error {
 	}
 
 	// create instance of a new static collector and register it.
-	c := collector.New(k8sClient)
+	c := collector.NewStaticMetricCollector(k8sClient)
 	prometheus.MustRegister(c)
 
 	return nil
