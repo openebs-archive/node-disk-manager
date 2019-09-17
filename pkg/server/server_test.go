@@ -18,22 +18,32 @@ package server
 
 import (
 	"net"
+	"net/http"
 	"testing"
 )
 
 func TestStartHttpServer(t *testing.T) {
 
+	s := Server{
+		ListenPort:  ":9090",
+		MetricsPath: "/metrics",
+		Handler:     http.HandlerFunc(index),
+	}
 	ErrorMessages := make(chan error)
 	go func() {
 		//Block port 9090 and attempt to start http server at 9090.
 		if p1, err := net.Listen("tcp", "localhost:9090"); err == nil {
 			defer p1.Close()
 		}
-		ErrorMessages <- StartHttpServer()
+		ErrorMessages <- s.Start()
 	}()
 	msg := <-ErrorMessages
 	if msg != nil {
 		t.Log("Trying to start http server in a port which is busy.")
 		t.Log(msg)
 	}
+}
+
+func index(w http.ResponseWriter, r *http.Request) {
+	// sample handler created for testing
 }

@@ -20,29 +20,22 @@ import (
 	"net/http"
 
 	"github.com/golang/glog"
-	"github.com/openebs/node-disk-manager/pkg/metrics"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var (
-	// ListenPort defines the port in which the server listens to
-	ListenPort  string = ":9090"
-	MetricsPath string = "/metrics"
-)
-
-func init() {
-	prometheus.MustRegister(metrics.Uptime)
+type Server struct {
+	ListenPort  string
+	MetricsPath string
+	Handler     http.Handler
 }
 
-// StartHttpServer boots up the server that runs on the specified port.
+// Start boots up the server that runs on the specified port.
 // Returns an error if there is no connection established.
-func StartHttpServer() error {
-	http.Handle(MetricsPath, MetricsMiddleware(promhttp.Handler()))
-	glog.Info("Starting HTTP server at http://localhost" + ListenPort + MetricsPath + " for metrics.")
-	err := http.ListenAndServe(ListenPort, nil)
+func (s *Server) Start() error {
+	http.Handle(s.MetricsPath, s.Handler)
+	glog.Info("Starting HTTP server at http://localhost" + s.ListenPort + s.MetricsPath)
+	err := http.ListenAndServe(s.ListenPort, nil)
 	if err != nil {
-		glog.Error(err)
+		glog.Error("error starting http server :", err)
 		return err
 	}
 	return nil
