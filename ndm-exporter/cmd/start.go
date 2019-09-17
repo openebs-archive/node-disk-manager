@@ -18,32 +18,27 @@ package cmd
 
 import (
 	"github.com/golang/glog"
+	"github.com/openebs/node-disk-manager/ndm-exporter"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/spf13/cobra"
 )
 
-var exporter Exporter
+var exporter ndm_exporter.Exporter
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "start the exporter",
 	Run: func(cmd *cobra.Command, args []string) {
 		mode, _ := cmd.Flags().GetString("mode")
 		glog.Info("Mode:", mode)
-		if mode != ClusterLevel && mode != NodeLevel {
+		if mode != ndm_exporter.ClusterLevel && mode != ndm_exporter.NodeLevel {
 			cmd.Printf("unknown mode %s selected for starting exporter", mode)
 			return
 		}
 		exporter.Mode = mode
-		exporter.Port, _ = cmd.Flags().GetString("port")
-		exporter.MetricsPath, _ = cmd.Flags().GetString("metrics")
+		exporter.Server.ListenPort, _ = cmd.Flags().GetString("port")
+		exporter.Server.MetricsPath, _ = cmd.Flags().GetString("metrics")
 		util.CheckErr(exporter.Run(), util.Fatal)
 	},
 }
@@ -52,14 +47,14 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 
 	startCmd.PersistentFlags().StringVar(&exporter.Mode, "mode",
-		ClusterLevel,
+		ndm_exporter.ClusterLevel,
 		`Mode in which the exporter need to be started (cluster / node)`)
 
-	startCmd.PersistentFlags().StringVar(&exporter.Port, "port",
-		Port,
+	startCmd.PersistentFlags().StringVar(&exporter.Server.ListenPort, "port",
+		ndm_exporter.Port,
 		"Port on which metrics is available")
 
-	startCmd.PersistentFlags().StringVar(&exporter.MetricsPath, "metrics",
-		MetricsPath,
+	startCmd.PersistentFlags().StringVar(&exporter.Server.MetricsPath, "metrics",
+		ndm_exporter.MetricsPath,
 		"The URL end point at which metrics is available (/metrics, /endpoint)")
 }
