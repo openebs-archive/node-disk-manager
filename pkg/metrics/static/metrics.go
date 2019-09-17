@@ -27,6 +27,7 @@ const (
 	NodeNamespace = "node"
 )
 
+// Metrics is the prometheus metrics that are exposed by the exporter
 type Metrics struct {
 	blockDeviceState *prometheus.GaugeVec
 
@@ -34,6 +35,7 @@ type Metrics struct {
 	rejectRequestCount prometheus.Counter
 }
 
+// NewMetrics creates instance of metrics
 func NewMetrics() *Metrics {
 	return new(Metrics).
 		withBlockDeviceState().
@@ -48,7 +50,7 @@ func (m *Metrics) Collectors() []prometheus.Collector {
 	}
 }
 
-// ErrorCollector lists out all collectors for metrics related to error
+// ErrorCollectors lists out all collectors for metrics related to error
 func (m *Metrics) ErrorCollectors() []prometheus.Collector {
 	return []prometheus.Collector{
 		m.rejectRequestCount,

@@ -17,11 +17,12 @@ limitations under the License.
 package server
 
 import (
-	"net/http"
-
 	"github.com/golang/glog"
+	"net/http"
 )
 
+// Server contains the options to start a simple metrics server along with
+// handler for the endpoint
 type Server struct {
 	ListenPort  string
 	MetricsPath string
