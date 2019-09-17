@@ -57,6 +57,10 @@ const (
 	KubernetesHostNameLabel = kubernetesLabelPrefix + HostNameKey
 	// NDMVersion is the CR version.
 	NDMVersion = openEBSLabelPrefix + "v1alpha1"
+	// reconcileKey is the key used for enable/disable of reconcilation
+	reconcileKey = "reconcile"
+	// OpenEBSReconcile is used in annotation to check whether CR is to be reconciled or not
+	OpenEBSReconcile = openEBSLabelPrefix + reconcileKey
 	// NDMNotPartitioned is used to say blockdevice does not have any partition.
 	NDMNotPartitioned = "No"
 	// NDMPartitioned is used to say blockdevice has some partitions.

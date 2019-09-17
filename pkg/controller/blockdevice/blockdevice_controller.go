@@ -108,6 +108,11 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, err
 	}
 
+	// check if the resource needs to be reconciled
+	if IsReconcileDisabled(instance) {
+		return reconcile.Result{}, nil
+	}
+
 	switch instance.Status.ClaimState {
 	case openebsv1alpha1.BlockDeviceReleased:
 		jobController := cleaner.NewJobController(r.client, request.Namespace)
@@ -200,4 +205,10 @@ func (r *ReconcileBlockDevice) updateBDStatus(state openebsv1alpha1.DeviceClaimS
 		return err
 	}
 	return nil
+}
+
+// IsReconcileDisabled is used to check if reconcilation is disabled for
+// BlockDeviceClaim
+func IsReconcileDisabled(bd *openebsv1alpha1.BlockDevice) bool {
+	return bd.Annotations[ndm.OpenEBSReconcile] == "false"
 }

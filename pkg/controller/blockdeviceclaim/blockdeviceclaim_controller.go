@@ -110,6 +110,11 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, err
 	}
 
+	// check if the resource needs to be reconciled
+	if IsReconcileDisabled(instance) {
+		return reconcile.Result{}, nil
+	}
+
 	switch instance.Status.Phase {
 	case apis.BlockDeviceClaimStatusPending:
 		fallthrough
@@ -361,4 +366,10 @@ func (r *ReconcileBlockDeviceClaim) getListofDevices(filters ...string) (*apis.B
 	}
 
 	return listBlockDevice, nil
+}
+
+// IsReconcileDisabled is used to check if reconcilation is disabled for
+// BlockDeviceClaim
+func IsReconcileDisabled(bdc *apis.BlockDeviceClaim) bool {
+	return bdc.Annotations[ndm.OpenEBSReconcile] == "false"
 }
