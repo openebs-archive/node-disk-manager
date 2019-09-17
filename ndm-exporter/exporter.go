@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cmd
+package ndm_exporter
 
 import (
 	"github.com/golang/glog"
-	"github.com/openebs/node-disk-manager/ndm-exporter/collector/static"
+	"github.com/openebs/node-disk-manager/ndm-exporter/collector"
 	"github.com/openebs/node-disk-manager/pkg/apis"
+	"github.com/openebs/node-disk-manager/pkg/server"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -32,7 +32,8 @@ import (
 // clients to retrieve the metrics data
 type Exporter struct {
 	Client client.Client
-	ExporterOptions
+	Mode   string
+	Server server.Server
 }
 
 const (
@@ -45,18 +46,6 @@ const (
 	// MetricsPath is the endpoint at which metrics will be available
 	MetricsPath = "/metrics"
 )
-
-// ExporterOptions is the options with which the exporter should be started
-type ExporterOptions struct {
-	// Mode to run the exporter. Can be either cluster or node
-	Mode string
-
-	// Port to listen
-	Port string
-
-	// MetricsPath to query for the metrics
-	MetricsPath string
-}
 
 // Run starts the exporter, depending on the mode of startup of the exporter
 func (e *Exporter) Run() error {
@@ -73,14 +62,14 @@ func (e *Exporter) Run() error {
 		return err
 	}
 
-	// starting prometheus http handler
-	http.Handle(e.MetricsPath, promhttp.Handler())
-	err = http.ListenAndServe(e.Port, nil)
-	if err != nil {
-		glog.Errorf("error in starting http server. %v", err)
+	// set handler for server to prometheus handler
+	e.Server.Handler = promhttp.Handler()
+
+	// start the server
+	if err = e.Server.Start(); err != nil {
+		glog.Error("error in running exporter")
 		return err
 	}
-	glog.Info("Server started on %s at %s endpoint", e.Port, e.MetricsPath)
 	return nil
 }
 
@@ -116,7 +105,7 @@ func runClusterExporter() error {
 	}
 
 	// create instance of a new static collector and register it.
-	c := static.New(k8sClient)
+	c := collector.New(k8sClient)
 	prometheus.MustRegister(c)
 
 	return nil
