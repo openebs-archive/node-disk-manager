@@ -114,14 +114,18 @@ func (mc *StaticMetricCollector) getMetricData() ([]blockdevice.BlockDevice, err
 	}
 	err := mc.Client.List(context.TODO(), nil, bdList)
 	if err != nil {
-		glog.Error("error in listing BDs", err)
+		glog.Error("error in listing BDs. ", err)
 		return nil, err
 	}
 
 	// convert the BD apis to BlockDevice struct used by NDM internally
 	blockDevices := make([]blockdevice.BlockDevice, 0)
 	for _, bd := range bdList.Items {
-		blockDevice := blockdevice.BlockDevice{}
+		blockDevice := blockdevice.BlockDevice{
+			NodeAttributes: make(blockdevice.NodeAttribute, 0),
+		}
+		// copy values from api to BlockDevice struct
+		blockDevice.UUID = bd.Name
 		blockDevice.NodeAttributes[blockdevice.HostName] = bd.Labels[controller.KubernetesHostNameLabel]
 		blockDevice.Path = bd.Spec.Path
 		blockDevices = append(blockDevices, blockDevice)
