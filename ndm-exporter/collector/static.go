@@ -128,6 +128,8 @@ func (mc *StaticMetricCollector) getMetricData() ([]blockdevice.BlockDevice, err
 		blockDevice.UUID = bd.Name
 		blockDevice.NodeAttributes[blockdevice.HostName] = bd.Labels[controller.KubernetesHostNameLabel]
 		blockDevice.Path = bd.Spec.Path
+		// setting the block device status
+		blockDevice.BDStatus.State = string(bd.Status.State)
 		blockDevices = append(blockDevices, blockDevice)
 	}
 	return blockDevices, nil
