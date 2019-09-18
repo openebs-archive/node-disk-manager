@@ -61,11 +61,12 @@ build(){
             if [ "$GOOS" = "windows" ]; then
                 output_name+='.exe'
             fi
-            env GOOS="$GOOS" GOARCH="$GOARCH" go build -ldflags \
+            echo "Building for: ${GOOS} ${GOARCH}"
+            gox -cgo -os="$GOOS" -arch="$GOARCH" -ldflags \
                "-X github.com/openebs/node-disk-manager/pkg/version.GitCommit=${GIT_COMMIT} \
                 -X main.CtlName='${CTLNAME}' \
                 -X github.com/openebs/node-disk-manager/pkg/version.Version=${VERSION}" \
-                -o $output_name \
+                -output="$output_name" \
                ./cmd/"$BUILDPATH"
         done
     done
@@ -92,8 +93,8 @@ VERSION="beta"
 
 
 # Determine the arch/os combos we're building for
-XC_ARCH=${XC_ARCH:-"amd64"}
-XC_OS=${XC_OS:-"linux"}
+#XC_ARCH=${XC_ARCH:-"amd64"}
+#XC_OS=${XC_OS:-"linux"}
 
 XC_ARCHS=("${XC_ARCH// / }")
 XC_OSS=("${XC_OS// / }")

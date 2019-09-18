@@ -8,32 +8,44 @@ BUILD_PATH_NDM=ndm_daemonset
 # env for specifying that we want to build node-disk-operator
 BUILD_PATH_NDO=manager
 
-# Build the node-disk-manager image.
-build: clean vet fmt shellcheck license-check-go version ndm docker_ndm ndo docker_ndo
+# Compile binaries and build docker images
+build: clean vet fmt license-check-go version ndm docker_ndm ndo docker_ndo
 
 NODE_DISK_MANAGER?=ndm
 NODE_DISK_OPERATOR?=ndo
 BUILD_PATH_NDM?=ndm_daemonset
 BUILD_PATH_NDO?=manager
 
-# Determine the arch/os
-XC_OS?= $(shell go env GOOS)
-XC_ARCH?= $(shell go env GOARCH)
-ARCH:=${XC_OS}_${XC_ARCH}
-
 # VERSION is the version of the binary.
 VERSION:=$(shell git describe --tags --always)
+
+ifeq (${XC_OS}, )
+  XC_OS:=$(shell go env GOOS)
+  export XC_OS
+endif
+
+ifeq (${XC_ARCH}, )
+  XC_ARCH:=$(shell go env GOARCH)
+  export XC_ARCH
+endif
+
+# Determine the arch/os
+ARCH:=${XC_OS}_${XC_ARCH}
 
 # IMAGE is the image name of the node-disk-manager docker image.
 DOCKER_IMAGE_NDM:=openebs/node-disk-manager-${XC_ARCH}:ci
 DOCKER_IMAGE_NDO:=openebs/node-disk-operator-${XC_ARCH}:ci
 
-# The ubuntu:16.04 image is being used as base image.
-BASEIMAGE:=ubuntu:16.04
+ifeq (${BASEIMAGE}, )
+  # The ubuntu:16.04 image is being used as base image.
+  BASEIMAGE:=ubuntu:16.04
+  export BASEIMAGE
+endif
 
 # Tools required for different make targets or for development purposes
 EXTERNAL_TOOLS=\
 	github.com/golang/dep/cmd/dep \
+	github.com/mitchellh/gox \
 	gopkg.in/alecthomas/gometalinter.v1
 
 # -composite: avoid "literal copies lock value from fakePtr"
@@ -53,7 +65,7 @@ shellcheck: getshellcheck
 	find . -type f -name "*.sh" | grep -v "./vendor/*" | xargs /tmp/shellcheck-latest/shellcheck
 
 getshellcheck:
-	wget -c 'https://goo.gl/ZzKHFv' -O - | tar -xvJ -C /tmp/
+	wget -c 'https://goo.gl/ZzKHFv' --no-check-certificate -O - | tar -xvJ -C /tmp/
 
 version:
 	@echo $(VERSION)
