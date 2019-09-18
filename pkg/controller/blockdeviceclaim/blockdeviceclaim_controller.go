@@ -110,7 +110,7 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, err
 	}
 
-	// check if the resource needs to be reconciled
+	// check if reconcilation is disabled for this resource
 	if IsReconcileDisabled(instance) {
 		return reconcile.Result{}, nil
 	}
