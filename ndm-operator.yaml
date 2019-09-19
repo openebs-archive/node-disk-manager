@@ -235,28 +235,32 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: node-disk-exporter
+  name: ndm-cluster-exporter
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      name: node-disk-exporter
+      name: ndm-cluster-exporter
   template:
     metadata:
       labels:
-        name: node-disk-exporter
+        name: ndm-cluster-exporter
     spec:
       serviceAccountName: openebs-ndm-operator
       containers:
-        - name: node-disk-exporter
+        - name: ndm-cluster-exporter
           image: openebs/node-disk-exporter-amd64:ci
           command:
             - /usr/local/bin/exporter
-          args: ["start", "--mode", "cluster"]
+          args:
+            - "start"
+            - "--mode=cluster"
+            - "--port=:9100"
+            - "--metrics=/metrics"
           ports:
-            - containerPort: 8080
+            - containerPort: 9100
               protocol: TCP
               name: metrics
           imagePullPolicy: Always

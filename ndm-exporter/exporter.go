@@ -42,7 +42,7 @@ const (
 	// NodeLevel is the node level mode operation of the exporter
 	NodeLevel = "node"
 	// Port is the default port on which to start http server
-	Port = ":8080"
+	Port = ":9100"
 	// MetricsPath is the endpoint at which metrics will be available
 	MetricsPath = "/metrics"
 )
