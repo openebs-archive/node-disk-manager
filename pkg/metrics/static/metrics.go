@@ -69,7 +69,7 @@ func (m *Metrics) withBlockDeviceState() *Metrics {
 			Name:      "block_device_state",
 			Help:      `State of BlockDevice (0,1,2) = {Active, Inactive, Unknown}`,
 		},
-		[]string{"Name", "Path", "HostName"},
+		[]string{"Name", "Path", "HostName", "NodeName"},
 	)
 	return m
 }
@@ -90,7 +90,8 @@ func (m *Metrics) SetMetrics(blockDevices []bd.BlockDevice) {
 	for _, blockDevice := range blockDevices {
 		m.blockDeviceState.WithLabelValues(blockDevice.UUID,
 			blockDevice.Path,
-			blockDevice.NodeAttributes[bd.HostName]).
+			blockDevice.NodeAttributes[bd.HostName],
+			blockDevice.NodeAttributes[bd.NodeName]).
 			Set(getState(blockDevice.BDStatus.State))
 	}
 }

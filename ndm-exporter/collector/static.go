@@ -127,6 +127,7 @@ func (mc *StaticMetricCollector) getMetricData() ([]blockdevice.BlockDevice, err
 		// copy values from api to BlockDevice struct
 		blockDevice.UUID = bd.Name
 		blockDevice.NodeAttributes[blockdevice.HostName] = bd.Labels[controller.KubernetesHostNameLabel]
+		blockDevice.NodeAttributes[blockdevice.NodeName] = bd.Spec.NodeAttributes.NodeName
 		blockDevice.Path = bd.Spec.Path
 		// setting the block device status
 		blockDevice.BDStatus.State = string(bd.Status.State)
