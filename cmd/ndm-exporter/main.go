@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"github.com/openebs/node-disk-manager/ndm-exporter/cmd"
+	"github.com/openebs/node-disk-manager/cmd/ndm-exporter/cmd"
 	"github.com/openebs/node-disk-manager/pkg/logs"
 )
 
