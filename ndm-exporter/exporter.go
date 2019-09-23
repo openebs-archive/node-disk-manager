@@ -52,26 +52,26 @@ func (e *Exporter) Run() error {
 	// get the kube config
 	cfg, err := config.GetConfig()
 	if err != nil {
-		glog.Errorf("error getting config. ", err)
+		glog.Errorf("error getting config. %v", err)
 		return err
 	}
 
 	// generate a new client object
 	e.Client, err = kubernetes.New(cfg)
 	if err != nil {
-		glog.Errorf("error creating client from config. ", err)
+		glog.Errorf("error creating client from config. %v", err)
 		return err
 	}
 
 	// set the client using the config
 	if err = e.Client.Set(); err != nil {
-		glog.Errorf("error setting client. ", err)
+		glog.Errorf("error setting client. %v", err)
 		return err
 	}
 
 	// register the scheme for the APIs
 	if err = e.Client.RegisterAPI(); err != nil {
-		glog.Errorf("error registering scheme. ", err)
+		glog.Errorf("error registering scheme. %v", err)
 		return err
 	}
 
