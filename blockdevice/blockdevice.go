@@ -66,6 +66,13 @@ const (
 	RegionName NodeAttributeKey = "region"
 )
 
+const (
+	// SparseBlockDeviceType is the sparse blockdevice type
+	SparseBlockDeviceType = "sparse"
+	// BlockDeviceType is the type for blockdevice.
+	BlockDeviceType = "blockdevice"
+)
+
 // FileSystemInformation contains the filesystem and mount information of blockdevice, if present
 type FileSystemInformation struct {
 	// FileSystem is the filesystem present on the blockdevice
