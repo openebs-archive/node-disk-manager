@@ -39,5 +39,9 @@ func Execute() {
 }
 
 func init() {
-	flag.CommandLine.Parse([]string{})
+	rootCmd.Flags().AddGoFlagSet(flag.CommandLine)
+
+	// HACK: without the following line, the logs will be prefixed with an error
+	// https://github.com/kubernetes/kubernetes/issues/17162#issuecomment-225596212
+	_ = flag.CommandLine.Parse([]string{})
 }

@@ -36,9 +36,7 @@ var startCmd = &cobra.Command{
 			cmd.Printf("unknown mode %s selected for starting exporter", mode)
 			return
 		}
-		exporter.Mode = mode
-		exporter.Server.ListenPort, _ = cmd.Flags().GetString("port")
-		exporter.Server.MetricsPath, _ = cmd.Flags().GetString("metrics")
+
 		util.CheckErr(exporter.Run(), util.Fatal)
 	},
 }
