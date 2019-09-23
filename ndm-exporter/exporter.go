@@ -18,20 +18,18 @@ package ndm_exporter
 
 import (
 	"github.com/golang/glog"
+	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/ndm-exporter/collector"
-	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/server"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // Exporter contains the options for starting the exporter along with
 // clients to retrieve the metrics data
 type Exporter struct {
-	Client client.Client
+	Client kubernetes.Client
 	Mode   string
 	Server server.Server
 }
@@ -50,11 +48,38 @@ const (
 // Run starts the exporter, depending on the mode of startup of the exporter
 func (e *Exporter) Run() error {
 	var err error
+
+	// get the kube config
+	cfg, err := config.GetConfig()
+	if err != nil {
+		glog.Errorf("error getting config. ", err)
+		return err
+	}
+
+	// generate a new client object
+	e.Client, err = kubernetes.New(cfg)
+	if err != nil {
+		glog.Errorf("error creating client from config. ", err)
+		return err
+	}
+
+	// set the client using the config
+	if err = e.Client.Set(); err != nil {
+		glog.Errorf("error setting client. ", err)
+		return err
+	}
+
+	// register the scheme for the APIs
+	if err = e.Client.RegisterAPI(); err != nil {
+		glog.Errorf("error registering scheme. ", err)
+		return err
+	}
+
 	switch e.Mode {
 	case ClusterLevel:
-		err = runClusterExporter()
+		err = e.runClusterExporter()
 	case NodeLevel:
-		err = runNodeExporter()
+		err = e.runNodeExporter()
 	}
 
 	if err != nil {
@@ -74,45 +99,18 @@ func (e *Exporter) Run() error {
 }
 
 // runClusterExporter starts the cluster level ndm exporter
-func runClusterExporter() error {
+func (e *Exporter) runClusterExporter() error {
 	glog.Info("Starting cluster level exporter . . .")
 
-	// get the kube config
-	cfg, err := config.GetConfig()
-	if err != nil {
-		glog.Errorf("error getting config", err)
-		return err
-	}
-
-	// generate the client
-	k8sClient, err := client.New(cfg, client.Options{})
-	if err != nil {
-		glog.Errorf("error creating k8s client", err)
-		return err
-	}
-
-	// generate a manager. This is required for registering the APIs
-	mgr, err := manager.New(cfg, manager.Options{})
-	if err != nil {
-		glog.Errorf("error creating manager", err)
-		return err
-	}
-
-	// Setup Scheme for all resources
-	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
-		glog.Errorf("error registering apis", err)
-		return err
-	}
-
 	// create instance of a new static collector and register it.
-	c := collector.NewStaticMetricCollector(k8sClient)
+	c := collector.NewStaticMetricCollector(e.Client)
 	prometheus.MustRegister(c)
 
 	return nil
 }
 
 // runNodeExporter starts the node level ndm exporter
-func runNodeExporter() error {
+func (e *Exporter) runNodeExporter() error {
 	glog.Info("Starting node level exporter . . .")
 	// TODO code for node exporter
 	return nil

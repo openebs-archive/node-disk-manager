@@ -17,15 +17,12 @@ limitations under the License.
 package collector
 
 import (
-	"context"
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/pkg/metrics/static"
 	"github.com/prometheus/client_golang/prometheus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sync"
 )
 
@@ -33,7 +30,7 @@ import (
 // static metrics
 type StaticMetricCollector struct {
 	// Client is the k8s client which will be used to interface with etcd
-	Client client.Client
+	Client kubernetes.Client
 
 	// concurrency handling
 	sync.Mutex
@@ -45,9 +42,9 @@ type StaticMetricCollector struct {
 
 // NewStaticMetricCollector creates a new instance of StaticMetricCollector which
 // implements Collector interface
-func NewStaticMetricCollector(client client.Client) prometheus.Collector {
+func NewStaticMetricCollector(c kubernetes.Client) prometheus.Collector {
 	return &StaticMetricCollector{
-		Client:  client,
+		Client:  c,
 		metrics: static.NewMetrics(),
 	}
 }
@@ -76,9 +73,6 @@ func (mc *StaticMetricCollector) Collect(ch chan<- prometheus.Metric) {
 	if mc.requestInProgress {
 		mc.metrics.IncRejectRequestCounter()
 		mc.Unlock()
-		for _, col := range mc.metrics.ErrorCollectors() {
-			col.Collect(ch)
-		}
 		return
 	}
 
@@ -88,9 +82,19 @@ func (mc *StaticMetricCollector) Collect(ch chan<- prometheus.Metric) {
 	// once a request is processed, set the progress flag to false
 	defer mc.setRequestProgressToFalse()
 
+	// set the client each time
+	if err := mc.Client.Set(); err != nil {
+		glog.Errorf("error setting client. ", err)
+		mc.metrics.IncErrorRequestCounter()
+		mc.collectErrors(ch)
+		return
+	}
+
 	// get required metric data from etcd
 	blockDevices, err := mc.getMetricData()
 	if err != nil {
+		mc.metrics.IncErrorRequestCounter()
+		mc.collectErrors(ch)
 		return
 	}
 
@@ -105,22 +109,19 @@ func (mc *StaticMetricCollector) Collect(ch chan<- prometheus.Metric) {
 
 // getMetricData is used to get the metric data from the source
 func (mc *StaticMetricCollector) getMetricData() ([]blockdevice.BlockDevice, error) {
-	// list all the BDs from etcd
-	bdList := &apis.BlockDeviceList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "BlockDevice",
-			APIVersion: "openebs.io/v1alpha1",
-		},
-	}
-	err := mc.Client.List(context.TODO(), nil, bdList)
+	bdList, err := mc.Client.ListBlockDevice()
 	if err != nil {
-		glog.Error("error in listing BDs. ", err)
+		glog.Error("error listing BDs for metrics collection. ", err)
 		return nil, err
 	}
 
-	// convert the BD apis to BlockDevice struct used by NDM internally
+	// convert the BD api to BlockDevice struct used by NDM internally
 	blockDevices := make([]blockdevice.BlockDevice, 0)
-	for _, bd := range bdList.Items {
+	for _, bd := range bdList {
+		// metrics will not be exposed for sparse block devices
+		if bd.Spec.Details.DeviceType == blockdevice.SparseBlockDeviceType {
+			continue
+		}
 		blockDevice := blockdevice.BlockDevice{
 			NodeAttributes: make(blockdevice.NodeAttribute, 0),
 		}
@@ -134,4 +135,11 @@ func (mc *StaticMetricCollector) getMetricData() ([]blockdevice.BlockDevice, err
 		blockDevices = append(blockDevices, blockDevice)
 	}
 	return blockDevices, nil
+}
+
+// collectErrors collects only the error metrics and set it on the channel
+func (mc *StaticMetricCollector) collectErrors(ch chan<- prometheus.Metric) {
+	for _, col := range mc.metrics.ErrorCollectors() {
+		col.Collect(ch)
+	}
 }
