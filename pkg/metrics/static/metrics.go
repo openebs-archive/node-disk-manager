@@ -41,7 +41,8 @@ type Metrics struct {
 func NewMetrics() *Metrics {
 	return new(Metrics).
 		withBlockDeviceState().
-		withRejectRequest()
+		withRejectRequest().
+		withErrorRequest()
 }
 
 // Collectors lists out all the collectors for which the metrics is exposed
