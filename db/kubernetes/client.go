@@ -11,6 +11,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
+// Client is the wrapper over the k8s client that will be used by
+// NDM to interface with etcd
 type Client struct {
 	cfg    *rest.Config
 	client client.Client
