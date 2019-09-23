@@ -17,6 +17,7 @@ limitations under the License.
 package ndm_exporter
 
 import (
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/ndm-exporter/collector"
@@ -48,6 +49,11 @@ const (
 // Run starts the exporter, depending on the mode of startup of the exporter
 func (e *Exporter) Run() error {
 	var err error
+
+	// checking if the run mode is valid
+	if e.Mode != ClusterLevel && e.Mode != NodeLevel {
+		return fmt.Errorf("unknown mode '%s' selected for starting exporter", e.Mode)
+	}
 
 	// get the kube config
 	cfg, err := config.GetConfig()

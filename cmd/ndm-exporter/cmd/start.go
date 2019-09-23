@@ -29,12 +29,6 @@ var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "start the exporter",
 	Run: func(cmd *cobra.Command, args []string) {
-		mode, _ := cmd.Flags().GetString("mode")
-		if mode != ndm_exporter.ClusterLevel && mode != ndm_exporter.NodeLevel {
-			cmd.Printf("unknown mode %s selected for starting exporter", mode)
-			return
-		}
-
 		util.CheckErr(exporter.Run(), util.Fatal)
 	},
 }
