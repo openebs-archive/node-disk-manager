@@ -89,7 +89,7 @@ func (mc *StaticMetricCollector) Collect(ch chan<- prometheus.Metric) {
 
 	// set the client each time
 	if err := mc.Client.Set(); err != nil {
-		glog.Errorf("error setting client. ", err)
+		glog.Errorf("error setting client. %v", err)
 		mc.metrics.IncErrorRequestCounter()
 		mc.collectErrors(ch)
 		return
