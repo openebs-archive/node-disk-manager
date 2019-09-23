@@ -56,6 +56,8 @@ func (e *Exporter) Run() error {
 		return err
 	}
 
+	glog.V(2).Info("Client config created.")
+
 	// generate a new client object
 	e.Client, err = kubernetes.New(cfg)
 	if err != nil {
@@ -63,17 +65,15 @@ func (e *Exporter) Run() error {
 		return err
 	}
 
-	// set the client using the config
-	if err = e.Client.Set(); err != nil {
-		glog.Errorf("error setting client. %v", err)
-		return err
-	}
+	glog.V(2).Info("K8s Client generated using the config.")
 
 	// register the scheme for the APIs
 	if err = e.Client.RegisterAPI(); err != nil {
 		glog.Errorf("error registering scheme. %v", err)
 		return err
 	}
+
+	glog.V(2).Info("APIs registered.")
 
 	switch e.Mode {
 	case ClusterLevel:

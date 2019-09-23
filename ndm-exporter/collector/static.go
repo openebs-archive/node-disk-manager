@@ -67,10 +67,13 @@ func (mc *StaticMetricCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect is the implementation of Collect in prometheus.Collector
 func (mc *StaticMetricCollector) Collect(ch chan<- prometheus.Metric) {
 
+	glog.V(4).Info("Starting to collect metrics for a request")
+
 	// when a second request comes, and the first one is already in progress,
 	// ignore/reject the second request
 	mc.Lock()
 	if mc.requestInProgress {
+		glog.V(4).Info("Another request already in progress.")
 		mc.metrics.IncRejectRequestCounter()
 		mc.Unlock()
 		return
@@ -81,6 +84,8 @@ func (mc *StaticMetricCollector) Collect(ch chan<- prometheus.Metric) {
 
 	// once a request is processed, set the progress flag to false
 	defer mc.setRequestProgressToFalse()
+
+	glog.V(4).Info("Setting client for this request.")
 
 	// set the client each time
 	if err := mc.Client.Set(); err != nil {
@@ -98,8 +103,12 @@ func (mc *StaticMetricCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
+	glog.V(4).Info("Metric data fetched from etcd")
+
 	// set the metric data into the respective fields
 	mc.metrics.SetMetrics(blockDevices)
+
+	glog.V(4).Info("Prometheus metrics is set and initializing collection.")
 
 	// collect each metric
 	for _, col := range mc.metrics.Collectors() {
@@ -114,6 +123,8 @@ func (mc *StaticMetricCollector) getMetricData() ([]blockdevice.BlockDevice, err
 		glog.Error("error listing BDs for metrics collection. ", err)
 		return nil, err
 	}
+
+	glog.V(4).Infof("No. of BlockDevices fetched from etcd: %d", len(bdList))
 
 	// convert the BD api to BlockDevice struct used by NDM internally
 	blockDevices := make([]blockdevice.BlockDevice, 0)
@@ -133,6 +144,7 @@ func (mc *StaticMetricCollector) getMetricData() ([]blockdevice.BlockDevice, err
 		// setting the block device status
 		blockDevice.BDStatus.State = string(bd.Status.State)
 		blockDevices = append(blockDevices, blockDevice)
+		glog.V(4).Infof("BlockDevice %+v processed", blockDevice)
 	}
 	return blockDevices, nil
 }

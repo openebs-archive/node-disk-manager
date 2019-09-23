@@ -17,7 +17,6 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/ndm-exporter"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/spf13/cobra"
@@ -31,7 +30,6 @@ var startCmd = &cobra.Command{
 	Short: "start the exporter",
 	Run: func(cmd *cobra.Command, args []string) {
 		mode, _ := cmd.Flags().GetString("mode")
-		glog.Info("Mode:", mode)
 		if mode != ndm_exporter.ClusterLevel && mode != ndm_exporter.NodeLevel {
 			cmd.Printf("unknown mode %s selected for starting exporter", mode)
 			return
