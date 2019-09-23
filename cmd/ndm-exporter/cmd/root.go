@@ -17,9 +17,10 @@ limitations under the License.
 package cmd
 
 import (
-	"flag"
+	goflag "flag"
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"os"
 )
 
@@ -39,9 +40,9 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().AddGoFlagSet(flag.CommandLine)
+	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 
 	// HACK: without the following line, the logs will be prefixed with an error
 	// https://github.com/kubernetes/kubernetes/issues/17162#issuecomment-225596212
-	_ = flag.CommandLine.Parse([]string{})
+	_ = goflag.CommandLine.Parse([]string{})
 }
