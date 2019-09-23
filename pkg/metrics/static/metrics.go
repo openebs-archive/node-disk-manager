@@ -19,6 +19,7 @@ package static
 import (
 	bd "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/prometheus/client_golang/prometheus"
+	"strings"
 )
 
 const (
@@ -33,6 +34,7 @@ type Metrics struct {
 
 	// errors and rejected requests
 	rejectRequestCount prometheus.Counter
+	errorRequestCount  prometheus.Counter
 }
 
 // NewMetrics creates instance of metrics
@@ -47,6 +49,7 @@ func (m *Metrics) Collectors() []prometheus.Collector {
 	return []prometheus.Collector{
 		m.blockDeviceState,
 		m.rejectRequestCount,
+		m.errorRequestCount,
 	}
 }
 
@@ -54,12 +57,18 @@ func (m *Metrics) Collectors() []prometheus.Collector {
 func (m *Metrics) ErrorCollectors() []prometheus.Collector {
 	return []prometheus.Collector{
 		m.rejectRequestCount,
+		m.errorRequestCount,
 	}
 }
 
 // IncRejectRequestCounter increments the reject request error counter
 func (m *Metrics) IncRejectRequestCounter() {
 	m.rejectRequestCount.Inc()
+}
+
+// IncErrorRequestCounter increments the no of requests errored out.
+func (m *Metrics) IncErrorRequestCounter() {
+	m.errorRequestCount.Inc()
 }
 
 func (m *Metrics) withBlockDeviceState() *Metrics {
@@ -69,7 +78,7 @@ func (m *Metrics) withBlockDeviceState() *Metrics {
 			Name:      "block_device_state",
 			Help:      `State of BlockDevice (0,1,2) = {Active, Inactive, Unknown}`,
 		},
-		[]string{"Name", "Path", "HostName", "NodeName"},
+		[]string{"blockdevicename", "path", "hostname", "nodename"},
 	)
 	return m
 }
@@ -85,11 +94,24 @@ func (m *Metrics) withRejectRequest() *Metrics {
 	return m
 }
 
+func (m *Metrics) withErrorRequest() *Metrics {
+	m.errorRequestCount = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: NodeNamespace,
+			Name:      "error_request_count",
+			Help:      `No. of requests errored out by the exporter`,
+		})
+	return m
+}
+
 // SetMetrics is used to set the prometheus metrics to resepective fields
 func (m *Metrics) SetMetrics(blockDevices []bd.BlockDevice) {
 	for _, blockDevice := range blockDevices {
+		// remove /dev from the device path so that the device path is similar to the
+		// path given by node exporter
+		path := strings.ReplaceAll(blockDevice.Path, "/dev/", "")
 		m.blockDeviceState.WithLabelValues(blockDevice.UUID,
-			blockDevice.Path,
+			path,
 			blockDevice.NodeAttributes[bd.HostName],
 			blockDevice.NodeAttributes[bd.NodeName]).
 			Set(getState(blockDevice.BDStatus.State))
