@@ -6,13 +6,9 @@ go:
 
 env:
   global:
-    - TAG="ci"
-    - CODECOV_TOKEN="d1e39bea-f800-45de-8266-3e9b85e2594a"
-  matrix:
-    - XC_ARCH="amd64"
-      BASEIMAGE="ubuntu:16.04"
-    #- XC_ARCH="arm64"
-    #  BASEIMAGE="arm64v8/ubuntu:18.04"
+   - ARCH=$(go env GOARCH)
+   - TAG="ci"
+   - CODECOV_TOKEN="d1e39bea-f800-45de-8266-3e9b85e2594a"
 
 sudo: required
 
@@ -22,8 +18,6 @@ services:
 addons:
   apt:
     update: true
-    packages: 
-      - gcc-multilib
 
 install:
   - make bootstrap
@@ -33,11 +27,9 @@ install:
       mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/openebs;
       cd $GOPATH/src/github.com/openebs/node-disk-manager;
     fi
-  - if [ "$XC_ARCH" == "amd64" ]; then
-      curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.0.0/minikube-linux-amd64;
-      sudo chmod +x minikube;
-      sudo mv minikube /usr/local/bin/;
-    fi
+  - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.0.0/minikube-linux-amd64
+  - sudo chmod +x minikube
+  - sudo mv minikube /usr/local/bin/
   # we need openSeaChest repo to build node-disk-manager
   - pushd .
   - cd ..
@@ -52,26 +44,24 @@ install:
   - popd 
 
 before_script:
-  - if [ "$XC_ARCH" == "amd64" ]; then
-      sudo minikube start --vm-driver=none --cpus=1 --memory=1024;
-      sudo minikube update-context;
-      sudo chown -R $USER $HOME/.minikube;
-      sudo chown -R $USER $HOME/.kube;
-      make shellcheck;
-    fi
+  - sudo minikube start --vm-driver=none --cpus=1 --memory=1024
+  - sudo minikube update-context
+  # By default root is the owner of the .minikube directory. This is changed to $USER so that
+  # from the integration tests which run as a non-root user can access the files and connect
+  # to the minikube cluster
+  - sudo chown -R $USER $HOME/.minikube
+  - sudo chown -R $USER $HOME/.kube
 
 script:
+  - make shellcheck
   - make
   # Here sudo -E env "PATH=$PATH" make test is required for running tests with
   # sudo permissions since we are making use of scsi device mockdata in smartprobe_test
   # which could be fetched for a SCSI device with sudo permissions only since to access
   # a particular scsi device, sudo or root permissions are required.
-  - if [ "$XC_ARCH" == "amd64" ]; then
-      sudo -E env "PATH=$PATH" make test;
-      make integration-test;
-      bash <(curl -s https://codecov.io/bash);
-    fi
+  - sudo -E env "PATH=$PATH" make test
+  - make integration-test
 
 after_success:
-  - DIMAGE=openebs/node-disk-manager-$XC_ARCH ./build/push;
-  - DIMAGE=openebs/node-disk-operator-$XC_ARCH ./build/push;
+  - make push
+  - bash <(curl -s https://codecov.io/bash)
