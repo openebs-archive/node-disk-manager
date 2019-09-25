@@ -38,6 +38,19 @@ with one of the below directions:
 * Setup build tools:
   * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
   * `make bootstrap` installs the required Go tools.
+  * NDM uses SeaChest to probe for drive details. Use the following to setup the SeaChest libraries:
+    ```
+    pushd .
+    cd ..
+    git clone --recursive --branch Release-19.06.02 https://github.com/openebs/openSeaChest.git
+    cd openSeaChest/Make/gcc 
+    make release
+    cd ../../
+    sudo cp opensea-common/Make/gcc/lib/libopensea-common.a /usr/lib 
+    sudo cp opensea-operations/Make/gcc/lib/libopensea-operations.a /usr/lib 
+    sudo cp opensea-transport/Make/gcc/lib/libopensea-transport.a /usr/lib
+    popd
+    ```
 
 * run `make` in the top directory. It will:
   * Build the binary.
