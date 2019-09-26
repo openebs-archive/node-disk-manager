@@ -155,7 +155,8 @@ Happy Hacking!
 
 * Test your changes
   * `sudo -E env "PATH=$PATH" make test` execute the unit tests
-  * `make integration-test` will launch minikube to run the tests. Make sure that minikube can be executed via `sudo -E minikube start --vm-driver=none`
+  * Integration tests are written in ginkgo and run against a minikube cluster. Minikube cluster should be running so as to execute the tests. To install minikube follow the doc [here](https://kubernetes.io/docs/tasks/tools/install-minikube/). 
+  `make integration-test` will run the integration tests on the minikube cluster.
 
 ### Keep your branch in sync
 
