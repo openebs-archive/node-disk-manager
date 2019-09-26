@@ -41,6 +41,19 @@ git remote -v
 Install the build dependencies.
   * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
   * Run `make bootstrap` to install the required Go tools
+  * node-disk-manager uses OpenSeaChest to fetch certain details of the disk like temperature and rotation rate. This requires cloning the `openSeaChest` repo to `openebs` directory and build it. 
+    ```sh
+    git clone --recursive https://github.com/openebs/openSeaChest.git
+    cd openSeaChest/Make/gcc
+    make release
+    ```
+  * Copy the generated static library files to `/usr/lib`
+    ```sh
+    cd ../../
+    sudo cp opensea-common/Make/gcc/lib/libopensea-common.a /usr/lib
+    sudo cp opensea-operations/Make/gcc/lib/libopensea-operations.a /usr/lib
+    sudo cp opensea-transport/Make/gcc/lib/libopensea-transport.a /usr/lib
+    ```
 
 ## Git Development Workflow
 
@@ -142,7 +155,8 @@ Happy Hacking!
 
 * Test your changes
   * `sudo -E env "PATH=$PATH" make test` execute the unit tests
-  * `make integration-test` will launch minikube to run the tests. Make sure that minikube can be executed via `sudo -E minikube start --vm-driver=none`
+  * Integration tests are written in ginkgo and run against a minikube cluster. Minikube cluster should be running so as to execute the tests. To install minikube follow the doc [here](https://kubernetes.io/docs/tasks/tools/install-minikube/). 
+  `make integration-test` will run the integration tests on the minikube cluster.
 
 ### Keep your branch in sync
 
