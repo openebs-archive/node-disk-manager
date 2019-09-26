@@ -21,23 +21,16 @@ import "fmt"
 // Task interfaces gives a set of methods to be implemented
 // for performing an upgrade
 type Task interface {
-	FromVersion() string
-	ToVersion() string
-	IsSuccess() error
 	PreUpgrade() bool
-	Upgrade() bool
-	PostUpgrade() bool
+	IsSuccess() error
 }
 
 // RunUpgrade runs all the upgrade tasks required
 func RunUpgrade(tasks ...Task) error {
 	for _, task := range tasks {
-		_ = task.PreUpgrade() && task.Upgrade() && task.PostUpgrade()
+		_ = task.PreUpgrade()
 		if err := task.IsSuccess(); err != nil {
-			return fmt.Errorf("upgrade from %s to %s failed. Error : %v",
-				task.FromVersion(),
-				task.ToVersion(),
-				err)
+			return fmt.Errorf("upgrade failed. Error : %v", err)
 		}
 	}
 	return nil

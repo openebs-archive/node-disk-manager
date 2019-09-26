@@ -18,6 +18,7 @@ package v041_042
 
 import (
 	"context"
+	"fmt"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -35,17 +36,6 @@ type UpgradeTask struct {
 // and specified `from` and `to` version
 func NewUpgradeTask(from, to string, c client.Client) *UpgradeTask {
 	return &UpgradeTask{from: from, to: to, client: c}
-}
-
-// FromVersion returns the version from which the components need to be updated
-func (p *UpgradeTask) FromVersion() string {
-	return p.from
-}
-
-// ToVersion returns the version to which components will be updated. This should be
-// the current version
-func (p *UpgradeTask) ToVersion() string {
-	return p.to
 }
 
 // PreUpgrade runs the preupgrade tasks and returns whether it succeeded or not
@@ -69,27 +59,10 @@ func (p *UpgradeTask) PreUpgrade() bool {
 	return true
 }
 
-// Upgrade runs the main upgrade tasks and returns whether it succeeded or not
-func (p *UpgradeTask) Upgrade() bool {
-	if p.err != nil {
-		return false
-	}
-	return true
-}
-
-// PostUpgrade runs the tasks that need to be performed after upgrade and returns
-// whether the tasks where success or not
-func (p *UpgradeTask) PostUpgrade() bool {
-	if p.err != nil {
-		return false
-	}
-	return true
-}
-
 // IsSuccess returns error if the upgrade failed, at any step. Else nil will
 // be returned
 func (p *UpgradeTask) IsSuccess() error {
-	return p.err
+	return fmt.Errorf("from : %s - to : %s. err : %v", p.from, p.to, p.err)
 }
 
 // copyHostName will copy the hostname string from .spec.hostName to
