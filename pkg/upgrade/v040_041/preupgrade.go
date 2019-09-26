@@ -18,7 +18,6 @@ package v040_041
 
 import (
 	"context"
-	"fmt"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -70,7 +69,7 @@ func (p *UpgradeTask) PreUpgrade() bool {
 // IsSuccess returns error if the upgrade failed, at any step. Else nil will
 // be returned
 func (p *UpgradeTask) IsSuccess() error {
-	return fmt.Errorf("from : %s - to : %s. err : %v", p.from, p.to, p.err)
+	return p.err
 }
 
 // renameFinalizer renames the finalizer from old to new in BDC

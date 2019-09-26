@@ -18,7 +18,6 @@ package v041_042
 
 import (
 	"context"
-	"fmt"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -62,7 +61,7 @@ func (p *UpgradeTask) PreUpgrade() bool {
 // IsSuccess returns error if the upgrade failed, at any step. Else nil will
 // be returned
 func (p *UpgradeTask) IsSuccess() error {
-	return fmt.Errorf("from : %s - to : %s. err : %v", p.from, p.to, p.err)
+	return p.err
 }
 
 // copyHostName will copy the hostname string from .spec.hostName to
