@@ -36,8 +36,8 @@ type BlockDevice struct {
 	// BlockDevice if it exists
 	FSInfo FileSystemInformation
 
-	// BDStatus contains the state of the blockdevice
-	BDStatus BlockDeviceStatus
+	// Status contains the state of the blockdevice
+	Status Status
 }
 
 // NodeAttribute is the representing the various attributes of the machine
@@ -82,8 +82,8 @@ type FileSystemInformation struct {
 	MountPoint []string
 }
 
-// BlockDeviceStatus is used to represent the status of the blockdevice
-type BlockDeviceStatus struct {
+// Status is used to represent the status of the blockdevice
+type Status struct {
 	// State is the state of this BD like Active(Online), Inactive(Offline) or
 	// Unknown
 	State string

@@ -115,7 +115,7 @@ func (m *Metrics) SetMetrics(blockDevices []bd.BlockDevice) {
 			path,
 			blockDevice.NodeAttributes[bd.HostName],
 			blockDevice.NodeAttributes[bd.NodeName]).
-			Set(getState(blockDevice.BDStatus.State))
+			Set(getState(blockDevice.Status.State))
 	}
 }
 

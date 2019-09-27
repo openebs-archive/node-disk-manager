@@ -142,7 +142,7 @@ func (mc *StaticMetricCollector) getMetricData() ([]blockdevice.BlockDevice, err
 		blockDevice.NodeAttributes[blockdevice.NodeName] = bd.Spec.NodeAttributes.NodeName
 		blockDevice.Path = bd.Spec.Path
 		// setting the block device status
-		blockDevice.BDStatus.State = string(bd.Status.State)
+		blockDevice.Status.State = string(bd.Status.State)
 		blockDevices = append(blockDevices, blockDevice)
 		glog.V(4).Infof("BlockDevice %+v processed", blockDevice)
 	}
