@@ -58,7 +58,7 @@ DOCKER_IMAGE_NDM:=openebs/node-disk-manager-${XC_ARCH}:ci
 NODE_DISK_OPERATOR=ndo
 # env for specifying that we want to build node-disk-operator
 BUILD_PATH_NDO=manager
-# IMAGE is the image name of the node-disk-manager docker image.
+# Name of the docker image for ndm operator
 DOCKER_IMAGE_NDO:=openebs/node-disk-operator-${XC_ARCH}:ci
 
 # Compile binaries and build docker images
