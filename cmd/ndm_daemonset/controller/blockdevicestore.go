@@ -37,6 +37,11 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 	if err == nil {
 		glog.Info("Created blockdevice object in etcd: ",
 			blockDeviceCopy.ObjectMeta.Name)
+		alertlog.Logger.Infow("",
+			"eventcode", "ndm.blockdevice.create.success",
+			"msg", "Successfully created block device",
+			"rname", blockDeviceCopy.ObjectMeta.Name,
+		)
 		return
 	}
 
@@ -93,9 +98,19 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 	err = c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
 		glog.Error("Unable to update blockdevice object : ", err)
+		alertlog.Logger.Errorw("",
+			"eventcode", "ndm.blockdevice.update.failure",
+			"msg", "Failed to update block device",
+			"rname", blockDeviceCopy.ObjectMeta.Name,
+		)
 		return err
 	}
 	glog.Info("Updated blockdevice object : ", blockDeviceCopy.ObjectMeta.Name)
+	alertlog.Logger.Infow("",
+		"eventcode", "ndm.blockdevice.update.success",
+		"msg", "Successfully updated block device",
+		"rname", blockDeviceCopy.ObjectMeta.Name,
+	)
 	return nil
 }
 
@@ -107,9 +122,19 @@ func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 	err := c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
 		glog.Error("Unable to deactivate blockdevice: ", err)
+		alertlog.Logger.Errorw("",
+			"eventcode", "ndm.blockdevice.deactivate.failure",
+			"msg", "Failed to deactivate block device",
+			"rname", blockDeviceCopy.ObjectMeta.Name,
+		)
 		return
 	}
 	glog.Info("Deactivated blockdevice: ", blockDeviceCopy.ObjectMeta.Name)
+	alertlog.Logger.Infow("",
+		"eventcode", "ndm.blockdevice.deactivate.success",
+		"msg", "Successfully deactivated block device",
+		"rname", blockDeviceCopy.ObjectMeta.Name,
+	)
 }
 
 // GetBlockDevice get Disk resource from etcd
@@ -138,9 +163,19 @@ func (c *Controller) DeleteBlockDevice(name string) {
 	err := c.Clientset.Delete(context.TODO(), blockDevice)
 	if err != nil {
 		glog.Error("Unable to delete blockdevice object : ", err)
+		alertlog.Logger.Errorw("",
+			"eventcode", "ndm.blockdevice.delete.failure",
+			"msg", "Failed to delete block device",
+			"rname", name,
+		)
 		return
 	}
 	glog.Info("Deleted blockdevice object : ", name)
+	alertlog.Logger.Infow("",
+		"eventcode", "ndm.blockdevice.delete.success",
+		"msg", "Successfully deleted block device",
+		"rname", name,
+	)
 }
 
 // ListBlockDeviceResource queries the etcd for the devices for the host/node

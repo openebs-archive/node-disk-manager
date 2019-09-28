@@ -32,6 +32,11 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	err := c.Clientset.Create(context.TODO(), drCopy)
 	if err == nil {
 		glog.Info("Created disk object in etcd : ", drCopy.ObjectMeta.Name)
+		alertlog.Logger.Infow("",
+			"eventcode", "ndm.disk.create.success",
+			"msg", "Successfully created disk",
+			"rname", drCopy.ObjectMeta.Name,
+		)
 		return
 	}
 	/*
@@ -71,6 +76,11 @@ func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 			Name:      oldDr.Name}, oldDr)
 		if err != nil {
 			glog.Errorf("Unable to get disk object:%v, err:%v", oldDr.ObjectMeta.Name, err)
+			alertlog.Logger.Errorw("",
+				"eventcode", "ndm.disk.update.failure",
+				"msg", "Failed to update disk",
+				"rname", drCopy.ObjectMeta.Name,
+			)
 			return err
 		}
 	}
@@ -79,9 +89,19 @@ func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
 		glog.Errorf("Unable to update disk object:%v, err:%v", drCopy.ObjectMeta.Name, err)
+		alertlog.Logger.Errorw("",
+			"eventcode", "ndm.disk.update.failure",
+			"msg", "Failed to update disk",
+			"rname", drCopy.ObjectMeta.Name,
+		)
 		return err
 	}
 	glog.Infof("Updated disk object::%v successfully", drCopy.ObjectMeta.Name)
+	alertlog.Logger.Infow("",
+		"eventcode", "ndm.disk.update.success",
+		"msg", "Successfully updated disk",
+		"rname", drCopy.ObjectMeta.Name,
+	)
 	return nil
 }
 
@@ -92,9 +112,19 @@ func (c *Controller) DeactivateDisk(dr apis.Disk) {
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
 		glog.Error("Unable to deactivate disk object : ", err)
+		alertlog.Logger.Errorw("",
+			"eventcode", "ndm.disk.deactivate.failure",
+			"msg", "Failed to deactivate disk",
+			"rname", drCopy.ObjectMeta.Name,
+		)
 		return
 	}
 	glog.Info("deactivate the disk object : ", drCopy.ObjectMeta.Name)
+	alertlog.Logger.Infow("",
+		"eventcode", "ndm.disk.deactivate.success",
+		"msg", "Successfully deactivated disk",
+		"rname", drCopy.ObjectMeta.Name,
+	)
 }
 
 // GetDisk get Disk resource from etcd
@@ -123,9 +153,19 @@ func (c *Controller) DeleteDisk(name string) {
 	err := c.Clientset.Delete(context.TODO(), dr)
 	if err != nil {
 		glog.Error("Unable to delete disk object : ", err)
+		alertlog.Logger.Errorw("",
+			"eventcode", "ndm.disk.delete.failure",
+			"msg", "Failed to delete disk",
+			"rname", drCopy.ObjectMeta.Name,
+		)
 		return
 	}
 	glog.Info("Deleted disk object : ", name)
+	alertlog.Logger.Infow("",
+		"eventcode", "ndm.disk.delete.success",
+		"msg", "Successfully deleted disk",
+		"rname", drCopy.ObjectMeta.Name,
+	)
 }
 
 // ListDiskResource queries the etcd for the devices for the host/node

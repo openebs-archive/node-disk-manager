@@ -33,5 +33,10 @@ func RunUpgrade(tasks ...Task) error {
 			return fmt.Errorf("upgrade failed. Error : %v", err)
 		}
 	}
+	alertlog.Logger.Infow("",
+		"eventcode", "ndm.upgrade.success",
+		"msg", "Successfully upgraded node disk manager",
+		"rname", "NDM",
+	)
 	return nil
 }

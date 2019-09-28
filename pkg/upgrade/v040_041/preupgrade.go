@@ -59,6 +59,11 @@ func (p *UpgradeTask) PreUpgrade() bool {
 	for _, bdc := range bdcList.Items {
 		err = p.renameFinalizer(&bdc)
 		if err != nil {
+			alertlog.Logger.Errorw("",
+				"eventcode", "ndm.upgrade.task.failure",
+				"msg", "Failed to upgrade node disk manager",
+				"rname", "v040_041",
+			)
 			p.err = err
 			return false
 		}
