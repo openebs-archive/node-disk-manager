@@ -157,7 +157,7 @@ func (c *Controller) DeleteDisk(name string) {
 		alertlog.Logger.Errorw("",
 			"eventcode", "ndm.disk.delete.failure",
 			"msg", "Failed to delete disk",
-			"rname", drCopy.ObjectMeta.Name,
+			"rname", name,
 		)
 		return
 	}
@@ -165,7 +165,7 @@ func (c *Controller) DeleteDisk(name string) {
 	alertlog.Logger.Infow("",
 		"eventcode", "ndm.disk.delete.success",
 		"msg", "Successfully deleted disk",
-		"rname", drCopy.ObjectMeta.Name,
+		"rname", name,
 	)
 }
 
