@@ -20,6 +20,7 @@ import (
 	"context"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/openebs/node-disk-manager/pkg/alertlog"
 )
 
 // UpgradeTask is the struct which implements the Task interface

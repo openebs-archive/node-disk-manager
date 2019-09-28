@@ -16,7 +16,10 @@ limitations under the License.
 
 package upgrade
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/openebs/node-disk-manager/pkg/alertlog"
+)
 
 // Task interfaces gives a set of methods to be implemented
 // for performing an upgrade
