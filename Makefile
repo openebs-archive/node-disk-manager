@@ -47,18 +47,19 @@ export BASEIMAGE
 
 
 # Initialize the NDM DaemonSet variables
-# Specify the binary name
+# Specify the NDM DaemonSet binary name
 NODE_DISK_MANAGER=ndm
-# Specify the path for the main under the ./cmd/
+# Specify the sub path under ./cmd/ for NDM DaemonSet
 BUILD_PATH_NDM=ndm_daemonset
-# Name of the docker image
+# Name of the image for NDM DaemoneSet
 DOCKER_IMAGE_NDM:=openebs/node-disk-manager-${XC_ARCH}:ci
 
 # Initialize the NDM Operator variables
+# Specify the NDM Operator binary name
 NODE_DISK_OPERATOR=ndo
-# env for specifying that we want to build node-disk-operator
+# Specify the sub path under ./cmd/ for NDM Operator
 BUILD_PATH_NDO=manager
-# Name of the docker image for ndm operator
+# Name of the image for ndm operator
 DOCKER_IMAGE_NDO:=openebs/node-disk-operator-${XC_ARCH}:ci
 
 # Compile binaries and build docker images
