@@ -69,23 +69,6 @@ func (c K8sClient) ListNodeStatus() (map[string]string, error) {
 	return nodes, nil
 }
 
-// ListDisk returns list of DiskCR in the cluster
-func (c K8sClient) ListDisk() (*apis.DiskList, error) {
-	diskList := &apis.DiskList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Disk",
-			APIVersion: "openebs.io/v1alpha1",
-		},
-	}
-
-	var err error
-	err = c.RunTimeClient.List(context.TODO(), &client.ListOptions{}, diskList)
-	if err != nil {
-		return nil, fmt.Errorf("cannot list disks. Error :%v", err)
-	}
-	return diskList, nil
-}
-
 // ListBlockDevices returns list of BlockDeviceCR in the cluster
 func (c K8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
 	bdList := &apis.BlockDeviceList{
@@ -143,24 +126,6 @@ func (c K8sClient) RestartPod(name string) error {
 		}
 	}
 	return fmt.Errorf("could not find given pod")
-}
-
-// WaitForPodToBeRunning wait for the pod to be in running state
-func (c K8sClient) WaitForPodToBeRunning(name string) error {
-	for {
-		pods, err := c.ListPodStatus()
-		if err != nil {
-			return err
-		}
-		for pod, state := range pods {
-			if strings.Contains(pod, name) && state == Running {
-				return nil
-			} else {
-				time.Sleep(WaitDuration)
-			}
-		}
-	}
-	return nil
 }
 
 // NewBDC creates a sample device claim which can be used for
