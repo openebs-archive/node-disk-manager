@@ -4,8 +4,8 @@ metadata:
   name: example-blockdevice
   labels:
     kubernetes.io/hostname: <host name in which disk/blockdevice is attached> # like gke-openebs-user-default-pool-044afcb8-bmc0
-    ndm.io/managed: "false" # for manual disk creation put false
-    ndm.io/disk-type: <blockdevice type> # like disk, partition, sparse file
+    ndm.io/managed: "false" # for manual blockdevice creation put false
+    ndm.io/blockdevice-type: <blockdevice type> # like blockdevice, sparse
 status:
   claimState: Unclaimed
   state: Active
