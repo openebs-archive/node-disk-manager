@@ -44,7 +44,7 @@ install:
   - popd 
 
 before_script:
-  - sudo minikube start --vm-driver=none --cpus=1 --memory=1024
+  - sudo minikube start --vm-driver=none
   - sudo minikube update-context
   # By default root is the owner of the .minikube directory. This is changed to $USER so that
   # from the integration tests which run as a non-root user can access the files and connect

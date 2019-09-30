@@ -43,7 +43,7 @@ Install the build dependencies.
   * Run `make bootstrap` to install the required Go tools
   * node-disk-manager uses OpenSeaChest to fetch certain details of the disk like temperature and rotation rate. This requires cloning the `openSeaChest` repo to `openebs` directory and build it. 
     ```sh
-    git clone --recursive https://github.com/openebs/openSeaChest.git
+    git clone --recursive --branch Release-19.06.02 https://github.com/openebs/openSeaChest.git
     cd openSeaChest/Make/gcc
     make release
     ```
