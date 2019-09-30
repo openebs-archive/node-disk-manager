@@ -35,9 +35,8 @@ const (
 )
 
 var (
-	BDCUnavailableCapacity        = resource.MustParse("10Gi")
-	BDCAvailableCapacity          = resource.MustParse("1Gi")
-	BDCapacity             uint64 = 2147483648
+	BDCUnavailableCapacity = resource.MustParse("10Gi")
+	BDCAvailableCapacity   = resource.MustParse("1Gi")
 )
 
 var _ = Describe("BlockDevice Claim tests", func() {

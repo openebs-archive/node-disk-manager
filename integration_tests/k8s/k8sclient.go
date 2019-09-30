@@ -38,6 +38,7 @@ const (
 	Running = "Running"
 )
 
+// K8sClient is the client used for etcd operations
 type K8sClient struct {
 	ClientSet     *kubernetes.Clientset
 	APIextClient  *apiextensionsclient.Clientset

@@ -72,6 +72,8 @@ var _ = Describe("NDM Setup Tests", func() {
 	})
 })
 
+// WaitForPodToBeRunningEventually waits for 2 minutes for the given pod to be
+// in running state
 func WaitForPodToBeRunningEventually(podPrefix string) bool {
 	return Eventually(func() string {
 		c, _ := k8s.GetClientSet()
@@ -86,6 +88,8 @@ func WaitForPodToBeRunningEventually(podPrefix string) bool {
 	}, 120, 5).Should(Equal(k8s.Running))
 }
 
+// WaitForPodToBeDeletedEventually waits for 2 minutes for the given pod to
+// get deleted
 func WaitForPodToBeDeletedEventually(podPrefix string) bool {
 	return Eventually(func() int {
 		c, _ := k8s.GetClientSet()
@@ -100,12 +104,4 @@ func WaitForPodToBeDeletedEventually(podPrefix string) bool {
 		}
 		return noOfPods
 	}, 120, 5).Should(BeZero())
-}
-
-func WaitForBDToGetDeleted() bool {
-	return Eventually(func() error {
-		c, _ := k8s.GetClientSet()
-		_, err := c.ListBlockDevices()
-		return err
-	}, 120, 5).Should(Not(BeNil()))
 }

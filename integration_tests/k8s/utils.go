@@ -32,7 +32,3 @@ func WaitForStateChange() {
 func WaitForReconcilation() {
 	time.Sleep(k8sReconcileTime)
 }
-
-func WaitForPodToBeRunning(podName string) {
-
-}
