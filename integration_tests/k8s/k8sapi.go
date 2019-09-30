@@ -26,7 +26,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -40,12 +39,12 @@ const k8sWaitTime = 40 * time.Second
 // The wait time for reconcilation loop to run
 const k8sReconcileTime = 10 * time.Second
 
-// ListPodStatus returns the list of all pods in the given namespace along
+// ListPodStatus returns the list of all pods in the given Namespace along
 // with their status
-func (c k8sClient) ListPodStatus() (map[string]string, error) {
+func (c K8sClient) ListPodStatus() (map[string]string, error) {
 	pods := make(map[string]string)
 	podList := &v1.PodList{}
-	podList, err := c.ClientSet.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	podList, err := c.ClientSet.CoreV1().Pods(Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +56,7 @@ func (c k8sClient) ListPodStatus() (map[string]string, error) {
 
 // ListNodeStatus returns list of all nodes(node name) in the cluster along with
 // their status
-func (c k8sClient) ListNodeStatus() (map[string]string, error) {
+func (c K8sClient) ListNodeStatus() (map[string]string, error) {
 	nodes := make(map[string]string)
 	nodeList := &v1.NodeList{}
 	nodeList, err := c.ClientSet.CoreV1().Nodes().List(metav1.ListOptions{})
@@ -71,7 +70,7 @@ func (c k8sClient) ListNodeStatus() (map[string]string, error) {
 }
 
 // ListDisk returns list of DiskCR in the cluster
-func (c k8sClient) ListDisk() (*apis.DiskList, error) {
+func (c K8sClient) ListDisk() (*apis.DiskList, error) {
 	diskList := &apis.DiskList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Disk",
@@ -88,7 +87,7 @@ func (c k8sClient) ListDisk() (*apis.DiskList, error) {
 }
 
 // ListBlockDevices returns list of BlockDeviceCR in the cluster
-func (c k8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
+func (c K8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
 	bdList := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
@@ -99,13 +98,26 @@ func (c k8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
 	var err error
 	err = c.RunTimeClient.List(context.TODO(), &client.ListOptions{}, bdList)
 	if err != nil {
-		return nil, fmt.Errorf("cannot list disks. Error :%v", err)
+		return nil, fmt.Errorf("cannot list blockdevices. Error :%v", err)
 	}
 	return bdList, nil
 }
 
+// GetBlockDeviceClaim from Namespace and name
+func (c K8sClient) GetBlockDeviceClaim(NameSpace, Name string) (*apis.BlockDeviceClaim, error) {
+	bdc := &apis.BlockDeviceClaim{}
+	err := c.RunTimeClient.Get(context.TODO(), client.ObjectKey{
+		Name:      Name,
+		Namespace: NameSpace,
+	}, bdc)
+	if err != nil {
+		return nil, err
+	}
+	return bdc, nil
+}
+
 // ListBlockDeviceClaims returns list of BlockDeviceClaims in the cluster
-func (c k8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
+func (c K8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
 	bdcList := &apis.BlockDeviceClaimList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDeviceClaim",
@@ -120,17 +132,35 @@ func (c k8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
 }
 
 // RestartPod the given pod
-func (c k8sClient) RestartPod(name string) error {
+func (c K8sClient) RestartPod(name string) error {
 	pods, err := c.ListPodStatus()
 	if err != nil {
 		return nil
 	}
 	for pod := range pods {
 		if strings.Contains(pod, name) {
-			return c.ClientSet.CoreV1().Pods(namespace).Delete(pod, &metav1.DeleteOptions{})
+			return c.ClientSet.CoreV1().Pods(Namespace).Delete(pod, &metav1.DeleteOptions{})
 		}
 	}
 	return fmt.Errorf("could not find given pod")
+}
+
+// WaitForPodToBeRunning wait for the pod to be in running state
+func (c K8sClient) WaitForPodToBeRunning(name string) error {
+	for {
+		pods, err := c.ListPodStatus()
+		if err != nil {
+			return err
+		}
+		for pod, state := range pods {
+			if strings.Contains(pod, name) && state == Running {
+				return nil
+			} else {
+				time.Sleep(WaitDuration)
+			}
+		}
+	}
+	return nil
 }
 
 // NewBDC creates a sample device claim which can be used for
@@ -157,101 +187,107 @@ func NewBDC(bdcName string) *apis.BlockDeviceClaim {
 }
 
 // CreateConfigMap creates a config map
-func (c k8sClient) CreateConfigMap(configMap v1.ConfigMap) error {
+func (c K8sClient) CreateConfigMap(configMap v1.ConfigMap) error {
 	err := c.RunTimeClient.Create(context.Background(), &configMap)
 	return err
 }
 
 // DeleteConfigMap deletes the config map
-func (c k8sClient) DeleteConfigMap(configMap v1.ConfigMap) error {
+func (c K8sClient) DeleteConfigMap(configMap v1.ConfigMap) error {
 	err := c.RunTimeClient.Delete(context.Background(), &configMap)
 	return err
 }
 
 // CreateServiceAccount creates a service account
-func (c k8sClient) CreateServiceAccount(serviceAccount v1.ServiceAccount) error {
+func (c K8sClient) CreateServiceAccount(serviceAccount v1.ServiceAccount) error {
 	err := c.RunTimeClient.Create(context.Background(), &serviceAccount)
 	return err
 }
 
 // DeleteServiceAc[2050]:4589616count deletes the service account
-func (c k8sClient) DeleteServiceAccount(serviceAccount v1.ServiceAccount) error {
+func (c K8sClient) DeleteServiceAccount(serviceAccount v1.ServiceAccount) error {
 	err := c.RunTimeClient.Delete(context.Background(), &serviceAccount)
 	return err
 }
 
 // CreateClusterRole creates a cluster role
-func (c k8sClient) CreateClusterRole(clusterRole rbacv1beta1.ClusterRole) error {
+func (c K8sClient) CreateClusterRole(clusterRole rbacv1beta1.ClusterRole) error {
 	err := c.RunTimeClient.Create(context.Background(), &clusterRole)
 	return err
 }
 
 // DeleteClusterRole deletes the cluster role
-func (c k8sClient) DeleteClusterRole(clusterRole rbacv1beta1.ClusterRole) error {
+func (c K8sClient) DeleteClusterRole(clusterRole rbacv1beta1.ClusterRole) error {
 	err := c.RunTimeClient.Delete(context.Background(), &clusterRole)
 	return err
 }
 
 // CreateClusterRoleBinding creates a rolebinding
-func (c k8sClient) CreateClusterRoleBinding(clusterRoleBinding rbacv1beta1.ClusterRoleBinding) error {
+func (c K8sClient) CreateClusterRoleBinding(clusterRoleBinding rbacv1beta1.ClusterRoleBinding) error {
 	err := c.RunTimeClient.Create(context.Background(), &clusterRoleBinding)
 	return err
 }
 
 // DeleteClusterRoleBinding deletes the role binding
-func (c k8sClient) DeleteClusterRoleBinding(clusterrolebinding rbacv1beta1.ClusterRoleBinding) error {
+func (c K8sClient) DeleteClusterRoleBinding(clusterrolebinding rbacv1beta1.ClusterRoleBinding) error {
 	err := c.RunTimeClient.Delete(context.Background(), &clusterrolebinding)
 	return err
 }
 
 // CreateCustomResourceDefinition creates a CRD
-func (c k8sClient) CreateCustomResourceDefinition(customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition) error {
+func (c K8sClient) CreateCustomResourceDefinition(customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition) error {
 	_, err := c.APIextClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(&customResourceDefinition)
 	return err
 }
 
 // DeleteCustomResourceDefinition deletes the CRD
-func (c k8sClient) DeleteCustomResourceDefinition(customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition) error {
+func (c K8sClient) DeleteCustomResourceDefinition(customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition) error {
 	err := c.APIextClient.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(customResourceDefinition.Name, &metav1.DeleteOptions{})
 	return err
 }
 
 // CreateDaemonSet creates a Daemonset
-func (c k8sClient) CreateDaemonSet(daemonset v1beta1.DaemonSet) error {
-	daemonset.Namespace = namespace
+func (c K8sClient) CreateDaemonSet(daemonset appsv1.DaemonSet) error {
+	daemonset.Namespace = Namespace
 	err := c.RunTimeClient.Create(context.Background(), &daemonset)
 	return err
 }
 
 // DeleteDaemonSet deletes the Daemonset
-func (c k8sClient) DeleteDaemonSet(daemonset v1beta1.DaemonSet) error {
-	daemonset.Namespace = namespace
+func (c K8sClient) DeleteDaemonSet(daemonset appsv1.DaemonSet) error {
+	daemonset.Namespace = Namespace
 	err := c.RunTimeClient.Delete(context.Background(), &daemonset, client.PropagationPolicy(metav1.DeletePropagationForeground))
 	return err
 }
 
 // CreateDeployment creates a deployment
-func (c k8sClient) CreateDeployment(deployment appsv1.Deployment) error {
-	deployment.Namespace = namespace
+func (c K8sClient) CreateDeployment(deployment appsv1.Deployment) error {
+	deployment.Namespace = Namespace
 	err := c.RunTimeClient.Create(context.Background(), &deployment)
 	return err
 }
 
 // DeleteDeployment deletes a deployment
-func (c k8sClient) DeleteDeployment(deployment appsv1.Deployment) error {
-	deployment.Namespace = namespace
+func (c K8sClient) DeleteDeployment(deployment appsv1.Deployment) error {
+	deployment.Namespace = Namespace
 	err := c.RunTimeClient.Delete(context.Background(), &deployment)
 	return err
 }
 
 // CreateBlockDeviceClaim creates a BDC
-func (c k8sClient) CreateBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
+func (c K8sClient) CreateBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
 	err := c.RunTimeClient.Create(context.Background(), claim)
 	return err
 }
 
+// UpdateBlockDeviceClaim updates the BDC
+func (c K8sClient) UpdateBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
+	err := c.RunTimeClient.Update(context.Background(), claim)
+	return err
+}
+
 // DeleteBlockDeviceClaim deletes a BDC
-func (c k8sClient) DeleteBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
+func (c K8sClient) DeleteBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
 	err := c.RunTimeClient.Delete(context.Background(), claim)
 	return err
 }

@@ -16,11 +16,11 @@ limitations under the License.
 
 package k8s
 
-// CreateNDMYAML creates all the objects specified in the NDM operator YAML.
+/*// CreateNDMYAML creates all the objects specified in the NDM operator YAML.
 // Each resource object is generated from yaml file in ../yamls/ and parsed into
 // the required type. ConfigMap, ServiceAccount, ClusterRole, ClusterRoleBinding,
 // CustomResourceDefinition and DaemonSet are created
-func (c k8sClient) CreateNDMYAML() error {
+func (c K8sClient) CreateNDMYAML() error {
 	var err error
 
 	// creating NDM ConfigMap
@@ -54,13 +54,13 @@ func (c k8sClient) CreateNDMYAML() error {
 	}
 
 	// creating NDO Deployment
-	return c.CreateNDODeployment()
+	return c.CreateNDMOperatorDeployment()
 }
 
 // DeleteNDMYAML deletes all the objects specified in the NDM operator YAML.
 // ConfigMap, ServiceAccount, ClusterRole, ClusterRoleBinding,
 // CustomResourceDefinition and DaemonSet are deleted
-func (c k8sClient) DeleteNDMYAML() error {
+func (c K8sClient) DeleteNDMYAML() error {
 	var err error
 
 	// deleting NDM ConfigMap
@@ -94,11 +94,11 @@ func (c k8sClient) DeleteNDMYAML() error {
 	}
 
 	// deleting NDO Deployment
-	return c.DeleteNDODeployment()
+	return c.DeleteNDMOperatorDeployment()
 }
-
+*/
 // CreateNDMConfigMap creates the ConfigMap required for NDM
-func (c k8sClient) CreateNDMConfigMap() error {
+func (c K8sClient) CreateNDMConfigMap() error {
 	configmap, err := GetConfigMap()
 	if err != nil {
 		return err
@@ -107,7 +107,7 @@ func (c k8sClient) CreateNDMConfigMap() error {
 }
 
 // CreateNDMServiceAccount creates the ServiceAccount required for NDM
-func (c k8sClient) CreateNDMServiceAccount() error {
+func (c K8sClient) CreateNDMServiceAccount() error {
 	serviceaccount, err := GetServiceAccount()
 	if err != nil {
 		return err
@@ -116,7 +116,7 @@ func (c k8sClient) CreateNDMServiceAccount() error {
 }
 
 // CreateNDMClusterRole creates the ClusterRole required for NDM
-func (c k8sClient) CreateNDMClusterRole() error {
+func (c K8sClient) CreateNDMClusterRole() error {
 	clusterrole, err := GetClusterRole()
 	if err != nil {
 		return err
@@ -125,7 +125,7 @@ func (c k8sClient) CreateNDMClusterRole() error {
 }
 
 // CreateNDMClusterRoleBinding creates the role binding required by NDM
-func (c k8sClient) CreateNDMClusterRoleBinding() error {
+func (c K8sClient) CreateNDMClusterRoleBinding() error {
 	clusterrolebinding, err := GetClusterRoleBinding()
 	if err != nil {
 		return err
@@ -133,8 +133,26 @@ func (c k8sClient) CreateNDMClusterRoleBinding() error {
 	return c.CreateClusterRoleBinding(clusterrolebinding)
 }
 
+// CreateNDMCRDs creates the Disk, BlockDevice and BlockDeviceClaim CRDs
+func (c K8sClient) CreateNDMCRDs() error {
+	var err error
+	err = c.CreateNDMDiskCRD()
+	if err != nil {
+		return err
+	}
+	err = c.CreateNDMBlockDeviceCRD()
+	if err != nil {
+		return err
+	}
+	err = c.CreateNDMBlockDeviceClaimCRD()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // CreateNDMDiskCRD creates the CustomResourceDefinition for a Disk type
-func (c k8sClient) CreateNDMDiskCRD() error {
+func (c K8sClient) CreateNDMDiskCRD() error {
 	diskcrd, err := GetCustomResourceDefinition(DiskCRDYAML)
 	if err != nil {
 		return err
@@ -142,8 +160,8 @@ func (c k8sClient) CreateNDMDiskCRD() error {
 	return c.CreateCustomResourceDefinition(diskcrd)
 }
 
-// CreateNDMDeviceCRD creates the CustomResourceDefinition for a Device type
-func (c k8sClient) CreateNDMDeviceCRD() error {
+// CreateNDMBlockDeviceCRD creates the CustomResourceDefinition for a Device type
+func (c K8sClient) CreateNDMBlockDeviceCRD() error {
 	devicecrd, err := GetCustomResourceDefinition(BlockDeviceCRDYAML)
 	if err != nil {
 		return err
@@ -151,17 +169,17 @@ func (c k8sClient) CreateNDMDeviceCRD() error {
 	return c.CreateCustomResourceDefinition(devicecrd)
 }
 
-// CreateNDMDeviceRequestCRD creates the CustomResourceDefinition for a DeviceRequest type
-func (c k8sClient) CreateNDMDeviceRequestCRD() error {
-	deviceRequestcrd, err := GetCustomResourceDefinition(BlockDeviceClaimCRDYAML)
+// CreateNDMBlockDeviceClaimCRD creates the CustomResourceDefinition for a BlockDeviceClaim type
+func (c K8sClient) CreateNDMBlockDeviceClaimCRD() error {
+	deviceClaimcrd, err := GetCustomResourceDefinition(BlockDeviceClaimCRDYAML)
 	if err != nil {
 		return err
 	}
-	return c.CreateCustomResourceDefinition(deviceRequestcrd)
+	return c.CreateCustomResourceDefinition(deviceClaimcrd)
 }
 
 // CreateNDMDaemonSet creates the NDM Daemonset
-func (c k8sClient) CreateNDMDaemonSet() error {
+func (c K8sClient) CreateNDMDaemonSet() error {
 	daemonset, err := GetDaemonSet()
 	if err != nil {
 		return err
@@ -170,7 +188,7 @@ func (c k8sClient) CreateNDMDaemonSet() error {
 }
 
 // DeleteNDMConfigMap deletes the ConfigMap required for NDM
-func (c k8sClient) DeleteNDMConfigMap() error {
+func (c K8sClient) DeleteNDMConfigMap() error {
 	configmap, err := GetConfigMap()
 	if err != nil {
 		return err
@@ -179,7 +197,7 @@ func (c k8sClient) DeleteNDMConfigMap() error {
 }
 
 // DeleteNDMServiceAccount deletes the ServiceAccount required for NDM
-func (c k8sClient) DeleteNDMServiceAccount() error {
+func (c K8sClient) DeleteNDMServiceAccount() error {
 	serviceaccount, err := GetServiceAccount()
 	if err != nil {
 		return err
@@ -188,7 +206,7 @@ func (c k8sClient) DeleteNDMServiceAccount() error {
 }
 
 // DeleteNDMClusterRole deletes the ClusterRole required for NDM
-func (c k8sClient) DeleteNDMClusterRole() error {
+func (c K8sClient) DeleteNDMClusterRole() error {
 	clusterrole, err := GetClusterRole()
 	if err != nil {
 		return err
@@ -197,7 +215,7 @@ func (c k8sClient) DeleteNDMClusterRole() error {
 }
 
 // DeleteNDMClusterRoleBinding deletes the role binding required by NDM
-func (c k8sClient) DeleteNDMClusterRoleBinding() error {
+func (c K8sClient) DeleteNDMClusterRoleBinding() error {
 	clusterrolebinding, err := GetClusterRoleBinding()
 	if err != nil {
 		return err
@@ -205,8 +223,26 @@ func (c k8sClient) DeleteNDMClusterRoleBinding() error {
 	return c.DeleteClusterRoleBinding(clusterrolebinding)
 }
 
+// DeleteNDMCRDs deletes the disk, blockdevice and blockdevice claim CRDs
+func (c K8sClient) DeleteNDMCRDs() error {
+	var err error
+	err = c.DeleteNDMDiskCRD()
+	if err != nil {
+		return err
+	}
+	err = c.DeleteNDMBlockDeviceCRD()
+	if err != nil {
+		return err
+	}
+	err = c.DeleteNDMBlockDeviceClaimCRD()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // DeleteNDMDiskCRD deletes the CustomResourceDefinition for a Disk type
-func (c k8sClient) DeleteNDMDiskCRD() error {
+func (c K8sClient) DeleteNDMDiskCRD() error {
 	diskcrd, err := GetCustomResourceDefinition(DiskCRDYAML)
 	if err != nil {
 		return err
@@ -214,8 +250,8 @@ func (c k8sClient) DeleteNDMDiskCRD() error {
 	return c.DeleteCustomResourceDefinition(diskcrd)
 }
 
-// DeleteNDMDeviceCRD deletes the CustomResourceDefinition for a Device type
-func (c k8sClient) DeleteNDMDeviceCRD() error {
+// DeleteNDMBlockDeviceCRD deletes the CustomResourceDefinition for a Device type
+func (c K8sClient) DeleteNDMBlockDeviceCRD() error {
 	devicecrd, err := GetCustomResourceDefinition(BlockDeviceCRDYAML)
 	if err != nil {
 		return err
@@ -223,17 +259,17 @@ func (c k8sClient) DeleteNDMDeviceCRD() error {
 	return c.DeleteCustomResourceDefinition(devicecrd)
 }
 
-// DeleteNDMDeviceRequestCRD deletes the CustomResourceDefinition for a DeviceRequest type
-func (c k8sClient) DeleteNDMDeviceRequestCRD() error {
-	devicerequestcrd, err := GetCustomResourceDefinition(BlockDeviceClaimCRDYAML)
+// DeleteNDMBlockDeviceClaimCRD deletes the CustomResourceDefinition for a BlockDeviceClaim type
+func (c K8sClient) DeleteNDMBlockDeviceClaimCRD() error {
+	deviceClaimcrd, err := GetCustomResourceDefinition(BlockDeviceClaimCRDYAML)
 	if err != nil {
 		return err
 	}
-	return c.DeleteCustomResourceDefinition(devicerequestcrd)
+	return c.DeleteCustomResourceDefinition(deviceClaimcrd)
 }
 
 // DeleteNDMDaemonSet deletes the NDM Daemonset
-func (c k8sClient) DeleteNDMDaemonSet() error {
+func (c K8sClient) DeleteNDMDaemonSet() error {
 	daemonset, err := GetDaemonSet()
 	if err != nil {
 		return err
@@ -241,7 +277,8 @@ func (c k8sClient) DeleteNDMDaemonSet() error {
 	return c.DeleteDaemonSet(daemonset)
 }
 
-func (c k8sClient) CreateNDODeployment() error {
+// CreateNDMOperatorDeployment creates the NDM Operator
+func (c K8sClient) CreateNDMOperatorDeployment() error {
 	deployment, err := GetDeployment()
 	if err != nil {
 		return err
@@ -249,7 +286,8 @@ func (c k8sClient) CreateNDODeployment() error {
 	return c.CreateDeployment(deployment)
 }
 
-func (c k8sClient) DeleteNDODeployment() error {
+// DeleteNDMOperatorDeployment deletes the NDM operator
+func (c K8sClient) DeleteNDMOperatorDeployment() error {
 	deployment, err := GetDeployment()
 	if err != nil {
 		return err

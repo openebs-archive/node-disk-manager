@@ -21,7 +21,6 @@ import (
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
@@ -115,8 +114,8 @@ func GetCustomResourceDefinition(crdyaml NDMYaml) (apiextensionsv1beta1.CustomRe
 }
 
 // GetDaemonSet generates the NDM DaemonSet object from the yaml file
-func GetDaemonSet() (v1beta1.DaemonSet, error) {
-	var daemonSet v1beta1.DaemonSet
+func GetDaemonSet() (appsv1.DaemonSet, error) {
+	var daemonSet appsv1.DaemonSet
 	yamlstring, err := utils.GetYAMLString(string(DaemonSetYAML))
 	if err != nil {
 		return daemonSet, err
