@@ -53,6 +53,7 @@ before_script:
   - sudo chown -R $USER $HOME/.kube
 
 script:
+  - make shellcheck
   - make
   # Here sudo -E env "PATH=$PATH" make test is required for running tests with
   # sudo permissions since we are making use of scsi device mockdata in smartprobe_test
@@ -62,6 +63,5 @@ script:
   - make integration-test
 
 after_success:
-  - DIMAGE=openebs/node-disk-manager-$ARCH ./build/push;
-  - DIMAGE=openebs/node-disk-operator-$ARCH ./build/push;
+  - make push
   - bash <(curl -s https://codecov.io/bash)
