@@ -21,6 +21,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"time"
 
 	//"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -29,10 +30,16 @@ import (
 )
 
 const (
-	namespace = "default"
+	// Namespace is the default namespace
+	Namespace = "default"
+	// WaitDuration is the default wait duration
+	WaitDuration time.Duration = 5 * time.Second
+	// Running is the active/running status of pod
+	Running = "Running"
 )
 
-type k8sClient struct {
+// K8sClient is the client used for etcd operations
+type K8sClient struct {
 	ClientSet     *kubernetes.Clientset
 	APIextClient  *apiextensionsclient.Clientset
 	RunTimeClient client.Client
@@ -46,8 +53,8 @@ type k8sClient struct {
 // 2. Client from apiextensions which is used for CRUD operations on CRDs
 // 3. Runtime client from the controller-runtime which will be used for
 //    CRUD operations related to custom resources
-func GetClientSet() (k8sClient, error) {
-	clientSet := k8sClient{}
+func GetClientSet() (K8sClient, error) {
+	clientSet := K8sClient{}
 	kubeConfigPath, err := utils.GetConfigPath()
 	if err != nil {
 		return clientSet, err
@@ -69,7 +76,7 @@ func GetClientSet() (k8sClient, error) {
 	}
 
 	// controller-runtime client
-	mgr, err := manager.New(config, manager.Options{Namespace: namespace})
+	mgr, err := manager.New(config, manager.Options{Namespace: Namespace})
 	if err != nil {
 		return clientSet, err
 	}

@@ -20,12 +20,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
-	. "github.com/openebs/node-disk-manager/integration_tests/minikube"
 	"testing"
-)
-
-var (
-	minikube = NewMinikube()
 )
 
 func TestNDM(t *testing.T) {
@@ -33,25 +28,53 @@ func TestNDM(t *testing.T) {
 	RunSpecs(t, "Integration Test Suite")
 }
 
-// Initialize the minikube cluster
+// Initialize the suite
 var _ = BeforeSuite(func() {
-	var err error
-	Expect(minikube.IsUpAndRunning()).To(BeTrue())
-	err = minikube.WaitForMinikubeToBeReady()
-	Expect(err).ShouldNot(HaveOccurred())
+	// Create the client set
+	c, err := k8s.GetClientSet()
+	Expect(err).NotTo(HaveOccurred())
+
+	// Create service account and cluster roles required for NDM
+	err = c.CreateNDMServiceAccount()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.CreateNDMClusterRole()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.CreateNDMClusterRoleBinding()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.CreateNDMConfigMap()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.CreateNDMOperatorDeployment()
+	Expect(err).NotTo(HaveOccurred())
+
+	// wait for all changes to happen
+	k8s.WaitForStateChange()
+
 })
 
-var _ = Describe("Verify Kubernetes Cluster Setup", func() {
-	var err error
-	Context("Initially, we check minikube status", func() {
-		It("should be running", func() {
-			Expect(minikube.IsUpAndRunning()).To(BeTrue())
-		})
-	})
-	Context("We check for generated Kube Config", func() {
-		_, err = k8s.GetClientSet()
-		It("should be able to generate ClientSet", func() {
-			Expect(err).NotTo(HaveOccurred())
-		})
-	})
+// clean up all resources by NDM
+var _ = AfterSuite(func() {
+	c, err := k8s.GetClientSet()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.DeleteNDMClusterRoleBinding()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.DeleteNDMClusterRole()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.DeleteNDMServiceAccount()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.DeleteNDMCRDs()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.DeleteNDMConfigMap()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.DeleteNDMOperatorDeployment()
+	Expect(err).NotTo(HaveOccurred())
 })

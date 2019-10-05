@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 )
@@ -27,7 +28,6 @@ import (
 // Disk and system attributes corresponding to backing image and
 // the loop device
 const (
-	blockSize      = 4096
 	imageDirectory = "/tmp"
 	syspath        = "/sys/class/block"
 )
@@ -36,7 +36,7 @@ const (
 // testing.
 type Disk struct {
 	// Size in bytes
-	Size uint64
+	Size int64
 	// The backing image name
 	// eg: /tmp/fake123
 	imageName string
@@ -48,7 +48,7 @@ type Disk struct {
 // NewDisk creates a Disk struct, with a specified size. Also the
 // random disk image name is generated. The actual image is generated only when
 // we try to attach the disk
-func NewDisk(size uint64) Disk {
+func NewDisk(size int64) Disk {
 	disk := Disk{
 		Size:      size,
 		imageName: generateDiskImageName(),
@@ -61,11 +61,16 @@ func NewDisk(size uint64) Disk {
 // device and udev add event will also be triggered
 func (disk *Disk) createAndAttachDisk() error {
 	// no of blocks
-	count := disk.Size / blockSize
+	/*count := disk.Size / blockSize
 	createImageCommand := "dd if=/dev/zero of=" + disk.imageName + " bs=" + strconv.Itoa(blockSize) + " count=" + strconv.Itoa(int(count))
-	err := utils.RunCommand(createImageCommand)
+	err := utils.RunCommand(createImageCommand)*/
+	f, err := os.Create(disk.imageName)
 	if err != nil {
 		return fmt.Errorf("error creating disk image. Error : %v", err)
+	}
+	err = f.Truncate(disk.Size)
+	if err != nil {
+		return fmt.Errorf("error truncating disk image. Error : %v", err)
 	}
 
 	deviceName := getLoopDevName()
