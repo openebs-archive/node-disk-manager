@@ -59,7 +59,7 @@ before_script:
 
 script:
   - make shellcheck
-  - make
+  - sudo make
   # Here sudo -E env "PATH=$PATH" make test is required for running tests with
   # sudo permissions since we are making use of scsi device mockdata in smartprobe_test
   # which could be fetched for a SCSI device with sudo permissions only since to access
