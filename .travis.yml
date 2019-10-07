@@ -53,7 +53,7 @@ before_script:
   # Set KUBECONFIG environment variable
   - export KUBECONFIG=“$(kind get kubeconfig-path)”
   - echo $KUBECONFIG
-  - ln -s $HOME/.kube/config $KUBECONFIG
+  - ln -s $KUBECONFIG $HOME/.kube/config
   - kind get clusters
 
 script:
