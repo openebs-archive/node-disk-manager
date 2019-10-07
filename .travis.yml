@@ -6,9 +6,9 @@ go:
 
 env:
   global:
-   - ARCH=$(go env GOARCH)
-   - TAG="ci"
-   - CODECOV_TOKEN="d1e39bea-f800-45de-8266-3e9b85e2594a"
+    - ARCH=$(go env GOARCH)
+    - TAG="ci"
+    - CODECOV_TOKEN="d1e39bea-f800-45de-8266-3e9b85e2594a"
 
 sudo: required
 
@@ -23,34 +23,37 @@ install:
   - make bootstrap
   - sudo apt-get install --yes libudev-dev
   - if [ "$TRAVIS_BUILD_DIR" != "$GOPATH/src/github.com/openebs/node-disk-manager" ]; then
-      mkdir -p $GOPATH/src/github.com/openebs/;
-      mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/openebs;
-      cd $GOPATH/src/github.com/openebs/node-disk-manager;
+    mkdir -p $GOPATH/src/github.com/openebs/;
+    mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/openebs;
+    cd $GOPATH/src/github.com/openebs/node-disk-manager;
     fi
-  - curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.0.0/minikube-linux-amd64
-  - sudo chmod +x minikube
-  - sudo mv minikube /usr/local/bin/
+  # Download and install kubectl
+  - curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v1.12.0/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+  # Download and install kind using Go toolchain
+  - go get sigs.k8s.io/kind
+  # Download and install kind using cURL
+  - curl -Lo kind https://github.com/kubernetes-sigs/kind/releases/download/0.0.1/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
   # we need openSeaChest repo to build node-disk-manager
   - pushd .
   - cd ..
   # Hotfix-Makefile_fix is the Release-19.06 with certain fixes in Makefile
   - git clone --recursive --branch Release-19.06.02 https://github.com/openebs/openSeaChest.git
-  - cd openSeaChest/Make/gcc 
+  - cd openSeaChest/Make/gcc
   - make release
   - cd ../../
-  - sudo cp opensea-common/Make/gcc/lib/libopensea-common.a /usr/lib 
-  - sudo cp opensea-operations/Make/gcc/lib/libopensea-operations.a /usr/lib 
+  - sudo cp opensea-common/Make/gcc/lib/libopensea-common.a /usr/lib
+  - sudo cp opensea-operations/Make/gcc/lib/libopensea-operations.a /usr/lib
   - sudo cp opensea-transport/Make/gcc/lib/libopensea-transport.a /usr/lib
-  - popd 
+  - popd
 
 before_script:
-  - sudo minikube start --vm-driver=none
-  - sudo minikube update-context
-  # By default root is the owner of the .minikube directory. This is changed to $USER so that
-  # from the integration tests which run as a non-root user can access the files and connect
-  # to the minikube cluster
-  - sudo chown -R $USER $HOME/.minikube
-  - sudo chown -R $USER $HOME/.kube
+  - mkdir -p $HOME/.kube
+  # Create a new Kubernetes cluster using kind
+  - kind create cluster
+  # Set KUBECONFIG environment variable
+  - export KUBECONFIG=“$(kind get kubeconfig-path)”
+  - kind get clusters
+  - kubectl cluster-info
 
 script:
   - make shellcheck
