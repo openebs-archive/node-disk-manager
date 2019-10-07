@@ -52,6 +52,8 @@ before_script:
   - kind create cluster
   # Set KUBECONFIG environment variable
   - export KUBECONFIG=“$(kind get kubeconfig-path)”
+  - echo $KUBECONFIG
+  - ln -s $HOME/.kube/config $KUBECONFIG
   - kind get clusters
 
 script:
