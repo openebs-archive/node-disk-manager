@@ -197,5 +197,5 @@ license-check-go:
 
 .PHONY: push
 push: 
-	DIMAGE=openebs/node-disk-manager-$XC_ARCH ./build/push;
-	DIMAGE=openebs/node-disk-operator-$XC_ARCH ./build/push;
+	DIMAGE=openebs/node-disk-manager-${XC_ARCH} ./build/push;
+	DIMAGE=openebs/node-disk-operator-${XC_ARCH} ./build/push;
