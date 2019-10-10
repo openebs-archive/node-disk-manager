@@ -18,10 +18,10 @@ package v040_041
 
 import (
 	"context"
+	"github.com/openebs/node-disk-manager/pkg/alertlog"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"github.com/openebs/node-disk-manager/pkg/alertlog"
 )
 
 const (

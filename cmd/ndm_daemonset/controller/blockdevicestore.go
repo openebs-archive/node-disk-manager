@@ -20,12 +20,12 @@ import (
 	"context"
 
 	"github.com/golang/glog"
+	"github.com/openebs/node-disk-manager/pkg/alertlog"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"github.com/openebs/node-disk-manager/pkg/alertlog"
 )
 
 // CreateBlockDevice creates the BlockDevice resource in etcd
