@@ -17,7 +17,7 @@ limitations under the License.
 package probe
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/smart"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -47,7 +47,7 @@ var smartProbeRegister = func() {
 	// Get a controller object
 	ctrl := <-controller.ControllerBroadcastChannel
 	if ctrl == nil {
-		glog.Error("unable to configure", smartProbeName)
+		klog.Error("unable to configure", smartProbeName)
 		return
 	}
 	if ctrl.NDMConfig != nil {
@@ -90,14 +90,14 @@ func (sp *smartProbe) Start() {}
 // fillDiskDetails fills details in diskInfo struct using information it gets from probe
 func (sp *smartProbe) FillDiskDetails(d *controller.DiskInfo) {
 	if d.ProbeIdentifiers.SmartIdentifier == "" {
-		glog.Error("smartIdentifier is found empty, smart probe will not fill disk details.")
+		klog.Error("smartIdentifier is found empty, smart probe will not fill disk details.")
 
 		return
 	}
 	smartProbe := newSmartProbe(d.ProbeIdentifiers.SmartIdentifier)
 	deviceBasicSCSIInfo, err := smartProbe.SmartIdentifier.SCSIBasicDiskInfo()
 	if len(err) != 0 {
-		glog.Error(err)
+		klog.Error(err)
 	}
 
 	d.Compliance = deviceBasicSCSIInfo.Compliance

@@ -17,7 +17,7 @@ limitations under the License.
 package udevevent
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 )
@@ -41,7 +41,7 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 	diskInfo := make([]*controller.DiskInfo, 0)
 	uuid := device.GetUid()
 	action := device.GetAction()
-	glog.Info("processing new event for ", uuid, " action type ", action)
+	klog.Info("processing new event for ", uuid, " action type ", action)
 	deviceDetails := &controller.DiskInfo{}
 	deviceDetails.ProbeIdentifiers.Uuid = uuid
 	deviceDetails.ProbeIdentifiers.UdevIdentifier = device.GetSyspath()

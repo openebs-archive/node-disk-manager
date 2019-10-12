@@ -21,7 +21,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -38,7 +38,7 @@ type GlogWriter struct{}
 
 // Write implements the io.Writer interface.
 func (writer GlogWriter) Write(data []byte) (n int, err error) {
-	glog.Info(string(data))
+	klog.Info(string(data))
 	return len(data), nil
 }
 
@@ -47,15 +47,15 @@ func InitLogs() {
 	log.SetOutput(GlogWriter{})
 	log.SetFlags(0)
 	// The default glog flush interval is 30 seconds, which is frighteningly long.
-	go wait.Until(glog.Flush, *logFlushFreq, wait.NeverStop)
+	go wait.Until(klog.Flush, *logFlushFreq, wait.NeverStop)
 }
 
 // FlushLogs flushes logs immediately.
 func FlushLogs() {
-	glog.Flush()
+	klog.Flush()
 }
 
-// NewLogger creates a new log.Logger which sends logs to glog.Info.
+// NewLogger creates a new log.Logger which sends logs to klog.Info.
 func NewLogger(prefix string) *log.Logger {
 	return log.New(GlogWriter{}, prefix, 0)
 }

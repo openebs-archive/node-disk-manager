@@ -17,8 +17,9 @@ limitations under the License.
 package server
 
 import (
-	"github.com/golang/glog"
 	"net/http"
+
+	"k8s.io/klog"
 )
 
 // Server contains the options to start a simple metrics server along with
@@ -33,10 +34,10 @@ type Server struct {
 // Returns an error if there is no connection established.
 func (s *Server) Start() error {
 	http.Handle(s.MetricsPath, s.Handler)
-	glog.Info("Starting HTTP server at http://localhost" + s.ListenPort + s.MetricsPath)
+	klog.Info("Starting HTTP server at http://localhost" + s.ListenPort + s.MetricsPath)
 	err := http.ListenAndServe(s.ListenPort, nil)
 	if err != nil {
-		glog.Error("error starting http server :", err)
+		klog.Error("error starting http server :", err)
 		return err
 	}
 	return nil

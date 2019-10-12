@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/klog"
 )
 
@@ -23,8 +23,8 @@ func main() {
 		}
 	})
 
-	glog.Info("hello from glog!")
+	klog.Info("hello from glog!")
 	klog.Info("nice to meet you, I'm klog")
-	glog.Flush()
+	klog.Flush()
 	klog.Flush()
 }

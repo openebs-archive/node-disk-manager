@@ -17,7 +17,7 @@ limitations under the License.
 package probe
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -49,7 +49,7 @@ var mountProbeRegister = func() {
 	// Get a controller object
 	ctrl := <-controller.ControllerBroadcastChannel
 	if ctrl == nil {
-		glog.Error("unable to configure", mountProbeName)
+		klog.Error("unable to configure", mountProbeName)
 		return
 	}
 	if ctrl.NDMConfig != nil {
@@ -92,13 +92,13 @@ func (mp *mountProbe) Start() {}
 // FillDiskDetails fills details in diskInfo struct using information it gets from probe
 func (mp *mountProbe) FillDiskDetails(d *controller.DiskInfo) {
 	if d.ProbeIdentifiers.MountIdentifier == "" {
-		glog.Error("mountIdentifier is found empty, mount probe will not fetch mount information.")
+		klog.Error("mountIdentifier is found empty, mount probe will not fetch mount information.")
 		return
 	}
 	mountProbe := newMountProbe(d.ProbeIdentifiers.MountIdentifier)
 	basicMountInfo, err := mountProbe.MountIdentifier.DeviceBasicMountInfo()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return
 	}
 	// if mount point contains kubernetes.io/local-volume it means that the device is mounted

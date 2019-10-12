@@ -19,7 +19,7 @@ package controller
 import (
 	"context"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -35,13 +35,13 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 	blockDeviceCopy := blockDevice.DeepCopy()
 	err := c.Clientset.Create(context.TODO(), blockDeviceCopy)
 	if err == nil {
-		glog.Info("Created blockdevice object in etcd: ",
+		klog.Info("Created blockdevice object in etcd: ",
 			blockDeviceCopy.ObjectMeta.Name)
 		return
 	}
 
 	if !errors.IsAlreadyExists(err) {
-		glog.Error("Creation of blockdevice object failed: ", err)
+		klog.Error("Creation of blockdevice object failed: ", err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 	}
 
 	if !errors.IsConflict(err) {
-		glog.Error("Updating of BlockDevice Object failed: ", err)
+		klog.Error("Updating of BlockDevice Object failed: ", err)
 		return
 	}
 
@@ -68,7 +68,7 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 	if err == nil {
 		return
 	}
-	glog.Error("Update to blockdevice object failed: ", blockDevice.ObjectMeta.Name)
+	klog.Error("Update to blockdevice object failed: ", blockDevice.ObjectMeta.Name)
 }
 
 // UpdateBlockDevice update the BlockDevice resource in etcd
@@ -82,7 +82,7 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 			Namespace: oldBlockDevice.Namespace,
 			Name:      oldBlockDevice.Name}, oldBlockDevice)
 		if err != nil {
-			glog.Errorf("Unable to get blockdevice object:%v, err:%v", oldBlockDevice.ObjectMeta.Name, err)
+			klog.Errorf("Unable to get blockdevice object:%v, err:%v", oldBlockDevice.ObjectMeta.Name, err)
 			return err
 		}
 	}
@@ -92,10 +92,10 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 	blockDeviceCopy.Status.ClaimState = oldBlockDevice.Status.ClaimState
 	err = c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
-		glog.Error("Unable to update blockdevice object : ", err)
+		klog.Error("Unable to update blockdevice object : ", err)
 		return err
 	}
-	glog.Info("Updated blockdevice object : ", blockDeviceCopy.ObjectMeta.Name)
+	klog.Info("Updated blockdevice object : ", blockDeviceCopy.ObjectMeta.Name)
 	return nil
 }
 
@@ -106,10 +106,10 @@ func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 	blockDeviceCopy.Status.State = NDMInactive
 	err := c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
-		glog.Error("Unable to deactivate blockdevice: ", err)
+		klog.Error("Unable to deactivate blockdevice: ", err)
 		return
 	}
-	glog.Info("Deactivated blockdevice: ", blockDeviceCopy.ObjectMeta.Name)
+	klog.Info("Deactivated blockdevice: ", blockDeviceCopy.ObjectMeta.Name)
 }
 
 // GetBlockDevice get Disk resource from etcd
@@ -119,10 +119,10 @@ func (c *Controller) GetBlockDevice(name string) (*apis.BlockDevice, error) {
 		client.ObjectKey{Namespace: "", Name: name}, dvr)
 
 	if err != nil {
-		glog.Error("Unable to get blockdevice object : ", err)
+		klog.Error("Unable to get blockdevice object : ", err)
 		return nil, err
 	}
-	glog.Info("Got blockdevice object : ", name)
+	klog.Info("Got blockdevice object : ", name)
 	return dvr, nil
 }
 
@@ -137,10 +137,10 @@ func (c *Controller) DeleteBlockDevice(name string) {
 
 	err := c.Clientset.Delete(context.TODO(), blockDevice)
 	if err != nil {
-		glog.Error("Unable to delete blockdevice object : ", err)
+		klog.Error("Unable to delete blockdevice object : ", err)
 		return
 	}
-	glog.Info("Deleted blockdevice object : ", name)
+	klog.Info("Deleted blockdevice object : ", name)
 }
 
 // ListBlockDeviceResource queries the etcd for the devices for the host/node
@@ -181,7 +181,7 @@ func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
 	listDevices := append(devices, GetActiveSparseBlockDevicesUUID(c.NodeAttributes[HostNameKey])...)
 	blockDeviceList, err := c.ListBlockDeviceResource()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return
 	}
 	for _, item := range blockDeviceList.Items {
@@ -210,7 +210,7 @@ func (c *Controller) PushBlockDeviceResource(oldBlockDevice *apis.BlockDevice,
 func (c *Controller) MarkBlockDeviceStatusToUnknown() {
 	blockDeviceList, err := c.ListBlockDeviceResource()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return
 	}
 	for _, item := range blockDeviceList.Items {
@@ -218,7 +218,7 @@ func (c *Controller) MarkBlockDeviceStatusToUnknown() {
 		blockDeviceCopy.Status.State = NDMUnknown
 		err := c.Clientset.Update(context.TODO(), blockDeviceCopy)
 		if err == nil {
-			glog.Error("Status marked unknown for blockdevice object: ",
+			klog.Error("Status marked unknown for blockdevice object: ",
 				blockDeviceCopy.ObjectMeta.Name)
 		}
 	}
