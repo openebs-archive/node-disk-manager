@@ -17,7 +17,7 @@ limitations under the License.
 package probe
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 )
@@ -41,30 +41,30 @@ type ProbeEvent struct {
 func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 	diskList, err := pe.Controller.ListDiskResource()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		go pe.initOrErrorEvent()
 		return
 	}
 	for _, diskDetails := range msg.Devices {
-		glog.Info("Processing details for ", diskDetails.ProbeIdentifiers.Uuid)
+		klog.Info("Processing details for ", diskDetails.ProbeIdentifiers.Uuid)
 		pe.Controller.FillDiskDetails(diskDetails)
 		// if ApplyFilter returns true then we process the event further
 		if !pe.Controller.ApplyFilter(diskDetails) {
 			continue
 		}
-		glog.Info("Processed details for ", diskDetails.ProbeIdentifiers.Uuid)
+		klog.Info("Processed details for ", diskDetails.ProbeIdentifiers.Uuid)
 		oldDr := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
 		// if old DiskCR doesn't exist and parition is found, it is ignored since we don't need info
 		// of partition if disk as a whole is ignored
 		if oldDr == nil && len(diskDetails.PartitionData) != 0 {
-			glog.Info("Skipping partition of already excluded disk ", diskDetails.ProbeIdentifiers.Uuid)
+			klog.Info("Skipping partition of already excluded disk ", diskDetails.ProbeIdentifiers.Uuid)
 			continue
 		}
 		// if diskCR is already present, and udev event is generated for partition, append the partition info
 		// to the diskCR
 		if oldDr != nil && len(diskDetails.PartitionData) != 0 {
 			newDrCopy := oldDr.DeepCopy()
-			glog.Info("Appending partition data to ", diskDetails.ProbeIdentifiers.Uuid)
+			klog.Info("Appending partition data to ", diskDetails.ProbeIdentifiers.Uuid)
 			newDrCopy.Spec.PartitionDetails = append(newDrCopy.Spec.PartitionDetails, diskDetails.ToPartition()...)
 			pe.Controller.UpdateDisk(*newDrCopy, oldDr)
 		} else {
@@ -81,10 +81,10 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 			 */
 			deviceDetails := pe.Controller.NewDeviceInfoFromDiskInfo(diskDetails)
 			if deviceDetails != nil {
-				glog.Infof("DeviceDetails:%#v", deviceDetails)
+				klog.Infof("DeviceDetails:%#v", deviceDetails)
 				deviceList, err := pe.Controller.ListBlockDeviceResource()
 				if err != nil {
-					glog.Error(err)
+					klog.Error(err)
 					go pe.initOrErrorEvent()
 					return
 				}
@@ -95,7 +95,7 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 		/// update the list of DiskCRs
 		diskList, err = pe.Controller.ListDiskResource()
 		if err != nil {
-			glog.Error(err)
+			klog.Error(err)
 			go pe.initOrErrorEvent()
 			return
 		}
@@ -118,7 +118,7 @@ func (pe *ProbeEvent) deleteEvent(msg controller.EventMessage) {
 func (pe *ProbeEvent) deleteBlockDevice(msg controller.EventMessage) bool {
 	bdList, err := pe.Controller.ListBlockDeviceResource()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return false
 	}
 	ok := true
@@ -137,7 +137,7 @@ func (pe *ProbeEvent) deleteBlockDevice(msg controller.EventMessage) bool {
 func (pe *ProbeEvent) deleteDisk(msg controller.EventMessage) bool {
 	diskList, err := pe.Controller.ListDiskResource()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return false
 	}
 	ok := true
@@ -159,6 +159,6 @@ func (pe *ProbeEvent) initOrErrorEvent() {
 	defer udevProbe.free()
 	err := udevProbe.scan()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 	}
 }

@@ -19,7 +19,7 @@ package controller
 import (
 	"sort"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
@@ -80,7 +80,7 @@ func (c *Controller) AddNewProbe(probe *Probe) {
 	probes = append(probes, probe)
 	sort.Sort(sortableProbes(probes))
 	c.Probes = probes
-	glog.Info("configured ", probe.Name, " : state ", util.StateStatus(probe.State))
+	klog.Info("configured ", probe.Name, " : state ", util.StateStatus(probe.State))
 }
 
 // ListProbe returns list of active probe associated with controller object
@@ -104,6 +104,6 @@ func (c *Controller) FillDiskDetails(diskDetails *DiskInfo) {
 	probes := c.ListProbe()
 	for _, probe := range probes {
 		probe.FillDiskDetails(diskDetails)
-		glog.Info("details filled by ", probe.Name)
+		klog.Info("details filled by ", probe.Name)
 	}
 }

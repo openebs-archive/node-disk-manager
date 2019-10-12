@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // truthyValues maps a set of values which are considered as true
@@ -65,10 +65,10 @@ func CheckErr(err error, handleErr func(string)) {
 }
 
 // Fatal prints the message (if provided) and then exits. If V(2) or greater,
-// glog.Fatal is invoked for extended information.
+// klog.Fatal is invoked for extended information.
 func Fatal(msg string) {
-	if glog.V(2) {
-		glog.FatalDepth(2, msg)
+	if klog.V(2) {
+		klog.FatalDepth(2, msg)
 	}
 	if len(msg) > 0 {
 		// add newline if needed

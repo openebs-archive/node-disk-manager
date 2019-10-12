@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
@@ -39,7 +39,7 @@ var (
 var capacityProbeRegister = func() {
 	ctrl := <-controller.ControllerBroadcastChannel
 	if ctrl == nil {
-		glog.Error("unable to configure", capacityProbeName)
+		klog.Error("unable to configure", capacityProbeName)
 		return
 	}
 	if ctrl.NDMConfig != nil {
@@ -83,22 +83,22 @@ func (cp *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
 	sysPath := d.ProbeIdentifiers.UdevIdentifier
 	b, err := ioutil.ReadFile(sysPath + "/size")
 	if err != nil {
-		glog.Error("unable to parse the block size ", err)
+		klog.Error("unable to parse the block size ", err)
 		return
 	}
 	blockSize, err := strconv.ParseInt(strings.TrimSuffix(string(b), "\n"), 10, 64)
 	if err != nil {
-		glog.Error("unable to parse the block size", err)
+		klog.Error("unable to parse the block size", err)
 		return
 	}
 	b, err = ioutil.ReadFile(sysPath + "/queue/hw_sector_size")
 	if err != nil {
-		glog.Error("unable to read sector size", err)
+		klog.Error("unable to read sector size", err)
 		return
 	}
 	sectorSize, err := strconv.ParseInt(strings.TrimSuffix(string(b), "\n"), 10, 64)
 	if err != nil {
-		glog.Error("unable to parse the sector size", err)
+		klog.Error("unable to parse the sector size", err)
 		return
 	}
 	d.Capacity = uint64(blockSize * sectorSize)

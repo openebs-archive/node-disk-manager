@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 
 	"github.com/ghodss/yaml"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // ConfigFilePath contains configmap file path
@@ -55,7 +55,7 @@ func (c *Controller) SetNDMConfig() {
 	data, err := ioutil.ReadFile(ConfigFilePath)
 	if err != nil {
 		c.NDMConfig = nil
-		glog.Error("unable to set ndm config : ", err)
+		klog.Error("unable to set ndm config : ", err)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (c *Controller) SetNDMConfig() {
 	}
 	if err != nil {
 		c.NDMConfig = nil
-		glog.Error("unable to set ndm config : ", err)
+		klog.Error("unable to set ndm config : ", err)
 		return
 	}
 

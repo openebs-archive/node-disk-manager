@@ -17,7 +17,7 @@ limitations under the License.
 package filter
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 )
 
@@ -55,7 +55,7 @@ func (rf *registerFilter) register() {
 
 // Start starts registration of filters present in RegisteredFilters
 func Start(registeredFilters []func()) {
-	glog.Info("registering filters")
+	klog.Info("registering filters")
 	for _, filter := range registeredFilters {
 		filter()
 	}

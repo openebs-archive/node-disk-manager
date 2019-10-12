@@ -20,7 +20,7 @@ import (
 	"errors"
 	"syscall"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -107,17 +107,17 @@ func (m *monitor) process(fd int) error {
 func Monitor() {
 	monitor, err := newMonitor()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 	}
 	defer monitor.free()
 	fd, err := monitor.setup()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 	}
 	for {
 		err := monitor.process(fd)
 		if err != nil {
-			glog.Error(err)
+			klog.Error(err)
 		}
 	}
 }
