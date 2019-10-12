@@ -19,7 +19,7 @@ package command
 import (
 	goflag "flag"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -49,7 +49,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 
 // RunNodeDiskManager starts ndm process
 func RunNodeDiskManager(cmd *cobra.Command) error {
-	glog.Infof("Starting node disk manager ...")
+	klog.Infof("Starting node disk manager ...")
 
 	return nil
 }
