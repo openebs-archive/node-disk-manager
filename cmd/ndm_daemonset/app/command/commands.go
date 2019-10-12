@@ -19,7 +19,7 @@ package command
 import (
 	"flag"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/spf13/cobra"
 )
@@ -49,7 +49,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 		},
 	}
 
-	// add the glog flags
+	// add the klog flags
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 	//add flag for /metrics endpoint port and endpoint path
 	cmd.PersistentFlags().String("port", ":9090", "Port to launch HTTP server.")
@@ -70,7 +70,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 
 // RunNodeDiskManager starts ndm process
 func RunNodeDiskManager(cmd *cobra.Command) error {
-	glog.Infof("Starting node disk manager ...")
+	klog.Infof("Starting node disk manager ...")
 
 	return nil
 }
