@@ -19,7 +19,7 @@ package controller
 import (
 	"context"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,7 +31,7 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	drCopy := dr.DeepCopy()
 	err := c.Clientset.Create(context.TODO(), drCopy)
 	if err == nil {
-		glog.Info("Created disk object in etcd : ", drCopy.ObjectMeta.Name)
+		klog.Info("Created disk object in etcd : ", drCopy.ObjectMeta.Name)
 		return
 	}
 	/*
@@ -51,10 +51,10 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	 * update the resource version after updation is successful here, the update call
 	 * from that node will fail.
 	 */
-	glog.Info("disk status updated by other node, changing the ownership to this node : ", err)
+	klog.Info("disk status updated by other node, changing the ownership to this node : ", err)
 	err = c.UpdateDisk(dr, nil)
 	if err == nil {
-		glog.Info("updated disk object in etcd : ", dr.ObjectMeta.Name)
+		klog.Info("updated disk object in etcd : ", dr.ObjectMeta.Name)
 		return
 	}
 }
@@ -70,7 +70,7 @@ func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 			Namespace: oldDr.Namespace,
 			Name:      oldDr.Name}, oldDr)
 		if err != nil {
-			glog.Errorf("Unable to get disk object:%v, err:%v", oldDr.ObjectMeta.Name, err)
+			klog.Errorf("Unable to get disk object:%v, err:%v", oldDr.ObjectMeta.Name, err)
 			return err
 		}
 	}
@@ -78,10 +78,10 @@ func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 	drCopy.ObjectMeta.ResourceVersion = oldDr.ObjectMeta.ResourceVersion
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
-		glog.Errorf("Unable to update disk object:%v, err:%v", drCopy.ObjectMeta.Name, err)
+		klog.Errorf("Unable to update disk object:%v, err:%v", drCopy.ObjectMeta.Name, err)
 		return err
 	}
-	glog.Infof("Updated disk object::%v successfully", drCopy.ObjectMeta.Name)
+	klog.Infof("Updated disk object::%v successfully", drCopy.ObjectMeta.Name)
 	return nil
 }
 
@@ -91,10 +91,10 @@ func (c *Controller) DeactivateDisk(dr apis.Disk) {
 	drCopy.Status.State = NDMInactive
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
-		glog.Error("Unable to deactivate disk object : ", err)
+		klog.Error("Unable to deactivate disk object : ", err)
 		return
 	}
-	glog.Info("deactivate the disk object : ", drCopy.ObjectMeta.Name)
+	klog.Info("deactivate the disk object : ", drCopy.ObjectMeta.Name)
 }
 
 // GetDisk get Disk resource from etcd
@@ -104,10 +104,10 @@ func (c *Controller) GetDisk(name string) (*apis.Disk, error) {
 		client.ObjectKey{Namespace: "", Name: name}, dr)
 
 	if err != nil {
-		glog.Error("Unable to get disk object : ", err)
+		klog.Error("Unable to get disk object : ", err)
 		return nil, err
 	}
-	glog.Info("Got disk object : ", name)
+	klog.Info("Got disk object : ", name)
 	return dr, nil
 }
 
@@ -122,10 +122,10 @@ func (c *Controller) DeleteDisk(name string) {
 
 	err := c.Clientset.Delete(context.TODO(), dr)
 	if err != nil {
-		glog.Error("Unable to delete disk object : ", err)
+		klog.Error("Unable to delete disk object : ", err)
 		return
 	}
-	glog.Info("Deleted disk object : ", name)
+	klog.Info("Deleted disk object : ", name)
 }
 
 // ListDiskResource queries the etcd for the devices for the host/node
@@ -164,7 +164,7 @@ func (c *Controller) GetExistingDiskResource(listDr *apis.DiskList, uuid string)
 func (c *Controller) DeactivateStaleDiskResource(disks []string) {
 	listDR, err := c.ListDiskResource()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return
 	}
 	for _, item := range listDR.Items {
@@ -193,7 +193,7 @@ func (c *Controller) PushDiskResource(oldDr *apis.Disk, diskDetails *DiskInfo) {
 func (c *Controller) MarkDiskStatusToUnknown() {
 	listDR, err := c.ListDiskResource()
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return
 	}
 	for _, item := range listDR.Items {
@@ -201,7 +201,7 @@ func (c *Controller) MarkDiskStatusToUnknown() {
 		drCopy.Status.State = NDMUnknown
 		err := c.Clientset.Update(context.TODO(), drCopy)
 		if err == nil {
-			glog.Error("updated disk object : ", drCopy.ObjectMeta.Name)
+			klog.Error("updated disk object : ", drCopy.ObjectMeta.Name)
 		}
 	}
 }

@@ -17,7 +17,7 @@ limitations under the License.
 package filter
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"strings"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -87,7 +87,7 @@ func (odf *oSDiskExcludeFilter) Start() {
 	for _, mountPoint := range mountPoints {
 		mountPointUtil := mount.NewMountUtil(hostMountFilePath, "", mountPoint)
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
-			glog.Error(err)
+			klog.Error(err)
 		} else {
 			odf.excludeDevPath = devPath
 			return
@@ -100,13 +100,13 @@ func (odf *oSDiskExcludeFilter) Start() {
 	for _, mountPoint := range mountPoints {
 		mountPointUtil := mount.NewMountUtil(defaultMountFilePath, "", mountPoint)
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
-			glog.Error(err)
+			klog.Error(err)
 		} else {
 			odf.excludeDevPath = devPath
 			return
 		}
 	}
-	glog.Error("unable to apply os disk filter")
+	klog.Error("unable to apply os disk filter")
 }
 
 // Include contains nothing by default it returns false
@@ -127,6 +127,6 @@ func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
 		partitionRegex = "[0-9]*$"
 	}
 	regex := "^" + odf.excludeDevPath + partitionRegex
-	glog.Infof("applying os-fiter regex %s on %s", regex, d.Path)
+	klog.Infof("applying os-fiter regex %s on %s", regex, d.Path)
 	return !util.IsMatchRegex(regex, d.Path)
 }

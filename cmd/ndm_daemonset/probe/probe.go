@@ -17,7 +17,7 @@ limitations under the License.
 package probe
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 )
 
@@ -59,7 +59,7 @@ func (rp *registerProbe) register() {
 
 // Start starts registration of probes present in RegisteredProbes
 func Start(registeredProbes []func()) {
-	glog.Info("registering probes")
+	klog.Info("registering probes")
 	for _, probe := range registeredProbes {
 		probe()
 	}

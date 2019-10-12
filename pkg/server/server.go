@@ -19,7 +19,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -39,10 +39,10 @@ func init() {
 // Returns an error if there is no connection established.
 func StartHttpServer() error {
 	http.Handle(MetricsPath, MetricsMiddleware(promhttp.Handler()))
-	glog.Info("Starting HTTP server at http://localhost" + ListenPort + MetricsPath + " for metrics.")
+	klog.Info("Starting HTTP server at http://localhost" + ListenPort + MetricsPath + " for metrics.")
 	err := http.ListenAndServe(ListenPort, nil)
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return err
 	}
 	return nil

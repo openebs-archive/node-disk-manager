@@ -17,7 +17,7 @@ limitations under the License.
 package probe
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/seachest"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -47,7 +47,7 @@ var seachestProbeRegister = func() {
 	// Get a controller object
 	ctrl := <-controller.ControllerBroadcastChannel
 	if ctrl == nil {
-		glog.Error("unable to configure", seachestProbeName)
+		klog.Error("unable to configure", seachestProbeName)
 		return
 	}
 	if ctrl.NDMConfig != nil {
@@ -90,131 +90,131 @@ func (scp *seachestProbe) Start() {}
 // fillDiskDetails fills details in diskInfo struct using information it gets from probe
 func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 	if d.ProbeIdentifiers.SeachestIdentifier == "" {
-		glog.Error("seachestIdentifier is found empty, seachest probe will not fill disk details.")
+		klog.Error("seachestIdentifier is found empty, seachest probe will not fill disk details.")
 		return
 	}
 
 	seachestProbe := newSeachestProbe(d.ProbeIdentifiers.SeachestIdentifier)
 	driveInfo, err := seachestProbe.SeachestIdentifier.SeachestBasicDiskInfo()
 	if err != 0 {
-		glog.Error(err)
+		klog.Error(err)
 		return
 	}
 
 	if d.Path == "" {
 		d.Path = seachestProbe.SeachestIdentifier.GetPath(driveInfo)
-		glog.Infof("Path:%s filled by seachest.", d.Path)
+		klog.Infof("Path:%s filled by seachest.", d.Path)
 	}
 
 	if d.NodeAttributes[controller.HostNameKey] == "" {
 		d.NodeAttributes[controller.HostNameKey] = seachestProbe.SeachestIdentifier.GetHostName(driveInfo)
-		glog.Infof("Disk: %s NodeAttribute:%s filled by seachest.", d.Path, d.NodeAttributes[controller.HostNameKey])
+		klog.Infof("Disk: %s NodeAttribute:%s filled by seachest.", d.Path, d.NodeAttributes[controller.HostNameKey])
 	}
 
 	if d.Model == "" {
 		d.Model = seachestProbe.SeachestIdentifier.GetModelNumber(driveInfo)
-		glog.Infof("Disk: %s Model:%s filled by seachest.", d.Path, d.Model)
+		klog.Infof("Disk: %s Model:%s filled by seachest.", d.Path, d.Model)
 	}
 
 	if d.Uuid == "" {
 		d.Uuid = seachestProbe.SeachestIdentifier.GetUuid(driveInfo)
-		glog.Infof("Disk: %s Uuid:%s filled by seachest.", d.Path, d.Uuid)
+		klog.Infof("Disk: %s Uuid:%s filled by seachest.", d.Path, d.Uuid)
 	}
 
 	if d.Capacity == 0 {
 		d.Capacity = seachestProbe.SeachestIdentifier.GetCapacity(driveInfo)
-		glog.Infof("Disk: %s Capacity:%d filled by seachest.", d.Path, d.Capacity)
+		klog.Infof("Disk: %s Capacity:%d filled by seachest.", d.Path, d.Capacity)
 	}
 
 	if d.Serial == "" {
 		d.Serial = seachestProbe.SeachestIdentifier.GetSerialNumber(driveInfo)
-		glog.Infof("Disk: %s Serial:%s filled by seachest.", d.Path, d.Serial)
+		klog.Infof("Disk: %s Serial:%s filled by seachest.", d.Path, d.Serial)
 	}
 
 	if d.Vendor == "" {
 		d.Vendor = seachestProbe.SeachestIdentifier.GetVendorID(driveInfo)
-		glog.Infof("Disk: %s Vendor:%s filled by seachest.", d.Path, d.Vendor)
+		klog.Infof("Disk: %s Vendor:%s filled by seachest.", d.Path, d.Vendor)
 	}
 
 	if d.FirmwareRevision == "" {
 		d.FirmwareRevision = seachestProbe.SeachestIdentifier.GetFirmwareRevision(driveInfo)
-		glog.Infof("Disk: %s FirmwareRevision:%s filled by seachest.", d.Path, d.FirmwareRevision)
+		klog.Infof("Disk: %s FirmwareRevision:%s filled by seachest.", d.Path, d.FirmwareRevision)
 	}
 
 	if d.LogicalSectorSize == 0 {
 		d.LogicalSectorSize = seachestProbe.SeachestIdentifier.GetLogicalSectorSize(driveInfo)
-		glog.Infof("Disk: %s LogicalSectorSize:%d filled by seachest.", d.Path, d.LogicalSectorSize)
+		klog.Infof("Disk: %s LogicalSectorSize:%d filled by seachest.", d.Path, d.LogicalSectorSize)
 	}
 
 	if d.PhysicalSectorSize == 0 {
 		d.PhysicalSectorSize = seachestProbe.SeachestIdentifier.GetPhysicalSectorSize(driveInfo)
-		glog.Infof("Disk: %s PhysicalSectorSize:%d filled by seachest.", d.Path, d.PhysicalSectorSize)
+		klog.Infof("Disk: %s PhysicalSectorSize:%d filled by seachest.", d.Path, d.PhysicalSectorSize)
 	}
 
 	if d.RotationRate == 0 {
 		d.RotationRate = seachestProbe.SeachestIdentifier.GetRotationRate(driveInfo)
-		glog.Infof("Disk: %s RotationRate:%d filled by seachest.", d.Path, d.RotationRate)
+		klog.Infof("Disk: %s RotationRate:%d filled by seachest.", d.Path, d.RotationRate)
 	}
 
 	if d.DriveType == "" {
 		d.DriveType = seachestProbe.SeachestIdentifier.DriveType(driveInfo)
-		glog.Infof("Disk: %s DriveType:%s filled by seachest.", d.Path, d.DriveType)
+		klog.Infof("Disk: %s DriveType:%s filled by seachest.", d.Path, d.DriveType)
 	}
 
 	if d.TotalBytesRead == 0 {
 		d.TotalBytesRead = seachestProbe.SeachestIdentifier.GetTotalBytesRead(driveInfo)
-		glog.Infof("Disk: %s TotalBytesRead:%d filled by seachest.", d.Path, d.TotalBytesRead)
+		klog.Infof("Disk: %s TotalBytesRead:%d filled by seachest.", d.Path, d.TotalBytesRead)
 	}
 
 	if d.TotalBytesWritten == 0 {
 		d.TotalBytesWritten = seachestProbe.SeachestIdentifier.GetTotalBytesWritten(driveInfo)
-		glog.Infof("Disk: %s TotalBytesWritten:%d filled by seachest.", d.Path, d.TotalBytesWritten)
+		klog.Infof("Disk: %s TotalBytesWritten:%d filled by seachest.", d.Path, d.TotalBytesWritten)
 	}
 
 	if d.DeviceUtilizationRate == 0 {
 		d.DeviceUtilizationRate = seachestProbe.SeachestIdentifier.GetDeviceUtilizationRate(driveInfo)
-		glog.Infof("Disk: %s DeviceUtilizationRate:%f filled by seachest.", d.Path, d.DeviceUtilizationRate)
+		klog.Infof("Disk: %s DeviceUtilizationRate:%f filled by seachest.", d.Path, d.DeviceUtilizationRate)
 	}
 
 	if d.PercentEnduranceUsed == 0 {
 		d.PercentEnduranceUsed = seachestProbe.SeachestIdentifier.GetPercentEnduranceUsed(driveInfo)
-		glog.Infof("Disk: %s PercentEnduranceUsed:%f filled by seachest.", d.Path, d.PercentEnduranceUsed)
+		klog.Infof("Disk: %s PercentEnduranceUsed:%f filled by seachest.", d.Path, d.PercentEnduranceUsed)
 	}
 
 	d.TemperatureInfo.TemperatureDataValid = seachestProbe.
 		SeachestIdentifier.GetTemperatureDataValidStatus(driveInfo)
-	glog.Infof("Disk: %s TemperatureDataValid:%t filled by seachest.",
+	klog.Infof("Disk: %s TemperatureDataValid:%t filled by seachest.",
 		d.Path, d.TemperatureInfo.TemperatureDataValid)
 
 	if d.TemperatureInfo.TemperatureDataValid == true {
 		d.TemperatureInfo.CurrentTemperature = seachestProbe.
 			SeachestIdentifier.GetCurrentTemperature(driveInfo)
 
-		glog.Infof("Disk: %s CurrentTemperature:%d filled by seachest.",
+		klog.Infof("Disk: %s CurrentTemperature:%d filled by seachest.",
 			d.Path, d.TemperatureInfo.CurrentTemperature)
 
 		d.TemperatureInfo.HighestValid = seachestProbe.
 			SeachestIdentifier.GetHighestValid(driveInfo)
 
-		glog.Infof("Disk: %s HighestValid:%t filled by seachest.",
+		klog.Infof("Disk: %s HighestValid:%t filled by seachest.",
 			d.Path, d.TemperatureInfo.HighestValid)
 
 		d.TemperatureInfo.HighestTemperature = seachestProbe.
 			SeachestIdentifier.GetHighestTemperature(driveInfo)
 
-		glog.Infof("Disk: %s HighestTemperature:%d filled by seachest.",
+		klog.Infof("Disk: %s HighestTemperature:%d filled by seachest.",
 			d.Path, d.TemperatureInfo.HighestTemperature)
 
 		d.TemperatureInfo.LowestValid = seachestProbe.
 			SeachestIdentifier.GetLowestValid(driveInfo)
 
-		glog.Infof("Disk: %s LowestValid:%t filled by seachest.",
+		klog.Infof("Disk: %s LowestValid:%t filled by seachest.",
 			d.Path, d.TemperatureInfo.LowestValid)
 
 		d.TemperatureInfo.LowestTemperature = seachestProbe.
 			SeachestIdentifier.GetLowestTemperature(driveInfo)
 
-		glog.Infof("Disk: %s LowestTemperature:%d filled by seachest.",
+		klog.Infof("Disk: %s LowestTemperature:%d filled by seachest.",
 			d.Path, d.TemperatureInfo.LowestTemperature)
 	}
 }

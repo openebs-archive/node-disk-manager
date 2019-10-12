@@ -28,7 +28,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -244,12 +244,12 @@ func (c *Controller) WaitForDiskCRD() {
 	for {
 		_, err := c.ListDiskResource()
 		if err != nil {
-			glog.Errorf("Disk CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
+			klog.Errorf("Disk CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
 			time.Sleep(CRDRetryInterval)
 			c.newClientSet()
 			continue
 		}
-		glog.Info("Disk CRD is available")
+		klog.Info("Disk CRD is available")
 		break
 	}
 }
@@ -260,12 +260,12 @@ func (c *Controller) WaitForBlockDeviceCRD() {
 	for {
 		_, err := c.ListBlockDeviceResource()
 		if err != nil {
-			glog.Errorf("BlockDevice CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
+			klog.Errorf("BlockDevice CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
 			time.Sleep(CRDRetryInterval)
 			c.newClientSet()
 			continue
 		}
-		glog.Info("BlockDevice CRD is available")
+		klog.Info("BlockDevice CRD is available")
 		break
 	}
 }
@@ -276,7 +276,7 @@ func (c *Controller) Start() {
 	// set up signals so we handle the first shutdown signal gracefully
 	stopCh := signals.SetupSignalHandler()
 	if err := c.run(2, stopCh); err != nil {
-		glog.Fatalf("error running controller: %s", err.Error())
+		klog.Fatalf("error running controller: %s", err.Error())
 	}
 }
 
@@ -295,14 +295,14 @@ func (c *Controller) Broadcast() {
 
 // run waits until it gets any interrupt signals
 func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
-	glog.Info("started the controller")
+	klog.Info("started the controller")
 	<-stopCh
-	glog.Info("changing the state to unknown before shutting down.")
+	klog.Info("changing the state to unknown before shutting down.")
 	// Changing the state to unknown before shutting down. Similar as when one pod is
 	// running and you stopped kubelet it will make pod status unknown.
 	c.MarkDiskStatusToUnknown()
 	c.MarkBlockDeviceStatusToUnknown()
-	glog.Info("shutting down the controller")
+	klog.Info("shutting down the controller")
 	return nil
 }
 

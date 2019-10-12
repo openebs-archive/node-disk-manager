@@ -99,7 +99,7 @@
 		]
 	},
 	{
-		"project": "github.com/golang/glog",
+		"project": "k8s.io/klog",
 		"licenses": [
 			{
 				"type": "Apache License 2.0",

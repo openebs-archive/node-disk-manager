@@ -17,7 +17,7 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
@@ -63,7 +63,7 @@ func (c *Controller) AddNewFilter(filter *Filter) {
 	filters := c.Filters
 	filters = append(filters, filter)
 	c.Filters = filters
-	glog.Info("configured ", filter.Name, " : state ", util.StateStatus(filter.State))
+	klog.Info("configured ", filter.Name, " : state ", util.StateStatus(filter.State))
 }
 
 // ListFilter returns list of active filters associated with controller object
@@ -84,7 +84,7 @@ func (c *Controller) ListFilter() []*Filter {
 func (c *Controller) ApplyFilter(diskDetails *DiskInfo) bool {
 	for _, filter := range c.ListFilter() {
 		if !filter.ApplyFilter(diskDetails) {
-			glog.Info(diskDetails.Uuid, " ignored by ", filter.Name)
+			klog.Info(diskDetails.Uuid, " ignored by ", filter.Name)
 			return false
 		}
 	}
