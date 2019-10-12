@@ -17,23 +17,13 @@ limitations under the License.
 package command
 
 import (
-	"flag"
+	goflag "flag"
 
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
-
-// NodeDiskManagerOptions defines a type for the options of NDM
-type NodeDiskManagerOptions struct {
-	KubeConfig string
-}
-
-// AddKubeConfigFlag is used to add a config flag
-func AddKubeConfigFlag(cmd *cobra.Command, value *string) {
-	cmd.Flags().StringVarP(value, "kubeconfig", "", *value,
-		"Path to a kube config. Only required if out-of-cluster.")
-}
 
 // NewNodeDiskManager creates a new ndm.
 func NewNodeDiskManager() (*cobra.Command, error) {
@@ -49,21 +39,16 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 		},
 	}
 
-	// add the glog flags
-	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
-	//add flag for /metrics endpoint port and endpoint path
-	cmd.PersistentFlags().String("port", ":9090", "Port to launch HTTP server.")
-	cmd.PersistentFlags().String("metricspath", "/metrics", "Endpointpath to get metrics.")
+	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 
-	flag.CommandLine.Parse([]string{})
+	// add the glog flags
+	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+	goflag.CommandLine.Parse([]string{})
+
 	cmd.AddCommand(
 		NewCmdBlockDevice(), //Add new command on block device
 		NewCmdStart(),       //Add new command to start the ndm controller
 	)
-
-	// Define the flags allowed in this command & store each option
-	// provided as a flag, into Options
-	AddKubeConfigFlag(cmd, &options.KubeConfig)
 
 	return cmd, nil
 }
