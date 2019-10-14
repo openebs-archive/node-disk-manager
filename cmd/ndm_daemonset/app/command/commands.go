@@ -27,9 +27,6 @@ import (
 
 // NewNodeDiskManager creates a new ndm.
 func NewNodeDiskManager() (*cobra.Command, error) {
-	// Define the options for NDM
-	options := NodeDiskManagerOptions{}
-
 	// Create a new command
 	cmd := &cobra.Command{
 		Use:   "ndm",
@@ -40,9 +37,6 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	}
 
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
-
-	// add the glog flags
-	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 	goflag.CommandLine.Parse([]string{})
 
 	cmd.AddCommand(
