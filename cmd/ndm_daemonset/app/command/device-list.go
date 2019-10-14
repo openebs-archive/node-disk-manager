@@ -17,7 +17,6 @@ limitations under the License.
 package command
 
 import (
-	goflag "flag"
 	"fmt"
 	"html/template"
 	"os"
@@ -64,7 +63,6 @@ const defaultDeviceList = `
 
 // NewSubCmdListBlockDevice is to list block device is created
 func NewSubCmdListBlockDevice() *cobra.Command {
-	options := CmdStartOptions{}
 	getCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List block devices",
@@ -78,13 +76,6 @@ func NewSubCmdListBlockDevice() *cobra.Command {
 			}
 		},
 	}
-
-	// Bind & parse flags defined by external projects.
-	// e.g. This imports the golang/glog pkg flags into the cmd flagset
-	goflag.CommandLine.Parse([]string{})
-
-	getCmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "",
-		`kubeconfig needs to be specified if out of cluster`)
 
 	return getCmd
 }
