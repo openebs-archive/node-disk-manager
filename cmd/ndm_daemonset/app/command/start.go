@@ -59,7 +59,6 @@ func NewCmdStart() *cobra.Command {
 
 	// Bind & parse flags defined by external projects.
 	// e.g. This imports the golang/glog pkg flags into the cmd flagset
-	getCmd.Flags().AddGoFlagSet(goflag.CommandLine)
 	goflag.CommandLine.Parse([]string{})
 
 	getCmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "",
