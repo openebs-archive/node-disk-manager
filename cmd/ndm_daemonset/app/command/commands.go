@@ -37,7 +37,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	}
 
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
-	_ := goflag.CommandLine.Parse([]string{})
+	_ = goflag.CommandLine.Parse([]string{})
 
 	cmd.AddCommand(
 		NewCmdBlockDevice(), //Add new command on block device
