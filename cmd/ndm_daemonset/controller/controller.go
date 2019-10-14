@@ -20,17 +20,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	v1 "k8s.io/api/core/v1"
 	"os"
 	"sync"
 	"time"
 
+	v1 "k8s.io/api/core/v1"
+
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 )
@@ -108,9 +109,9 @@ type Controller struct {
 }
 
 // NewController returns a controller pointer for any error case it will return nil
-func NewController(kubeconfig string) (*Controller, error) {
+func NewController() (*Controller, error) {
 	controller := &Controller{}
-	cfg, err := getCfg(kubeconfig)
+	cfg, err := config.GetConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -150,24 +151,6 @@ func NewController(kubeconfig string) (*Controller, error) {
 	controller.WaitForDiskCRD()
 	controller.WaitForBlockDeviceCRD()
 	return controller, nil
-}
-
-// getCfg returns incluster or out cluster config using
-// incluster config or kubeconfig
-func getCfg(kubeconfig string) (*rest.Config, error) {
-	masterURL := ""
-	cfg, err := rest.InClusterConfig()
-	if err == nil {
-		return cfg, err
-	}
-	if kubeconfig == "" {
-		return nil, errors.New("kubeconfig is empty")
-	}
-	cfg, err = clientcmd.BuildConfigFromFlags(masterURL, kubeconfig)
-	if err != nil {
-		return nil, err
-	}
-	return cfg, err
 }
 
 // newClientSet set Clientset field in Controller struct
