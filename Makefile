@@ -35,9 +35,14 @@ export XC_ARCH
 ARCH:=${XC_OS}_${XC_ARCH}
 export ARCH
 
+ifeq (${BASE_DOCKER_IMAGEARM64}, )
+  BASE_DOCKER_IMAGEARM64 = "arm64v8/ubuntu:18.04"
+  export BASE_DOCKER_IMAGEARM64
+endif
+
 ifeq (${BASEIMAGE}, )
 ifeq ($(ARCH),linux_arm64)
-  BASEIMAGE:=arm64v8/ubuntu:18.04
+  BASEIMAGE:=${BASE_DOCKER_IMAGEARM64}
 else
   # The ubuntu:16.04 image is being used as base image.
   BASEIMAGE:=ubuntu:16.04
@@ -158,7 +163,7 @@ build.ndo:
 	@echo '--> Built binary.'
 	@echo
 
-.PHONY: build.ndo
+.PHONY: docker.ndo
 docker.ndo: build.ndo Dockerfile.ndo 
 	@echo "--> Building docker image for ndm-operator..."
 	@sudo docker build -t "$(DOCKER_IMAGE_NDO)" --build-arg ARCH=${ARCH} -f Dockerfile.ndo .
