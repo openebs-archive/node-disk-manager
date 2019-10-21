@@ -17,7 +17,6 @@ limitations under the License.
 package command
 
 import (
-	goflag "flag"
 	"fmt"
 	"html/template"
 	"os"
@@ -64,14 +63,13 @@ const defaultDeviceList = `
 
 // NewSubCmdListBlockDevice is to list block device is created
 func NewSubCmdListBlockDevice() *cobra.Command {
-	options := CmdStartOptions{}
 	getCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List block devices",
 		Long: `the set of block devices on the node
 		can be listed via 'ndm device list' command`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := deviceList(options.kubeconfig)
+			err := deviceList()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -79,20 +77,12 @@ func NewSubCmdListBlockDevice() *cobra.Command {
 		},
 	}
 
-	// Bind & parse flags defined by external projects.
-	// e.g. This imports the golang/glog pkg flags into the cmd flagset
-	getCmd.Flags().AddGoFlagSet(goflag.CommandLine)
-	goflag.CommandLine.Parse([]string{})
-
-	getCmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "",
-		`kubeconfig needs to be specified if out of cluster`)
-
 	return getCmd
 }
 
 // deviceList prints list of devices using defaultDeviceList template
-func deviceList(kubeconfig string) error {
-	ctrl, err := controller.NewController(kubeconfig)
+func deviceList() error {
+	ctrl, err := controller.NewController()
 	if err != nil {
 		return err
 	}

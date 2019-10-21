@@ -17,7 +17,6 @@ limitations under the License.
 package command
 
 import (
-	goflag "flag"
 	"fmt"
 	"os"
 
@@ -27,21 +26,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//CmdStartOptions options for start command
-type CmdStartOptions struct {
-	kubeconfig string
-}
-
 //NewCmdStart starts the ndm controller
 func NewCmdStart() *cobra.Command {
-	options := CmdStartOptions{}
 	//var target string
 	getCmd := &cobra.Command{
 		Use:   "start",
 		Short: "Node disk controller",
 		Long:  ` watches for ndm custom resources via "ndm start" command `,
 		Run: func(cmd *cobra.Command, args []string) {
-			ctrl, err := controller.NewController(options.kubeconfig)
+			ctrl, err := controller.NewController()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -57,12 +50,5 @@ func NewCmdStart() *cobra.Command {
 		},
 	}
 
-	// Bind & parse flags defined by external projects.
-	// e.g. This imports the golang/glog pkg flags into the cmd flagset
-	getCmd.Flags().AddGoFlagSet(goflag.CommandLine)
-	goflag.CommandLine.Parse([]string{})
-
-	getCmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "",
-		`kubeconfig needs to be specified if out of cluster`)
 	return getCmd
 }
