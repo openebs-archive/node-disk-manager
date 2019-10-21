@@ -210,6 +210,7 @@ clean: header
 	rm -rf bin
 	rm -rf ${GOPATH}/bin/${NODE_DISK_MANAGER}
 	rm -rf ${GOPATH}/bin/${NODE_DISK_OPERATOR}
+	rm -rf ${GOPATH}/bin/${NODE_DISK_EXPORTER}
 	rm -rf ${GOPATH}/pkg/*
 	@echo '--> Done cleaning.'
 	@echo
