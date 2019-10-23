@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The OpenEBS Author
+Copyright 2019 The OpenEBS Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,19 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server
+package main
 
 import (
-	"net/http"
-	"time"
-
-	"github.com/openebs/node-disk-manager/pkg/metrics"
+	"github.com/openebs/node-disk-manager/cmd/ndm-exporter/cmd"
+	"github.com/openebs/node-disk-manager/pkg/logs"
 )
 
-//MetricsMiddleware is middleware for prometheus
-func MetricsMiddleware(prometheusHandler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		metrics.Uptime.Set(time.Since(metrics.StartingTime).Seconds())
-		prometheusHandler.ServeHTTP(w, r)
-	})
+func main() {
+	// init logger
+	logs.InitLogs()
+	defer logs.FlushLogs()
+
+	cmd.Execute()
 }

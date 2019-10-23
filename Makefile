@@ -67,9 +67,17 @@ BUILD_PATH_NDO=manager
 # Name of the image for ndm operator
 DOCKER_IMAGE_NDO:=openebs/node-disk-operator-${XC_ARCH}:ci
 
+# Initialize the NDM Exporter variables
+# Specfiy the NDM Exporter binary name
+NODE_DISK_EXPORTER=exporter
+# Specify the sub path under ./cmd/ for NDM Exporter
+BUILD_PATH_EXPORTER=ndm-exporter
+# Name of the image for ndm exporter
+DOCKER_IMAGE_EXPORTER:=openebs/node-disk-exporter-${XC_ARCH}:ci
+
 # Compile binaries and build docker images
 .PHONY: build
-build: clean build.common docker.ndm docker.ndo
+build: clean build.common docker.ndm docker.ndo docker.exporter
 
 .PHONY: build.common
 .build.common: license-check-go version
@@ -140,6 +148,10 @@ Dockerfile.ndm: ./build/ndm-daemonset/Dockerfile.in
 Dockerfile.ndo: ./build/ndm-operator/Dockerfile.in
 	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
 
+.PHONY: Dockerfile.exporter
+Dockerfile.exporter: ./build/ndm-exporter/Dockerfile.in
+	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
+
 .PHONY: build.ndm
 build.ndm:
 	@echo '--> Building node-disk-manager binary...'
@@ -170,6 +182,21 @@ docker.ndo: build.ndo Dockerfile.ndo
 	@echo "--> Build docker image: $(DOCKER_IMAGE_NDO)"
 	@echo
 
+.PHONY: build.exporter
+build.exporter:
+	@echo '--> Building node-disk-exporter binary...'
+	@pwd
+	@CTLNAME=${NODE_DISK_EXPORTER} BUILDPATH=${BUILD_PATH_EXPORTER} sh -c "'$(PWD)/build/build.sh'"
+	@echo '--> Built binary.'
+	@echo
+
+.PHONY: docker.exporter
+docker.exporter: build.exporter Dockerfile.exporter
+	@echo "--> Building docker image for ndm-exporter..."
+	@sudo docker build -t "$(DOCKER_IMAGE_EXPORTER)" --build-arg ARCH=${ARCH} -f Dockerfile.exporter .
+	@echo "--> Build docker image: $(DOCKER_IMAGE_EXPORTER)"
+	@echo
+
 .PHONY: deps
 deps: header
 	@echo '--> Resolving dependencies...'
@@ -183,6 +210,7 @@ clean: header
 	rm -rf bin
 	rm -rf ${GOPATH}/bin/${NODE_DISK_MANAGER}
 	rm -rf ${GOPATH}/bin/${NODE_DISK_OPERATOR}
+	rm -rf ${GOPATH}/bin/${NODE_DISK_EXPORTER}
 	rm -rf ${GOPATH}/pkg/*
 	@echo '--> Done cleaning.'
 	@echo
@@ -204,3 +232,4 @@ license-check-go:
 push: 
 	DIMAGE=openebs/node-disk-manager-${XC_ARCH} ./build/push;
 	DIMAGE=openebs/node-disk-operator-${XC_ARCH} ./build/push;
+	DIMAGE=openebs/node-disk-exporter-${XC_ARCH} ./build/push;

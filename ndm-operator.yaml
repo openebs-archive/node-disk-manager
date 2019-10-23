@@ -231,3 +231,42 @@ spec:
               value: "node-disk-operator"
             - name: CLEANUP_JOB_IMAGE
               value: "quay.io/openebs/linux-utils:3.9"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ndm-cluster-exporter
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      name: ndm-cluster-exporter
+  template:
+    metadata:
+      labels:
+        name: ndm-cluster-exporter
+    spec:
+      serviceAccountName: openebs-ndm-operator
+      containers:
+        - name: ndm-cluster-exporter
+          image: openebs/node-disk-exporter-amd64:ci
+          command:
+            - /usr/local/bin/exporter
+          args:
+            - "start"
+            - "--mode=cluster"
+            - "--port=:9100"
+            - "--metrics=/metrics"
+          ports:
+            - containerPort: 9100
+              protocol: TCP
+              name: metrics
+          imagePullPolicy: Always
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+---
