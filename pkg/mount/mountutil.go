@@ -19,6 +19,7 @@ package mount
 import (
 	"bufio"
 	"fmt"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	"os"
 	"path/filepath"
 	"strings"
@@ -106,12 +107,18 @@ func getDiskDevPath(partition string) (string, error) {
 		return "", err
 	}
 	/*
-		link looks - /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
-		parent disk is present after block then partition of that disk
+			link looks - /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
+			parent disk is present after block then partition of that disk
+
+			for blockdevices that belong to the nvme subsystem, the symlink has a different format,
+		 	/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1. So we search for the nvme instance
+			instead of `block` using the regex. NVMe instance has the format of nvme[0-9].
 	*/
+	nvmeInstanceRegex := "nvme[0-9]+$"
 	parts := strings.Split(link, "/")
 	for i, part := range parts {
-		if part == "block" {
+		if part == "block" ||
+			util.IsMatchRegex(nvmeInstanceRegex, part) {
 			diskName = parts[i+1]
 			break
 		}
