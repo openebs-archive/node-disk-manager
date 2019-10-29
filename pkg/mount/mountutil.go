@@ -19,7 +19,6 @@ package mount
 import (
 	"bufio"
 	"fmt"
-	"github.com/openebs/node-disk-manager/pkg/util"
 	"os"
 	"path/filepath"
 	"strings"
@@ -106,7 +105,10 @@ func getDiskDevPath(partition string) (string, error) {
 		return "", err
 	}
 
-	parentDisk := getParentBlockDevice(link)
+	parentDisk, ok := getParentBlockDevice(link)
+	if !ok {
+		return "", fmt.Errorf("could not find parent device for %s", link)
+	}
 	return "/dev/" + parentDisk, nil
 }
 
@@ -116,21 +118,28 @@ func getDiskDevPath(partition string) (string, error) {
 // parent disk is present after block then partition of that disk
 //
 // for blockdevices that belong to the nvme subsystem, the symlink has a different format,
-// /sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1. So we search for the nvme instance
-// instead of `block` using the regex. NVMe instance has the format of nvme[0-9].
-func getParentBlockDevice(sysPath string) string {
-	var parentBlockDeviceName string
+// /sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1. So we search for the nvme subsystem
+// instead of `block`. The blockdevice will be available after the NVMe instance, nvme/instance/namespace.
+// The namespace will be the blockdevice.
+func getParentBlockDevice(sysPath string) (string, bool) {
 	blockSubsystem := "block"
-	nvmeInstanceRegex := "nvme[0-9]+$"
+	nvmeSubsystem := "nvme"
 	parts := strings.Split(sysPath, "/")
+
+	// checking in block subsystem
 	for i, part := range parts {
-		if part == blockSubsystem ||
-			util.IsMatchRegex(nvmeInstanceRegex, part) {
-			parentBlockDeviceName = parts[i+1]
-			break
+		if part == blockSubsystem {
+			return parts[i+1], true
 		}
 	}
-	return parentBlockDeviceName
+
+	// checking in nvme subsystem
+	for i, part := range parts {
+		if part == nvmeSubsystem {
+			return parts[i+2], true
+		}
+	}
+	return "", false
 }
 
 // getPartitionName gets the partition name from the mountpoint. Each line of a mounts file
