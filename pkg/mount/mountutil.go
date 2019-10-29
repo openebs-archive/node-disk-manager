@@ -100,30 +100,37 @@ func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, err
 //	returns syspath of that disk from which we can generate ndm given uuid of that disk.
 func getDiskDevPath(partition string) (string, error) {
 	// dev path be like /dev/sda4 we need to remove /dev/ from this string to get sys block path.
-	var diskName string
 	softlink := "/sys/class/block/" + partition
 	link, err := filepath.EvalSymlinks(softlink)
 	if err != nil {
 		return "", err
 	}
-	/*
-			link looks - /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
-			parent disk is present after block then partition of that disk
 
-			for blockdevices that belong to the nvme subsystem, the symlink has a different format,
-		 	/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1. So we search for the nvme instance
-			instead of `block` using the regex. NVMe instance has the format of nvme[0-9].
-	*/
+	parentDisk := getParentBlockDevice(link)
+	return "/dev/" + parentDisk, nil
+}
+
+// getParentBlockDevice returns the parent blockdevice of a given blockdevice by parsing the syspath
+//
+// syspath looks like - /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
+// parent disk is present after block then partition of that disk
+//
+// for blockdevices that belong to the nvme subsystem, the symlink has a different format,
+// /sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1. So we search for the nvme instance
+// instead of `block` using the regex. NVMe instance has the format of nvme[0-9].
+func getParentBlockDevice(sysPath string) string {
+	var parentBlockDeviceName string
+	blockSubsystem := "block"
 	nvmeInstanceRegex := "nvme[0-9]+$"
-	parts := strings.Split(link, "/")
+	parts := strings.Split(sysPath, "/")
 	for i, part := range parts {
-		if part == "block" ||
+		if part == blockSubsystem ||
 			util.IsMatchRegex(nvmeInstanceRegex, part) {
-			diskName = parts[i+1]
+			parentBlockDeviceName = parts[i+1]
 			break
 		}
 	}
-	return "/dev/" + diskName, nil
+	return parentBlockDeviceName
 }
 
 // getPartitionName gets the partition name from the mountpoint. Each line of a mounts file
