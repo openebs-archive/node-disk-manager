@@ -213,6 +213,16 @@ func TestGetParentBlockDevice(t *testing.T) {
 			expectedParentBlockDevice: "nvme0n1",
 			expectedOk:                true,
 		},
+		"getting parent of wrong disk": {
+			syspath:                   "/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0",
+			expectedParentBlockDevice: "",
+			expectedOk:                false,
+		},
+		"giving a wrong syspath": {
+			syspath:                   "/sys/devices/pci0000:00/0000:00:0e.0",
+			expectedParentBlockDevice: "",
+			expectedOk:                false,
+		},
 	}
 
 	for name, test := range tests {

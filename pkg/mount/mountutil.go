@@ -126,16 +126,21 @@ func getParentBlockDevice(sysPath string) (string, bool) {
 	nvmeSubsystem := "nvme"
 	parts := strings.Split(sysPath, "/")
 
-	// checking in block subsystem
+	// checking for block subsystem, return the next part after subsystem only
+	// if the length is greater. This check is to avoid an index out of range panic.
 	for i, part := range parts {
-		if part == blockSubsystem {
+		if part == blockSubsystem &&
+			len(parts)-1 >= i+1 {
 			return parts[i+1], true
 		}
 	}
 
-	// checking in nvme subsystem
+	// checking for nvme subsystem, return the 2nd item in hierarchy, which will be the
+	// nvme namespace. Length checking is to avoid index out of range in case of malformed
+	// links (extremely rare case)
 	for i, part := range parts {
-		if part == nvmeSubsystem {
+		if part == nvmeSubsystem &&
+			len(parts)-1 >= i+2 {
 			return parts[i+2], true
 		}
 	}
