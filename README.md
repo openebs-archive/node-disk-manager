@@ -11,7 +11,7 @@
 `node-disk-manager` aims to make it easy to manage the disks attached to the node. It treats disks as resources that need to be monitored and managed just like other resources like CPU, Memory and Network. It is a daemon which runs on each node, detects attached disks and loads them as Disk objects (custom resource) into Kubernetes. 
 
 While PVs are well suited for stateful workloads, the Disk objects are aimed towards helping hyper-converged Storage Operators by providing abilities like:
-- Easy to access inventory of Disks available across the Kubernetes Cluster.
+- Easy to access the inventory of Disks available across the Kubernetes Cluster.
 - Predict failures on the Disks, to help with taking preventive actions.
 - Allow for dynamically attaching/detaching Disks to a Storage Pod, without requiring a restart.
 
@@ -69,7 +69,7 @@ You can push to your custom registry and modify the ndm-operator.yaml file for y
 
 # Inspiration
 * Thanks to [Daniel](https://github.com/dswarbrick) for setting up the go-based [SMART](https://github.com/dswarbrick/smart) library.
-* Thanks to [Humble](https://github.com/humblec), [Jan](https://github.com/jsafrane) and other from the [Kubernetes Storage Community](https://github.com/kubernetes-incubator/external-storage/issues/736) for reviewing the approach and evaluating the usecase. 
+* Thanks to [Humble](https://github.com/humblec), [Jan](https://github.com/jsafrane) and other from the [Kubernetes Storage Community](https://github.com/kubernetes-incubator/external-storage/issues/736) for reviewing the approach and evaluating the use-case. 
 
 
 
