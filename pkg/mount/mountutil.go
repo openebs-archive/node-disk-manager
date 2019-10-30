@@ -99,24 +99,52 @@ func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, err
 //	returns syspath of that disk from which we can generate ndm given uuid of that disk.
 func getDiskDevPath(partition string) (string, error) {
 	// dev path be like /dev/sda4 we need to remove /dev/ from this string to get sys block path.
-	var diskName string
 	softlink := "/sys/class/block/" + partition
 	link, err := filepath.EvalSymlinks(softlink)
 	if err != nil {
 		return "", err
 	}
-	/*
-		link looks - /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
-		parent disk is present after block then partition of that disk
-	*/
-	parts := strings.Split(link, "/")
+
+	parentDisk, ok := getParentBlockDevice(link)
+	if !ok {
+		return "", fmt.Errorf("could not find parent device for %s", link)
+	}
+	return "/dev/" + parentDisk, nil
+}
+
+// getParentBlockDevice returns the parent blockdevice of a given blockdevice by parsing the syspath
+//
+// syspath looks like - /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
+// parent disk is present after block then partition of that disk
+//
+// for blockdevices that belong to the nvme subsystem, the symlink has a different format,
+// /sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1. So we search for the nvme subsystem
+// instead of `block`. The blockdevice will be available after the NVMe instance, nvme/instance/namespace.
+// The namespace will be the blockdevice.
+func getParentBlockDevice(sysPath string) (string, bool) {
+	blockSubsystem := "block"
+	nvmeSubsystem := "nvme"
+	parts := strings.Split(sysPath, "/")
+
+	// checking for block subsystem, return the next part after subsystem only
+	// if the length is greater. This check is to avoid an index out of range panic.
 	for i, part := range parts {
-		if part == "block" {
-			diskName = parts[i+1]
-			break
+		if part == blockSubsystem &&
+			len(parts)-1 >= i+1 {
+			return parts[i+1], true
 		}
 	}
-	return "/dev/" + diskName, nil
+
+	// checking for nvme subsystem, return the 2nd item in hierarchy, which will be the
+	// nvme namespace. Length checking is to avoid index out of range in case of malformed
+	// links (extremely rare case)
+	for i, part := range parts {
+		if part == nvmeSubsystem &&
+			len(parts)-1 >= i+2 {
+			return parts[i+2], true
+		}
+	}
+	return "", false
 }
 
 // getPartitionName gets the partition name from the mountpoint. Each line of a mounts file

@@ -186,3 +186,50 @@ func TestOsDiskPath(t *testing.T) {
 		})
 	}
 }
+
+func TestGetParentBlockDevice(t *testing.T) {
+	tests := map[string]struct {
+		syspath                   string
+		expectedParentBlockDevice string
+		expectedOk                bool
+	}{
+		"getting parent of a main blockdevice itself": {
+			syspath:                   "/sys/devices/pci0000:00/0000:00:0d.0/ata1/host0/target0:0:0/0:0:0:0/block/sda",
+			expectedParentBlockDevice: "sda",
+			expectedOk:                true,
+		},
+		"getting parent of a partition": {
+			syspath:                   "/sys/devices/pci0000:00/0000:00:0d.0/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1",
+			expectedParentBlockDevice: "sda",
+			expectedOk:                true,
+		},
+		"getting parent of main NVMe blockdevice": {
+			syspath:                   "/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1",
+			expectedParentBlockDevice: "nvme0n1",
+			expectedOk:                true,
+		},
+		"getting parent of partitioned NVMe blockdevice": {
+			syspath:                   "/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1",
+			expectedParentBlockDevice: "nvme0n1",
+			expectedOk:                true,
+		},
+		"getting parent of wrong disk": {
+			syspath:                   "/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0",
+			expectedParentBlockDevice: "",
+			expectedOk:                false,
+		},
+		"giving a wrong syspath": {
+			syspath:                   "/sys/devices/pci0000:00/0000:00:0e.0",
+			expectedParentBlockDevice: "",
+			expectedOk:                false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			parentBlockDevice, ok := getParentBlockDevice(test.syspath)
+			assert.Equal(t, test.expectedParentBlockDevice, parentBlockDevice)
+			assert.Equal(t, test.expectedOk, ok)
+		})
+	}
+}
