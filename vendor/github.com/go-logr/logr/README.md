@@ -32,5 +32,5 @@ Because verbosity is a numerical value, it's safe to assume that an app running
 with higher verbosity means more (and less important) logs will be generated.
 
 This is a BETA grade API.  I have implemented it for
-[glog](https://godoc.org/k8s.io/klog). Until there is a significant
+[glog](https://godoc.org/github.com/golang/glog). Until there is a significant
 2nd implementation, I don't really know how it will change.
