@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"github.com/openebs/node-disk-manager/pkg/alertlog"
 	"os"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/app/command"
@@ -25,8 +26,10 @@ import (
 
 func main() {
 	if err := run(); err != nil {
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
+	alertlog.Logger.Sync()
 	os.Exit(0)
 }
 

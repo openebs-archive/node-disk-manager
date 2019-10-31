@@ -40,6 +40,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+	"github.com/openebs/node-disk-manager/pkg/alertlog"
 )
 
 //ReconciliationInterval defines the triggering interval for reconciliation operation
@@ -67,6 +68,7 @@ func main() {
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
 		log.Error(err, "failed to get watch namespace")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 
@@ -74,6 +76,7 @@ func main() {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		log.Error(err, "")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 
@@ -84,6 +87,7 @@ func main() {
 	err = r.Set()
 	if err != nil {
 		log.Error(err, "")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 	defer r.Unset()
@@ -94,6 +98,7 @@ func main() {
 	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &reconInterval})
 	if err != nil {
 		log.Error(err, "")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 
@@ -102,12 +107,14 @@ func main() {
 	setupConfig, err := setup.NewInstallSetup(cfg)
 	if err != nil {
 		log.Error(err, "")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 
 	// install the components
 	if err = setupConfig.Install(); err != nil {
 		log.Error(err, "")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 
@@ -116,6 +123,7 @@ func main() {
 	// Setup Scheme for all resources
 	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
 		log.Error(err, "")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 
@@ -123,6 +131,7 @@ func main() {
 	k8sClient, err := client.New(cfg, client.Options{})
 	if err != nil {
 		log.Error(err, "")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 
@@ -130,12 +139,14 @@ func main() {
 	err = performUpgrade(k8sClient)
 	if err != nil {
 		log.Error(err, "Upgrade failed")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 
 	// Setup all Controllers
 	if err := controller.AddToManager(mgr); err != nil {
 		log.Error(err, "")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
 
@@ -144,8 +155,10 @@ func main() {
 	// Start the Cmd
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
 		log.Error(err, "manager exited non-zero")
+		alertlog.Logger.Sync()
 		os.Exit(1)
 	}
+	alertlog.Logger.Sync()
 }
 
 // performUpgrade performs the upgrade operations
