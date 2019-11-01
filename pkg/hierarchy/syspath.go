@@ -50,6 +50,8 @@ func (s deviceSysPath) getParent() (string, bool) {
 	// if the length is greater. This check is to avoid an index out of range panic.
 	for i, part := range parts {
 		if part == BlockSubSystem {
+			// check if the length is greater to avoid panic. Also need to make sure that
+			// the same device is not returned if the given device is a parent.
 			if len(parts)-1 >= i+1 && s.DeviceName != parts[i+1] {
 				ok = true
 				parentBlockDevice = parts[i+1]
@@ -63,6 +65,8 @@ func (s deviceSysPath) getParent() (string, bool) {
 	// links (extremely rare case)
 	for i, part := range parts {
 		if part == NVMeSubSystem {
+			// check if the length is greater to avoid panic. Also need to make sure that
+			// the same device is not returned if the given device is a parent.
 			if len(parts)-1 >= i+2 && s.DeviceName != parts[i+2] {
 				ok = true
 				parentBlockDevice = parts[i+2]
