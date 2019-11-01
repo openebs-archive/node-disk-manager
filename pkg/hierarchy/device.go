@@ -23,11 +23,14 @@ import (
 
 var sysFSDirectoryPath = "/sys/"
 
+// Device represents a blockdevice. This struct is used by hierachy pkg which is used to
+// get the necessary blockdevice hierarchy information
 type Device struct {
 	// Path of the blockdevice. eg: /dev/sda, /dev/dm-0
 	Path string
 }
 
+// DependentDevices represents all the dependent blockdevices of the given Device
 type DependentDevices struct {
 	// Parent is the parent device of the given blockdevice
 	Parent string
@@ -44,6 +47,7 @@ type DependentDevices struct {
 	Slaves []string
 }
 
+// GetDependents gets all the dependent devices for a given Device
 func (d *Device) GetDependents() (DependentDevices, error) {
 	dependents := DependentDevices{}
 	blockDeviceName := strings.Replace(d.Path, "/dev/", "", 1)

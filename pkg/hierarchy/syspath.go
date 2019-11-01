@@ -23,8 +23,10 @@ import (
 )
 
 const (
+	// BlockSubSystem is the key used to represent block subsystem in sysfs
 	BlockSubSystem = "block"
-	NVMeSubSystem  = "nvme"
+	// NVMeSubSystem is the key used to represent nvme subsystem in sysfs
+	NVMeSubSystem = "nvme"
 )
 
 // deviceSysPath has a device name and its syspath
