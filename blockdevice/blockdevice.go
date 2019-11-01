@@ -39,6 +39,22 @@ type BlockDevice struct {
 	// DeviceType is the type of the blockdevice. can be sparse/disk/partition etc
 	DeviceType string
 
+	// Parent is the parent device of this blockdevice, if it exists.
+	// It will always be a single device.
+	Parent string
+
+	// Partitions is the list of partitions(again blockdevices) for
+	// this blockdevice, if it exists.
+	Partitions []string
+
+	// Holders is the list of blockdevices that are held by this blockdevice.
+	// eg: sda1 can hold dm-0. Then the list of sda1 will contain dm-0.
+	Holders []string
+
+	// Slaves is the list of blockdevices to which this blockdevice is a slave.
+	// eg: dm-0 is a slave to sda1. Then the list of dm-0 will contain sda1
+	Slaves []string
+
 	// Status contains the state of the blockdevice
 	Status Status
 }
