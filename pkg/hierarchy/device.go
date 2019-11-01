@@ -87,17 +87,17 @@ func (d *Device) GetDependents() (DependentDevices, error) {
 	dependents.Parent = "/dev/" + dependents.Parent
 
 	// adding /dev prefix
-	for i, _ := range dependents.Partitions {
+	for i := range dependents.Partitions {
 		dependents.Partitions[i] = "/dev/" + dependents.Partitions[i]
 	}
 
 	// adding /dev prefix
-	for i, _ := range dependents.Slaves {
+	for i := range dependents.Slaves {
 		dependents.Slaves[i] = "/dev/" + dependents.Slaves[i]
 	}
 
 	// adding /dev prefix
-	for i, _ := range dependents.Holders {
+	for i := range dependents.Holders {
 		dependents.Holders[i] = "/dev/" + dependents.Holders[i]
 	}
 
