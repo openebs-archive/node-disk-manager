@@ -19,11 +19,11 @@ package probe
 import (
 	"errors"
 
-	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"k8s.io/klog"
 )
 
 const (
@@ -40,7 +40,7 @@ var (
 var udevProbeRegister = func() {
 	ctrl := <-controller.ControllerBroadcastChannel
 	if ctrl == nil {
-		glog.Error("unable to configure", udevProbeName)
+		klog.Error("unable to configure", udevProbeName)
 		return
 	}
 	if ctrl.NDMConfig != nil {
@@ -162,7 +162,7 @@ func (up *udevProbe) scan() error {
 func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	udevDevice, err := newUdevProbeForFillDiskDetails(d.ProbeIdentifiers.UdevIdentifier)
 	if err != nil {
-		glog.Errorf("%s : %s", d.ProbeIdentifiers.UdevIdentifier, err)
+		klog.Errorf("%s : %s", d.ProbeIdentifiers.UdevIdentifier, err)
 		return
 	}
 	udevDiskDetails := udevDevice.udevDevice.DiskInfoFromLibudev()
@@ -201,13 +201,13 @@ func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 // this function is blocking function better to use it in a routine.
 func (up *udevProbe) listen() {
 	if up.controller == nil {
-		glog.Error("unable to setup udev probe listener controller object is nil")
+		klog.Error("unable to setup udev probe listener controller object is nil")
 		return
 	}
 	probeEvent := ProbeEvent{
 		Controller: up.controller,
 	}
-	glog.Info("starting udev probe listener")
+	klog.Info("starting udev probe listener")
 	for {
 		msg := <-udevevent.UdevEventMessageChannel
 		switch msg.Action {

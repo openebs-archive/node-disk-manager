@@ -34,7 +34,7 @@ package seachest
 import "C"
 import (
 	"fmt"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"unsafe"
 )
 
@@ -80,7 +80,7 @@ func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, int) 
 
 	err := int(C.get_Device(str, &device))
 	if err != 0 {
-		glog.Errorf("Unable to get device info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
+		klog.Errorf("Unable to get device info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
 		return nil, err
 	}
 	// close the device, once all info is fetched
@@ -88,7 +88,7 @@ func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, int) 
 
 	err = int(C.get_SCSI_Drive_Information(&device, &Drive))
 	if err != 0 {
-		glog.Errorf("Unable to get derive info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
+		klog.Errorf("Unable to get derive info for device:%s with error:%s", I.DevPath, SeachestErrors(err))
 		return nil, err
 	}
 
@@ -99,7 +99,7 @@ func (I *Identifier) SeachestBasicDiskInfo() (*C.driveInformationSAS_SATA, int) 
 func closeDevice(device *C.tDevice, devPath string) {
 	err := int(C.close_Device(device))
 	if err != 0 {
-		glog.Errorf("unable to close device: %s with error: %s", devPath, SeachestErrors(err))
+		klog.Errorf("unable to close device: %s with error: %s", devPath, SeachestErrors(err))
 	}
 }
 

@@ -57,14 +57,14 @@ package smartusageexample
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/smart"
 )
 
 func main() {
 	deviceBasicSCSIInfo, err := smart.SCSIBasicDiskInfo("/dev/sda")
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 
 	fmt.Printf("Vendor :%s \n",deviceBasicSCSIInfo.Vendor)

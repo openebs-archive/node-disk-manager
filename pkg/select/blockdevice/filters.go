@@ -17,7 +17,7 @@ limitations under the License.
 package blockdevice
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
@@ -62,8 +62,8 @@ func (c *Config) ApplyFilters(bdList *apis.BlockDeviceList, filterKeys ...string
 	filteredList := bdList
 	for _, key := range filterKeys {
 		filteredList = filterFuncMap[key](filteredList, c.ClaimSpec)
-		glog.Info("Key : ", key)
-		glog.Info("Items:", filteredList.Items)
+		klog.Info("Key : ", key)
+		klog.Info("Items:", filteredList.Items)
 	}
 	return filteredList
 }

@@ -20,7 +20,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"fmt"
@@ -84,7 +84,7 @@ func GetSparseFileDir() string {
 
 	info, err := os.Stat(sparseFileDir)
 	if os.IsNotExist(err) || !info.Mode().IsDir() {
-		glog.Info("Specified directory doesnt exist:  ", sparseFileDir)
+		klog.Info("Specified directory doesnt exist:  ", sparseFileDir)
 		return ""
 	}
 
@@ -103,7 +103,7 @@ func GetSparseFileCount() int {
 
 	sparseFileCount, econv := strconv.Atoi(sparseFileCountStr)
 	if econv != nil {
-		glog.Info("Error converting sparse file count:  ", sparseFileCountStr)
+		klog.Info("Error converting sparse file count:  ", sparseFileCountStr)
 		return 0
 	}
 
@@ -116,19 +116,19 @@ func GetSparseFileSize() int64 {
 
 	sparseFileSizeStr := os.Getenv(EnvSparseFileSize)
 	if len(sparseFileSizeStr) < 1 {
-		glog.Info("No size was specified. Using default size: ", fmt.Sprint(SparseFileDefaultSize))
+		klog.Info("No size was specified. Using default size: ", fmt.Sprint(SparseFileDefaultSize))
 		return SparseFileDefaultSize
 	}
 
 	fileSize, econv := strconv.ParseFloat(sparseFileSizeStr, 64)
 	if econv != nil {
-		glog.Error("Error converting sparse file size:  ", econv)
+		klog.Error("Error converting sparse file size:  ", econv)
 		return 0
 	}
 	sparseFileSize := int64(fileSize)
 
 	if sparseFileSize < SparseFileMinSize {
-		glog.Info(fmt.Sprint(sparseFileSizeStr), " is less than minimum required. Setting the size to:  ", fmt.Sprint(SparseFileMinSize))
+		klog.Info(fmt.Sprint(sparseFileSizeStr), " is less than minimum required. Setting the size to:  ", fmt.Sprint(SparseFileMinSize))
 		return SparseFileMinSize
 	}
 
@@ -143,7 +143,7 @@ func (c *Controller) InitializeSparseFiles() {
 	sparseFileCount := GetSparseFileCount()
 
 	if len(sparseFileDir) < 1 || sparseFileSize < 1 || sparseFileCount < 1 {
-		glog.Info("No sparse file path/size provided. Skip creating sparse files.")
+		klog.Info("No sparse file path/size provided. Skip creating sparse files.")
 		return
 	}
 
@@ -151,7 +151,7 @@ func (c *Controller) InitializeSparseFiles() {
 		sparseFile := path.Join(sparseFileDir, fmt.Sprint(i)+"-"+SparseFileName)
 		err := CheckAndCreateSparseFile(sparseFile, sparseFileSize)
 		if err != nil {
-			glog.Info("Error creating sparse file: ", sparseFile, "Error: ", err)
+			klog.Info("Error creating sparse file: ", sparseFile, "Error: ", err)
 			continue
 		}
 		c.MarkSparseBlockDeviceStateActive(sparseFile, sparseFileSize)
@@ -164,11 +164,11 @@ func (c *Controller) InitializeSparseFiles() {
 func CheckAndCreateSparseFile(sparseFile string, sparseFileSize int64) error {
 	sparseFileInfo, err := util.SparseFileInfo(sparseFile)
 	if err != nil {
-		glog.Info("Check for existing file returned error: ", err)
-		glog.Info("Creating a new Sparse file: ", sparseFile)
+		klog.Info("Check for existing file returned error: ", err)
+		klog.Info("Creating a new Sparse file: ", sparseFile)
 		err = util.SparseFileCreate(sparseFile, sparseFileSize)
 	} else {
-		glog.Info("Sparse file already exists: ", sparseFileInfo.Name())
+		klog.Info("Sparse file already exists: ", sparseFileInfo.Name())
 	}
 	return err
 }
@@ -186,7 +186,7 @@ func GetActiveSparseBlockDevicesUUID(hostname string) []string {
 	sparseUuids := make([]string, 0)
 	files, err := ioutil.ReadDir(sparseFileLocation)
 	if err != nil {
-		glog.Error("Failed to read sparse file names : ", err)
+		klog.Error("Failed to read sparse file names : ", err)
 		return sparseUuids
 	}
 	for _, file := range files {
@@ -212,14 +212,14 @@ func (c *Controller) MarkSparseBlockDeviceStateActive(sparseFile string, sparseF
 
 	sparseFileInfo, err := util.SparseFileInfo(sparseFile)
 	if err != nil {
-		glog.Info("Error fetching the size of sparse file: ", err)
-		glog.Error("Failed to create a block device CR for sparse file: ", sparseFile)
+		klog.Info("Error fetching the size of sparse file: ", err)
+		klog.Error("Failed to create a block device CR for sparse file: ", sparseFile)
 		return
 	}
 
 	BlockDeviceDetails.Capacity = uint64(sparseFileInfo.Size())
 
 	//If a BlockDevice CR already exits, update it. If not create a new one.
-	glog.Info("Updating the BlockDevice CR for Sparse file: ", BlockDeviceDetails.UUID)
+	klog.Info("Updating the BlockDevice CR for Sparse file: ", BlockDeviceDetails.UUID)
 	c.CreateBlockDevice(BlockDeviceDetails.ToDevice())
 }
