@@ -52,6 +52,8 @@ type BlockDevice struct {
 	Holders []string
 
 	// Slaves is the list of blockdevices to which this blockdevice is a slave.
+	// Slaves are represented in SysFS under the block device layer,
+	// so they are dependent on the device
 	// eg: dm-0 is a slave to sda1. Then the list of dm-0 will contain sda1
 	Slaves []string
 
