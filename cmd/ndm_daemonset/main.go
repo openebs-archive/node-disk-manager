@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"k8s.io/klog"
 	"os"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/app/command"
@@ -32,6 +33,9 @@ func main() {
 
 // Run node-disk-manager
 func run() error {
+	// initialize the global klog flags. This need to be done explicitly as init() method
+	// is no longer used to register the flags
+	klog.InitFlags(nil)
 	// Init logging
 	ndmlogger.InitLogs()
 	defer ndmlogger.FlushLogs()
