@@ -16,11 +16,6 @@ limitations under the License.
 
 package hierarchy
 
-import (
-	"path/filepath"
-	"strings"
-)
-
 var sysFSDirectoryPath = "/sys/"
 
 // Device represents a blockdevice. This struct is used by hierachy pkg which is used to
@@ -50,17 +45,11 @@ type DependentDevices struct {
 // GetDependents gets all the dependent devices for a given Device
 func (d *Device) GetDependents() (DependentDevices, error) {
 	dependents := DependentDevices{}
-	blockDeviceName := strings.Replace(d.Path, "/dev/", "", 1)
 
-	blockDeviceSymLink := sysFSDirectoryPath + "class/block/" + blockDeviceName
-
-	sysPath, err := filepath.EvalSymlinks(blockDeviceSymLink)
+	// get the syspath of the blockdevice
+	blockDeviceSysPath, err := getDeviceSysPath(d.Path)
 	if err != nil {
 		return dependents, err
-	}
-	blockDeviceSysPath := deviceSysPath{
-		SysPath:    sysPath,
-		DeviceName: blockDeviceName,
 	}
 
 	// parent device
@@ -86,20 +75,19 @@ func (d *Device) GetDependents() (DependentDevices, error) {
 	// adding /dev prefix
 	dependents.Parent = "/dev/" + dependents.Parent
 
-	// adding /dev prefix
-	for i := range dependents.Partitions {
-		dependents.Partitions[i] = "/dev/" + dependents.Partitions[i]
-	}
-
-	// adding /dev prefix
-	for i := range dependents.Slaves {
-		dependents.Slaves[i] = "/dev/" + dependents.Slaves[i]
-	}
-
-	// adding /dev prefix
-	for i := range dependents.Holders {
-		dependents.Holders[i] = "/dev/" + dependents.Holders[i]
-	}
+	// adding /devprefix to partition, slaves and holders
+	dependents.Partitions = addDevPrefix(dependents.Partitions)
+	dependents.Holders = addDevPrefix(dependents.Holders)
+	dependents.Slaves = addDevPrefix(dependents.Slaves)
 
 	return dependents, nil
+}
+
+// addDevPrefix adds the /dev prefix to all the device names
+func addDevPrefix(paths []string) []string {
+	result := make([]string, 0)
+	for i := range paths {
+		result = append(result, "/dev/"+paths[i])
+	}
+	return result
 }
