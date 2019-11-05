@@ -1,3 +1,11 @@
+v0.4.2 / 2019-09-09
+=======================
+
+  * add service account to cleanup job
+  * support cancelling ongoing cleanup jobs
+  * add filter to claim blockdevices based on nodename
+  * fix os-disk filter to exclude empty disk paths
+
 v0.4.1 / 2019-07-31
 =======================
 
