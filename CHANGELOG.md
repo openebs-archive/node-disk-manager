@@ -1,4 +1,13 @@
+v0.3.0 / 2019-02-22
+=======================
 
+  * enable core dump for NDM
+  * add seachest probe to get additional disk details for physical disks
+  * added partition and filesystem information
+  * add support for unmanaged disks
+  * fix crash issue when NDM is run in unprivileged mode. Fallback to
+    limited feature set instead of crashing
+  * added integration tests for path-filter
 
 v0.2.0 / 2018-10-25
 =======================
