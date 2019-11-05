@@ -1,3 +1,10 @@
+v0.4.3 / 2019-19-14
+=======================
+
+  * add support for building NDM on multiple platforms/architectures
+  * support for arm64
+  * refactored integration tests to remove dependency on minikube
+
 v0.4.2 / 2019-09-09
 =======================
 
