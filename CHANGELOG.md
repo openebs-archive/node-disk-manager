@@ -1,3 +1,8 @@
+v0.3.2 / 2019-03-01
+=======================
+
+  * support for sparse file size given in exponential format 
+
 v0.3.1 / 2019-02-26
 =======================
 
