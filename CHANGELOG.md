@@ -1,9 +1,21 @@
+v0.4.1 / 2019-07-31
+=======================
+
+  * fix seachest holding on to open FDs
+  * use controller-runtime signals for signal handling
+  * automated installation of NDM CRDs from NDM operator
+  * handle CRD upgrade in NDM operator
+  * add extra check before removing finalizer on blockdeviceclaims
+  * cleaned the NDM operator logs
+  * change hostname to nodename and added support for nodename in blockdevice
+
 v0.4.0 / 2019-06-21
 =======================
 
   * introduce blockdevice resource for managing all blockdevices on the system
   * introduce blockdeviceclaim resource for claiming and unclaiming 
     blockdevices
+  * introduce NDM operator for managing blockdeviceclaim
   * add scrub job to clean the blockdevice once it is unclaimed
   * add probe to get mount information of blockdevices
   * add integration test for disk attach, dynamic disk attach and disk
