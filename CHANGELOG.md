@@ -1,3 +1,8 @@
+v0.3.3 / 2019-03-26
+=======================
+
+  * added GOTRACEBACK to print stack trace 
+
 v0.3.2 / 2019-03-01
 =======================
 
@@ -6,7 +11,7 @@ v0.3.2 / 2019-03-01
 v0.3.1 / 2019-02-26
 =======================
 
-  * Fix NDM restart when disk is having less than 3 partitions. 
+  * fix NDM restart when disk is having less than 3 partitions. 
 
 v0.3.0 / 2019-02-22
 =======================
