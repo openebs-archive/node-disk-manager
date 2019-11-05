@@ -1,3 +1,8 @@
+v0.3.1 / 2019-02-26
+=======================
+
+  * Fix NDM restart when disk is having less than 3 partitions. 
+
 v0.3.0 / 2019-02-22
 =======================
 
