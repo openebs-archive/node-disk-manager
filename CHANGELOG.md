@@ -1,4 +1,12 @@
-v0.4.3 / 2019-19-14
+v0.4.4-RC1 / 2019-11-05
+=======================
+
+  * add prometheus exporter for fetching metrics from etcd
+  * replace glog with klog
+  * fix parent disk detection for nvme devices
+  * refactor NDM cli to remove unused flags
+
+v0.4.3 / 2019-10-14
 =======================
 
   * add support for building NDM on multiple platforms/architectures
