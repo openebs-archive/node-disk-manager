@@ -1,3 +1,8 @@
+v0.3.4 / 2019-04-09
+=======================
+
+  * fix NDM crash when udev probe failed to probe the disks. 
+
 v0.3.3 / 2019-03-26
 =======================
 
