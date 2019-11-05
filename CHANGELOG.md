@@ -1,3 +1,8 @@
+v0.3.5 / 2019-04-25
+=======================
+
+  * add support for NDM to run on device with SELinux 
+
 v0.3.4 / 2019-04-09
 =======================
 
