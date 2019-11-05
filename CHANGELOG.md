@@ -1,3 +1,14 @@
+v0.4.0 / 2019-06-21
+=======================
+
+  * introduce blockdevice resource for managing all blockdevices on the system
+  * introduce blockdeviceclaim resource for claiming and unclaiming 
+    blockdevices
+  * add scrub job to clean the blockdevice once it is unclaimed
+  * add probe to get mount information of blockdevices
+  * add integration test for disk attach, dynamic disk attach and disk
+    detach operations
+
 v0.3.5 / 2019-04-25
 =======================
 
