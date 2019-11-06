@@ -121,6 +121,7 @@ func (device *UdevDevice) GetUid() string {
 	localDiskModels := make([]string, 0)
 	localDiskModels = append(localDiskModels, "EphemeralDisk")
 	localDiskModels = append(localDiskModels, "Virtual_disk")
+	localDiskModels = append(localDiskModels, "QEMU_HARDDISK")
 	if len(idtype) == 0 || util.Contains(localDiskModels, model) {
 		// as hostNetwork is true, os.Hostname will give you the node's Hostname
 		host, _ := os.Hostname()
