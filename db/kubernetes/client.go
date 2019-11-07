@@ -18,13 +18,16 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"strings"
 )
 
 // Client is the wrapper over the k8s client that will be used by
@@ -34,26 +37,49 @@ type Client struct {
 	client client.Client
 }
 
-// New creates a new client object using the given config
-func New(config *rest.Config) (Client, error) {
-	c := Client{
-		cfg: config,
+// New creates a new client object using the default config
+func New() (Client, error) {
+
+	c := Client{}
+
+	// get the kube cfg
+	cfg, err := config.GetConfig()
+	if err != nil {
+		klog.Errorf("error getting cfg. %v", err)
+		return c, err
 	}
-	err := c.Set()
+
+	c.cfg = cfg
+
+	klog.V(2).Info("Client cfg created.")
+
+	err = c.InitClient()
 	if err != nil {
 		return c, err
 	}
 	return c, nil
 }
 
-// Set sets the client using the config
-func (cl *Client) Set() error {
+/*
+3 functions should be there.
+1. Create a new client, with no args. New() Clinet, err
+2. Initialize the client from available config. InitClient() err
+3. sets the given client without using config. SetClient(Client) err
+*/
+
+// InitClient sets the client using the config
+func (cl *Client) InitClient() error {
 	c, err := client.New(cl.cfg, client.Options{})
 	if err != nil {
 		return err
 	}
 	cl.client = c
 	return nil
+}
+
+// SetClient sets the given client
+func (cl *Client) SetClient(client2 client.Client) {
+	cl.client = client2
 }
 
 // RegisterAPI registers the API scheme in the client using the manager.
@@ -73,7 +99,7 @@ func (cl *Client) RegisterAPI() error {
 
 // ListBlockDevice lists the block device from etcd based on
 // the filters used
-func (cl *Client) ListBlockDevice(filters ...string) ([]v1alpha1.BlockDevice, error) {
+func (cl *Client) ListBlockDevice(filters ...string) ([]blockdevice.BlockDevice, error) {
 	bdList := &v1alpha1.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
@@ -83,8 +109,9 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]v1alpha1.BlockDevice, er
 
 	listOptions := &client.ListOptions{}
 
-	for _, filter := range filters {
-		listOptions.SetLabelSelector(filter)
+	// apply the filter only if any filters are provided
+	if len(filters) != 0 {
+		_ = listOptions.SetLabelSelector(strings.Join(filters, ","))
 	}
 
 	err := cl.client.List(context.TODO(), listOptions, bdList)
@@ -92,5 +119,11 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]v1alpha1.BlockDevice, er
 		klog.Error("error in listing BDs. ", err)
 		return nil, err
 	}
-	return bdList.Items, nil
+
+	blockDeviceList := make([]blockdevice.BlockDevice, 0)
+	err = convert_BlockDeviceAPIList_To_BlockDeviceList(bdList, &blockDeviceList)
+	if err != nil {
+		return blockDeviceList, err
+	}
+	return blockDeviceList, nil
 }
