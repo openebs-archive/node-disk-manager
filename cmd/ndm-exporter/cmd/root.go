@@ -22,7 +22,6 @@ import (
 	ndm_exporter "github.com/openebs/node-disk-manager/ndm-exporter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"k8s.io/klog"
 	"os"
 )
 
