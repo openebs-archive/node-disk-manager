@@ -18,11 +18,11 @@ package kubernetes
 
 import (
 	"context"
-	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -89,7 +89,7 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]v1alpha1.BlockDevice, er
 
 	err := cl.client.List(context.TODO(), listOptions, bdList)
 	if err != nil {
-		glog.Error("error in listing BDs. ", err)
+		klog.Error("error in listing BDs. ", err)
 		return nil, err
 	}
 	return bdList.Items, nil

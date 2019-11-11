@@ -18,7 +18,6 @@ package ndm_exporter
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/ndm-exporter/collector"
 	"github.com/openebs/node-disk-manager/pkg/server"
@@ -67,28 +66,28 @@ func (e *Exporter) Run() error {
 	// get the kube config
 	cfg, err := config.GetConfig()
 	if err != nil {
-		glog.Errorf("error getting config. %v", err)
+		klog.Errorf("error getting config. %v", err)
 		return err
 	}
 
-	glog.V(2).Info("Client config created.")
+	klog.V(2).Info("Client config created.")
 
 	// generate a new client object
 	e.Client, err = kubernetes.New(cfg)
 	if err != nil {
-		glog.Errorf("error creating client from config. %v", err)
+		klog.Errorf("error creating client from config. %v", err)
 		return err
 	}
 
-	glog.V(2).Info("K8s Client generated using the config.")
+	klog.V(2).Info("K8s Client generated using the config.")
 
 	// register the scheme for the APIs
 	if err = e.Client.RegisterAPI(); err != nil {
-		glog.Errorf("error registering scheme. %v", err)
+		klog.Errorf("error registering scheme. %v", err)
 		return err
 	}
 
-	glog.V(2).Info("APIs registered.")
+	klog.V(2).Info("APIs registered.")
 
 	switch e.Mode {
 	case ClusterLevel:
@@ -98,7 +97,7 @@ func (e *Exporter) Run() error {
 	}
 
 	if err != nil {
-		glog.Error("error in running exporter")
+		klog.Error("error in running exporter")
 		return err
 	}
 
@@ -107,7 +106,7 @@ func (e *Exporter) Run() error {
 
 	// start the server
 	if err = e.Server.Start(); err != nil {
-		glog.Error("error in running exporter")
+		klog.Error("error in running exporter")
 		return err
 	}
 	return nil
@@ -115,7 +114,7 @@ func (e *Exporter) Run() error {
 
 // runClusterExporter starts the cluster level ndm exporter
 func (e *Exporter) runClusterExporter() error {
-	glog.Info("Starting cluster level exporter . . .")
+	klog.Info("Starting cluster level exporter . . .")
 
 	// create instance of a new static collector and register it.
 	c := collector.NewStaticMetricCollector(e.Client)
@@ -126,7 +125,7 @@ func (e *Exporter) runClusterExporter() error {
 
 // runNodeExporter starts the node level ndm exporter
 func (e *Exporter) runNodeExporter() error {
-	glog.Info("Starting node level exporter . . .")
+	klog.Info("Starting node level exporter . . .")
 	// TODO code for node exporter
 	return nil
 }
