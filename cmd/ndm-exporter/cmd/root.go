@@ -37,13 +37,16 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	initFlags()
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
-func init() {
+// initFlags initializes the flags. This adds the flagset to the global
+// cobra flagset
+func initFlags() {
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 
 	// HACK: without the following line, the logs will be prefixed with an error
