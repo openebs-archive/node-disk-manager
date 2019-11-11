@@ -1,3 +1,9 @@
+v0.4.4-RC2 / 2019-11-09
+=======================
+
+  * refactor logs for easier parsing to send log based alerts
+  * fix device detection for KVM based virtual machines
+   
 v0.4.4-RC1 / 2019-11-05
 =======================
 
