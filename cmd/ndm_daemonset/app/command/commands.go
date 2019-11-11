@@ -18,11 +18,12 @@ package command
 
 import (
 	goflag "flag"
+	"github.com/openebs/node-disk-manager/pkg/version"
 
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 )
 
 // NewNodeDiskManager creates a new ndm.
@@ -31,7 +32,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "ndm",
 		Short: "ndm controls the Node-Disk-Manager ",
-		Run: func(cmd *cobra.Command, args []string) {
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			util.CheckErr(RunNodeDiskManager(cmd), util.Fatal)
 		},
 	}
@@ -47,9 +48,10 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	return cmd, nil
 }
 
-// RunNodeDiskManager starts ndm process
+// RunNodeDiskManager logs the starting of NDM daemon
 func RunNodeDiskManager(cmd *cobra.Command) error {
-	klog.Infof("Starting node disk manager ...")
-
+	klog.Infof("Starting Node Device Manager Daemon...")
+	klog.Infof("Version Tag : %v", version.GetVersion())
+	klog.Infof("GitCommit : %v", version.GetGitCommit())
 	return nil
 }

@@ -19,8 +19,11 @@ package cmd
 import (
 	goflag "flag"
 	"fmt"
+	"github.com/openebs/node-disk-manager/pkg/util"
+	"github.com/openebs/node-disk-manager/pkg/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 	"os"
 )
 
@@ -28,6 +31,9 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "exporter",
 	Short: "exporter can be used to expose block device metrics",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		util.CheckErr(RunNodeDiskExporter(cmd), util.Fatal)
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -37,6 +43,14 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+// RunNodeDiskExporter logs the starting of NDM exporter
+func RunNodeDiskExporter(cmd *cobra.Command) error {
+	klog.Infof("Starting NDM Exporter...")
+	klog.Infof("Version Tag : %v", version.GetVersion())
+	klog.Infof("GitCommit : %v", version.GetGitCommit())
+	return nil
 }
 
 func init() {
