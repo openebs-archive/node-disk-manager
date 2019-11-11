@@ -114,6 +114,9 @@ type BlockDevice struct {
 	// eg: dm-0 is a slave to sda1. Then the list of dm-0 will contain sda1
 	Slaves []string
 
+	// TemperatureInfo stores the temperature information of the drive
+	TemperatureInfo TemperatureInformation
+
 	// Status contains the state of the blockdevice
 	Status Status
 }
@@ -154,6 +157,16 @@ type FileSystemInformation struct {
 
 	// MountPoint is the list of mountpoints at which this blockdevice is mounted
 	MountPoint []string
+}
+
+// TemperatureInformation stores the temperature information of the blockdevice
+type TemperatureInformation struct {
+	// TemperatureDataValid specifies whether the current temperature
+	// data reported is valid or not
+	TemperatureDataValid bool
+
+	// CurrentTemperature is the temperature of the drive in celsius
+	CurrentTemperature int16
 }
 
 // Status is used to represent the status of the blockdevice

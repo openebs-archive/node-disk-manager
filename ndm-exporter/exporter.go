@@ -108,8 +108,8 @@ func (e *Exporter) runClusterExporter() error {
 	klog.Info("Starting cluster level exporter . . .")
 
 	// create instance of a new static collector and register it.
-	c := collector.NewStaticMetricCollector(e.Client)
-	prometheus.MustRegister(c)
+	staticCollector := collector.NewStaticMetricCollector(e.Client)
+	prometheus.MustRegister(staticCollector)
 
 	return nil
 }
@@ -117,6 +117,10 @@ func (e *Exporter) runClusterExporter() error {
 // runNodeExporter starts the node level ndm exporter
 func (e *Exporter) runNodeExporter() error {
 	klog.Info("Starting node level exporter . . .")
-	// TODO code for node exporter
+
+	// create instances of collectors required for node level exporter and register them
+	seachestCollector := collector.NewSeachestMetricCollector(e.Client)
+	prometheus.MustRegister(seachestCollector)
+
 	return nil
 }

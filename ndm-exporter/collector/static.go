@@ -42,6 +42,7 @@ type StaticMetricCollector struct {
 // NewStaticMetricCollector creates a new instance of StaticMetricCollector which
 // implements Collector interface
 func NewStaticMetricCollector(c kubernetes.Client) prometheus.Collector {
+	klog.V(2).Infof("Static Metric Collector initialized")
 	return &StaticMetricCollector{
 		Client:  c,
 		metrics: static.NewMetrics(),
