@@ -51,8 +51,8 @@ const (
 // RunNodeDiskExporter logs the starting of NDM exporter
 func RunNodeDiskExporter() {
 	klog.Infof("Starting NDM Exporter...")
-	klog.Infof("Version Tag : %v", version.GetVersion())
-	klog.Infof("GitCommit : %v", version.GetGitCommit())
+	klog.Infof("Version Tag : %s", version.GetVersion())
+	klog.Infof("GitCommit : %s", version.GetGitCommit())
 }
 
 // Run starts the exporter, depending on the mode of startup of the exporter

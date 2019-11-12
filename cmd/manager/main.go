@@ -24,6 +24,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/upgrade"
 	"github.com/openebs/node-disk-manager/pkg/upgrade/v040_041"
 	"github.com/openebs/node-disk-manager/pkg/upgrade/v041_042"
+	"github.com/openebs/node-disk-manager/pkg/version"
 	"os"
 	"runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -51,6 +52,8 @@ func printVersion() {
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
 	log.Info(fmt.Sprintf("operator-sdk Version: %v", sdkVersion.Version))
+	log.Info(fmt.Sprintf("Version Tag: %s", version.GetVersion()))
+	log.Info(fmt.Sprintf("Git Commit: %s", version.GetGitCommit()))
 }
 
 func main() {

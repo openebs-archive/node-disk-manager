@@ -51,7 +51,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 // RunNodeDiskManager logs the starting of NDM daemon
 func RunNodeDiskManager(cmd *cobra.Command) error {
 	klog.Infof("Starting Node Device Manager Daemon...")
-	klog.Infof("Version Tag : %v", version.GetVersion())
-	klog.Infof("GitCommit : %v", version.GetGitCommit())
+	klog.Infof("Version Tag : %s", version.GetVersion())
+	klog.Infof("GitCommit : %s", version.GetGitCommit())
 	return nil
 }
