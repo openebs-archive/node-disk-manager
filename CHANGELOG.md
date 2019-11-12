@@ -1,3 +1,14 @@
+v0.4.4 / 2019-11-12
+=======================
+
+  * fix device detection for KVM based virtual machines
+  * fix parent disk detection for nvme devices
+  * refactor NDM cli to remove unused flags
+  * add prometheus exporter for fetching metrics from etcd
+  * replace glog with klog
+  * refactor logs for easier parsing to send log based alerts
+
+
 v0.4.4-RC2 / 2019-11-09
 =======================
 
