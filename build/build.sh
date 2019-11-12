@@ -88,8 +88,15 @@ cd "$DIR"
 # Get the git commit
 GIT_COMMIT=$(getGitCommit)
 
-# Get the version details
-VERSION="beta"
+# Get the version details. By default set as ci.
+VERSION="ci"
+
+if [ -n "${TRAVIS_TAG}" ] ;
+then
+  # When github is tagged with a release, then Travis will
+  # set the release tag in env TRAVIS_TAG
+  VERSION="${TRAVIS_TAG}"
+fi;
 
 
 # Determine the arch/os combos we're building for

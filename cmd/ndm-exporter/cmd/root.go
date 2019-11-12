@@ -19,6 +19,7 @@ package cmd
 import (
 	goflag "flag"
 	"fmt"
+	ndm_exporter "github.com/openebs/node-disk-manager/ndm-exporter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
@@ -28,6 +29,9 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "exporter",
 	Short: "exporter can be used to expose block device metrics",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		ndm_exporter.RunNodeDiskExporter()
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

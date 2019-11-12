@@ -22,8 +22,10 @@ import (
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/ndm-exporter/collector"
 	"github.com/openebs/node-disk-manager/pkg/server"
+	"github.com/openebs/node-disk-manager/pkg/version"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
@@ -45,6 +47,13 @@ const (
 	// MetricsPath is the endpoint at which metrics will be available
 	MetricsPath = "/metrics"
 )
+
+// RunNodeDiskExporter logs the starting of NDM exporter
+func RunNodeDiskExporter() {
+	klog.Infof("Starting NDM Exporter...")
+	klog.Infof("Version Tag : %s", version.GetVersion())
+	klog.Infof("GitCommit : %s", version.GetGitCommit())
+}
 
 // Run starts the exporter, depending on the mode of startup of the exporter
 func (e *Exporter) Run() error {
