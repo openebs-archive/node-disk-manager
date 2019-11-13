@@ -31,7 +31,7 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	drCopy := dr.DeepCopy()
 	err := c.Clientset.Create(context.TODO(), drCopy)
 	if err == nil {
-		klog.Info("eventcode=ndm.disk.create.success", "msg=Created disk object in etcd",
+		klog.Info("eventcode=ndm.disk.create.success ", "msg=Created disk object in etcd ",
 			"rname=", drCopy.ObjectMeta.Name)
 		return
 	}
@@ -95,11 +95,11 @@ func (c *Controller) DeactivateDisk(dr apis.Disk) {
 	drCopy.Status.State = NDMInactive
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
-		klog.Error("eventcode=ndm.disk.deactivate.failure",
-			"msg=Unable to deactivate disk object : ", err, "rname=", drCopy.ObjectMeta.Name)
+		klog.Error("eventcode=ndm.disk.deactivate.failure ",
+			"msg=Unable to deactivate disk object : ", err, " rname=", drCopy.ObjectMeta.Name)
 		return
 	}
-	klog.Info("eventcode=ndm.disk.deactivate.success", "msg=Deactivated the disk object",
+	klog.Info("eventcode=ndm.disk.deactivate.success ", "msg=Deactivated the disk object ",
 		"rname=", drCopy.ObjectMeta.Name)
 }
 
@@ -128,11 +128,11 @@ func (c *Controller) DeleteDisk(name string) {
 
 	err := c.Clientset.Delete(context.TODO(), dr)
 	if err != nil {
-		klog.Error("eventcode=ndm.disk.delete.failure",
-			"msg=Unable to delete disk object : ", err, "rname=", name)
+		klog.Error("eventcode=ndm.disk.delete.failure ",
+			"msg=Unable to delete disk object : ", err, " rname=", name)
 		return
 	}
-	klog.Info("eventcode=ndm.disk.delete.success", "msg=Deleted disk object",
+	klog.Info("eventcode=ndm.disk.delete.success ", "msg=Deleted disk object ",
 		"rname=", name)
 }
 
