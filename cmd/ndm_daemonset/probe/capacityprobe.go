@@ -21,9 +21,9 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"k8s.io/klog"
 )
 
 const (

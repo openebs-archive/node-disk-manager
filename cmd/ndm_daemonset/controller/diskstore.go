@@ -19,10 +19,10 @@ package controller
 import (
 	"context"
 
-	"k8s.io/klog"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -31,8 +31,9 @@ func (c *Controller) CreateDisk(dr apis.Disk) {
 	drCopy := dr.DeepCopy()
 	err := c.Clientset.Create(context.TODO(), drCopy)
 	if err == nil {
-		klog.Info("eventcode=ndm.disk.create.success ", "msg=Created disk object in etcd ",
-			"rname=", drCopy.ObjectMeta.Name)
+		klog.Infof("eventcode=%s msg=%s rname=%v",
+			"ndm.disk.create.success", "Created disk object in etcd",
+			drCopy.ObjectMeta.Name)
 		return
 	}
 	/*
@@ -71,8 +72,9 @@ func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 			Namespace: oldDr.Namespace,
 			Name:      oldDr.Name}, oldDr)
 		if err != nil {
-			klog.Errorf("eventcode=%s msg=Unable to get disk object:%v, err:%v rname=%v",
-				"ndm.disk.update.failure", oldDr.ObjectMeta.Name, err, drCopy.ObjectMeta.Name)
+			klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
+				"ndm.disk.update.failure", "Unable to get disk object",
+				oldDr.ObjectMeta.Name, err, drCopy.ObjectMeta.Name)
 			return err
 		}
 	}
@@ -80,12 +82,14 @@ func (c *Controller) UpdateDisk(dr apis.Disk, oldDr *apis.Disk) error {
 	drCopy.ObjectMeta.ResourceVersion = oldDr.ObjectMeta.ResourceVersion
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
-		klog.Errorf("eventcode=%s msg=Unable to update disk object, err:%v rname=%v",
-			"ndm.disk.update.failure", err, drCopy.ObjectMeta.Name)
+		klog.Errorf("eventcode=%s msg=%s, err:%v rname=%v",
+			"ndm.disk.update.failure", "Unable to update disk object",
+			err, drCopy.ObjectMeta.Name)
 		return err
 	}
-	klog.Infof("eventcode=%s msg=Updated disk object successfully rname=%v",
-		"ndm.disk.update.success", drCopy.ObjectMeta.Name)
+	klog.Infof("eventcode=%s msg=%s rname=%v",
+		"ndm.disk.update.success", "Updated disk object successfully",
+		drCopy.ObjectMeta.Name)
 	return nil
 }
 
@@ -95,12 +99,14 @@ func (c *Controller) DeactivateDisk(dr apis.Disk) {
 	drCopy.Status.State = NDMInactive
 	err := c.Clientset.Update(context.TODO(), drCopy)
 	if err != nil {
-		klog.Error("eventcode=ndm.disk.deactivate.failure ",
-			"msg=Unable to deactivate disk object : ", err, " rname=", drCopy.ObjectMeta.Name)
+		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
+			"ndm.disk.deactivate.failure", "Unable to deactivate disk object",
+			err, drCopy.ObjectMeta.Name)
 		return
 	}
-	klog.Info("eventcode=ndm.disk.deactivate.success ", "msg=Deactivated the disk object ",
-		"rname=", drCopy.ObjectMeta.Name)
+	klog.Infof("eventcode=%s msg=%s rname=%v",
+		"ndm.disk.deactivate.success", "Deactivated the disk object",
+		drCopy.ObjectMeta.Name)
 }
 
 // GetDisk get Disk resource from etcd
@@ -128,12 +134,14 @@ func (c *Controller) DeleteDisk(name string) {
 
 	err := c.Clientset.Delete(context.TODO(), dr)
 	if err != nil {
-		klog.Error("eventcode=ndm.disk.delete.failure ",
-			"msg=Unable to delete disk object : ", err, " rname=", name)
+		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
+			"ndm.disk.delete.failure", "Unable to delete disk object",
+			err, name)
 		return
 	}
-	klog.Info("eventcode=ndm.disk.delete.success ", "msg=Deleted disk object ",
-		"rname=", name)
+	klog.Infof("eventcode=%s msg=%s rname=%v",
+		"ndm.disk.delete.success", "Deleted disk object",
+		name)
 }
 
 // ListDiskResource queries the etcd for the devices for the host/node

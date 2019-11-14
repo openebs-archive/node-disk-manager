@@ -28,8 +28,8 @@ import (
 
 	"k8s.io/client-go/rest"
 
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/apis"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"

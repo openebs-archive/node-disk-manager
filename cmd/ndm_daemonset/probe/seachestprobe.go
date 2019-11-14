@@ -17,10 +17,10 @@ limitations under the License.
 package probe
 
 import (
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/seachest"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"k8s.io/klog"
 )
 
 // seachest contains required variables for populating diskInfo
