@@ -35,6 +35,9 @@ import (
 type Client struct {
 	cfg    *rest.Config
 	client client.Client
+
+	// namespace in which this client is operating
+	namespace string
 }
 
 // New creates a new client object using the default config
@@ -85,7 +88,7 @@ func (cl *Client) SetClient(client2 client.Client) {
 // RegisterAPI registers the API scheme in the client using the manager.
 // This function needs to be called only once a client object
 func (cl *Client) RegisterAPI() error {
-	mgr, err := manager.New(cl.cfg, manager.Options{})
+	mgr, err := manager.New(cl.cfg, manager.Options{Namespace: cl.namespace})
 	if err != nil {
 		return err
 	}
@@ -107,7 +110,7 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]blockdevice.BlockDevice,
 		},
 	}
 
-	listOptions := &client.ListOptions{}
+	listOptions := &client.ListOptions{Namespace: cl.namespace}
 
 	// apply the filter only if any filters are provided
 	if len(filters) != 0 {
