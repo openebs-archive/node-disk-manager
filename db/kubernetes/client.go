@@ -18,12 +18,14 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -33,7 +35,10 @@ import (
 // Client is the wrapper over the k8s client that will be used by
 // NDM to interface with etcd
 type Client struct {
-	cfg    *rest.Config
+	// cfg is configuration used to generate the client
+	cfg *rest.Config
+
+	// client is the controller-runtime client used to interface with etcd
 	client client.Client
 
 	// namespace in which this client is operating
@@ -55,6 +60,14 @@ func New() (Client, error) {
 	c.cfg = cfg
 
 	klog.V(2).Info("Client cfg created.")
+
+	err = c.setNamespace()
+	if err != nil {
+		klog.Errorf("error setting namespace for client. %v", err)
+		return c, err
+	}
+
+	klog.V(2).Info("Namespace set for the client")
 
 	err = c.InitClient()
 	if err != nil {
@@ -93,6 +106,18 @@ func (cl *Client) RegisterAPI() error {
 	return nil
 }
 
+// setNamespace sets the namespace in which NDM is running
+func (cl *Client) setNamespace() error {
+	ns, ok := os.LookupEnv("NAMESPACE")
+	if !ok {
+		return fmt.Errorf("error getting namespace from ENV variable")
+	}
+
+	cl.namespace = ns
+
+	return nil
+}
+
 // ListBlockDevice lists the block device from etcd based on
 // the filters used
 func (cl *Client) ListBlockDevice(filters ...string) ([]blockdevice.BlockDevice, error) {
@@ -121,5 +146,8 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]blockdevice.BlockDevice,
 	if err != nil {
 		return blockDeviceList, err
 	}
+
+	klog.V(4).Infof("no of blockdevices listed :", len(blockDeviceList))
+
 	return blockDeviceList, nil
 }
