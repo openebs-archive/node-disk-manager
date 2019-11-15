@@ -2,10 +2,10 @@ package kubernetes
 
 import (
 	"github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	api "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 )
 
-func convert_BlockDeviceAPIList_To_BlockDeviceList(in *v1alpha1.BlockDeviceList, out *[]blockdevice.BlockDevice) error {
+func convert_BlockDeviceAPIList_To_BlockDeviceList(in *api.BlockDeviceList, out *[]blockdevice.BlockDevice) error {
 	var err error
 	var bd blockdevice.BlockDevice
 
@@ -19,7 +19,7 @@ func convert_BlockDeviceAPIList_To_BlockDeviceList(in *v1alpha1.BlockDeviceList,
 	return nil
 }
 
-func convert_BlockDeviceAPI_To_BlockDevice(in *v1alpha1.BlockDevice, out *blockdevice.BlockDevice) error {
+func convert_BlockDeviceAPI_To_BlockDevice(in *api.BlockDevice, out *blockdevice.BlockDevice) error {
 	out.UUID = in.Name
 
 	//labels
@@ -29,7 +29,6 @@ func convert_BlockDeviceAPI_To_BlockDevice(in *v1alpha1.BlockDevice, out *blockd
 	//spec
 	out.Path = in.Spec.Path
 	out.FSInfo.FileSystem = in.Spec.FileSystem.Type
-	out.DeviceType = in.Spec.Details.DeviceType
 
 	// currently only the first mount point is filled in. When API is changed, multiple mount points
 	// will be added.

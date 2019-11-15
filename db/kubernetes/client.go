@@ -32,6 +32,11 @@ import (
 	"strings"
 )
 
+const (
+	// NamespaceENV is the name of environment variable to get the namespace
+	NamespaceENV = "NAMESPACE"
+)
+
 // Client is the wrapper over the k8s client that will be used by
 // NDM to interface with etcd
 type Client struct {
@@ -108,7 +113,7 @@ func (cl *Client) RegisterAPI() error {
 
 // setNamespace sets the namespace in which NDM is running
 func (cl *Client) setNamespace() error {
-	ns, ok := os.LookupEnv("NAMESPACE")
+	ns, ok := os.LookupEnv(NamespaceENV)
 	if !ok {
 		return fmt.Errorf("error getting namespace from ENV variable")
 	}
@@ -147,7 +152,7 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]blockdevice.BlockDevice,
 		return blockDeviceList, err
 	}
 
-	klog.V(4).Infof("no of blockdevices listed :", len(blockDeviceList))
+	klog.V(4).Infof("no of blockdevices listed : %d", len(blockDeviceList))
 
 	return blockDeviceList, nil
 }
