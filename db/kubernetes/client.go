@@ -63,13 +63,6 @@ func New() (Client, error) {
 	return c, nil
 }
 
-/*
-3 functions should be there.
-1. Create a new client, with no args. New() Clinet, err
-2. Initialize the client from available config. InitClient() err
-3. sets the given client without using config. SetClient(Client) err
-*/
-
 // InitClient sets the client using the config
 func (cl *Client) InitClient() error {
 	c, err := client.New(cl.cfg, client.Options{})
