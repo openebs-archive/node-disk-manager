@@ -121,11 +121,11 @@ golint:
 # shellcheck target for checking shell scripts linting
 .PHONY: shellcheck
 shellcheck: getshellcheck
-	find . -type f -name "*.sh" | grep -v "./vendor/*" | xargs /tmp/shellcheck-latest/shellcheck
+	find . -type f -name "*.sh" | grep -v "./vendor/*" | xargs /tmp/shellcheck-stable/shellcheck
 
 .PHONY: getshellcheck
 getshellcheck:
-	wget -c 'https://goo.gl/ZzKHFv' --no-check-certificate -O - | tar -xvJ -C /tmp/
+	wget -c 'https://storage.googleapis.com/shellcheck/shellcheck-stable.linux.x86_64.tar.xz' --no-check-certificate -O - | tar -xvJ -C /tmp/
 
 .PHONY: version
 version:
