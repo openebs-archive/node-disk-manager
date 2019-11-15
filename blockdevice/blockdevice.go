@@ -42,28 +42,24 @@ type BlockDevice struct {
 
 // NodeAttribute is the representing the various attributes of the machine
 // on which this block device is present
-type NodeAttribute map[NodeAttributeKey]string
-
-// NodeAttributeKey is a typed string for representing the keys in the
-// node attribute map
-type NodeAttributeKey string
+type NodeAttribute map[string]string
 
 const (
 	// HostName is the hostname of the system on which this BD is present
-	HostName NodeAttributeKey = "hostname"
+	HostName string = "hostname"
 
 	// NodeName is the nodename (may be FQDN) on which this BD is present
-	NodeName NodeAttributeKey = "nodename"
+	NodeName string = "nodename"
 
 	// ZoneName is the zone in which the system is present.
 	//
 	// NOTE: Valid only for cloud providers
-	ZoneName NodeAttributeKey = "zone"
+	ZoneName string = "zone"
 
 	// RegionName is the region in which the system is present.
 	//
 	// NOTE: Valid only for cloud providers
-	RegionName NodeAttributeKey = "region"
+	RegionName string = "region"
 )
 
 const (
