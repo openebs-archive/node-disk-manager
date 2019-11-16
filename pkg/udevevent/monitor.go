@@ -20,10 +20,10 @@ import (
 	"errors"
 	"syscall"
 
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"k8s.io/klog"
 )
 
 // UdevEventMessageChannel used to send event message

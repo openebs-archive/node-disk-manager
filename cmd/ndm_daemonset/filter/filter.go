@@ -17,8 +17,8 @@ limitations under the License.
 package filter
 
 import (
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"k8s.io/klog"
 )
 
 const (

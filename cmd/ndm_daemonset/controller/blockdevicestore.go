@@ -19,11 +19,11 @@ package controller
 import (
 	"context"
 
-	"k8s.io/klog"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -35,15 +35,16 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 	blockDeviceCopy := blockDevice.DeepCopy()
 	err := c.Clientset.Create(context.TODO(), blockDeviceCopy)
 	if err == nil {
-		klog.Info("eventcode=ndm.blockdevice.create.success",
-			"msg=Created blockdevice object in etcd", "rname=", blockDeviceCopy.ObjectMeta.Name)
+		klog.Infof("eventcode=%s msg=%s rname=%v",
+			"ndm.blockdevice.create.success", "Created blockdevice object in etcd",
+			blockDeviceCopy.ObjectMeta.Name)
 		return
 	}
 
 	if !errors.IsAlreadyExists(err) {
-		klog.Error("eventcode=ndm.blockdevice.create.failure",
-			"msg=Creation of blockdevice object failed: ", err,
-			"rname=", blockDeviceCopy.ObjectMeta.Name)
+		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
+			"ndm.blockdevice.create.failure", "Creation of blockdevice object failed",
+			err, blockDeviceCopy.ObjectMeta.Name)
 		return
 	}
 
@@ -84,8 +85,9 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 			Namespace: oldBlockDevice.Namespace,
 			Name:      oldBlockDevice.Name}, oldBlockDevice)
 		if err != nil {
-			klog.Errorf("eventcode=%s msg=%s reason=Unable to get blockdevice object:%v, err:%v rname=%s",
-				"ndm.blockdevice.update.failure", "Failed to update block device",
+			klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
+				"ndm.blockdevice.update.failure",
+				"Failed to update block device : unable to get blockdevice object",
 				oldBlockDevice.ObjectMeta.Name, err, blockDeviceCopy.ObjectMeta.Name)
 			return err
 		}
@@ -96,12 +98,14 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 	blockDeviceCopy.Status.ClaimState = oldBlockDevice.Status.ClaimState
 	err = c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
-		klog.Error("eventcode=ndm.blockdevice.update.failure",
-			"msg=Unable to update blockdevice object : ", err, "rname=", blockDeviceCopy.ObjectMeta.Name)
+		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
+			"ndm.blockdevice.update.failure", "Unable to update blockdevice object",
+			err, blockDeviceCopy.ObjectMeta.Name)
 		return err
 	}
-	klog.Info("eventcode=ndm.blockdevice.update.success",
-		"msg=Updated blockdevice object", "rname=", blockDeviceCopy.ObjectMeta.Name)
+	klog.Infof("eventcode=%s msg=%s rname=%v",
+		"ndm.blockdevice.update.success", "Updated blockdevice object",
+		blockDeviceCopy.ObjectMeta.Name)
 	return nil
 }
 
@@ -112,12 +116,14 @@ func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 	blockDeviceCopy.Status.State = NDMInactive
 	err := c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
-		klog.Error("eventcode=ndm.blockdevice.deactivate.failure",
-			"msg=Unable to deactivate blockdevice: ", err, "rname=", blockDeviceCopy.ObjectMeta.Name)
+		klog.Errorf("eventcode=%s msg=%s : %v rname=%v ",
+			"ndm.blockdevice.deactivate.failure", "Unable to deactivate blockdevice",
+			err, blockDeviceCopy.ObjectMeta.Name)
 		return
 	}
-	klog.Info("eventcode=ndm.blockdevice.deactivate.success",
-		"msg=Deactivated blockdevice", "rname=", blockDeviceCopy.ObjectMeta.Name)
+	klog.Infof("eventcode=%s msg=%s rname=%v",
+		"ndm.blockdevice.deactivate.success", "Deactivated blockdevice",
+		blockDeviceCopy.ObjectMeta.Name)
 }
 
 // GetBlockDevice get Disk resource from etcd
@@ -145,12 +151,13 @@ func (c *Controller) DeleteBlockDevice(name string) {
 
 	err := c.Clientset.Delete(context.TODO(), blockDevice)
 	if err != nil {
-		klog.Error("eventcode=ndm.blockdevice.delete.failure",
-			"msg=Unable to delete blockdevice object : ", err, "rname=", name)
+		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
+			"ndm.blockdevice.delete.failure", "Unable to delete blockdevice object",
+			err, name)
 		return
 	}
-	klog.Info("eventcode=ndm.blockdevice.delete.success",
-		"msg=Deleted blockdevice object", "rname=", name)
+	klog.Infof("eventcode=%s msg=%s rname=%v",
+		"ndm.blockdevice.delete.success", "Deleted blockdevice object ", name)
 }
 
 // ListBlockDeviceResource queries the etcd for the devices for the host/node
