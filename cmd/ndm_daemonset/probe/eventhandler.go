@@ -17,9 +17,9 @@ limitations under the License.
 package probe
 
 import (
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+	"k8s.io/klog"
 )
 
 // EventAction action type for disk events like attach or detach events

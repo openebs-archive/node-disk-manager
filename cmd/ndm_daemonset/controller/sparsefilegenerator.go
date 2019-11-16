@@ -20,8 +20,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"k8s.io/klog"
 
 	"fmt"
 	"os"
