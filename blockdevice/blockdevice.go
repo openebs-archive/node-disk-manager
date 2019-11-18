@@ -98,4 +98,13 @@ const (
 	Inactive string = "Inactive"
 	// Unknown means the state cannot be determined at this point of time
 	Unknown string = "Unknown"
+
+	// Claimed means the blockdevice is in use
+	Claimed string = "Claimed"
+	// Released means the blockdevice is not in use, but cannot be claimed,
+	// because of some pending cleanup tasks
+	Released string = "Released"
+	// Unclaimed means the blockdevice is free and is availbale for
+	// claiming
+	Unclaimed string = "Unclaimed"
 )
