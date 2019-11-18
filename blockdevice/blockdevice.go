@@ -36,6 +36,9 @@ type BlockDevice struct {
 	// BlockDevice if it exists
 	FSInfo FileSystemInformation
 
+	// DeviceType is the type of the blockdevice. can be sparse/disk/partition etc
+	DeviceType string
+
 	// Status contains the state of the blockdevice
 	Status Status
 }

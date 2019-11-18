@@ -34,6 +34,7 @@ func convert_BlockDeviceAPI_To_BlockDevice(in *api.BlockDevice, out *blockdevice
 	// will be added.
 	out.FSInfo.MountPoint = make([]string, 0)
 	out.FSInfo.MountPoint[0] = in.Spec.FileSystem.Mountpoint
+	out.DeviceType = in.Spec.Details.DeviceType
 
 	//status
 	out.Status.State = string(in.Status.State)
