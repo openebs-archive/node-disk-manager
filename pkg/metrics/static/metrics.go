@@ -17,9 +17,10 @@ limitations under the License.
 package static
 
 import (
+	"strings"
+
 	bd "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/prometheus/client_golang/prometheus"
-	"strings"
 )
 
 const (

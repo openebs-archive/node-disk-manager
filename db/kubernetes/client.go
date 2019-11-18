@@ -19,17 +19,18 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"strings"
 )
 
 const (

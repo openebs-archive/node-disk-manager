@@ -17,11 +17,12 @@ limitations under the License.
 package collector
 
 import (
+	"sync"
+
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/pkg/metrics/static"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog"
-	"sync"
 )
 
 // StaticMetricCollector contains the metrics, concurrency handler and client to get the
