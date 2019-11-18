@@ -64,7 +64,7 @@ func New() (Client, error) {
 
 	c.cfg = cfg
 
-	klog.V(2).Info("Client cfg created.")
+	klog.V(2).Info("Client config created.")
 
 	err = c.setNamespace()
 	if err != nil {
@@ -72,7 +72,7 @@ func New() (Client, error) {
 		return c, err
 	}
 
-	klog.V(2).Info("Namespace set for the client")
+	klog.V(2).Infof("Namespace \"%s\" set for the client", c.namespace)
 
 	err = c.InitClient()
 	if err != nil {
