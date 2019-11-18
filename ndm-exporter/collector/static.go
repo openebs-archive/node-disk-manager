@@ -17,7 +17,6 @@ limitations under the License.
 package collector
 
 import (
-	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/pkg/metrics/static"
 	"github.com/prometheus/client_golang/prometheus"
