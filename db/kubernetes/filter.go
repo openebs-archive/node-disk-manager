@@ -3,7 +3,10 @@ package kubernetes
 import "github.com/openebs/node-disk-manager/blockdevice"
 
 const (
-	kubernetesLabelPrefix   = "kubernetes.io/"
+	// kubernetesLabelPrefix is the label prefix for kubernetes
+	kubernetesLabelPrefix = "kubernetes.io/"
+
+	// KubernetesHostNameLabel is the kubernetes hostname label
 	KubernetesHostNameLabel = kubernetesLabelPrefix + blockdevice.HostName
 )
 
