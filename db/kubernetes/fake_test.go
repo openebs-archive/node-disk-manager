@@ -22,16 +22,12 @@ import (
 )
 
 func createFakeBlockDevice(uuid string) *blockdevice.BlockDevice {
-	mountPoints := make([]string, 0)
 
 	bd := &blockdevice.BlockDevice{
 		UUID: uuid,
 	}
 	// init all fields which require memory
 	bd.NodeAttributes = make(map[string]string)
-	bd.FSInfo = blockdevice.FileSystemInformation{
-		MountPoint: mountPoints,
-	}
 	return bd
 }
 
