@@ -17,7 +17,6 @@ limitations under the License.
 package kubernetes
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
@@ -74,20 +73,8 @@ func Test_convert_BlockDeviceAPI_To_BlockDevice(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			gotOut := &blockdevice.BlockDevice{}
 			err := convert_BlockDeviceAPI_To_BlockDevice(test.args.in, gotOut)
+			assert.Equal(t, test.args.wantOut, gotOut)
 			assert.Equal(t, test.wantErr, err != nil)
-
-			assert.Equal(t, test.args.wantOut.UUID, gotOut.UUID)
-			// compare the Node attribute map
-			assert.Equal(t, true, reflect.DeepEqual(test.args.wantOut.NodeAttributes, gotOut.NodeAttributes))
-			assert.Equal(t, test.args.wantOut.Path, gotOut.Path)
-			assert.Equal(t, test.args.wantOut.FSInfo.FileSystem, gotOut.FSInfo.FileSystem)
-
-			// comparing the first element of slice for now.
-			// TODO change to range and compare all elements when NDM supports multiple mountpoints
-			assert.Equal(t, test.args.wantOut.FSInfo.MountPoint, gotOut.FSInfo.MountPoint)
-
-			assert.Equal(t, test.args.wantOut.Status.State, gotOut.Status.State)
-			assert.Equal(t, test.args.wantOut.Status.ClaimPhase, gotOut.Status.ClaimPhase)
 		})
 	}
 }
