@@ -11,41 +11,41 @@ func Test_getParent(t *testing.T) {
 		SysPath    string
 	}
 	tests := map[string]struct {
-		fields fields
-		want   string
-		wantOk bool
+		fields           fields
+		wantedDeviceName string
+		wantOk           bool
 	}{
 		"[block] given block device is a parent": {
 			fields: fields{
 				DeviceName: "sda",
 				SysPath:    "/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda",
 			},
-			want:   "",
-			wantOk: false,
+			wantedDeviceName: "",
+			wantOk:           false,
 		},
 		"[block] given blockdevice is a partition": {
 			fields: fields{
 				DeviceName: "sda4",
 				SysPath:    "/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4",
 			},
-			want:   "sda",
-			wantOk: true,
+			wantedDeviceName: "sda",
+			wantOk:           true,
 		},
 		"[nvme] given blockdevice is a parent": {
 			fields: fields{
 				DeviceName: "nvme0n1",
 				SysPath:    "/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1",
 			},
-			want:   "",
-			wantOk: false,
+			wantedDeviceName: "",
+			wantOk:           false,
 		},
 		"[nvme] given blockdevice is a partition": {
 			fields: fields{
 				DeviceName: "nvme0n1p1",
 				SysPath:    "/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1",
 			},
-			want:   "nvme0n1",
-			wantOk: true,
+			wantedDeviceName: "nvme0n1",
+			wantOk:           true,
 		},
 	}
 	for name, test := range tests {
@@ -54,8 +54,8 @@ func Test_getParent(t *testing.T) {
 				DeviceName: test.fields.DeviceName,
 				SysPath:    test.fields.SysPath,
 			}
-			got, gotOk := s.getParent()
-			assert.Equal(t, test.want, got)
+			gotDeviceName, gotOk := s.getParent()
+			assert.Equal(t, test.wantedDeviceName, gotDeviceName)
 			assert.Equal(t, test.wantOk, gotOk)
 		})
 	}
