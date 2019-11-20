@@ -18,36 +18,72 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+)
+
+const (
+	// NamespaceENV is the name of environment variable to get the namespace
+	NamespaceENV = "NAMESPACE"
 )
 
 // Client is the wrapper over the k8s client that will be used by
 // NDM to interface with etcd
 type Client struct {
-	cfg    *rest.Config
+	// cfg is configuration used to generate the client
+	cfg *rest.Config
+
+	// client is the controller-runtime client used to interface with etcd
 	client client.Client
+
+	// namespace in which this client is operating
+	namespace string
 }
 
-// New creates a new client object using the given config
-func New(config *rest.Config) (Client, error) {
-	c := Client{
-		cfg: config,
+// New creates a new client object using the default config
+func New() (Client, error) {
+
+	c := Client{}
+
+	// get the kube cfg
+	cfg, err := config.GetConfig()
+	if err != nil {
+		klog.Errorf("error getting cfg. %v", err)
+		return c, err
 	}
-	err := c.Set()
+
+	c.cfg = cfg
+
+	klog.V(2).Info("Client config created.")
+
+	err = c.setNamespace()
+	if err != nil {
+		klog.Errorf("error setting namespace for client. %v", err)
+		return c, err
+	}
+
+	klog.V(2).Infof("Namespace \"%s\" set for the client", c.namespace)
+
+	err = c.InitClient()
 	if err != nil {
 		return c, err
 	}
 	return c, nil
 }
 
-// Set sets the client using the config
-func (cl *Client) Set() error {
+// InitClient sets the client using the config
+func (cl *Client) InitClient() error {
 	c, err := client.New(cl.cfg, client.Options{})
 	if err != nil {
 		return err
@@ -56,10 +92,15 @@ func (cl *Client) Set() error {
 	return nil
 }
 
+// SetClient sets the given client
+func (cl *Client) SetClient(client2 client.Client) {
+	cl.client = client2
+}
+
 // RegisterAPI registers the API scheme in the client using the manager.
 // This function needs to be called only once a client object
 func (cl *Client) RegisterAPI() error {
-	mgr, err := manager.New(cl.cfg, manager.Options{})
+	mgr, err := manager.New(cl.cfg, manager.Options{Namespace: cl.namespace})
 	if err != nil {
 		return err
 	}
@@ -71,9 +112,21 @@ func (cl *Client) RegisterAPI() error {
 	return nil
 }
 
+// setNamespace sets the namespace in which NDM is running
+func (cl *Client) setNamespace() error {
+	ns, ok := os.LookupEnv(NamespaceENV)
+	if !ok {
+		return fmt.Errorf("error getting namespace from ENV variable")
+	}
+
+	cl.namespace = ns
+
+	return nil
+}
+
 // ListBlockDevice lists the block device from etcd based on
 // the filters used
-func (cl *Client) ListBlockDevice(filters ...string) ([]v1alpha1.BlockDevice, error) {
+func (cl *Client) ListBlockDevice(filters ...string) ([]blockdevice.BlockDevice, error) {
 	bdList := &v1alpha1.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
@@ -81,10 +134,11 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]v1alpha1.BlockDevice, er
 		},
 	}
 
-	listOptions := &client.ListOptions{}
+	listOptions := &client.ListOptions{Namespace: cl.namespace}
 
-	for _, filter := range filters {
-		listOptions.SetLabelSelector(filter)
+	// apply the filter only if any filters are provided
+	if len(filters) != 0 {
+		_ = listOptions.SetLabelSelector(strings.Join(filters, ","))
 	}
 
 	err := cl.client.List(context.TODO(), listOptions, bdList)
@@ -92,5 +146,14 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]v1alpha1.BlockDevice, er
 		klog.Error("error in listing BDs. ", err)
 		return nil, err
 	}
-	return bdList.Items, nil
+
+	blockDeviceList := make([]blockdevice.BlockDevice, 0)
+	err = convert_BlockDeviceAPIList_To_BlockDeviceList(bdList, &blockDeviceList)
+	if err != nil {
+		return blockDeviceList, err
+	}
+
+	klog.V(4).Infof("no of blockdevices listed : %d", len(blockDeviceList))
+
+	return blockDeviceList, nil
 }

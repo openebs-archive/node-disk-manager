@@ -17,13 +17,12 @@ limitations under the License.
 package collector
 
 import (
-	"github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"sync"
+
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/pkg/metrics/static"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog"
-	"sync"
 )
 
 // StaticMetricCollector contains the metrics, concurrency handler and client to get the
@@ -88,15 +87,15 @@ func (mc *StaticMetricCollector) Collect(ch chan<- prometheus.Metric) {
 	klog.V(4).Info("Setting client for this request.")
 
 	// set the client each time
-	if err := mc.Client.Set(); err != nil {
+	if err := mc.Client.InitClient(); err != nil {
 		klog.Errorf("error setting client. %v", err)
 		mc.metrics.IncErrorRequestCounter()
 		mc.collectErrors(ch)
 		return
 	}
 
-	// get required metric data from etcd
-	blockDevices, err := mc.getMetricData()
+	// get list of blockdevices from etcd
+	blockDevices, err := mc.Client.ListBlockDevice()
 	if err != nil {
 		mc.metrics.IncErrorRequestCounter()
 		mc.collectErrors(ch)
@@ -114,39 +113,6 @@ func (mc *StaticMetricCollector) Collect(ch chan<- prometheus.Metric) {
 	for _, col := range mc.metrics.Collectors() {
 		col.Collect(ch)
 	}
-}
-
-// getMetricData is used to get the metric data from the source
-func (mc *StaticMetricCollector) getMetricData() ([]blockdevice.BlockDevice, error) {
-	bdList, err := mc.Client.ListBlockDevice()
-	if err != nil {
-		klog.Error("error listing BDs for metrics collection. ", err)
-		return nil, err
-	}
-
-	klog.V(4).Infof("No. of BlockDevices fetched from etcd: %d", len(bdList))
-
-	// convert the BD api to BlockDevice struct used by NDM internally
-	blockDevices := make([]blockdevice.BlockDevice, 0)
-	for _, bd := range bdList {
-		// metrics will not be exposed for sparse block devices
-		if bd.Spec.Details.DeviceType == blockdevice.SparseBlockDeviceType {
-			continue
-		}
-		blockDevice := blockdevice.BlockDevice{
-			NodeAttributes: make(blockdevice.NodeAttribute, 0),
-		}
-		// copy values from api to BlockDevice struct
-		blockDevice.UUID = bd.Name
-		blockDevice.NodeAttributes[blockdevice.HostName] = bd.Labels[controller.KubernetesHostNameLabel]
-		blockDevice.NodeAttributes[blockdevice.NodeName] = bd.Spec.NodeAttributes.NodeName
-		blockDevice.Path = bd.Spec.Path
-		// setting the block device status
-		blockDevice.Status.State = string(bd.Status.State)
-		blockDevices = append(blockDevices, blockDevice)
-		klog.V(4).Infof("BlockDevice %+v processed", blockDevice)
-	}
-	return blockDevices, nil
 }
 
 // collectErrors collects only the error metrics and set it on the channel

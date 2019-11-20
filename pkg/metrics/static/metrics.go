@@ -17,9 +17,10 @@ limitations under the License.
 package static
 
 import (
+	"strings"
+
 	bd "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/prometheus/client_golang/prometheus"
-	"strings"
 )
 
 const (
@@ -108,6 +109,10 @@ func (m *Metrics) withErrorRequest() *Metrics {
 // SetMetrics is used to set the prometheus metrics to resepective fields
 func (m *Metrics) SetMetrics(blockDevices []bd.BlockDevice) {
 	for _, blockDevice := range blockDevices {
+		// do not report metrics for sparse devices
+		if blockDevice.DeviceType == bd.SparseBlockDeviceType {
+			continue
+		}
 		// remove /dev from the device path so that the device path is similar to the
 		// path given by node exporter
 		path := strings.ReplaceAll(blockDevice.Path, "/dev/", "")

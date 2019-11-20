@@ -18,6 +18,7 @@ package ndm_exporter
 
 import (
 	"fmt"
+
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/ndm-exporter/collector"
 	"github.com/openebs/node-disk-manager/pkg/server"
@@ -25,7 +26,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/klog"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 // Exporter contains the options for starting the exporter along with
@@ -63,17 +63,8 @@ func (e *Exporter) Run() error {
 		return fmt.Errorf("unknown mode '%s' selected for starting exporter", e.Mode)
 	}
 
-	// get the kube config
-	cfg, err := config.GetConfig()
-	if err != nil {
-		klog.Errorf("error getting config. %v", err)
-		return err
-	}
-
-	klog.V(2).Info("Client config created.")
-
 	// generate a new client object
-	e.Client, err = kubernetes.New(cfg)
+	e.Client, err = kubernetes.New()
 	if err != nil {
 		klog.Errorf("error creating client from config. %v", err)
 		return err
