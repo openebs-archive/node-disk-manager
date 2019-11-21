@@ -169,7 +169,7 @@ func (c K8sClient) CreateServiceAccount(serviceAccount v1.ServiceAccount) error 
 	return err
 }
 
-// DeleteServiceAc[2050]:4589616count deletes the service account
+// DeleteServiceAccount deletes the service account
 func (c K8sClient) DeleteServiceAccount(serviceAccount v1.ServiceAccount) error {
 	err := c.RunTimeClient.Delete(context.Background(), &serviceAccount)
 	return err
