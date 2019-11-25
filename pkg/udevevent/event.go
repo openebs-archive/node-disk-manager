@@ -17,9 +17,9 @@ limitations under the License.
 package udevevent
 
 import (
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+	"k8s.io/klog"
 )
 
 // event contains EventMessage struct

@@ -19,8 +19,8 @@ package controller
 import (
 	"sort"
 
-	"k8s.io/klog"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"k8s.io/klog"
 )
 
 // EventMessage struct contains attribute of event message info.
