@@ -143,6 +143,10 @@ func GetMetricData(bds []blockdevice.BlockDevice) error {
 	var err error
 	ok := false
 	for i, bd := range bds {
+		// do not report metrics for sparse devices
+		if bd.DeviceType == blockdevice.SparseBlockDeviceType {
+			continue
+		}
 		sc := SeachestMetricData{
 			SeachestIdentifier: &seachest.Identifier{
 				DevPath: bd.Path,
