@@ -32,6 +32,7 @@ func Test_convert_BlockDeviceAPI_To_BlockDevice(t *testing.T) {
 
 	fakeBDName := "my-fake-bd"
 	fakeHostName := "fake-hostname"
+	fakeNodeName := "fake-machine"
 	fakeDevicePath := "/dev/sdf1"
 	fileSystem := "ext4"
 	mountPoint := "/mnt/media"
@@ -40,6 +41,7 @@ func Test_convert_BlockDeviceAPI_To_BlockDevice(t *testing.T) {
 	// building the blockdevice API object
 	in1 := createFakeBlockDeviceAPI(fakeBDName)
 	in1.Labels[KubernetesHostNameLabel] = fakeHostName
+	in1.Spec.NodeAttributes.NodeName = fakeNodeName
 	in1.Spec.Path = fakeDevicePath
 	in1.Spec.FileSystem.Type = fileSystem
 	in1.Spec.FileSystem.Mountpoint = mountPoint
@@ -50,6 +52,7 @@ func Test_convert_BlockDeviceAPI_To_BlockDevice(t *testing.T) {
 	// building the core blockdevice object
 	out1 := createFakeBlockDevice(fakeBDName)
 	out1.NodeAttributes[blockdevice.HostName] = fakeHostName
+	out1.NodeAttributes[blockdevice.NodeName] = fakeNodeName
 	out1.Path = fakeDevicePath
 	out1.FSInfo.FileSystem = fileSystem
 	out1.FSInfo.MountPoint = append(out1.FSInfo.MountPoint, mountPoint)
