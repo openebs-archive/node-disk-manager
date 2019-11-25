@@ -270,3 +270,44 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
 ---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ndm-node-exporter
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      name: ndm-node-exporter
+  template:
+    metadata:
+      labels:
+        name: ndm-node-exporter
+    spec:
+      serviceAccountName: openebs-ndm-operator
+      containers:
+        - name: node-disk-exporter
+          image: openebs/node-disk-exporter-amd64:ci
+          command:
+            - /usr/local/bin/exporter
+          args:
+            - "start"
+            - "--mode=node"
+            - "--port=:9101"
+            - "--metrics=/metrics"
+          ports:
+            - containerPort: 9101
+              protocol: TCP
+              name: metrics
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+
+
