@@ -24,9 +24,12 @@ import (
 )
 
 const (
+	// SeachestName is the name prefix used for all seachest metrics
 	SeachestName = "seachest"
 )
 
+// Metrics is the prometheus metrics that are exposed by the exporter. This includes
+// all the metrics that can be fetched using seachest library
 type Metrics struct {
 	// blockDeviceCurrentTemperatureValid tells whether the current temperature data is valid
 	blockDeviceCurrentTemperatureValid *prometheus.GaugeVec
@@ -38,6 +41,7 @@ type Metrics struct {
 	errorRequestCount  prometheus.Counter
 }
 
+// NewMetrics creates instance of metrics
 func NewMetrics() *Metrics {
 	return new(Metrics).
 		withBlockDeviceCurrentTemperatureValid().
@@ -46,6 +50,7 @@ func NewMetrics() *Metrics {
 		withErrorRequest()
 }
 
+// Collectors lists out all the collectors for which the metrics is exposed
 func (m *Metrics) Collectors() []prometheus.Collector {
 	return []prometheus.Collector{
 		m.blockDeviceCurrentTemperatureValid,
@@ -55,6 +60,7 @@ func (m *Metrics) Collectors() []prometheus.Collector {
 	}
 }
 
+// ErrorCollectors lists out all collectors for metrics related to error
 func (m *Metrics) ErrorCollectors() []prometheus.Collector {
 	return []prometheus.Collector{
 		m.rejectRequestCount,
@@ -76,7 +82,7 @@ func (m *Metrics) withBlockDeviceCurrentTemperature() *Metrics {
 	m.blockDeviceCurrentTemperature = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: SeachestName,
-			Name:      "block_device_current_temperature",
+			Name:      "block_device_current_temperature_celsius",
 			Help:      `Current reported temperature of the blockdevice. -1 if not reported`,
 		},
 		[]string{"blockdevicename", "path", "hostname", "nodename"},
@@ -117,6 +123,8 @@ func (m *Metrics) withErrorRequest() *Metrics {
 	return m
 }
 
+// SetMetrics is used to set the seachest metrics onto resepective fields
+// of prometheus metrics
 func (m *Metrics) SetMetrics(blockDevices []bd.BlockDevice) {
 	for _, blockDevice := range blockDevices {
 		// remove /dev from the device path so that the device path is similar to the
@@ -135,10 +143,11 @@ func (m *Metrics) SetMetrics(blockDevices []bd.BlockDevice) {
 	}
 }
 
+// getTemperatureValidity converts temperature validity
+// flag to a metric
 func getTemperatureValidity(isValid bool) float64 {
 	if isValid {
 		return 1
-	} else {
-		return 0
 	}
+	return 0
 }

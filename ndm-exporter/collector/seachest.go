@@ -162,9 +162,8 @@ func GetMetricData(bds []blockdevice.BlockDevice) error {
 	}
 	if !ok {
 		return fmt.Errorf("getting seachest metrics for the blockdevices failed")
-	} else {
-		return nil
 	}
+	return nil
 }
 
 // GetSeachestData fetches the data for a blockdevice using the seachest library from the disk.
