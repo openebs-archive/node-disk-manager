@@ -150,7 +150,9 @@ func (up *udevProbe) scan() error {
 			diskInfo = append(diskInfo, deviceDetails)
 
 			// get the dependents of the block device and log it
-			devicePath := hierarchy.Device{deviceDetails.Path}
+			devicePath := hierarchy.Device{
+				Path: deviceDetails.Path,
+			}
 			dependents, err := devicePath.GetDependents()
 			if err != nil {
 				klog.Error("error getting dependent devices for ", deviceDetails.Path)
