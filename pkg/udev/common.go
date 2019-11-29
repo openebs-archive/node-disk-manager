@@ -165,6 +165,11 @@ func (device *UdevDevice) GetSyspath() string {
 	return syspath
 }
 
+// GetPath returns the path of device in /dev directory
+func (device *UdevDevice) GetPath() string {
+	return device.GetPropertyValue(UDEV_DEVNAME)
+}
+
 // GetDevLinks returns syspath of a disk using syspath we can fell details
 // in diskInfo struct using udev probe
 func (device *UdevDevice) GetDevLinks() map[string][]string {

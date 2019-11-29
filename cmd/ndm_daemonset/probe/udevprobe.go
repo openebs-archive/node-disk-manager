@@ -18,6 +18,7 @@ package probe
 
 import (
 	"errors"
+	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
@@ -145,7 +146,17 @@ func (up *udevProbe) scan() error {
 			deviceDetails := &controller.DiskInfo{}
 			deviceDetails.ProbeIdentifiers.Uuid = uuid
 			deviceDetails.ProbeIdentifiers.UdevIdentifier = newUdevice.GetSyspath()
+			deviceDetails.Path = newUdevice.GetPath()
 			diskInfo = append(diskInfo, deviceDetails)
+
+			// get the dependents of the block device and log it
+			devicePath := hierarchy.Device{deviceDetails.Path}
+			dependents, err := devicePath.GetDependents()
+			if err != nil {
+				klog.Error("error getting dependent devices for ", deviceDetails.Path)
+			} else {
+				klog.Infof("Dependents of %s : %+v", deviceDetails.Path, dependents)
+			}
 		}
 		newUdevice.UdevDeviceUnref()
 	}

@@ -93,13 +93,3 @@ func addDevPrefix(paths []string) []string {
 	}
 	return result
 }
-
-//func (d DependentDevices) String() string {
-//	var s strings.Builder
-//	if len(d.Parent) != 0 {
-//		s.WriteString("Parent : " + d.Parent)
-//	}
-//	if len(d.Partitions) != 0 {
-//
-//	}
-//}
