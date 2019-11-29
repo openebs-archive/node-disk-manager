@@ -230,7 +230,7 @@ spec:
             - name: OPERATOR_NAME
               value: "node-disk-operator"
             - name: CLEANUP_JOB_IMAGE
-              value: "quay.io/openebs/linux-utils:3.9"
+              value: "quay.io/openebs/linux-utils:latest"
 ---
 apiVersion: apps/v1
 kind: Deployment

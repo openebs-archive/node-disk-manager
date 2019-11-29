@@ -29,7 +29,7 @@ const (
 
 var (
 	// defaultCleanUpJobImage is the default job container image
-	defaultCleanUpJobImage = "quay.io/openebs/linux-utils:3.9"
+	defaultCleanUpJobImage = "quay.io/openebs/linux-utils:latest"
 )
 
 // getCleanUpImage gets the image to be used for the cleanup job
