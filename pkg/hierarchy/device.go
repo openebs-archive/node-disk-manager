@@ -73,7 +73,9 @@ func (d *Device) GetDependents() (DependentDevices, error) {
 	}
 
 	// adding /dev prefix
-	dependents.Parent = "/dev/" + dependents.Parent
+	if len(dependents.Parent) != 0 {
+		dependents.Parent = "/dev/" + dependents.Parent
+	}
 
 	// adding /devprefix to partition, slaves and holders
 	dependents.Partitions = addDevPrefix(dependents.Partitions)
