@@ -157,8 +157,21 @@ func (c *Controller) ListDiskResource() (*apis.DiskList, error) {
 	filter := KubernetesHostNameLabel + "=" + c.NodeAttributes[HostNameKey]
 	filter = filter + "," + NDMManagedKey + "!=" + FalseString
 	opts := &client.ListOptions{}
-	opts.SetLabelSelector(filter)
+	_ = opts.SetLabelSelector(filter)
 	err := c.Clientset.List(context.TODO(), opts, listDR)
+	if err != nil {
+		return listDR, err
+	}
+
+	// applying annotation filter, so that disk resources that need not be reconciled are
+	// not updated by the daemon
+	for i := 0; i < len(listDR.Items); i++ {
+		// if the annotation exists and the value is false, then that disk resource will be removed
+		// from the list
+		if val, ok := listDR.Items[i].Annotations[OpenEBSReconcile]; ok && util.CheckFalsy(val) {
+			listDR.Items = append(listDR.Items[:i], listDR.Items[i+1:]...)
+		}
+	}
 	return listDR, err
 }
 
