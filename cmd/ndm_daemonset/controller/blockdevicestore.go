@@ -173,8 +173,21 @@ func (c *Controller) ListBlockDeviceResource() (*apis.BlockDeviceList, error) {
 	filter := KubernetesHostNameLabel + "=" + c.NodeAttributes[HostNameKey]
 	filter = filter + "," + NDMManagedKey + "!=" + FalseString
 	opts := &client.ListOptions{}
-	opts.SetLabelSelector(filter)
+	_ = opts.SetLabelSelector(filter)
 	err := c.Clientset.List(context.TODO(), opts, blockDeviceList)
+	if err != nil {
+		return blockDeviceList, err
+	}
+
+	// applying annotation filter, so that blockdevice resources that need not be reconciled are
+	// not updated by the daemon
+	for i := 0; i < len(blockDeviceList.Items); i++ {
+		// if the annotation exists and the value is false, then that blockdevice resource will be removed
+		// from the list
+		if val, ok := blockDeviceList.Items[i].Annotations[OpenEBSReconcile]; ok && util.CheckFalsy(val) {
+			blockDeviceList.Items = append(blockDeviceList.Items[:i], blockDeviceList.Items[i+1:]...)
+		}
+	}
 	return blockDeviceList, err
 }
 

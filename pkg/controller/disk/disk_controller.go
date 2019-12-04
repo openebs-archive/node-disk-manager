@@ -18,6 +18,8 @@ package disk
 
 import (
 	"context"
+	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+
 	//"fmt"
 
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
@@ -102,5 +104,17 @@ func (r *ReconcileDisk) Reconcile(request reconcile.Request) (reconcile.Result, 
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+
+	// check if reconciliation is disabled on this disk resource
+	if IsReconcileDisabled(instance) {
+		return reconcile.Result{}, nil
+	}
+
 	return reconcile.Result{}, nil
+}
+
+// IsReconcileDisabled is used to check if reconcilation is disabled for
+// Disk resource
+func IsReconcileDisabled(disk *openebsv1alpha1.Disk) bool {
+	return disk.Annotations[ndm.OpenEBSReconcile] == "false"
 }
