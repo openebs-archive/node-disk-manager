@@ -1,3 +1,9 @@
+v0.4.5-RC1 / 2019-12-05
+=======================
+  
+  * fix security vulnerability in images used in cleanup pods
+  * add disk hierarchy information to the daemon logs
+
 v0.4.4 / 2019-11-12
 =======================
 
