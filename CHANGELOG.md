@@ -1,3 +1,11 @@
+v0.4.5-RC1 / 2019-12-05
+=======================
+  
+  * fixed security vulnerability in images used in cleanup pods ([#351](https://github.com/openebs/node-disk-manager/pull/351), 
+  [@kmova](https://github.com/kmova))
+  * added disk hierarchy information to the daemon logs ([#353](https://github.com/openebs/node-disk-manager/pull/353), 
+  [@akhilerm](https://github.com/akhilerm))
+
 v0.4.4 / 2019-11-12
 =======================
 
