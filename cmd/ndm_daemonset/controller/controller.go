@@ -94,6 +94,11 @@ var Namespace string
 // Each probe can get the copy of controller struct any time they need to read the channel.
 var ControllerBroadcastChannel = make(chan *Controller)
 
+// NDMOptions defines the options to run the NDM daemon
+type NDMOptions struct {
+	ConfigFilePath string
+}
+
 // Controller is the controller implementation for disk resources
 type Controller struct {
 	config *rest.Config // config is the generated config using kubeconfig/incluster config
@@ -109,7 +114,7 @@ type Controller struct {
 }
 
 // NewController returns a controller pointer for any error case it will return nil
-func NewController() (*Controller, error) {
+func NewController(opts NDMOptions) (*Controller, error) {
 	controller := &Controller{}
 	cfg, err := config.GetConfig()
 	if err != nil {
@@ -132,7 +137,7 @@ func NewController() (*Controller, error) {
 		return controller, err
 	}
 
-	controller.SetNDMConfig()
+	controller.SetNDMConfig(opts)
 	controller.Filters = make([]*Filter, 0)
 	controller.Probes = make([]*Probe, 0)
 	controller.NodeAttributes = make(map[string]string, 0)

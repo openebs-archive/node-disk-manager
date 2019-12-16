@@ -82,7 +82,7 @@ func NewSubCmdListBlockDevice() *cobra.Command {
 
 // deviceList prints list of devices using defaultDeviceList template
 func deviceList() error {
-	ctrl, err := controller.NewController()
+	ctrl, err := controller.NewController(options)
 	if err != nil {
 		return err
 	}

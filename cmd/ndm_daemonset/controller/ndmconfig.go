@@ -51,8 +51,8 @@ type FilterConfig struct {
 
 // SetNDMConfig sets config for probes and filters which user provides via configmap. If
 // no configmap present then ndm will load default config for each probes and filters.
-func (c *Controller) SetNDMConfig() {
-	data, err := ioutil.ReadFile(ConfigFilePath)
+func (c *Controller) SetNDMConfig(opts NDMOptions) {
+	data, err := ioutil.ReadFile(opts.ConfigFilePath)
 	if err != nil {
 		c.NDMConfig = nil
 		klog.Error("unable to set ndm config : ", err)
