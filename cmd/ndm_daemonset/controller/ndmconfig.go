@@ -24,8 +24,11 @@ import (
 	"k8s.io/klog"
 )
 
-// ConfigFilePath contains configmap file path
-var ConfigFilePath = "/host/node-disk-manager.config"
+const (
+	// DefaultConfigFilePath is the default path at which config is present inside
+	// container
+	DefaultConfigFilePath = "/host/node-disk-manager.config"
+)
 
 // NodeDiskManagerConfig contains congigs of probes and filters
 type NodeDiskManagerConfig struct {

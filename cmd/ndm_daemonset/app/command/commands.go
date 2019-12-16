@@ -44,7 +44,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 	cmd.PersistentFlags().StringVar(&options.ConfigFilePath, "config",
-		"/host/node-disk-manager.config",
+		controller.DefaultConfigFilePath,
 		"Path to config file")
 	_ = goflag.CommandLine.Parse([]string{})
 
