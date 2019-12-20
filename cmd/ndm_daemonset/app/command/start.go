@@ -34,7 +34,14 @@ func NewCmdStart() *cobra.Command {
 		Short: "Node disk controller",
 		Long:  ` watches for ndm custom resources via "ndm start" command `,
 		Run: func(cmd *cobra.Command, args []string) {
-			ctrl, err := controller.NewController(options)
+			ctrl, err := controller.NewController()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+
+			// set the NDM config from the options
+			err = ctrl.SetControllerOptions(options)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

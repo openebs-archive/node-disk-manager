@@ -114,7 +114,7 @@ type Controller struct {
 }
 
 // NewController returns a controller pointer for any error case it will return nil
-func NewController(opts NDMOptions) (*Controller, error) {
+func NewController() (*Controller, error) {
 	controller := &Controller{}
 	cfg, err := config.GetConfig()
 	if err != nil {
@@ -137,25 +137,30 @@ func NewController(opts NDMOptions) (*Controller, error) {
 		return controller, err
 	}
 
-	controller.SetNDMConfig(opts)
-	controller.Filters = make([]*Filter, 0)
-	controller.Probes = make([]*Probe, 0)
-	controller.NodeAttributes = make(map[string]string, 0)
-	controller.Mutex = &sync.Mutex{}
-
 	// get the namespace in which NDM is installed
 	Namespace, err = getNamespace()
 	if err != nil {
 		return controller, err
 	}
 
-	if err := controller.setNodeAttributes(); err != nil {
-		return nil, err
-	}
-
 	controller.WaitForDiskCRD()
 	controller.WaitForBlockDeviceCRD()
 	return controller, nil
+}
+
+// SetControllerOptions sets the various attributes and options
+// on the controller
+func (c *Controller) SetControllerOptions(opts NDMOptions) error {
+	// set the config for running NDM daemon
+	c.SetNDMConfig(opts)
+	c.Filters = make([]*Filter, 0)
+	c.Probes = make([]*Probe, 0)
+	c.NodeAttributes = make(map[string]string, 0)
+	c.Mutex = &sync.Mutex{}
+	if err := c.setNodeAttributes(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // newClientSet set Clientset field in Controller struct

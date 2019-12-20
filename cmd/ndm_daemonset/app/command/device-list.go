@@ -82,11 +82,12 @@ func NewSubCmdListBlockDevice() *cobra.Command {
 
 // deviceList prints list of devices using defaultDeviceList template
 func deviceList() error {
-	ctrl, err := controller.NewController(options)
+	ctrl, err := controller.NewController()
 	if err != nil {
 		return err
 	}
-	diskList, err := ctrl.ListDiskResource()
+	// TODO @akhilerm should pass the filter as args to List, so that all devices will be listed
+	diskList, err := ctrl.ListBlockDeviceResource()
 	if err != nil {
 		return err
 	}
