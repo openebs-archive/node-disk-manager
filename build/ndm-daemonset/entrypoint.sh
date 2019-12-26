@@ -7,7 +7,7 @@ ulimit -c unlimited
 echo "[entrypoint.sh] creating /var/openebs/sparse if not exists."
 mkdir -p /var/openebs/sparse
 echo "[entrypoint.sh] changing directory to /var/openebs/sparse"
-cd /var/openebs/sparse
+cd /var/openebs/sparse || exit
 echo "[entrypoint.sh] launching ndm process."
 /usr/sbin/ndm start &
 
