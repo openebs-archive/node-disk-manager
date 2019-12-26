@@ -71,45 +71,45 @@ func NewSeachestMetricCollector(c kubernetes.Client) prometheus.Collector {
 }
 
 // Describe is the implementation of Describe in prometheus.Collector
-func (mc *SeachestCollector) Describe(ch chan<- *prometheus.Desc) {
-	for _, col := range mc.metrics.Collectors() {
+func (sc *SeachestCollector) Describe(ch chan<- *prometheus.Desc) {
+	for _, col := range sc.metrics.Collectors() {
 		col.Describe(ch)
 	}
 }
 
 // Collect is the implementation of Collect in prometheus.Collector
-func (mc *SeachestCollector) Collect(ch chan<- prometheus.Metric) {
+func (sc *SeachestCollector) Collect(ch chan<- prometheus.Metric) {
 	klog.V(4).Info("Starting to collect smartmetrics metrics for a request")
 
-	mc.Lock()
-	if mc.requestInProgress {
+	sc.Lock()
+	if sc.requestInProgress {
 		klog.V(4).Info("Another request already in progress.")
-		mc.metrics.IncRejectRequestCounter()
-		mc.Unlock()
+		sc.metrics.IncRejectRequestCounter()
+		sc.Unlock()
 		return
 	}
 
-	mc.requestInProgress = true
-	mc.Unlock()
+	sc.requestInProgress = true
+	sc.Unlock()
 
 	// once a request is processed, set the progress flag to false
-	defer mc.setRequestProgressToFalse()
+	defer sc.setRequestProgressToFalse()
 
 	klog.V(4).Info("Setting client for this request.")
 
 	// set the client each time
-	if err := mc.Client.InitClient(); err != nil {
+	if err := sc.Client.InitClient(); err != nil {
 		klog.Errorf("error setting client. %v", err)
-		mc.metrics.IncErrorRequestCounter()
-		mc.collectErrors(ch)
+		sc.metrics.IncErrorRequestCounter()
+		sc.collectErrors(ch)
 		return
 	}
 
 	// get list of blockdevices from etcd
-	blockDevices, err := mc.Client.ListBlockDevice()
+	blockDevices, err := sc.Client.ListBlockDevice()
 	if err != nil {
-		mc.metrics.IncErrorRequestCounter()
-		mc.collectErrors(ch)
+		sc.metrics.IncErrorRequestCounter()
+		sc.collectErrors(ch)
 		return
 	}
 
@@ -117,34 +117,34 @@ func (mc *SeachestCollector) Collect(ch chan<- prometheus.Metric) {
 
 	err = GetMetricData(blockDevices)
 	if err != nil {
-		mc.metrics.IncErrorRequestCounter()
-		mc.collectErrors(ch)
+		sc.metrics.IncErrorRequestCounter()
+		sc.collectErrors(ch)
 		return
 	}
 
 	klog.V(4).Infof("metrics data obtained from seachest library")
 
-	mc.SetMetricData(blockDevices)
+	sc.SetMetricData(blockDevices)
 
 	klog.V(4).Info("Prometheus metrics is set and initializing collection.")
 
 	// collect each metric
-	for _, col := range mc.metrics.Collectors() {
+	for _, col := range sc.metrics.Collectors() {
 		col.Collect(ch)
 	}
 }
 
 // setRequestProgressToFalse is used to set the progress flag, when a request is
 // processed or errored
-func (mc *SeachestCollector) setRequestProgressToFalse() {
-	mc.Lock()
-	mc.requestInProgress = false
-	mc.Unlock()
+func (sc *SeachestCollector) setRequestProgressToFalse() {
+	sc.Lock()
+	sc.requestInProgress = false
+	sc.Unlock()
 }
 
 // collectErrors collects only the error metrics and set it on the channel
-func (mc *SeachestCollector) collectErrors(ch chan<- prometheus.Metric) {
-	for _, col := range mc.metrics.ErrorCollectors() {
+func (sc *SeachestCollector) collectErrors(ch chan<- prometheus.Metric) {
+	for _, col := range sc.metrics.ErrorCollectors() {
 		col.Collect(ch)
 	}
 }
