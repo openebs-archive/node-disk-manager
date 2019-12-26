@@ -22,15 +22,19 @@ import (
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
-	seachestmetrics "github.com/openebs/node-disk-manager/pkg/metrics/seachest"
+	smartmetrics "github.com/openebs/node-disk-manager/pkg/metrics/smart"
 	"github.com/openebs/node-disk-manager/pkg/seachest"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog"
 )
 
-// SeachestMetricCollector contains the metrics, concurrency handler and client to get the
+const (
+	SeachestCollectorNamespace = "seachest"
+)
+
+// SeachestCollector contains the metrics, concurrency handler and client to get the
 // metrics from seachest
-type SeachestMetricCollector struct {
+type SeachestCollector struct {
 	// Client is the k8s client which will be used to interface with etcd
 	Client kubernetes.Client
 
@@ -38,8 +42,8 @@ type SeachestMetricCollector struct {
 	sync.Mutex
 	requestInProgress bool
 
-	// all exposed metrics from seachest
-	metrics *seachestmetrics.Metrics
+	// all metrics collected via seachest
+	metrics *smartmetrics.Metrics
 }
 
 // SeachestMetricData is the struct which holds the data from seachest library
@@ -49,26 +53,31 @@ type SeachestMetricData struct {
 	TempInfo           blockdevice.TemperatureInformation
 }
 
-// NewSeachestMetricCollector creates a new instance of SeachestMetricCollector which
+// NewSeachestMetricCollector creates a new instance of SeachestCollector which
 // implements Collector interface
 func NewSeachestMetricCollector(c kubernetes.Client) prometheus.Collector {
 	klog.V(2).Infof("Seachest Metric Collector initialized")
-	return &SeachestMetricCollector{
+	sc := &SeachestCollector{
 		Client:  c,
-		metrics: seachestmetrics.NewMetrics(),
+		metrics: smartmetrics.NewMetrics(SeachestCollectorNamespace),
 	}
+	sc.metrics.WithBlockDeviceCurrentTemperature().
+		WithBlockDeviceCurrentTemperatureValid().
+		WithRejectRequest().
+		WithErrorRequest()
+	return sc
 }
 
 // Describe is the implementation of Describe in prometheus.Collector
-func (mc *SeachestMetricCollector) Describe(ch chan<- *prometheus.Desc) {
+func (mc *SeachestCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, col := range mc.metrics.Collectors() {
 		col.Describe(ch)
 	}
 }
 
 // Collect is the implementation of Collect in prometheus.Collector
-func (mc *SeachestMetricCollector) Collect(ch chan<- prometheus.Metric) {
-	klog.V(4).Info("Starting to collect seachestmetrics metrics for a request")
+func (mc *SeachestCollector) Collect(ch chan<- prometheus.Metric) {
+	klog.V(4).Info("Starting to collect smartmetrics metrics for a request")
 
 	mc.Lock()
 	if mc.requestInProgress {
@@ -113,7 +122,7 @@ func (mc *SeachestMetricCollector) Collect(ch chan<- prometheus.Metric) {
 
 	klog.V(4).Infof("metrics data obtained from seachest library")
 
-	mc.metrics.SetMetrics(blockDevices)
+	mc.SetMetricData(blockDevices)
 
 	klog.V(4).Info("Prometheus metrics is set and initializing collection.")
 
@@ -125,14 +134,14 @@ func (mc *SeachestMetricCollector) Collect(ch chan<- prometheus.Metric) {
 
 // setRequestProgressToFalse is used to set the progress flag, when a request is
 // processed or errored
-func (mc *SeachestMetricCollector) setRequestProgressToFalse() {
+func (mc *SeachestCollector) setRequestProgressToFalse() {
 	mc.Lock()
 	mc.requestInProgress = false
 	mc.Unlock()
 }
 
 // collectErrors collects only the error metrics and set it on the channel
-func (mc *SeachestMetricCollector) collectErrors(ch chan<- prometheus.Metric) {
+func (mc *SeachestCollector) collectErrors(ch chan<- prometheus.Metric) {
 	for _, col := range mc.metrics.ErrorCollectors() {
 		col.Collect(ch)
 	}
@@ -177,4 +186,20 @@ func (sc *SeachestMetricData) GetSeachestData() error {
 	sc.TempInfo.CurrentTemperature = sc.SeachestIdentifier.GetCurrentTemperature(driveInfo)
 
 	return nil
+}
+
+// SetMetricData sets the SMART metric data collected using seachest onto
+// the prometheus metrics
+func (sc *SeachestCollector) SetMetricData(blockdevices []blockdevice.BlockDevice) {
+	for _, bd := range blockdevices {
+		// sets the label values
+		sc.metrics.WithBlockDeviceUUID(bd.UUID).
+			WithBlockDevicePath(bd.Path).
+			WithBlockDeviceHostName(bd.NodeAttributes[blockdevice.HostName]).
+			WithBlockDeviceNodeName(bd.NodeAttributes[blockdevice.NodeName])
+
+		// sets the metrics
+		sc.metrics.SetBlockDeviceCurrentTemperature(bd.TemperatureInfo.CurrentTemperature).
+			SetBlockDeviceCurrentTemperatureValid(bd.TemperatureInfo.TemperatureDataValid)
+	}
 }

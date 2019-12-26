@@ -14,23 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package seachest
+package smart
 
 import (
 	"strings"
 
-	bd "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const (
-	// SeachestName is the name prefix used for all seachest metrics
-	SeachestName = "seachest"
-)
-
-// Metrics is the prometheus metrics that are exposed by the exporter. This includes
-// all the metrics that can be fetched using seachest library
-type Metrics struct {
+// MetricsData is the prometheus metrics that are exposed by the exporter. This includes
+// all the metrics that are available via SMART
+// TODO additional smart metrics need to be added here
+type MetricsData struct {
 	// blockDeviceCurrentTemperatureValid tells whether the current temperature data is valid
 	blockDeviceCurrentTemperatureValid *prometheus.GaugeVec
 	// blockDeviceTemperature is the temperature of the the blockdevice if it is reported
@@ -41,13 +36,27 @@ type Metrics struct {
 	errorRequestCount  prometheus.Counter
 }
 
-// NewMetrics creates instance of metrics
-func NewMetrics() *Metrics {
-	return new(Metrics).
-		withBlockDeviceCurrentTemperatureValid().
-		withBlockDeviceCurrentTemperature().
-		withRejectRequest().
-		withErrorRequest()
+//MetricsLabels are the labels that are available on the prometheus metrics
+type MetricsLabels struct {
+	UUID     string
+	Path     string
+	HostName string
+	NodeName string
+}
+
+// Metrics defines the metrics data along with the labels present on those metrics.
+// The collector(currently seachest/smart) used to fetch the metrics is also defined
+type Metrics struct {
+	CollectorType string
+	MetricsData
+	MetricsLabels
+}
+
+// NewMetrics creates a new Metrics with the given collector type
+func NewMetrics(collector string) *Metrics {
+	return &Metrics{
+		CollectorType: collector,
+	}
 }
 
 // Collectors lists out all the collectors for which the metrics is exposed
@@ -78,10 +87,10 @@ func (m *Metrics) IncErrorRequestCounter() {
 	m.errorRequestCount.Inc()
 }
 
-func (m *Metrics) withBlockDeviceCurrentTemperature() *Metrics {
+func (m *Metrics) WithBlockDeviceCurrentTemperature() *Metrics {
 	m.blockDeviceCurrentTemperature = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace: SeachestName,
+			Namespace: m.CollectorType,
 			Name:      "block_device_current_temperature_celsius",
 			Help:      `Current reported temperature of the blockdevice. -1 if not reported`,
 		},
@@ -90,10 +99,10 @@ func (m *Metrics) withBlockDeviceCurrentTemperature() *Metrics {
 	return m
 }
 
-func (m *Metrics) withBlockDeviceCurrentTemperatureValid() *Metrics {
+func (m *Metrics) WithBlockDeviceCurrentTemperatureValid() *Metrics {
 	m.blockDeviceCurrentTemperatureValid = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace: SeachestName,
+			Namespace: m.CollectorType,
 			Name:      "block_device_current_temperature_valid",
 			Help:      `Validity of the current temperature data reported. 0 means not valid, 1 means valid`,
 		},
@@ -102,10 +111,10 @@ func (m *Metrics) withBlockDeviceCurrentTemperatureValid() *Metrics {
 	return m
 }
 
-func (m *Metrics) withRejectRequest() *Metrics {
+func (m *Metrics) WithRejectRequest() *Metrics {
 	m.rejectRequestCount = prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace: SeachestName,
+			Namespace: m.CollectorType,
 			Name:      "reject_request_count",
 			Help:      `No. of requests rejected by the exporter`,
 		},
@@ -113,34 +122,54 @@ func (m *Metrics) withRejectRequest() *Metrics {
 	return m
 }
 
-func (m *Metrics) withErrorRequest() *Metrics {
+func (m *Metrics) WithErrorRequest() *Metrics {
 	m.errorRequestCount = prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace: SeachestName,
+			Namespace: m.CollectorType,
 			Name:      "error_request_count",
 			Help:      `No. of requests errored out by the exporter`,
 		})
 	return m
 }
 
-// SetMetrics is used to set the seachest metrics onto resepective fields
-// of prometheus metrics
-func (m *Metrics) SetMetrics(blockDevices []bd.BlockDevice) {
-	for _, blockDevice := range blockDevices {
-		// remove /dev from the device path so that the device path is similar to the
-		// path given by node exporter
-		path := strings.ReplaceAll(blockDevice.Path, "/dev/", "")
-		m.blockDeviceCurrentTemperature.WithLabelValues(blockDevice.UUID,
-			path,
-			blockDevice.NodeAttributes[bd.HostName],
-			blockDevice.NodeAttributes[bd.NodeName]).
-			Set(float64(blockDevice.TemperatureInfo.CurrentTemperature))
-		m.blockDeviceCurrentTemperatureValid.WithLabelValues(blockDevice.UUID,
-			path,
-			blockDevice.NodeAttributes[bd.HostName],
-			blockDevice.NodeAttributes[bd.NodeName]).
-			Set(getTemperatureValidity(blockDevice.TemperatureInfo.TemperatureDataValid))
-	}
+func (ml *MetricsLabels) WithBlockDeviceUUID(uuid string) *MetricsLabels {
+	ml.UUID = uuid
+	return ml
+}
+
+func (ml *MetricsLabels) WithBlockDevicePath(path string) *MetricsLabels {
+	// remove /dev from the device path so that the device path is similar to the
+	// path given by node exporter
+	ml.Path = strings.ReplaceAll(path, "/dev/", "")
+	return ml
+}
+
+func (ml *MetricsLabels) WithBlockDeviceHostName(hostName string) *MetricsLabels {
+	ml.HostName = hostName
+	return ml
+}
+
+func (ml *MetricsLabels) WithBlockDeviceNodeName(nodeName string) *MetricsLabels {
+	ml.NodeName = nodeName
+	return ml
+}
+
+func (m *Metrics) SetBlockDeviceCurrentTemperature(currentTemp int16) *Metrics {
+	m.blockDeviceCurrentTemperature.WithLabelValues(m.UUID,
+		m.Path,
+		m.HostName,
+		m.NodeName).
+		Set(float64(currentTemp))
+	return m
+}
+
+func (m *Metrics) SetBlockDeviceCurrentTemperatureValid(valid bool) *Metrics {
+	m.blockDeviceCurrentTemperatureValid.WithLabelValues(m.UUID,
+		m.Path,
+		m.HostName,
+		m.NodeName).
+		Set(getTemperatureValidity(valid))
+	return m
 }
 
 // getTemperatureValidity converts temperature validity
