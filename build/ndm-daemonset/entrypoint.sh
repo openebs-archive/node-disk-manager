@@ -4,8 +4,10 @@ export GOTRACEBACK=crash
 
 echo "[entrypoint.sh] enabling core dump."
 ulimit -c unlimited
+echo "[entrypoint.sh] creating /var/openebs/sparse if not exists."
+mkdir -p /var/openebs/sparse
 echo "[entrypoint.sh] changing directory to /var/openebs/sparse"
-cd /var/openebs/sparse || exit
+cd /var/openebs/sparse
 echo "[entrypoint.sh] launching ndm process."
 /usr/sbin/ndm start &
 
