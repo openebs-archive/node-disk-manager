@@ -29,6 +29,8 @@ import (
 )
 
 const (
+	// SeachestCollectorNamespace is the namespace field in the prometheus metrics when
+	// seachest is used to collect the metrics.
 	SeachestCollectorNamespace = "seachest"
 )
 

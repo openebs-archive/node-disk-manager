@@ -87,6 +87,8 @@ func (m *Metrics) IncErrorRequestCounter() {
 	m.errorRequestCount.Inc()
 }
 
+// WithBlockDeviceCurrentTemperature declares the metric current temperature
+// as a prometheus metric
 func (m *Metrics) WithBlockDeviceCurrentTemperature() *Metrics {
 	m.blockDeviceCurrentTemperature = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -99,6 +101,8 @@ func (m *Metrics) WithBlockDeviceCurrentTemperature() *Metrics {
 	return m
 }
 
+// WithBlockDeviceCurrentTemperatureValid declares the metric current temperature valid
+// as a prometheus metric
 func (m *Metrics) WithBlockDeviceCurrentTemperatureValid() *Metrics {
 	m.blockDeviceCurrentTemperatureValid = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -111,6 +115,7 @@ func (m *Metrics) WithBlockDeviceCurrentTemperatureValid() *Metrics {
 	return m
 }
 
+// WithRejectRequest declares the reject request count metric
 func (m *Metrics) WithRejectRequest() *Metrics {
 	m.rejectRequestCount = prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -122,6 +127,7 @@ func (m *Metrics) WithRejectRequest() *Metrics {
 	return m
 }
 
+// WithErrorRequest declares the error request count metric
 func (m *Metrics) WithErrorRequest() *Metrics {
 	m.errorRequestCount = prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -132,11 +138,13 @@ func (m *Metrics) WithErrorRequest() *Metrics {
 	return m
 }
 
+// WithBlockDeviceUUID sets the blockdevice UUID to the metric label
 func (ml *MetricsLabels) WithBlockDeviceUUID(uuid string) *MetricsLabels {
 	ml.UUID = uuid
 	return ml
 }
 
+// WithBlockDevicePath sets the blockdevice path to the metric label
 func (ml *MetricsLabels) WithBlockDevicePath(path string) *MetricsLabels {
 	// remove /dev from the device path so that the device path is similar to the
 	// path given by node exporter
@@ -144,16 +152,19 @@ func (ml *MetricsLabels) WithBlockDevicePath(path string) *MetricsLabels {
 	return ml
 }
 
+// WithBlockDeviceHostName sets the blockdevice hostname to the metric label
 func (ml *MetricsLabels) WithBlockDeviceHostName(hostName string) *MetricsLabels {
 	ml.HostName = hostName
 	return ml
 }
 
+// WithBlockDeviceNodeName sets the blockdevice nodename to the metric label
 func (ml *MetricsLabels) WithBlockDeviceNodeName(nodeName string) *MetricsLabels {
 	ml.NodeName = nodeName
 	return ml
 }
 
+// SetBlockDeviceCurrentTemperature sets the current temperature value to the metric
 func (m *Metrics) SetBlockDeviceCurrentTemperature(currentTemp int16) *Metrics {
 	m.blockDeviceCurrentTemperature.WithLabelValues(m.UUID,
 		m.Path,
@@ -163,6 +174,8 @@ func (m *Metrics) SetBlockDeviceCurrentTemperature(currentTemp int16) *Metrics {
 	return m
 }
 
+// SetBlockDeviceCurrentTemperatureValid sets the validity of the exposed current
+// temperature metrics
 func (m *Metrics) SetBlockDeviceCurrentTemperatureValid(valid bool) *Metrics {
 	m.blockDeviceCurrentTemperatureValid.WithLabelValues(m.UUID,
 		m.Path,
