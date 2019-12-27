@@ -26,16 +26,18 @@ import (
 
 func TestSetNDMConfig(t *testing.T) {
 	fakeConfigFilePath := "/tmp/fakendm.config"
-	defaultConfigFilePath := ConfigFilePath
+
+	options := NDMOptions{
+		ConfigFilePath: fakeConfigFilePath,
+	}
 
 	// test case : when file not present
 	fakeController := &Controller{}
-	fakeController.SetNDMConfig()
+	fakeController.SetNDMConfig(options)
 	if fakeController.NDMConfig != nil {
 		t.Error("NDMConfig should nil for invalid file path")
 	}
-	// test case for invalid json
-	ConfigFilePath = fakeConfigFilePath
+
 	fileContent := []byte(`{
         "probeconfigs": [
             {
@@ -85,15 +87,15 @@ func TestSetNDMConfig(t *testing.T) {
 	}
 	expectedNDMConfig.FilterConfigs = append(expectedNDMConfig.FilterConfigs, expectedFilterConfig)
 	expectedNDMConfig.ProbeConfigs = append(expectedNDMConfig.ProbeConfigs, expectedProbeConfig)
-	ConfigFilePath = fakeConfigFilePath
+
 	err = ioutil.WriteFile(fakeConfigFilePath, fileContent, 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fakeController.SetNDMConfig()
+	fakeController.SetNDMConfig(options)
 	assert.Equal(t, expectedNDMConfig, *fakeController.NDMConfig)
 	os.Remove(fakeConfigFilePath)
-	ConfigFilePath = defaultConfigFilePath
+
 }
 
 func TestController_SetNDMConfig_yaml(t *testing.T) {
@@ -101,10 +103,12 @@ func TestController_SetNDMConfig_yaml(t *testing.T) {
 	writeTestYaml(t, fakeConfigFilePath)
 	defer os.Remove(fakeConfigFilePath)
 
-	ConfigFilePath = fakeConfigFilePath
+	options := NDMOptions{
+		ConfigFilePath: fakeConfigFilePath,
+	}
 
 	ctrl := &Controller{}
-	ctrl.SetNDMConfig()
+	ctrl.SetNDMConfig(options)
 
 	assert.NotNil(t, ctrl.NDMConfig)
 

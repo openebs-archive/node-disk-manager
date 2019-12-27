@@ -18,6 +18,7 @@ package command
 
 import (
 	goflag "flag"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/version"
 
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -26,8 +27,12 @@ import (
 	"k8s.io/klog"
 )
 
+// options is the options with which the daemon is to be run
+var options controller.NDMOptions
+
 // NewNodeDiskManager creates a new ndm.
 func NewNodeDiskManager() (*cobra.Command, error) {
+
 	// Create a new command
 	cmd := &cobra.Command{
 		Use:   "ndm",
@@ -38,6 +43,9 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	}
 
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
+	cmd.PersistentFlags().StringVar(&options.ConfigFilePath, "config",
+		controller.DefaultConfigFilePath,
+		"Path to config file")
 	_ = goflag.CommandLine.Parse([]string{})
 
 	cmd.AddCommand(

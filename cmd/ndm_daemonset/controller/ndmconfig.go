@@ -24,8 +24,11 @@ import (
 	"k8s.io/klog"
 )
 
-// ConfigFilePath contains configmap file path
-var ConfigFilePath = "/host/node-disk-manager.config"
+const (
+	// DefaultConfigFilePath is the default path at which config is present inside
+	// container
+	DefaultConfigFilePath = "/host/node-disk-manager.config"
+)
 
 // NodeDiskManagerConfig contains congigs of probes and filters
 type NodeDiskManagerConfig struct {
@@ -51,8 +54,8 @@ type FilterConfig struct {
 
 // SetNDMConfig sets config for probes and filters which user provides via configmap. If
 // no configmap present then ndm will load default config for each probes and filters.
-func (c *Controller) SetNDMConfig() {
-	data, err := ioutil.ReadFile(ConfigFilePath)
+func (c *Controller) SetNDMConfig(opts NDMOptions) {
+	data, err := ioutil.ReadFile(opts.ConfigFilePath)
 	if err != nil {
 		c.NDMConfig = nil
 		klog.Error("unable to set ndm config : ", err)

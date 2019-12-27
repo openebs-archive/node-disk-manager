@@ -39,6 +39,13 @@ func NewCmdStart() *cobra.Command {
 				fmt.Println(err)
 				os.Exit(1)
 			}
+
+			// set the NDM config from the options
+			err = ctrl.SetControllerOptions(options)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 			// Broadcast starts broadcasting controller pointer. Using this
 			// each probe and filter registers themselves.
 			ctrl.Broadcast()

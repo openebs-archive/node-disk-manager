@@ -98,6 +98,11 @@ var Namespace string
 // Each probe can get the copy of controller struct any time they need to read the channel.
 var ControllerBroadcastChannel = make(chan *Controller)
 
+// NDMOptions defines the options to run the NDM daemon
+type NDMOptions struct {
+	ConfigFilePath string
+}
+
 // Controller is the controller implementation for disk resources
 type Controller struct {
 	config *rest.Config // config is the generated config using kubeconfig/incluster config
@@ -136,25 +141,30 @@ func NewController() (*Controller, error) {
 		return controller, err
 	}
 
-	controller.SetNDMConfig()
-	controller.Filters = make([]*Filter, 0)
-	controller.Probes = make([]*Probe, 0)
-	controller.NodeAttributes = make(map[string]string, 0)
-	controller.Mutex = &sync.Mutex{}
-
 	// get the namespace in which NDM is installed
 	Namespace, err = getNamespace()
 	if err != nil {
 		return controller, err
 	}
 
-	if err := controller.setNodeAttributes(); err != nil {
-		return nil, err
-	}
-
 	controller.WaitForDiskCRD()
 	controller.WaitForBlockDeviceCRD()
 	return controller, nil
+}
+
+// SetControllerOptions sets the various attributes and options
+// on the controller
+func (c *Controller) SetControllerOptions(opts NDMOptions) error {
+	// set the config for running NDM daemon
+	c.SetNDMConfig(opts)
+	c.Filters = make([]*Filter, 0)
+	c.Probes = make([]*Probe, 0)
+	c.NodeAttributes = make(map[string]string, 0)
+	c.Mutex = &sync.Mutex{}
+	if err := c.setNodeAttributes(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // newClientSet set Clientset field in Controller struct
