@@ -115,7 +115,7 @@ func (sc *SeachestCollector) Collect(ch chan<- prometheus.Metric) {
 
 	klog.V(4).Info("Blockdevices fetched from etcd")
 
-	err = GetMetricData(blockDevices)
+	err = getMetricData(blockDevices)
 	if err != nil {
 		sc.metrics.IncErrorRequestCounter()
 		sc.collectErrors(ch)
@@ -124,7 +124,7 @@ func (sc *SeachestCollector) Collect(ch chan<- prometheus.Metric) {
 
 	klog.V(4).Infof("metrics data obtained from seachest library")
 
-	sc.SetMetricData(blockDevices)
+	sc.setMetricData(blockDevices)
 
 	klog.V(4).Info("Prometheus metrics is set and initializing collection.")
 
@@ -149,8 +149,8 @@ func (sc *SeachestCollector) collectErrors(ch chan<- prometheus.Metric) {
 	}
 }
 
-// GetMetricData gets the seachest metrics for each blockdevice and fills it in the blockdevice struct
-func GetMetricData(bds []blockdevice.BlockDevice) error {
+// getMetricData gets the seachest metrics for each blockdevice and fills it in the blockdevice struct
+func getMetricData(bds []blockdevice.BlockDevice) error {
 	var err error
 	ok := false
 	for i, bd := range bds {
@@ -163,7 +163,7 @@ func GetMetricData(bds []blockdevice.BlockDevice) error {
 				DevPath: bd.Path,
 			},
 		}
-		err = sc.GetSeachestData()
+		err = sc.getSeachestData()
 		if err != nil {
 			klog.Errorf("fetching seachest data for %s failed. %v", bd.Path, err)
 			continue
@@ -177,8 +177,8 @@ func GetMetricData(bds []blockdevice.BlockDevice) error {
 	return nil
 }
 
-// GetSeachestData fetches the data for a blockdevice using the seachest library from the disk.
-func (sc *SeachestMetricData) GetSeachestData() error {
+// getSeachestData fetches the data for a blockdevice using the seachest library from the disk.
+func (sc *SeachestMetricData) getSeachestData() error {
 	driveInfo, err := sc.SeachestIdentifier.SeachestBasicDiskInfo()
 	if err != 0 {
 		klog.Errorf("error fetching basic disk info using seachest. %s", seachest.SeachestErrors(err))
@@ -190,9 +190,9 @@ func (sc *SeachestMetricData) GetSeachestData() error {
 	return nil
 }
 
-// SetMetricData sets the SMART metric data collected using seachest onto
+// setMetricData sets the SMART metric data collected using seachest onto
 // the prometheus metrics
-func (sc *SeachestCollector) SetMetricData(blockdevices []blockdevice.BlockDevice) {
+func (sc *SeachestCollector) setMetricData(blockdevices []blockdevice.BlockDevice) {
 	for _, bd := range blockdevices {
 		// sets the label values
 		sc.metrics.WithBlockDeviceUUID(bd.UUID).
