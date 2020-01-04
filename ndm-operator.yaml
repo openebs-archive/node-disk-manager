@@ -163,6 +163,9 @@ spec:
         # Specify the number of sparse files to be created
         - name: SPARSE_FILE_COUNT
           value: "1"
+        # Set the core dump env to enable core dump for NDM daemon
+        #- name: ENABLE_COREDUMP
+        #  value: "1"
       volumes:
       - name: config
         configMap:
