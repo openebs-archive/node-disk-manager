@@ -9,10 +9,10 @@ else
   # set ulimit to unlimited and create a core directory for creating coredump
   echo "[entrypoint.sh] enabling core dump."
   ulimit -c unlimited
-  echo "[entrypoint.sh] creating $SPARSE_FILE_DIR/core if not exists."
-  mkdir -p "$SPARSE_FILE_DIR/core"
-  echo "[entrypoint.sh] changing directory to $SPARSE_FILE_DIR/core"
-  cd "$SPARSE_FILE_DIR/core" || exit
+  echo "[entrypoint.sh] creating $OPENEBS_IO_BASE_DIR/core if not exists."
+  mkdir -p "$OPENEBS_IO_BASE_DIR/core"
+  echo "[entrypoint.sh] changing directory to $OPENEBS_IO_BASE_DIR/core"
+  cd "$OPENEBS_IO_BASE_DIR/core" || exit
 fi
 
 echo "[entrypoint.sh] launching ndm process."
