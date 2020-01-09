@@ -190,7 +190,7 @@ func (c *jobController) CancelJob(bdName string) error {
 	job := &batchv1.Job{}
 	err := c.client.Get(context.TODO(), objKey, job)
 
-	//err = c.client.Delete(context.TODO(), job, client.PropagationPolicy(metav1.DeletePropagationForeground))
+	err = c.client.Delete(context.TODO(), job, client.PropagationPolicy(metav1.DeletePropagationForeground))
 	return err
 }
 
