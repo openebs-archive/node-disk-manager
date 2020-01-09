@@ -58,7 +58,7 @@ type jobController struct {
 
 // NewCleanupJob creates a new cleanup job in the  namespace. It returns a Job object which can be used to
 // start the job
-func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace string) (*batchv1.Job, error) {
+func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, tolerations []v1.Toleration, namespace string) (*batchv1.Job, error) {
 	nodeName := bd.Labels[controller.KubernetesHostNameLabel]
 
 	priv := true
@@ -96,10 +96,10 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, namespace strin
 		podSpec.Volumes = []v1.Volume{volume}
 	}
 
+	podSpec.Tolerations = tolerations
 	podSpec.ServiceAccountName = getServiceAccount()
 	podSpec.Containers = []v1.Container{jobContainer}
 	podSpec.NodeSelector = map[string]string{controller.KubernetesHostNameLabel: nodeName}
-
 	podTemplate := v1.Pod{}
 	podTemplate.Spec = podSpec
 
@@ -190,7 +190,7 @@ func (c *jobController) CancelJob(bdName string) error {
 	job := &batchv1.Job{}
 	err := c.client.Get(context.TODO(), objKey, job)
 
-	err = c.client.Delete(context.TODO(), job, client.PropagationPolicy(metav1.DeletePropagationForeground))
+	//err = c.client.Delete(context.TODO(), job, client.PropagationPolicy(metav1.DeletePropagationForeground))
 	return err
 }
 
