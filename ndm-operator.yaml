@@ -187,6 +187,7 @@ spec:
       - name: basepath
         hostPath:
           path: /var/openebs/ndm
+          type: DirectoryOrCreate
       - name: sparsepath
         hostPath:
           path: /var/openebs/sparse
