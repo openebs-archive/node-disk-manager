@@ -154,17 +154,17 @@ spec:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
-            fieldPath: spec.nodeName
+              fieldPath: spec.nodeName
         - name: OPENEBS_IO_BASE_DIR
           value: "/var/openebs"
-          # specify the directory where the sparse files need to be created.
-          # if not specified, then sparse files will not be created.
+        # specify the directory where the sparse files need to be created.
+        # if not specified, then sparse files will not be created.
         - name: SPARSE_FILE_DIR
           value: "/var/openebs/sparse"
-          # Size of the sparse file to be created.
+        # Size of the sparse file to be created.
         - name: SPARSE_FILE_SIZE
           value: "1073741824"
-          # Specify the number of sparse files to be created
+        # Specify the number of sparse files to be created
         - name: SPARSE_FILE_COUNT
           value: "1"
         # Set the core dump env to enable core dump for NDM daemon
@@ -186,7 +186,7 @@ spec:
           type: Directory
       - name: basepath
         hostPath:
-          path: /var/openebs
+          path: /var/openebs/ndm
       - name: sparsepath
         hostPath:
           path: /var/openebs/sparse
