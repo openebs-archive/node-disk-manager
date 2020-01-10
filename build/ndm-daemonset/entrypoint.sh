@@ -6,13 +6,15 @@ export GOTRACEBACK=crash
 if [ -z "$ENABLE_COREDUMP" ]; then
   ulimit -c 0
 else
+  # making sure mountpath inside the container is available
+  cd /var/openebs || (echo "OpenEBS Base directory not found" && exit)
   # set ulimit to unlimited and create a core directory for creating coredump
   echo "[entrypoint.sh] enabling core dump."
   ulimit -c unlimited
-  echo "[entrypoint.sh] creating $OPENEBS_IO_BASE_DIR/core if not exists."
-  mkdir -p "$OPENEBS_IO_BASE_DIR/core"
-  echo "[entrypoint.sh] changing directory to $OPENEBS_IO_BASE_DIR/core"
-  cd "$OPENEBS_IO_BASE_DIR/core" || exit
+  echo "[entrypoint.sh] creating /var/openebs/core if not exists."
+  mkdir -p "/var/openebs/core"
+  echo "[entrypoint.sh] changing directory to /var/openebs/core"
+  cd "/var/openebs/core" || exit
 fi
 
 echo "[entrypoint.sh] launching ndm process."
