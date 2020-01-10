@@ -7,14 +7,14 @@ if [ -z "$ENABLE_COREDUMP" ]; then
   ulimit -c 0
 else
   # making sure mountpath inside the container is available
-  cd /var/openebs || (echo "OpenEBS Base directory not found" && exit 1)
+  cd /var/openebs/ndm || (echo "OpenEBS Base directory not found" && exit 1)
   # set ulimit to unlimited and create a core directory for creating coredump
   echo "[entrypoint.sh] enabling core dump."
   ulimit -c unlimited
-  echo "[entrypoint.sh] creating /var/openebs/core if not exists."
-  mkdir -p "/var/openebs/core"
-  echo "[entrypoint.sh] changing directory to /var/openebs/core"
-  cd "/var/openebs/core" || exit
+  echo "[entrypoint.sh] creating /var/openebs/ndm/core if not exists."
+  mkdir -p "/var/openebs/ndm/core"
+  echo "[entrypoint.sh] changing directory to /var/openebs/ndm/core"
+  cd "/var/openebs/ndm/core" || exit
 fi
 
 echo "[entrypoint.sh] launching ndm process."

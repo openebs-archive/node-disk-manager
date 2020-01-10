@@ -140,7 +140,7 @@ spec:
           mountPath: /host/proc
           readOnly: true
         - name: basepath
-          mountPath: /var/openebs
+          mountPath: /var/openebs/ndm
         - name: sparsepath
           mountPath: /var/openebs/sparse
         env:
