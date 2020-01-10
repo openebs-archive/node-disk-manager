@@ -25,7 +25,6 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -145,7 +144,8 @@ func (c *CleanupStatusTracker) CancelJob(bdName string) error {
 func (c *Cleaner) runJob(bd *v1alpha1.BlockDevice, volumeMode VolumeMode) error {
 
 	//retreive node Object to pass tolerations to the Job
-	selectedNode, err := c.getNodeObjectByNodeName(bd.Labels[controller.KubernetesHostNameLabel])
+	nodeName := GetNodeName(bd)
+	selectedNode, err := c.getNodeObjectByNodeName(nodeName)
 	if err != nil {
 		return err
 	}

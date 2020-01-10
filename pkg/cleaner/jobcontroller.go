@@ -207,6 +207,11 @@ func getCommand(cmd string, args ...string) []string {
 	return command
 }
 
+// GetNodeName gets the Node name from BlockDevice
+func GetNodeName(bd *v1alpha1.BlockDevice) string {
+	return bd.Spec.NodeAttributes.NodeName
+}
+
 // getVolumeMounts returns the volume and volume mount for the given hostpath and
 // mountpath
 func getVolumeMounts(hostPath, mountPath, mountName string) (v1.Volume, v1.VolumeMount) {
