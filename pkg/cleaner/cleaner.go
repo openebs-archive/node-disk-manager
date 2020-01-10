@@ -158,6 +158,7 @@ func (c *Cleaner) runJob(bd *v1alpha1.BlockDevice, volumeMode VolumeMode) error 
 	return c.Client.Create(context.TODO(), job)
 }
 
+// getNodeObjectByNodeName returns Node Object, using NodeName
 func (c *Cleaner) getNodeObjectByNodeName(nodeName string) (*v1.Node, error) {
 	node := &v1.Node{}
 	err := c.Client.Get(context.TODO(), client.ObjectKey{Namespace: "", Name: nodeName}, node)
@@ -167,8 +168,8 @@ func (c *Cleaner) getNodeObjectByNodeName(nodeName string) (*v1.Node, error) {
 	return node, nil
 }
 
+// getTolerationsForTaints returns tolerations, taking input as taints
 func getTolerationsForTaints(taints ...v1.Taint) []v1.Toleration {
-
 	tolerations := []v1.Toleration{}
 	for i := range taints {
 		var toleration v1.Toleration
