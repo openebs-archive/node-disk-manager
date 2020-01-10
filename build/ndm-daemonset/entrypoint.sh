@@ -7,7 +7,7 @@ if [ -z "$ENABLE_COREDUMP" ]; then
   ulimit -c 0
 else
   # making sure mountpath inside the container is available
-  cd /var/openebs || (echo "OpenEBS Base directory not found" && exit)
+  cd /var/openebs || (echo "OpenEBS Base directory not found" && exit 1)
   # set ulimit to unlimited and create a core directory for creating coredump
   echo "[entrypoint.sh] enabling core dump."
   ulimit -c unlimited
