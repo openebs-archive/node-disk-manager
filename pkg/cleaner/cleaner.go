@@ -24,6 +24,8 @@ import (
 	"context"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	v1 "k8s.io/api/core/v1"
 )
 
 // CleanupState represents the current state of the cleanup job
@@ -140,11 +142,48 @@ func (c *CleanupStatusTracker) CancelJob(bdName string) error {
 
 // runJob creates a new cleanup job in the namespace
 func (c *Cleaner) runJob(bd *v1alpha1.BlockDevice, volumeMode VolumeMode) error {
-	job, err := NewCleanupJob(bd, volumeMode, c.Namespace)
+
+	//retreive node Object to pass tolerations to the Job
+	nodeName := GetNodeName(bd)
+	selectedNode, err := c.getNodeObjectByNodeName(nodeName)
+	if err != nil {
+		return err
+	}
+	tolerations := getTolerationsForTaints(selectedNode.Spec.Taints...)
+
+	job, err := NewCleanupJob(bd, volumeMode, tolerations, c.Namespace)
 	if err != nil {
 		return err
 	}
 	return c.Client.Create(context.TODO(), job)
+}
+
+// getNodeObjectByNodeName returns Node Object, using NodeName
+func (c *Cleaner) getNodeObjectByNodeName(nodeName string) (*v1.Node, error) {
+	node := &v1.Node{}
+	err := c.Client.Get(context.TODO(), client.ObjectKey{Namespace: "", Name: nodeName}, node)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+// getTolerationsForTaints returns tolerations, taking input as taints
+func getTolerationsForTaints(taints ...v1.Taint) []v1.Toleration {
+	tolerations := []v1.Toleration{}
+	for i := range taints {
+		var toleration v1.Toleration
+		toleration.Key = taints[i].Key
+		toleration.Effect = taints[i].Effect
+		if len(taints[i].Value) == 0 {
+			toleration.Operator = v1.TolerationOpExists
+		} else {
+			toleration.Value = taints[i].Value
+			toleration.Operator = v1.TolerationOpEqual
+		}
+		tolerations = append(tolerations, toleration)
+	}
+	return tolerations
 }
 
 // getVolumeMode returns the volume mode of the BD that is being released
