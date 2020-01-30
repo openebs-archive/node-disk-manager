@@ -135,6 +135,34 @@ func (b *Builder) WithPrinterColumns(columnName, columnType, jsonPath string) *B
 	return b
 }
 
+// WithPriorityPrinterColumns is used to add printercolumns field to the CRD with priority field
+func (b *Builder) WithPriorityPrinterColumns(columnName, columnType, jsonPath string, priority int32) *Builder {
+	if len(columnName) == 0 {
+		b.errs = append(b.errs,
+			errors.New("missing column name in additional printer columns"))
+		return b
+	}
+	if len(columnType) == 0 {
+		b.errs = append(b.errs,
+			errors.New("missing column type in additional printer columns"))
+		return b
+	}
+	if len(jsonPath) == 0 {
+		b.errs = append(b.errs,
+			errors.New("missing json path in additional printer columns"))
+		return b
+	}
+
+	printerColumn := apiext.CustomResourceColumnDefinition{
+		Name:     columnName,
+		Type:     columnType,
+		JSONPath: jsonPath,
+		Priority: priority,
+	}
+	b.crd.object.Spec.AdditionalPrinterColumns = append(b.crd.object.Spec.AdditionalPrinterColumns, printerColumn)
+	return b
+}
+
 // Build returns the CustomResourceDefinition from the builder
 func (b *Builder) Build() (*apiext.CustomResourceDefinition, error) {
 	if len(b.errs) > 0 {
