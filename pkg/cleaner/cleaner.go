@@ -143,7 +143,7 @@ func (c *CleanupStatusTracker) CancelJob(bdName string) error {
 // runJob creates a new cleanup job in the namespace
 func (c *Cleaner) runJob(bd *v1alpha1.BlockDevice, volumeMode VolumeMode) error {
 
-	//retreive node Object to pass tolerations to the Job
+	// retrieve node Object to pass tolerations to the Job
 	nodeName := GetNodeName(bd)
 	selectedNode, err := c.getNodeObjectByNodeName(nodeName)
 	if err != nil {

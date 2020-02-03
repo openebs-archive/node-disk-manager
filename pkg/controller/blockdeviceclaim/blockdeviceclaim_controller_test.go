@@ -79,7 +79,7 @@ func TestBlockDeviceClaimController(t *testing.T) {
 	r.InvalidCapacityTest(t, req)
 
 	// Create new BlockDeviceClaim CR with right capacity,
-	// trigger reconcilation event. This time, it should
+	// trigger reconciliation event. This time, it should
 	// bound.
 	deviceClaim := &openebsv1alpha1.BlockDeviceClaim{}
 	err := r.client.Get(context.TODO(), req.NamespacedName, deviceClaim)

@@ -207,7 +207,7 @@ func (r *ReconcileBlockDevice) updateBDStatus(state openebsv1alpha1.DeviceClaimS
 	return nil
 }
 
-// IsReconcileDisabled is used to check if reconcilation is disabled for
+// IsReconcileDisabled is used to check if reconciliation is disabled for
 // BlockDevice
 func IsReconcileDisabled(bd *openebsv1alpha1.BlockDevice) bool {
 	return bd.Annotations[ndm.OpenEBSReconcile] == "false"

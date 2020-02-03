@@ -107,7 +107,7 @@ func TestListFilter(t *testing.T) {
 	}
 }
 
-func TestSrartFilter(t *testing.T) {
+func TestStartFilter(t *testing.T) {
 	var msg1 string
 	filter := &fakeFilter{}
 	filter1 := &Filter{

@@ -36,7 +36,7 @@ import (
 // The wait time for all k8s API related operations
 const k8sWaitTime = 40 * time.Second
 
-// The wait time for reconcilation loop to run
+// The wait time for reconciliation loop to run
 const k8sReconcileTime = 10 * time.Second
 
 // ListPodStatus returns the list of all pods in the given Namespace along

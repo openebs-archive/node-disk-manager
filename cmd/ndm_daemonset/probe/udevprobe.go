@@ -171,7 +171,7 @@ func (up *udevProbe) scan() error {
 	return nil
 }
 
-// fillDiskDetails filles details in diskInfo struct using probe information
+// fillDiskDetails fills details in diskInfo struct using probe information
 func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
 	udevDevice, err := newUdevProbeForFillDiskDetails(d.ProbeIdentifiers.UdevIdentifier)
 	if err != nil {

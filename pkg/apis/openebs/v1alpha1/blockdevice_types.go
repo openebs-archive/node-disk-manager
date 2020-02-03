@@ -152,7 +152,7 @@ type FileSystemInfo struct {
 	Mountpoint string `json:"mountPoint,omitempty"`
 }
 
-// DeviceDevLink holds the maping between type and links like by-id type or by-path type link
+// DeviceDevLink holds the mapping between type and links like by-id type or by-path type link
 type DeviceDevLink struct {
 	// Kind is the type of link like by-id or by-path.
 	Kind string `json:"kind,omitempty"`

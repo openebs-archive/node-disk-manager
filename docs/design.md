@@ -1,6 +1,6 @@
 # Introduction 
 
-This document presents use-cases, high level design and workflow changes required for using disks attached to the Kubernetes Nodes by Container Attached Storages(CAS) like OpenEBS, Longhorn, etc. This design includes introducing new add-on component called - **_node-disk-manager(ndm)_**, as well as extending some existing components where applicable like *node-problem-detector*, *node-feature-discovery*, etc. 
+This document presents use-cases, high level design and workflow changes required for using disks attached to the Kubernetes Nodes by Container Attached Storage(CAS) like OpenEBS, Longhorn, etc. This design includes introducing new add-on component called - **_node-disk-manager(ndm)_**, as well as extending some existing components where applicable like *node-problem-detector*, *node-feature-discovery*, etc. 
 
 ## Prerequisites
 

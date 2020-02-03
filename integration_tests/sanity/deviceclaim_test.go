@@ -58,7 +58,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 		ok := WaitForPodToBeRunningEventually(DaemonSetPodPrefix)
 		Expect(ok).To(BeTrue())
 
-		k8s.WaitForReconcilation()
+		k8s.WaitForReconciliation()
 	})
 	AfterEach(func() {
 		By("deleting the NDM deamonset")
@@ -91,7 +91,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			By("creating BDC object")
 			err = k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
-			k8s.WaitForReconcilation()
+			k8s.WaitForReconciliation()
 
 			By("listing all BDCs")
 			bdcList, err := k8sClient.ListBlockDeviceClaims()
@@ -114,7 +114,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			By("creating BDC object with unavailable capacity")
 			err = k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
-			k8s.WaitForReconcilation()
+			k8s.WaitForReconciliation()
 
 			By("listing all BDCs")
 			bdcList, err := k8sClient.ListBlockDeviceClaims()
@@ -162,7 +162,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			By("creating BDC with matching node")
 			err = k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
-			k8s.WaitForReconcilation()
+			k8s.WaitForReconciliation()
 
 			By("listing all BDCs")
 			bdcList, err := k8sClient.ListBlockDeviceClaims()
@@ -193,7 +193,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 
 		})
 	})
-	Context("Unclamining a block device ", func() {
+	Context("Unclaiming a block device ", func() {
 		var bdcName string
 		var blockDeviceClaim *apis.BlockDeviceClaim
 		BeforeEach(func() {
@@ -201,7 +201,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			bdcName = "test-bdc-1"
 			blockDeviceClaim = k8s.NewBDC(bdcName)
 		})
-		It("unclaimes a BD when BDC is deleted", func() {
+		It("unclaims a BD when BDC is deleted", func() {
 			blockDeviceClaim.Spec.HostName = HostName
 			blockDeviceClaim.Namespace = k8s.Namespace
 			blockDeviceClaim.Spec.Resources.Requests[apis.ResourceStorage] = BDCAvailableCapacity
@@ -209,7 +209,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			By("creating BDC object")
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
-			k8s.WaitForReconcilation()
+			k8s.WaitForReconciliation()
 
 			By("listing all BDCs")
 			bdcList, err := k8sClient.ListBlockDeviceClaims()
@@ -241,7 +241,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			By("deleting the BDC")
 			err = k8sClient.DeleteBlockDeviceClaim(blockDeviceClaim)
 			Expect(err).NotTo(HaveOccurred())
-			k8s.WaitForReconcilation()
+			k8s.WaitForReconciliation()
 
 			// check status of BD again to check it has been released
 			bdList, err = k8sClient.ListBlockDevices()
