@@ -113,7 +113,7 @@ func (r *ReconcileDisk) Reconcile(request reconcile.Request) (reconcile.Result, 
 	return reconcile.Result{}, nil
 }
 
-// IsReconcileDisabled is used to check if reconcilation is disabled for
+// IsReconcileDisabled is used to check if reconciliation is disabled for
 // Disk resource
 func IsReconcileDisabled(disk *openebsv1alpha1.Disk) bool {
 	return disk.Annotations[ndm.OpenEBSReconcile] == "false"

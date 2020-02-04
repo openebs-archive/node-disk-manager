@@ -96,7 +96,7 @@ func (pf *pathFilter) Include(d *controller.DiskInfo) bool {
 	return util.MatchIgnoredCase(pf.includePaths, d.Path)
 }
 
-// Exclude returns true if the disk path does not matche any given
+// Exclude returns true if the disk path does not match any given
 // keywords
 func (pf *pathFilter) Exclude(d *controller.DiskInfo) bool {
 	if len(pf.excludePaths) == 0 {

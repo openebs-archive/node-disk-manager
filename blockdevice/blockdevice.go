@@ -192,7 +192,7 @@ const (
 	// Released means the blockdevice is not in use, but cannot be claimed,
 	// because of some pending cleanup tasks
 	Released string = "Released"
-	// Unclaimed means the blockdevice is free and is availbale for
+	// Unclaimed means the blockdevice is free and is available for
 	// claiming
 	Unclaimed string = "Unclaimed"
 )

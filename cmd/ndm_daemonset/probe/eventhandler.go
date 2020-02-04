@@ -54,7 +54,7 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 		}
 		klog.Info("Processed details for ", diskDetails.ProbeIdentifiers.Uuid)
 		oldDr := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
-		// if old DiskCR doesn't exist and parition is found, it is ignored since we don't need info
+		// if old DiskCR doesn't exist and partition is found, it is ignored since we don't need info
 		// of partition if disk as a whole is ignored
 		if oldDr == nil && len(diskDetails.PartitionData) != 0 {
 			klog.Info("Skipping partition of already excluded disk ", diskDetails.ProbeIdentifiers.Uuid)

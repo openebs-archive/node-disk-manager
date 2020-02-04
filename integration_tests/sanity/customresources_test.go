@@ -117,7 +117,7 @@ var _ = Describe("Device Discovery Tests", func() {
 
 			By("detaching the disk")
 			err = physicalDisk.DetachDisk()
-			k8s.WaitForReconcilation()
+			k8s.WaitForReconciliation()
 
 			By("listing all the blockdevices")
 			bdList, err := k8sClient.ListBlockDevices()
@@ -153,7 +153,7 @@ var _ = Describe("Device Discovery Tests", func() {
 			By("attaching the disk")
 			err = physicalDisk.AttachDisk()
 			Expect(err).NotTo(HaveOccurred())
-			k8s.WaitForReconcilation()
+			k8s.WaitForReconciliation()
 
 			By("listing the blockdevices again")
 			bdList, err = k8sClient.ListBlockDevices()

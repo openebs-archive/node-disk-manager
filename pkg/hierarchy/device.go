@@ -18,7 +18,7 @@ package hierarchy
 
 var sysFSDirectoryPath = "/sys/"
 
-// Device represents a blockdevice. This struct is used by hierachy pkg which is used to
+// Device represents a blockdevice. This struct is used by hierarchy pkg which is used to
 // get the necessary blockdevice hierarchy information
 type Device struct {
 	// Path of the blockdevice. eg: /dev/sda, /dev/dm-0

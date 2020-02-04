@@ -49,7 +49,7 @@ type SeachestCollector struct {
 }
 
 // SeachestMetricData is the struct which holds the data from seachest library
-// correspnding to each blockdevice
+// corresponding to each blockdevice
 type SeachestMetricData struct {
 	SeachestIdentifier *seachest.Identifier
 	TempInfo           blockdevice.TemperatureInformation

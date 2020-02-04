@@ -54,7 +54,7 @@ func (sc Config) createBlockDeviceClaimCRD() error {
 }
 
 // createCRD creates a CRD in the cluster and waits for it to get into active state
-// It will return error, if the CRD creation failed, or the Name conficts with other CRD already
+// It will return error, if the CRD creation failed, or the Name conflicts with other CRD already
 // in the group
 func (sc Config) createCRD(crd *apiext.CustomResourceDefinition) error {
 	if _, err := sc.apiExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd); err != nil {

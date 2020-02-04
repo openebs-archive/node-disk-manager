@@ -14,7 +14,7 @@ To write a new collector certain steps have to be followed.
     ```
     The fields are 
     - `Client` : used to interface with the database from which blockdevice information can be obtained
-    - `sync.Mutex` and `requestInProgress` : to aquire lock on the collector so that at a time only a single request is being handled
+    - `sync.Mutex` and `requestInProgress` : to acquire lock on the collector so that at a time only a single request is being handled
     - `metrics` : The actual prometheus metrics fields. This struct will have the metrics that are exposed.
 
 2. A `Collect()` and `Describe()` method need to be implemented for this struct.
