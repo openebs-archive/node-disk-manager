@@ -96,7 +96,7 @@ func (vf *vendorFilter) Include(d *controller.DiskInfo) bool {
 	return util.ContainsIgnoredCase(vf.includeVendors, d.Vendor)
 }
 
-// Exclude returns true if vendor of the disk does not matche with given
+// Exclude returns true if vendor of the disk does not match with given
 // list or the list of the length is 0
 func (vf *vendorFilter) Exclude(d *controller.DiskInfo) bool {
 	if len(vf.excludeVendors) == 0 {

@@ -27,8 +27,8 @@ func WaitForStateChange() {
 	time.Sleep(k8sWaitTime)
 }
 
-// WaitForReconcilation sleeps the process for a fixed duration so
+// WaitForReconciliation sleeps the process for a fixed duration so
 // that the reconcile loop can run and fetch the required changes
-func WaitForReconcilation() {
+func WaitForReconciliation() {
 	time.Sleep(k8sReconcileTime)
 }

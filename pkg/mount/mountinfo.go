@@ -20,7 +20,7 @@ const (
 	hostMountFilePath = "/host/proc/1/mounts" // hostMountFilePath is the file path mounted inside container
 )
 
-// Identifier is an identifer for the mount probe. It will be a devpath like
+// Identifier is an identifier for the mount probe. It will be a devpath like
 // /dev/sda, /dev/sda1 etc
 type Identifier struct {
 	DevPath string

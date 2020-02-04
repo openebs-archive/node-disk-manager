@@ -57,7 +57,7 @@ const (
 	KubernetesHostNameLabel = kubernetesLabelPrefix + HostNameKey
 	// NDMVersion is the CR version.
 	NDMVersion = openEBSLabelPrefix + "v1alpha1"
-	// reconcileKey is the key used for enable/disable of reconcilation
+	// reconcileKey is the key used for enable/disable of reconciliation
 	reconcileKey = "reconcile"
 	// OpenEBSReconcile is used in annotation to check whether CR is to be reconciled or not
 	OpenEBSReconcile = openEBSLabelPrefix + reconcileKey
@@ -69,7 +69,7 @@ const (
 	NDMActive = "Active"
 	// NDMInactive is constant for inactive resource status.
 	NDMInactive = "Inactive"
-	// NDMUnknown is constant for resource unknown satus.
+	// NDMUnknown is constant for resource unknown status.
 	NDMUnknown = "Unknown"
 	// NDMDiskTypeKey specifies the type of disk.
 	NDMDiskTypeKey = "ndm.io/disk-type"

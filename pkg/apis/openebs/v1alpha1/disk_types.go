@@ -115,7 +115,7 @@ type Partition struct {
 	// 1. For DOS partition table, two hexadecimal digits will be
 	//    used for partition type
 	// 2. For GPT partition table, a GUID will be present which corresponds to
-	//    paratition type in the format of `00000000-0000-0000-0000-000000000000`
+	//    partition type in the format of `00000000-0000-0000-0000-000000000000`
 	PartitionType string `json:"partitionType"`
 
 	// FileSystem contains mountpoint and filesystem type
