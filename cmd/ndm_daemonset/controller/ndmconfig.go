@@ -27,7 +27,7 @@ import (
 // ConfigFilePath contains configmap file path
 var ConfigFilePath = "/host/node-disk-manager.config"
 
-// NodeDiskManagerConfig contains congigs of probes and filters
+// NodeDiskManagerConfig contains configs of probes and filters
 type NodeDiskManagerConfig struct {
 	ProbeConfigs  []ProbeConfig  `json:"probeconfigs"`  // ProbeConfigs contains configs of Probes
 	FilterConfigs []FilterConfig `json:"filterconfigs"` // FilterConfigs contains configs of Filters

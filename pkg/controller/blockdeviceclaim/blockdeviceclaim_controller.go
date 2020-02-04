@@ -110,7 +110,7 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, err
 	}
 
-	// check if reconcilation is disabled for this resource
+	// check if reconciliation is disabled for this resource
 	if IsReconcileDisabled(instance) {
 		return reconcile.Result{}, nil
 	}
@@ -144,7 +144,7 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 	return reconcile.Result{}, nil
 }
 
-// claimDeviceForBlockDeviceClaim is created, try to findout blockdevice which is
+// claimDeviceForBlockDeviceClaim is created, try to determine blockdevice which is
 // free and has size equal/greater than BlockDeviceClaim request.
 func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 	instance *apis.BlockDeviceClaim, reqLogger logr.Logger) error {
@@ -368,7 +368,7 @@ func (r *ReconcileBlockDeviceClaim) getListofDevices(filters ...string) (*apis.B
 	return listBlockDevice, nil
 }
 
-// IsReconcileDisabled is used to check if reconcilation is disabled for
+// IsReconcileDisabled is used to check if reconciliation is disabled for
 // BlockDeviceClaim
 func IsReconcileDisabled(bdc *apis.BlockDeviceClaim) bool {
 	return bdc.Annotations[ndm.OpenEBSReconcile] == "false"

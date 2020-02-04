@@ -21,7 +21,7 @@ import (
 	"fmt"
 )
 
-// commands used to fetch various informations of a disk from a set of defined
+// commands used to fetch various information of a disk from a set of defined
 // scsi pages
 const (
 	SCSIInquiry = 0x12 // inquiry command

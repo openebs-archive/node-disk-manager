@@ -36,10 +36,10 @@ func init() {
 	i := 0x1
 	b := (*[intSize]byte)(unsafe.Pointer(&i))
 	if b[0] == 1 {
-		// LittleEndian is the little-endian implementation of ByteOrde
+		// LittleEndian is the little-endian implementation of ByteOrder
 		NativeEndian = binary.LittleEndian
 	} else {
-		// BigEndian is the Big-endian implementation of ByteOrde
+		// BigEndian is the Big-endian implementation of ByteOrder
 		NativeEndian = binary.BigEndian
 	}
 }

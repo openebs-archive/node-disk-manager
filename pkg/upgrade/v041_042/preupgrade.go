@@ -37,7 +37,7 @@ func NewUpgradeTask(from, to string, c client.Client) *UpgradeTask {
 	return &UpgradeTask{from: from, to: to, client: c}
 }
 
-// PreUpgrade runs the preupgrade tasks and returns whether it succeeded or not
+// PreUpgrade runs the pre-upgrade tasks and returns whether it succeeded or not
 func (p *UpgradeTask) PreUpgrade() bool {
 	var err error
 	bdcList := &apis.BlockDeviceClaimList{}

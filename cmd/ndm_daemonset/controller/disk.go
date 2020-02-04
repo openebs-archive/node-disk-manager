@@ -124,7 +124,7 @@ func (di *DiskInfo) ToDisk() apis.Disk {
 }
 
 // ToPartition convert the PartitionData struct inside DiskInfo to apis.Partition
-// which will be used to include the parition information in the Disk CR
+// which will be used to include the partition information in the Disk CR
 func (di *DiskInfo) ToPartition() []apis.Partition {
 	partition := make([]apis.Partition, 0)
 	for _, partitionData := range di.PartitionData {

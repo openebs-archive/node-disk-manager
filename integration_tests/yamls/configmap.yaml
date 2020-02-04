@@ -9,7 +9,7 @@ data:
   # filter or probe are not present in configmap
 
   # udev-probe is default or primary probe it should be enabled to run ndm
-  # filterconfigs contails configs of filters. To provide a group of include
+  # filterconfigs contains configs of filters. To provide a group of include
   # and exclude values add it as , separated string
   node-disk-manager.config: |
     probeconfigs:

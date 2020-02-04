@@ -53,7 +53,7 @@ type FilterInterface interface {
 // does not match with exclude value then it returns false
 type Filters interface {
 	Include(*DiskInfo) bool // Include returns True if passing DiskInfo matches with include value
-	Exclude(*DiskInfo) bool // exclude returns True if passing DiskInfo does not matche with exclude value
+	Exclude(*DiskInfo) bool // exclude returns True if passing DiskInfo does not match with exclude value
 }
 
 // AddNewFilter adds new filter to controller object

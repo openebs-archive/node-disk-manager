@@ -38,7 +38,7 @@ func (ue *UdevEnumerate) AddSubsystemFilter(subSystem string) error {
 	defer freeCharPtr(subsystem)
 	ret := C.udev_enumerate_add_match_subsystem(ue.ueptr, subsystem)
 	if ret < 0 {
-		return errors.New("unable to apply sybsystem filter")
+		return errors.New("unable to apply subsystem filter")
 	}
 	return nil
 }
