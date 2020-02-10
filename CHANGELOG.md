@@ -1,3 +1,35 @@
+v0.4.7 / 2020-02-07
+========================
+
+  * added support to display blockdevice PATH in kubectl output ([#367](https://github.com/openebs/node-disk-manager/pull/367), 
+  [@chandankumar4](https://github.com/chandankumar4))
+  * customize location for NDM core files ([#362](https://github.com/openebs/node-disk-manager/pull/362), 
+  [@akhilerm](https://github.com/akhilerm))
+  
+v0.4.6 / 2020-01-14
+========================
+
+  * added toleration to cleanup jobs ([#363](https://github.com/openebs/node-disk-manager/pull/363), 
+  [@rahulchheda](https://github.com/rahulchheda))
+  * disabled coredump in NDM Daemon by default ([#359](https://github.com/openebs/node-disk-manager/pull/359), 
+  [@akhilerm](https://github.com/akhilerm))
+  * disabled writing system wide core pattern ([#358](https://github.com/openebs/node-disk-manager/pull/358), 
+  [@akhilerm](https://github.com/akhilerm)) 
+  
+v0.4.6-RC2 / 2020-01-11
+========================
+
+  * added toleration to cleanup jobs ([#363](https://github.com/openebs/node-disk-manager/pull/363), 
+  [@rahulchheda](https://github.com/rahulchheda))
+
+v0.4.6-RC1 / 2020-01-06
+========================
+
+  * disabled coredump in NDM Daemon by default ([#359](https://github.com/openebs/node-disk-manager/pull/359), 
+  [@akhilerm](https://github.com/akhilerm))
+  * disabled writing system wide core pattern ([#358](https://github.com/openebs/node-disk-manager/pull/358), 
+  [@akhilerm](https://github.com/akhilerm)) 
+
 v0.4.5 / 2019-12-13
 ========================
 
