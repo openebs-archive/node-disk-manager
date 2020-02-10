@@ -96,6 +96,17 @@ bootstrap:
 		go get -u $$tool; \
 	done
 
+.PHONY: install-dep
+install-dep:
+	@echo "--> Installing external dependencies for building node-disk-manager"
+	$(PWD)/build/install-dep.sh
+
+.PHONY: install-test-infra
+install-test-infra:
+	@echo "--> Installing test infra for running integration tests"
+	# installing test infrastructure is dependent on the platform
+	$(PWD)/build/install-test-infra.sh ${XC_ARCH}
+
 .PHONY: header
 header:
 	@echo "----------------------------"
@@ -134,11 +145,12 @@ version:
 .PHONY: test
 test: 	vet fmt
 	@echo "--> Running go test";
-	$(PWD)/build/test.sh
+	$(PWD)/build/test.sh ${XC_ARCH}
 
 .PHONY: integration-test
 integration-test:
-	go test -v -timeout 20m github.com/openebs/node-disk-manager/integration_tests/sanity
+	@echo "--> Running integration test"
+	$(PWD)/build/integration-test.sh ${XC_ARCH}
 
 .PHONY: Dockerfile.ndm
 Dockerfile.ndm: ./build/ndm-daemonset/Dockerfile.in
