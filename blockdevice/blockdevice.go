@@ -85,6 +85,7 @@ package blockdevice
 // 			}
 //
 type BlockDevice struct {
+
 	// Identifier is the unique identifiers that can be used to identify this
 	// blockdevice
 	Identifier
