@@ -24,7 +24,9 @@ import (
 func createFakeBlockDevice(uuid string) *blockdevice.BlockDevice {
 
 	bd := &blockdevice.BlockDevice{
-		UUID: uuid,
+		Identifier: blockdevice.Identifier{
+			UUID: uuid,
+		},
 	}
 	// init all fields which require memory
 	bd.NodeAttributes = make(map[string]string)

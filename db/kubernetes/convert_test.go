@@ -53,7 +53,7 @@ func Test_convert_BlockDeviceAPI_To_BlockDevice(t *testing.T) {
 	out1 := createFakeBlockDevice(fakeBDName)
 	out1.NodeAttributes[blockdevice.HostName] = fakeHostName
 	out1.NodeAttributes[blockdevice.NodeName] = fakeNodeName
-	out1.Path = fakeDevicePath
+	out1.DevPath = fakeDevicePath
 	out1.FSInfo.FileSystem = fileSystem
 	out1.FSInfo.MountPoint = append(out1.FSInfo.MountPoint, mountPoint)
 	out1.DeviceType = blockdevice.SparseBlockDeviceType
