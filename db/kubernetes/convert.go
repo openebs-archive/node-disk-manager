@@ -44,7 +44,7 @@ func convert_BlockDeviceAPI_To_BlockDevice(in *api.BlockDevice, out *blockdevice
 	out.NodeAttributes[blockdevice.NodeName] = in.Spec.NodeAttributes.NodeName
 
 	//spec
-	out.Path = in.Spec.Path
+	out.DevPath = in.Spec.Path
 	out.FSInfo.FileSystem = in.Spec.FileSystem.Type
 
 	// currently only the first mount point is filled in. When API is changed, multiple mount points

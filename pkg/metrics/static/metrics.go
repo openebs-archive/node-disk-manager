@@ -115,7 +115,7 @@ func (m *Metrics) SetMetrics(blockDevices []bd.BlockDevice) {
 		}
 		// remove /dev from the device path so that the device path is similar to the
 		// path given by node exporter
-		path := strings.ReplaceAll(blockDevice.Path, "/dev/", "")
+		path := strings.ReplaceAll(blockDevice.DevPath, "/dev/", "")
 		m.blockDeviceState.WithLabelValues(blockDevice.UUID,
 			path,
 			blockDevice.NodeAttributes[bd.HostName],
