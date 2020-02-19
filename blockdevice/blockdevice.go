@@ -101,6 +101,9 @@ type BlockDevice struct {
 	// DeviceType is the type of the blockdevice. can be sparse/disk/partition etc
 	DeviceType string
 
+	// DriveType is the type of backing drive for this blockdevice. HDD/SSD/sparse
+	DriveType string
+
 	Capacity CapacityInformation
 
 	DevLinks []DevLink
