@@ -195,9 +195,12 @@ type CapacityInformation struct {
 	// reported by /sys/class/block/sda/queue/logical_block_size
 	LogicalBlockSize uint32
 
-	// HardwareSectorSize is the hardware sector size in bytes
+	// PhysicalSectorSize is the hardware sector size in bytes
 	// reported by /sys/class/block/sda/queue/hw_sector_size
-	HardwareSectorSize uint32
+	PhysicalSectorSize uint32
+
+	// LogicalSectorSize is the logical sector size in bytes.
+	LogicalSectorSize uint32
 }
 
 // DeviceInformation represents the hardcoded information on the device.
