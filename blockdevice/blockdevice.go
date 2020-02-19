@@ -132,6 +132,8 @@ type BlockDevice struct {
 	Status Status
 }
 
+// Identifier represents the various identifiers that can be used to
+// identify this blockdevice uniquely on the host
 type Identifier struct {
 	// UUID is a system generated unique ID for this blockdevice
 	UUID string
