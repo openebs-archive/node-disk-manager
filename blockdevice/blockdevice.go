@@ -98,12 +98,6 @@ type BlockDevice struct {
 	// BlockDevice if it exists
 	FSInfo FileSystemInformation
 
-	// DeviceType is the type of the blockdevice. can be sparse/disk/partition etc
-	DeviceType string
-
-	// DriveType is the type of backing drive for this blockdevice. HDD/SSD/sparse
-	DriveType string
-
 	Capacity CapacityInformation
 
 	DevLinks []DevLink
@@ -193,17 +187,29 @@ type CapacityInformation struct {
 	// in bytes
 	Storage uint64
 
-	// PhysicalSectorSize is the physical sector size in bytes
-	PhysicalSectorSize uint32
+	// PhysicalBlockSize is the physical block size in bytes
+	// reported by /sys/class/block/sda/queue/physical_block_size
+	PhysicalBlockSize uint32
 
-	// LogicalSectorSize is the logical sector size in bytes
-	LogicalSectorSize uint32
+	// LogicalBlockSize is the logical block size in bytes
+	// reported by /sys/class/block/sda/queue/logical_block_size
+	LogicalBlockSize uint32
+
+	// HardwareSectorSize is the hardware sector size in bytes
+	// reported by /sys/class/block/sda/queue/hw_sector_size
+	HardwareSectorSize uint32
 }
 
 // DeviceInformation represents the hardcoded information on the device.
 // It is not gauranteed that all these fields should be present for a given
 // blockdevice
 type DeviceInformation struct {
+	// DeviceType is the type of the blockdevice. can be sparse/disk/partition etc
+	DeviceType string
+
+	// DriveType is the type of backing drive for this blockdevice. HDD/SSD/sparse
+	DriveType string
+
 	// WWN
 	WWN string
 
