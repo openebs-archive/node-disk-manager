@@ -56,7 +56,7 @@ func Test_convert_BlockDeviceAPI_To_BlockDevice(t *testing.T) {
 	out1.DevPath = fakeDevicePath
 	out1.FSInfo.FileSystem = fileSystem
 	out1.FSInfo.MountPoint = append(out1.FSInfo.MountPoint, mountPoint)
-	out1.DeviceType = blockdevice.SparseBlockDeviceType
+	out1.DeviceDetails.DeviceType = blockdevice.SparseBlockDeviceType
 	out1.Status.State = blockdevice.Active
 	out1.Status.ClaimPhase = blockdevice.Claimed
 

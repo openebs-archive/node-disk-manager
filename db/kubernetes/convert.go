@@ -50,7 +50,7 @@ func convertBlockDeviceAPIToBlockDevice(in *api.BlockDevice, out *BlockDevice) e
 	// currently only the first mount point is filled in. When API is changed, multiple mount points
 	// will be added.
 	out.FSInfo.MountPoint = append(out.FSInfo.MountPoint, in.Spec.FileSystem.Mountpoint)
-	out.DeviceType = in.Spec.Details.DeviceType
+	out.DeviceDetails.DeviceType = in.Spec.Details.DeviceType
 
 	//status
 	out.Status.State = string(in.Status.State)
