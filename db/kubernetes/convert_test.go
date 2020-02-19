@@ -75,7 +75,7 @@ func Test_convert_BlockDeviceAPI_To_BlockDevice(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			gotOut := &blockdevice.BlockDevice{}
-			err := convert_BlockDeviceAPI_To_BlockDevice(test.args.in, gotOut)
+			err := convertBlockDeviceAPIToBlockDevice(test.args.in, gotOut)
 			assert.Equal(t, test.args.wantOut, gotOut)
 			assert.Equal(t, test.wantErr, err != nil)
 		})

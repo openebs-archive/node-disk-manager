@@ -149,7 +149,7 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]BlockDevice, error) {
 	}
 
 	blockDeviceList := make([]BlockDevice, 0)
-	err = convert_BlockDeviceAPIList_To_BlockDeviceList(bdList, &blockDeviceList)
+	err = convertBlockDeviceAPIListToBlockDeviceList(bdList, &blockDeviceList)
 	if err != nil {
 		return blockDeviceList, err
 	}

@@ -21,12 +21,12 @@ import (
 	api "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 )
 
-func convert_BlockDeviceAPIList_To_BlockDeviceList(in *api.BlockDeviceList, out *[]BlockDevice) error {
+func convertBlockDeviceAPIListToBlockDeviceList(in *api.BlockDeviceList, out *[]BlockDevice) error {
 	var err error
 	var bd BlockDevice
 
 	for _, bdAPI := range in.Items {
-		err = convert_BlockDeviceAPI_To_BlockDevice(&bdAPI, &bd)
+		err = convertBlockDeviceAPIToBlockDevice(&bdAPI, &bd)
 		if err != nil {
 			return err
 		}
@@ -35,7 +35,7 @@ func convert_BlockDeviceAPIList_To_BlockDeviceList(in *api.BlockDeviceList, out 
 	return nil
 }
 
-func convert_BlockDeviceAPI_To_BlockDevice(in *api.BlockDevice, out *BlockDevice) error {
+func convertBlockDeviceAPIToBlockDevice(in *api.BlockDevice, out *BlockDevice) error {
 	out.UUID = in.Name
 
 	//labels
