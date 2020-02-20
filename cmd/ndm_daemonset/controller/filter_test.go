@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
 	"time"
@@ -32,12 +33,12 @@ func (f *fakeFilter) Start() {
 	messageChannel <- message
 }
 
-func (f *fakeFilter) Include(fakeDiskInfo *DiskInfo) bool {
+func (f *fakeFilter) Include(fakeDiskInfo *blockdevice.BlockDevice) bool {
 	return true
 }
 
-func (f *fakeFilter) Exclude(fakeDiskInfo *DiskInfo) bool {
-	return fakeDiskInfo.Uuid != matchDiskUuid
+func (f *fakeFilter) Exclude(fakeDiskInfo *blockdevice.BlockDevice) bool {
+	return fakeDiskInfo.UUID != matchDiskUuid
 }
 
 //Add one new filter and get the list of the filters and match them
@@ -143,7 +144,7 @@ func TestShouldIgnore(t *testing.T) {
 		State:     true,
 		Interface: fakeFilter,
 	}
-	disk := &DiskInfo{}
+	disk := &blockdevice.BlockDevice{}
 	tests := map[string]struct {
 		actual   bool
 		expected bool
@@ -171,9 +172,9 @@ func TestApplyFilter(t *testing.T) {
 		Interface: fakeFilter,
 	}
 	fakeController.AddNewFilter(filter)
-	disk1 := &DiskInfo{}
-	disk2 := &DiskInfo{}
-	disk2.Uuid = matchDiskUuid
+	disk1 := &blockdevice.BlockDevice{}
+	disk2 := &blockdevice.BlockDevice{}
+	disk2.UUID = matchDiskUuid
 	tests := map[string]struct {
 		disk     *DiskInfo
 		actual   bool

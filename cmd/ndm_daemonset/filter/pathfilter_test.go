@@ -17,6 +17,7 @@ limitations under the License.
 package filter
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"strings"
 	"sync"
 	"testing"
@@ -105,12 +106,12 @@ func TestPathFilterExclude(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			disk := &controller.DiskInfo{}
-			disk.Path = test.path
+			bd := &blockdevice.BlockDevice{}
+			bd.DevPath = test.path
 			if test.excludePath != "" {
 				test.filter.excludePaths = strings.Split(test.excludePath, ",")
 			}
-			assert.Equal(t, test.expected, test.filter.Exclude(disk))
+			assert.Equal(t, test.expected, test.filter.Exclude(bd))
 		})
 	}
 }
@@ -131,12 +132,12 @@ func TestPathFilterInclude(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			disk := &controller.DiskInfo{}
-			disk.Path = test.path
+			bd := &blockdevice.BlockDevice{}
+			bd.DevPath = test.path
 			if test.includePath != "" {
 				test.filter.includePaths = strings.Split(test.includePath, ",")
 			}
-			assert.Equal(t, test.expected, test.filter.Include(disk))
+			assert.Equal(t, test.expected, test.filter.Include(bd))
 		})
 	}
 }

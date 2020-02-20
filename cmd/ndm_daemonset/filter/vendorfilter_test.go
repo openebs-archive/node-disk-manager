@@ -21,7 +21,9 @@ import (
 	"sync"
 	"testing"
 
+	. "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -105,12 +107,12 @@ func TestVendorFilterExclude(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			disk := &controller.DiskInfo{}
-			disk.Vendor = test.vendor
+			bd := &BlockDevice{}
+			bd.DeviceDetails.Vendor = test.vendor
 			if test.excludeVendor != "" {
 				test.filter.excludeVendors = strings.Split(test.excludeVendor, ",")
 			}
-			assert.Equal(t, test.expected, test.filter.Exclude(disk))
+			assert.Equal(t, test.expected, test.filter.Exclude(bd))
 		})
 	}
 }
@@ -131,12 +133,12 @@ func TestVendorFilterInclude(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			disk := &controller.DiskInfo{}
-			disk.Vendor = test.vendor
+			bd := &BlockDevice{}
+			bd.DeviceDetails.Vendor = test.vendor
 			if test.includeVendor != "" {
 				test.filter.includeVendors = strings.Split(test.includeVendor, ",")
 			}
-			assert.Equal(t, test.expected, test.filter.Include(disk))
+			assert.Equal(t, test.expected, test.filter.Include(bd))
 		})
 	}
 }
