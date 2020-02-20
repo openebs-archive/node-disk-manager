@@ -17,8 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	bd "github.com/openebs/node-disk-manager/blockdevice"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	udev "github.com/openebs/node-disk-manager/pkg/udev"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -29,25 +29,25 @@ import (
 // that struct. At the end it is converted to Disk struct which will push to
 // etcd as a CR of that disk.
 type DiskInfo struct {
-	ProbeIdentifiers      ProbeIdentifier // ProbeIdentifiers contains some keys to uniquely identify each disk by probe
-	NodeAttributes        NodeAttribute   // NodeAttribute contains the node's attributes like hostname and nodename
-	Uuid                  string          // Uuid is the unique id given by ndm
-	Capacity              uint64          // Capacity is capacity of a disk
-	Model                 string          // Model is model no of a disk
-	Serial                string          // Serial is serial no of a disk
-	Vendor                string          // Vendor is vendor of a disk
-	Path                  string          // Path is dev path of a disk like /dev/sda
-	ByIdDevLinks          []string        // ByIdDevLinks contains by-id devlinks
-	ByPathDevLinks        []string        // ByPathDevLinks contains by-path devlinks
-	FirmwareRevision      string          // FirmwareRevision is the firmware revision for a disk
-	LogicalSectorSize     uint32          // LogicalSectorSize is the Logical size of disk sector in bytes
-	PhysicalSectorSize    uint32          // PhysicalSectorSize is the Physical size of disk sector in bytes
-	RotationRate          uint16          // 0 = not reported. 1 = SSD, everything else is an RPM
-	Compliance            string          // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
-	DiskType              string          // DiskType represents the type of disk like Disk, Sparse etc.,
-	DriveType             string          // DriveType represents the type of disk like HHD, HDD etc.,
-	FileSystemInformation FSInfo          // FileSystemInformation stores the FS related information like filesystem type and mountpoint
-	PartitionData         []PartitionInfo // Information of the partitions on the disk
+	ProbeIdentifiers      ProbeIdentifier  // ProbeIdentifiers contains some keys to uniquely identify each disk by probe
+	NodeAttributes        bd.NodeAttribute // NodeAttribute contains the node's attributes like hostname and nodename
+	Uuid                  string           // Uuid is the unique id given by ndm
+	Capacity              uint64           // Capacity is capacity of a disk
+	Model                 string           // Model is model no of a disk
+	Serial                string           // Serial is serial no of a disk
+	Vendor                string           // Vendor is vendor of a disk
+	Path                  string           // Path is dev path of a disk like /dev/sda
+	ByIdDevLinks          []string         // ByIdDevLinks contains by-id devlinks
+	ByPathDevLinks        []string         // ByPathDevLinks contains by-path devlinks
+	FirmwareRevision      string           // FirmwareRevision is the firmware revision for a disk
+	LogicalSectorSize     uint32           // LogicalSectorSize is the Logical size of disk sector in bytes
+	PhysicalSectorSize    uint32           // PhysicalSectorSize is the Physical size of disk sector in bytes
+	RotationRate          uint16           // 0 = not reported. 1 = SSD, everything else is an RPM
+	Compliance            string           // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
+	DiskType              string           // DiskType represents the type of disk like Disk, Sparse etc.,
+	DriveType             string           // DriveType represents the type of disk like HHD, HDD etc.,
+	FileSystemInformation FSInfo           // FileSystemInformation stores the FS related information like filesystem type and mountpoint
+	PartitionData         []PartitionInfo  // Information of the partitions on the disk
 
 	//Stats of disk which keep changing
 	TotalBytesRead        uint64
@@ -64,10 +64,6 @@ type DiskInfo struct {
 		LowestTemperature    int16 //lifetime measured lowest
 	}
 }
-
-// NodeAttribute is a map of string, which stores various attributes like hostname, node name, failure domain
-// etc of a node
-type NodeAttribute map[string]string
 
 // ProbeIdentifier contains some keys to enable probes to uniquely identify each disk.
 // These keys are defined here in order to denote the identifier that a particular probe
@@ -104,7 +100,7 @@ type FSInfo struct {
 // be field by different probes each probe will responsible for
 // populate some specific fields of DiskInfo struct.
 func NewDiskInfo() *DiskInfo {
-	nodeAttribute := make(NodeAttribute)
+	nodeAttribute := make(bd.NodeAttribute)
 	diskInfo := &DiskInfo{
 		NodeAttributes: nodeAttribute,
 	}
@@ -257,9 +253,7 @@ func (di *DiskInfo) getStats() apis.DiskStat {
 
 func (fs *FSInfo) getFileSystemInfo() apis.FileSystemInfo {
 	fsInfo := apis.FileSystemInfo{}
-	if fs.FileSystem != udev.UDEV_FS_NONE {
-		fsInfo.Type = fs.FileSystem
-		fsInfo.Mountpoint = fs.MountPoint
-	}
+	fsInfo.Type = fs.FileSystem
+	fsInfo.Mountpoint = fs.MountPoint
 	return fsInfo
 }

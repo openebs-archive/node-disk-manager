@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	. "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
 
@@ -66,8 +67,6 @@ const (
 	//SparseFileDefaultCount defines the default sparse count files
 	SparseFileDefaultCount = "1"
 
-	//SparseBlockDeviceType defines sparse device type
-	SparseBlockDeviceType = "sparse"
 	//SparseBlockDevicePrefix defines the prefix for the sparse device
 	SparseBlockDevicePrefix = "sparse-"
 )
