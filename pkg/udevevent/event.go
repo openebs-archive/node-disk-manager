@@ -17,6 +17,7 @@ limitations under the License.
 package udevevent
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"k8s.io/klog"
@@ -38,13 +39,14 @@ func newEvent() *event {
 // process takes udevdevice as input and generate event message
 func (e *event) process(device *libudevwrapper.UdevDevice) {
 	defer device.UdevDeviceUnref()
-	diskInfo := make([]*controller.DiskInfo, 0)
+	diskInfo := make([]*blockdevice.BlockDevice, 0)
 	uuid := device.GetUid()
+	path := device.GetPath()
 	action := device.GetAction()
-	klog.Info("processing new event for ", uuid, " action type ", action)
-	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = uuid
-	deviceDetails.ProbeIdentifiers.UdevIdentifier = device.GetSyspath()
+	klog.Infof("processing new event for (%s)%s action type %s", path, uuid, action)
+	deviceDetails := &blockdevice.BlockDevice{}
+	deviceDetails.UUID = uuid
+	deviceDetails.SysPath = device.GetSyspath()
 	diskInfo = append(diskInfo, deviceDetails)
 	e.eventDetails.Action = action
 	e.eventDetails.Devices = diskInfo

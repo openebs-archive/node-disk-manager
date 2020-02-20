@@ -62,11 +62,11 @@ const (
 	LINK_ID_INDEX        = 4                    // this is used to get link index from dev link
 	UDEV_PARTITION_TYPE  = "ID_PART_ENTRY_TYPE" // udev attribute to get partition type
 	UDEV_FS_TYPE         = "ID_FS_TYPE"         // file system type the partition
-	UDEV_FS_NONE         = "None"               // udev constant for no file system
 )
 
 // UdevDiskDetails struct contain different attribute of disk.
 type UdevDiskDetails struct {
+	WWN            string
 	Model          string   // Model is Model of disk.
 	Serial         string   // Serial is Serial of a disk.
 	Vendor         string   // Vendor is Vendor of a disk.
@@ -87,6 +87,7 @@ func freeCharPtr(s *C.char) {
 func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 	devLinks := device.GetDevLinks()
 	diskDetails := UdevDiskDetails{
+		WWN:            device.GetPropertyValue(UDEV_WWN),
 		Model:          device.GetPropertyValue(UDEV_MODEL),
 		Serial:         device.GetPropertyValue(UDEV_SERIAL),
 		Vendor:         device.GetPropertyValue(UDEV_VENDOR),
@@ -128,7 +129,7 @@ func (device *UdevDevice) GetUid() string {
 		uid += host + device.GetPropertyValue(UDEV_DEVNAME)
 	}
 
-	return NDMDiskPrefix + util.Hash(uid)
+	return NDMBlockDevicePrefix + util.Hash(uid)
 }
 
 // IsDisk returns true if device is a disk
@@ -144,9 +145,6 @@ func (device *UdevDevice) IsParitition() bool {
 // GetFileSystemInfo returns filesystem type on disk/partition if it exists.
 func (device *UdevDevice) GetFileSystemInfo() string {
 	fileSystem := device.GetPropertyValue(UDEV_FS_TYPE)
-	if len(fileSystem) == 0 {
-		fileSystem = UDEV_FS_NONE
-	}
 	return fileSystem
 }
 
