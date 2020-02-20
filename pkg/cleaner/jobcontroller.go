@@ -22,6 +22,7 @@ package cleaner
 
 import (
 	"context"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -81,7 +82,7 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, tolerations []v
 
 		// in case of sparse disk, need to mount the sparse file directory
 		// and clear the sparse file
-		if bd.Spec.Details.DeviceType == controller.SparseBlockDeviceType {
+		if bd.Spec.Details.DeviceType == blockdevice.SparseBlockDeviceType {
 			volume, volumeMount := getVolumeMounts(bd.Spec.Path, bd.Spec.Path, mountName)
 			jobContainer.VolumeMounts = []v1.VolumeMount{volumeMount}
 			podSpec.Volumes = []v1.Volume{volume}
