@@ -18,6 +18,7 @@ package probe
 
 import (
 	"fmt"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
 
@@ -33,7 +34,7 @@ import (
 )
 
 var (
-	mockDiskuid    = "disk-fake-uid"
+	//mockDiskuid    = "disk-fake-uid"
 	mockBDuid      = "blockdevice-fake-uid"
 	ignoreDiskUuid = "ignore-disk-uuid"
 	fakeHostName   = "node-name"
@@ -49,7 +50,7 @@ func mockEmptyDiskCr() apis.Disk {
 	fakeDr := apis.Disk{}
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   mockDiskuid,
+		Name:   mockBDuid,
 	}
 	fakeTypeMeta := metav1.TypeMeta{
 		Kind:       controller.NDMDiskKind,
@@ -75,6 +76,7 @@ func mockEmptyBlockDeviceCr() apis.BlockDevice {
 	fakeBDr.ObjectMeta = fakeObjectMeta
 	fakeBDr.TypeMeta = fakeTypeMeta
 	fakeBDr.Status.State = controller.NDMActive
+	fakeBDr.Status.ClaimState = apis.BlockDeviceUnclaimed
 	fakeBDr.Spec.DevLinks = make([]apis.DeviceDevLink, 0)
 	return fakeBDr
 }
@@ -126,15 +128,15 @@ type fakeFilter struct{}
 
 func (nf *fakeFilter) Start() {}
 
-func (nf *fakeFilter) Include(fakeDiskInfo *controller.DiskInfo) bool {
+func (nf *fakeFilter) Include(fakeDiskInfo *blockdevice.BlockDevice) bool {
 	return true
 }
 
-func (nf *fakeFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
-	return fakeDiskInfo.Uuid != ignoreDiskUuid
+func (nf *fakeFilter) Exclude(fakeDiskInfo *blockdevice.BlockDevice) bool {
+	return fakeDiskInfo.UUID != ignoreDiskUuid
 }
 
-func TestAddDiskEvent(t *testing.T) {
+func TestAddBlockDeviceEvent(t *testing.T) {
 	fakeNdmClient := CreateFakeClient(t)
 	nodeAttributes := make(map[string]string)
 	nodeAttributes[controller.HostNameKey] = fakeHostName
@@ -166,40 +168,41 @@ func TestAddDiskEvent(t *testing.T) {
 		Controller: fakeController,
 	}
 	// blockdevice-1 details
-	eventmsg := make([]*controller.DiskInfo, 0)
-	device1Details := &controller.DiskInfo{}
-	device1Details.ProbeIdentifiers.Uuid = mockDiskuid
+	eventmsg := make([]*blockdevice.BlockDevice, 0)
+	device1Details := &blockdevice.BlockDevice{}
+	device1Details.UUID = mockBDuid
 	eventmsg = append(eventmsg, device1Details)
 	// blockdevice-2 details
-	device2Details := &controller.DiskInfo{}
-	device2Details.ProbeIdentifiers.Uuid = ignoreDiskUuid
+	device2Details := &blockdevice.BlockDevice{}
+	device2Details.UUID = ignoreDiskUuid
 	eventmsg = append(eventmsg, device2Details)
 	// Creating one event message
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
-	probeEvent.addDiskEvent(eventDetails)
+	probeEvent.addBlockDeviceEvent(eventDetails)
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(mockDiskuid)
+	cdr1, err1 := fakeController.GetBlockDevice(mockBDuid)
 
 	// Retrieve disk resource
-	cdr2, _ := fakeController.GetDisk(ignoreDiskUuid)
+	cdr2, _ := fakeController.GetBlockDevice(ignoreDiskUuid)
 	if cdr2 != nil {
 		t.Error("resource with ignoreDiskUuid should not be present in etcd")
 	}
 	// Create one fake disk resource
-	fakeDr := mockEmptyDiskCr()
+	fakeDr := mockEmptyBlockDeviceCr()
 	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
-	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = fakeDiskType
+	fakeDr.ObjectMeta.Labels[controller.NDMDeviceTypeKey] = fakeBDType
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 	fakeDr.Spec.Details.Model = fakeModel
 	fakeDr.Spec.Details.Serial = fakeSerial
 	fakeDr.Spec.Details.Vendor = fakeVendor
+	fakeDr.Spec.Partitioned = controller.NDMNotPartitioned
 
 	tests := map[string]struct {
-		actualDisk    apis.Disk
-		expectedDisk  apis.Disk
+		actualDisk    apis.BlockDevice
+		expectedDisk  apis.BlockDevice
 		actualError   error
 		expectedError error
 	}{
@@ -242,35 +245,31 @@ func TestDeleteDiskEvent(t *testing.T) {
 	probeEvent := &ProbeEvent{
 		Controller: fakeController,
 	}
-	eventmsg := make([]*controller.DiskInfo, 0)
-	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockDiskuid
+	eventmsg := make([]*blockdevice.BlockDevice, 0)
+	deviceDetails := &blockdevice.BlockDevice{}
+	deviceDetails.UUID = mockBDuid
 	eventmsg = append(eventmsg, deviceDetails)
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_REMOVE,
 		Devices: eventmsg,
 	}
-	probeEvent.deleteEvent(eventDetails)
+	probeEvent.deleteBlockDeviceEvent(eventDetails)
 
 	// Retrieve resources
-	cdr1, err1 := fakeController.GetDisk(mockDiskuid)
 	bdR1, err1 := fakeController.GetBlockDevice(mockBDuid)
 
 	fakeDr.Status.State = controller.NDMInactive
 	fakeBDr.Status.State = controller.NDMInactive
 	tests := map[string]struct {
-		actualDisk    apis.Disk
-		expectedDisk  apis.Disk
 		actualBD      apis.BlockDevice
 		expectedBD    apis.BlockDevice
 		actualError   error
 		expectedError error
 	}{
-		"remove resource with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualBD: *bdR1, expectedBD: fakeBDr, actualError: err1, expectedError: nil},
+		"remove resource with 'fake-disk-uid' uuid": {actualBD: *bdR1, expectedBD: fakeBDr, actualError: err1, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDisk, test.actualDisk)
 			assert.Equal(t, test.expectedBD, test.actualBD)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})

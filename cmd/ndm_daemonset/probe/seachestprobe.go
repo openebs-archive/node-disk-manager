@@ -17,6 +17,7 @@ limitations under the License.
 package probe
 
 import (
+	. "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/seachest"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -88,70 +89,70 @@ func newSeachestProbe(devPath string) *seachestProbe {
 func (scp *seachestProbe) Start() {}
 
 // fillDiskDetails fills details in diskInfo struct using information it gets from probe
-func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
-	if d.ProbeIdentifiers.SeachestIdentifier == "" {
+func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+	if blockDevice.DevPath == "" {
 		klog.Error("seachestIdentifier is found empty, seachest probe will not fill disk details.")
 		return
 	}
 
-	seachestProbe := newSeachestProbe(d.ProbeIdentifiers.SeachestIdentifier)
+	seachestProbe := newSeachestProbe(blockDevice.DevPath)
 	driveInfo, err := seachestProbe.SeachestIdentifier.SeachestBasicDiskInfo()
 	if err != 0 {
 		klog.Error(err)
 		return
 	}
 
-	if d.Path == "" {
-		d.Path = seachestProbe.SeachestIdentifier.GetPath(driveInfo)
-		klog.V(4).Infof("Path:%s filled by seachest.", d.Path)
+	if blockDevice.DevPath == "" {
+		blockDevice.DevPath = seachestProbe.SeachestIdentifier.GetPath(driveInfo)
+		klog.V(4).Infof("Path:%s filled by seachest.", blockDevice.DevPath)
 	}
 
-	if d.NodeAttributes[controller.HostNameKey] == "" {
-		d.NodeAttributes[controller.HostNameKey] = seachestProbe.SeachestIdentifier.GetHostName(driveInfo)
-		klog.V(4).Infof("Disk: %s NodeAttribute:%s filled by seachest.", d.Path, d.NodeAttributes[controller.HostNameKey])
+	if blockDevice.NodeAttributes[controller.HostNameKey] == "" {
+		blockDevice.NodeAttributes[controller.HostNameKey] = seachestProbe.SeachestIdentifier.GetHostName(driveInfo)
+		klog.V(4).Infof("Disk: %s NodeAttribute:%s filled by seachest.", blockDevice.DevPath, blockDevice.NodeAttributes[controller.HostNameKey])
 	}
 
-	if d.Model == "" {
-		d.Model = seachestProbe.SeachestIdentifier.GetModelNumber(driveInfo)
-		klog.V(4).Infof("Disk: %s Model:%s filled by seachest.", d.Path, d.Model)
+	if blockDevice.DeviceDetails.Model == "" {
+		blockDevice.DeviceDetails.Model = seachestProbe.SeachestIdentifier.GetModelNumber(driveInfo)
+		klog.V(4).Infof("Disk: %s Model:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.Model)
 	}
 
-	if d.Uuid == "" {
-		d.Uuid = seachestProbe.SeachestIdentifier.GetUuid(driveInfo)
-		klog.V(4).Infof("Disk: %s Uuid:%s filled by seachest.", d.Path, d.Uuid)
+	if blockDevice.DeviceDetails.WWN == "" {
+		blockDevice.DeviceDetails.WWN = seachestProbe.SeachestIdentifier.GetUuid(driveInfo)
+		klog.V(4).Infof("Disk: %s WWN:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.WWN)
 	}
 
-	if d.Capacity == 0 {
-		d.Capacity = seachestProbe.SeachestIdentifier.GetCapacity(driveInfo)
-		klog.V(4).Infof("Disk: %s Capacity:%d filled by seachest.", d.Path, d.Capacity)
+	if blockDevice.Capacity.Storage == 0 {
+		blockDevice.Capacity.Storage = seachestProbe.SeachestIdentifier.GetCapacity(driveInfo)
+		klog.V(4).Infof("Disk: %s Capacity:%d filled by seachest.", blockDevice.DevPath, blockDevice.Capacity.Storage)
 	}
 
-	if d.Serial == "" {
-		d.Serial = seachestProbe.SeachestIdentifier.GetSerialNumber(driveInfo)
-		klog.V(4).Infof("Disk: %s Serial:%s filled by seachest.", d.Path, d.Serial)
+	if blockDevice.DeviceDetails.Serial == "" {
+		blockDevice.DeviceDetails.Serial = seachestProbe.SeachestIdentifier.GetSerialNumber(driveInfo)
+		klog.V(4).Infof("Disk: %s Serial:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.Serial)
 	}
 
-	if d.Vendor == "" {
-		d.Vendor = seachestProbe.SeachestIdentifier.GetVendorID(driveInfo)
-		klog.V(4).Infof("Disk: %s Vendor:%s filled by seachest.", d.Path, d.Vendor)
+	if blockDevice.DeviceDetails.Vendor == "" {
+		blockDevice.DeviceDetails.Vendor = seachestProbe.SeachestIdentifier.GetVendorID(driveInfo)
+		klog.V(4).Infof("Disk: %s Vendor:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.Vendor)
 	}
 
-	if d.FirmwareRevision == "" {
-		d.FirmwareRevision = seachestProbe.SeachestIdentifier.GetFirmwareRevision(driveInfo)
-		klog.V(4).Infof("Disk: %s FirmwareRevision:%s filled by seachest.", d.Path, d.FirmwareRevision)
+	if blockDevice.DeviceDetails.FirmwareRevision == "" {
+		blockDevice.DeviceDetails.FirmwareRevision = seachestProbe.SeachestIdentifier.GetFirmwareRevision(driveInfo)
+		klog.V(4).Infof("Disk: %s FirmwareRevision:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.FirmwareRevision)
 	}
 
-	if d.LogicalSectorSize == 0 {
-		d.LogicalSectorSize = seachestProbe.SeachestIdentifier.GetLogicalSectorSize(driveInfo)
-		klog.V(4).Infof("Disk: %s LogicalSectorSize:%d filled by seachest.", d.Path, d.LogicalSectorSize)
+	if blockDevice.Capacity.LogicalSectorSize == 0 {
+		blockDevice.Capacity.LogicalSectorSize = seachestProbe.SeachestIdentifier.GetLogicalSectorSize(driveInfo)
+		klog.V(4).Infof("Disk: %s LogicalSectorSize:%d filled by seachest.", blockDevice.DevPath, blockDevice.Capacity.LogicalSectorSize)
 	}
 
-	if d.PhysicalSectorSize == 0 {
-		d.PhysicalSectorSize = seachestProbe.SeachestIdentifier.GetPhysicalSectorSize(driveInfo)
-		klog.V(4).Infof("Disk: %s PhysicalSectorSize:%d filled by seachest.", d.Path, d.PhysicalSectorSize)
+	if blockDevice.Capacity.PhysicalSectorSize == 0 {
+		blockDevice.Capacity.PhysicalSectorSize = seachestProbe.SeachestIdentifier.GetPhysicalSectorSize(driveInfo)
+		klog.V(4).Infof("Disk: %s PhysicalSectorSize:%d filled by seachest.", blockDevice.DevPath, blockDevice.Capacity.PhysicalSectorSize)
 	}
 
-	if d.RotationRate == 0 {
+	/*if d.RotationRate == 0 {
 		d.RotationRate = seachestProbe.SeachestIdentifier.GetRotationRate(driveInfo)
 		klog.V(4).Infof("Disk: %s RotationRate:%d filled by seachest.", d.Path, d.RotationRate)
 	}
@@ -159,9 +160,9 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 	if d.DriveType == "" {
 		d.DriveType = seachestProbe.SeachestIdentifier.DriveType(driveInfo)
 		klog.V(4).Infof("Disk: %s DriveType:%s filled by seachest.", d.Path, d.DriveType)
-	}
+	}*/
 
-	if d.TotalBytesRead == 0 {
+	/*if d.TotalBytesRead == 0 {
 		d.TotalBytesRead = seachestProbe.SeachestIdentifier.GetTotalBytesRead(driveInfo)
 		klog.V(4).Infof("Disk: %s TotalBytesRead:%d filled by seachest.", d.Path, d.TotalBytesRead)
 	}
@@ -179,21 +180,21 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 	if d.PercentEnduranceUsed == 0 {
 		d.PercentEnduranceUsed = seachestProbe.SeachestIdentifier.GetPercentEnduranceUsed(driveInfo)
 		klog.V(4).Infof("Disk: %s PercentEnduranceUsed:%f filled by seachest.", d.Path, d.PercentEnduranceUsed)
-	}
+	}*/
 
-	d.TemperatureInfo.TemperatureDataValid = seachestProbe.
+	blockDevice.TemperatureInfo.TemperatureDataValid = seachestProbe.
 		SeachestIdentifier.GetTemperatureDataValidStatus(driveInfo)
 	klog.V(4).Infof("Disk: %s TemperatureDataValid:%t filled by seachest.",
-		d.Path, d.TemperatureInfo.TemperatureDataValid)
+		blockDevice.DevPath, blockDevice.TemperatureInfo.TemperatureDataValid)
 
-	if d.TemperatureInfo.TemperatureDataValid == true {
-		d.TemperatureInfo.CurrentTemperature = seachestProbe.
+	if blockDevice.TemperatureInfo.TemperatureDataValid == true {
+		blockDevice.TemperatureInfo.CurrentTemperature = seachestProbe.
 			SeachestIdentifier.GetCurrentTemperature(driveInfo)
 
 		klog.V(4).Infof("Disk: %s CurrentTemperature:%d filled by seachest.",
-			d.Path, d.TemperatureInfo.CurrentTemperature)
+			blockDevice.DevPath, blockDevice.TemperatureInfo.CurrentTemperature)
 
-		d.TemperatureInfo.HighestValid = seachestProbe.
+		/*d.TemperatureInfo.HighestValid = seachestProbe.
 			SeachestIdentifier.GetHighestValid(driveInfo)
 
 		klog.V(4).Infof("Disk: %s HighestValid:%t filled by seachest.",
@@ -215,6 +216,6 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 			SeachestIdentifier.GetLowestTemperature(driveInfo)
 
 		klog.V(4).Infof("Disk: %s LowestTemperature:%d filled by seachest.",
-			d.Path, d.TemperatureInfo.LowestTemperature)
+			d.Path, d.TemperatureInfo.LowestTemperature)*/
 	}
 }

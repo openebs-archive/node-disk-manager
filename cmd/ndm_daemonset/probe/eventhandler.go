@@ -37,80 +37,38 @@ type ProbeEvent struct {
 	Controller *controller.Controller
 }
 
-// addDiskEvent fill disk details from different probes and push it to etcd
-func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
-	diskList, err := pe.Controller.ListDiskResource()
+// addBlockDeviceEvent fill block device details from different probes and push it to etcd
+func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
+	bdList, err := pe.Controller.ListBlockDeviceResource()
 	if err != nil {
 		klog.Error(err)
 		go pe.initOrErrorEvent()
 		return
 	}
-	for _, diskDetails := range msg.Devices {
-		klog.Info("Processing details for ", diskDetails.ProbeIdentifiers.Uuid)
-		pe.Controller.FillDiskDetails(diskDetails)
+	// iterate through each block device and perform the add/update operation
+	for _, device := range msg.Devices {
+		klog.Infof("Processing details for %s", device.UUID)
+		pe.Controller.FillBlockDeviceDetails(device)
 		// if ApplyFilter returns true then we process the event further
-		if !pe.Controller.ApplyFilter(diskDetails) {
+		if !pe.Controller.ApplyFilter(device) {
 			continue
 		}
-		klog.Info("Processed details for ", diskDetails.ProbeIdentifiers.Uuid)
-		oldDr := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
-		// if old DiskCR doesn't exist and partition is found, it is ignored since we don't need info
-		// of partition if disk as a whole is ignored
-		if oldDr == nil && len(diskDetails.PartitionData) != 0 {
-			klog.Info("Skipping partition of already excluded disk ", diskDetails.ProbeIdentifiers.Uuid)
-			continue
-		}
-		// if diskCR is already present, and udev event is generated for partition, append the partition info
-		// to the diskCR
-		if oldDr != nil && len(diskDetails.PartitionData) != 0 {
-			newDrCopy := oldDr.DeepCopy()
-			klog.Info("Appending partition data to ", diskDetails.ProbeIdentifiers.Uuid)
-			newDrCopy.Spec.PartitionDetails = append(newDrCopy.Spec.PartitionDetails, diskDetails.ToPartition()...)
-			pe.Controller.UpdateDisk(*newDrCopy, oldDr)
-		} else {
-			pe.Controller.PushDiskResource(oldDr, diskDetails)
+		klog.Infof("Processed details for %s : %s", device.DevPath, device.UUID)
+		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(device)
 
-			/*
-			 * There will be one blockdevice CR for each physical Disk.
-			 * For network devices like LUN there will be a blockdevice
-			 * CR but no disk CR. 1 to N mapping would be valid case
-			 * where disk have more than one partitions.
-			 * TODO: Need to check if udev event is for physical disk
-			 * and based on that need to create disk CR or blockdevice CR
-			 * or both.
-			 */
-			deviceDetails := pe.Controller.NewDeviceInfoFromDiskInfo(diskDetails)
-			if deviceDetails != nil {
-				klog.Infof("DeviceDetails:%#v", deviceDetails)
-				deviceList, err := pe.Controller.ListBlockDeviceResource()
-				if err != nil {
-					klog.Error(err)
-					go pe.initOrErrorEvent()
-					return
-				}
-				oldDvr := pe.Controller.GetExistingBlockDeviceResource(deviceList, deviceDetails.UUID)
-				pe.Controller.PushBlockDeviceResource(oldDvr, deviceDetails)
-			}
-		}
-		/// update the list of DiskCRs
-		diskList, err = pe.Controller.ListDiskResource()
-		if err != nil {
-			klog.Error(err)
-			go pe.initOrErrorEvent()
-			return
-		}
+		existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdList, deviceInfo.UUID)
+		pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
 	}
 }
 
-// deleteEvent deactivate disk/blockdevice resource using uuid from etcd
-func (pe *ProbeEvent) deleteEvent(msg controller.EventMessage) {
-	diskOk := pe.deleteDisk(msg)
+// deleteBlockDeviceEvent deactivate blockdevice resource using uuid from etcd
+func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 	blockDeviceOk := pe.deleteBlockDevice(msg)
 
 	// when one disk is removed from node and entry related to
 	// that disk is not present in etcd,  in that case it
 	// again rescan full system and update etcd accordingly.
-	if !diskOk || !blockDeviceOk {
+	if !blockDeviceOk {
 		go pe.initOrErrorEvent()
 	}
 }
@@ -123,13 +81,12 @@ func (pe *ProbeEvent) deleteBlockDevice(msg controller.EventMessage) bool {
 	}
 	ok := true
 	for _, diskDetails := range msg.Devices {
-		bdUUID := pe.Controller.DiskToDeviceUUID(diskDetails.ProbeIdentifiers.Uuid)
-		oldBDResource := pe.Controller.GetExistingBlockDeviceResource(bdList, bdUUID)
-		if oldBDResource == nil {
+		existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdList, diskDetails.UUID)
+		if existingBlockDeviceResource == nil {
 			ok = false
 			continue
 		}
-		pe.Controller.DeactivateBlockDevice(*oldBDResource)
+		pe.Controller.DeactivateBlockDevice(*existingBlockDeviceResource)
 	}
 	return ok
 }
@@ -142,7 +99,7 @@ func (pe *ProbeEvent) deleteDisk(msg controller.EventMessage) bool {
 	}
 	ok := true
 	for _, diskDetails := range msg.Devices {
-		oldDiskResource := pe.Controller.GetExistingDiskResource(diskList, diskDetails.ProbeIdentifiers.Uuid)
+		oldDiskResource := pe.Controller.GetExistingDiskResource(diskList, diskDetails.UUID)
 		if oldDiskResource == nil {
 			ok = false
 			continue

@@ -17,6 +17,7 @@ limitations under the License.
 package probe
 
 import (
+	. "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/smart"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -88,21 +89,21 @@ func newSmartProbe(devPath string) *smartProbe {
 func (sp *smartProbe) Start() {}
 
 // fillDiskDetails fills details in diskInfo struct using information it gets from probe
-func (sp *smartProbe) FillDiskDetails(d *controller.DiskInfo) {
-	if d.ProbeIdentifiers.SmartIdentifier == "" {
+func (sp *smartProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+	if blockDevice.DevPath == "" {
 		klog.Error("smartIdentifier is found empty, smart probe will not fill disk details.")
 
 		return
 	}
-	smartProbe := newSmartProbe(d.ProbeIdentifiers.SmartIdentifier)
+	smartProbe := newSmartProbe(blockDevice.DevPath)
 	deviceBasicSCSIInfo, err := smartProbe.SmartIdentifier.SCSIBasicDiskInfo()
 	if len(err) != 0 {
 		klog.Error(err)
 	}
 
-	d.Compliance = deviceBasicSCSIInfo.Compliance
-	d.FirmwareRevision = deviceBasicSCSIInfo.FirmwareRevision
-	d.Capacity = deviceBasicSCSIInfo.Capacity
-	d.LogicalSectorSize = deviceBasicSCSIInfo.LBSize
+	blockDevice.DeviceDetails.Compliance = deviceBasicSCSIInfo.Compliance
+	blockDevice.DeviceDetails.FirmwareRevision = deviceBasicSCSIInfo.FirmwareRevision
+	blockDevice.Capacity.Storage = deviceBasicSCSIInfo.Capacity
+	blockDevice.Capacity.LogicalSectorSize = deviceBasicSCSIInfo.LBSize
 
 }

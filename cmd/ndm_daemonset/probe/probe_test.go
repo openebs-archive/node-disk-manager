@@ -17,6 +17,7 @@ limitations under the License.
 package probe
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
 
@@ -30,10 +31,10 @@ type fakeProbe struct {
 
 func (p *fakeProbe) Start() {}
 
-func (p *fakeProbe) FillDiskDetails(fakeDiskInfo *controller.DiskInfo) {
-	fakeDiskInfo.Model = fakeModel
-	fakeDiskInfo.Serial = fakeSerial
-	fakeDiskInfo.Vendor = fakeVendor
+func (p *fakeProbe) FillBlockDeviceDetails(fakeDiskInfo *blockdevice.BlockDevice) {
+	fakeDiskInfo.DeviceDetails.Model = fakeModel
+	fakeDiskInfo.DeviceDetails.Serial = fakeSerial
+	fakeDiskInfo.DeviceDetails.Vendor = fakeVendor
 }
 
 func TestRegisterProbe(t *testing.T) {

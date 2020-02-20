@@ -18,6 +18,7 @@ package probe
 
 import (
 	"errors"
+	. "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -124,7 +125,7 @@ func (up *udevProbe) scan() error {
 	if (up.udev == nil) || (up.udevEnumerate == nil) {
 		return errors.New("unable to scan udev and udev enumerate is nil")
 	}
-	diskInfo := make([]*controller.DiskInfo, 0)
+	diskInfo := make([]*BlockDevice, 0)
 	disksUid := make([]string, 0)
 	err := up.udevEnumerate.AddSubsystemFilter(libudevwrapper.UDEV_SUBSYSTEM)
 	if err != nil {
@@ -143,26 +144,26 @@ func (up *udevProbe) scan() error {
 		if newUdevice.IsDisk() || newUdevice.IsParitition() {
 			uuid := newUdevice.GetUid()
 			disksUid = append(disksUid, uuid)
-			deviceDetails := &controller.DiskInfo{}
-			deviceDetails.ProbeIdentifiers.Uuid = uuid
-			deviceDetails.ProbeIdentifiers.UdevIdentifier = newUdevice.GetSyspath()
-			deviceDetails.Path = newUdevice.GetPath()
+			deviceDetails := &BlockDevice{}
+			deviceDetails.UUID = uuid
+			deviceDetails.SysPath = newUdevice.GetSyspath()
+			deviceDetails.DevPath = newUdevice.GetPath()
 			diskInfo = append(diskInfo, deviceDetails)
 
 			// get the dependents of the block device and log it
 			devicePath := hierarchy.Device{
-				Path: deviceDetails.Path,
+				Path: deviceDetails.DevPath,
 			}
 			dependents, err := devicePath.GetDependents()
 			if err != nil {
-				klog.Error("error getting dependent devices for ", deviceDetails.Path)
+				klog.Error("error getting dependent devices for ", deviceDetails.DevPath)
 			} else {
-				klog.Infof("Dependents of %s : %+v", deviceDetails.Path, dependents)
+				klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 			}
 		}
 		newUdevice.UdevDeviceUnref()
 	}
-	up.controller.DeactivateStaleDiskResource(disksUid)
+	up.controller.DeactivateStaleBlockDeviceResource(disksUid)
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,
@@ -172,41 +173,36 @@ func (up *udevProbe) scan() error {
 }
 
 // fillDiskDetails fills details in diskInfo struct using probe information
-func (up *udevProbe) FillDiskDetails(d *controller.DiskInfo) {
-	udevDevice, err := newUdevProbeForFillDiskDetails(d.ProbeIdentifiers.UdevIdentifier)
+func (up *udevProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+	udevDevice, err := newUdevProbeForFillDiskDetails(blockDevice.SysPath)
 	if err != nil {
-		klog.Errorf("%s : %s", d.ProbeIdentifiers.UdevIdentifier, err)
+		klog.Errorf("%s : %s", blockDevice.SysPath, err)
 		return
 	}
 	udevDiskDetails := udevDevice.udevDevice.DiskInfoFromLibudev()
 	defer udevDevice.free()
-	d.ProbeIdentifiers.SmartIdentifier = udevDiskDetails.Path
-	d.ProbeIdentifiers.SeachestIdentifier = udevDiskDetails.Path
-	d.ProbeIdentifiers.MountIdentifier = udevDiskDetails.Path
-	d.Model = udevDiskDetails.Model
-	d.Path = udevDiskDetails.Path
-	d.Serial = udevDiskDetails.Serial
-	d.Vendor = udevDiskDetails.Vendor
-	d.ByIdDevLinks = udevDiskDetails.ByIdDevLinks
-	d.ByPathDevLinks = udevDiskDetails.ByPathDevLinks
-	d.DiskType = udevDiskDetails.DiskType
-	// filesystem info of the attached device. Only filesystem data will be filled in the struct,
-	// as the mountpoint related information will be filled in by the mount probe
-	fileSystemInfo := controller.FSInfo{
-		FileSystem: udevDiskDetails.FileSystem,
-	}
-
-	// if the attached device is a disk, then the filesystem info will be at the the top level
-	if d.DiskType == libudevwrapper.UDEV_SYSTEM {
-		d.FileSystemInformation = fileSystemInfo
-	} else if d.DiskType == libudevwrapper.UDEV_PARTITION {
-		// if the attached device is a partition, the filesystem and partition information will go
-		// into the partition struct
-		d.PartitionData = append(d.PartitionData, controller.PartitionInfo{
-			PartitionType:         udevDiskDetails.PartitionType,
-			FileSystemInformation: fileSystemInfo,
+	blockDevice.DevPath = udevDiskDetails.Path
+	blockDevice.DeviceDetails.Model = udevDiskDetails.Model
+	blockDevice.DeviceDetails.WWN = udevDiskDetails.WWN
+	blockDevice.DeviceDetails.Serial = udevDiskDetails.Serial
+	blockDevice.DeviceDetails.Vendor = udevDiskDetails.Vendor
+	if len(udevDiskDetails.ByIdDevLinks) != 0 {
+		blockDevice.DevLinks = append(blockDevice.DevLinks, DevLink{
+			Kind:  libudevwrapper.BY_ID_LINK,
+			Links: udevDiskDetails.ByIdDevLinks,
 		})
 	}
+
+	if len(udevDiskDetails.ByPathDevLinks) != 0 {
+		blockDevice.DevLinks = append(blockDevice.DevLinks, DevLink{
+			Kind:  libudevwrapper.BY_PATH_LINK,
+			Links: udevDiskDetails.ByPathDevLinks,
+		})
+	}
+	blockDevice.DeviceType = udevDiskDetails.DiskType
+	// filesystem info of the attached device. Only filesystem data will be filled in the struct,
+	// as the mountpoint related information will be filled in by the mount probe
+	blockDevice.FSInfo.FileSystem = udevDiskDetails.FileSystem
 }
 
 // listen listens for event message over UdevEventMessages channel
@@ -225,9 +221,9 @@ func (up *udevProbe) listen() {
 		msg := <-udevevent.UdevEventMessageChannel
 		switch msg.Action {
 		case string(AttachEA):
-			probeEvent.addDiskEvent(msg)
+			probeEvent.addBlockDeviceEvent(msg)
 		case string(DetachEA):
-			probeEvent.deleteEvent(msg)
+			probeEvent.deleteBlockDeviceEvent(msg)
 		}
 	}
 }

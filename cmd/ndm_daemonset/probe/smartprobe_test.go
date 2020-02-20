@@ -17,6 +17,7 @@ limitations under the License.
 package probe
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
 
@@ -28,38 +29,40 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func mockOsDiskToAPIBySmart() (apis.Disk, error) {
+func mockOsDiskToAPIBySmart() (apis.BlockDevice, error) {
 
 	mockOsDiskDetails, err := smart.MockScsiBasicDiskInfo()
 	if err != nil {
-		return apis.Disk{}, err
+		return apis.BlockDevice{}, err
 	}
 
 	mockOsDiskDetailsFromUdev, err := libudevwrapper.MockDiskDetails()
 	if err != nil {
-		return apis.Disk{}, err
+		return apis.BlockDevice{}, err
 	}
 
-	fakeDetails := apis.DiskDetails{
+	fakeDetails := apis.DeviceDetails{
 		Compliance:       mockOsDiskDetails.Compliance,
 		FirmwareRevision: mockOsDiskDetails.FirmwareRevision,
 	}
 
-	fakeCapacity := apis.DiskCapacity{
+	fakeCapacity := apis.DeviceCapacity{
 		Storage:           mockOsDiskDetails.Capacity,
 		LogicalSectorSize: mockOsDiskDetails.LBSize,
 	}
 
-	fakeObj := apis.DiskSpec{
-		Capacity: fakeCapacity,
-		Details:  fakeDetails,
+	fakeObj := apis.DeviceSpec{
+		Capacity:    fakeCapacity,
+		Details:     fakeDetails,
+		Path:        mockOsDiskDetails.DevPath,
+		Partitioned: controller.NDMNotPartitioned,
 	}
 
-	devLinks := make([]apis.DiskDevLink, 0)
+	devLinks := make([]apis.DeviceDevLink, 0)
 	fakeObj.DevLinks = devLinks
 
 	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       controller.NDMDiskKind,
+		Kind:       controller.NDMBlockDeviceKind,
 		APIVersion: controller.NDMVersion,
 	}
 
@@ -68,11 +71,12 @@ func mockOsDiskToAPIBySmart() (apis.Disk, error) {
 		Name:   mockOsDiskDetailsFromUdev.Uid,
 	}
 
-	fakeDiskStatus := apis.DiskStatus{
-		State: controller.NDMActive,
+	fakeDiskStatus := apis.DeviceStatus{
+		State:      apis.BlockDeviceActive,
+		ClaimState: apis.BlockDeviceUnclaimed,
 	}
 
-	fakeDr := apis.Disk{
+	fakeDr := apis.BlockDevice{
 		TypeMeta:   fakeTypeMeta,
 		ObjectMeta: fakeObjectMeta,
 		Spec:       fakeObj,
@@ -88,17 +92,15 @@ func TestFillDiskDetailsBySmart(t *testing.T) {
 		t.Fatal(err)
 	}
 	sProbe := smartProbe{}
-	actualDiskInfo := controller.NewDiskInfo()
-	actualDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
-	sProbe.FillDiskDetails(actualDiskInfo)
-	expectedDiskInfo := &controller.DiskInfo{}
-	expectedDiskInfo.NodeAttributes = make(controller.NodeAttribute)
-	expectedDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
-	expectedDiskInfo.Capacity = mockOsDiskDetails.Capacity
-	expectedDiskInfo.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
-	expectedDiskInfo.Compliance = mockOsDiskDetails.Compliance
-	expectedDiskInfo.LogicalSectorSize = mockOsDiskDetails.LBSize
-	expectedDiskInfo.DiskType = "disk"
+	actualDiskInfo := &blockdevice.BlockDevice{}
+	actualDiskInfo.DevPath = mockOsDiskDetails.DevPath
+	sProbe.FillBlockDeviceDetails(actualDiskInfo)
+	expectedDiskInfo := &blockdevice.BlockDevice{}
+	expectedDiskInfo.DevPath = mockOsDiskDetails.DevPath
+	expectedDiskInfo.Capacity.Storage = mockOsDiskDetails.Capacity
+	expectedDiskInfo.Capacity.LogicalSectorSize = mockOsDiskDetails.LBSize
+	expectedDiskInfo.DeviceDetails.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
+	expectedDiskInfo.DeviceDetails.Compliance = mockOsDiskDetails.Compliance
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
@@ -153,20 +155,20 @@ func TestSmartProbe(t *testing.T) {
 		Controller: fakeController,
 	}
 
-	eventmsg := make([]*controller.DiskInfo, 0)
-	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockOsDiskDetailsUsingUdev.Uid
-	deviceDetails.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevPath
+	eventmsg := make([]*blockdevice.BlockDevice, 0)
+	deviceDetails := &blockdevice.BlockDevice{}
+	deviceDetails.UUID = mockOsDiskDetailsUsingUdev.Uid
+	deviceDetails.DevPath = mockOsDiskDetails.DevPath
 	eventmsg = append(eventmsg, deviceDetails)
 
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
-	probeEvent.addDiskEvent(eventDetails)
+	probeEvent.addBlockDeviceEvent(eventDetails)
 
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(mockOsDiskDetailsUsingUdev.Uid)
+	cdr1, err1 := fakeController.GetBlockDevice(mockOsDiskDetailsUsingUdev.Uid)
 	if err1 != nil {
 		t.Fatal(err1)
 	}
@@ -176,12 +178,12 @@ func TestSmartProbe(t *testing.T) {
 		t.Fatal(err)
 	}
 	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
-	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = "disk"
+	fakeDr.ObjectMeta.Labels[controller.NDMDeviceTypeKey] = "blockdevice"
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 
 	tests := map[string]struct {
-		actualDisk    apis.Disk
-		expectedDisk  apis.Disk
+		actualDisk    apis.BlockDevice
+		expectedDisk  apis.BlockDevice
 		actualError   error
 		expectedError error
 	}{

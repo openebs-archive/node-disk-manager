@@ -17,6 +17,7 @@ limitations under the License.
 package probe
 
 import (
+	. "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -89,13 +90,13 @@ func newMountProbe(devPath string) *mountProbe {
 // such activities, hence empty implementation
 func (mp *mountProbe) Start() {}
 
-// FillDiskDetails fills details in diskInfo struct using information it gets from probe
-func (mp *mountProbe) FillDiskDetails(d *controller.DiskInfo) {
-	if d.ProbeIdentifiers.MountIdentifier == "" {
+// FillBlockDeviceDetails fills details in diskInfo struct using information it gets from probe
+func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+	if blockDevice.DevPath == "" {
 		klog.Error("mountIdentifier is found empty, mount probe will not fetch mount information.")
 		return
 	}
-	mountProbe := newMountProbe(d.ProbeIdentifiers.MountIdentifier)
+	mountProbe := newMountProbe(blockDevice.DevPath)
 	basicMountInfo, err := mountProbe.MountIdentifier.DeviceBasicMountInfo()
 	if err != nil {
 		klog.Error(err)
@@ -106,8 +107,8 @@ func (mp *mountProbe) FillDiskDetails(d *controller.DiskInfo) {
 	if strings.Contains(basicMountInfo.MountPoint, k8sLocalVolumePath) {
 		return
 	}
-	d.FileSystemInformation.MountPoint = basicMountInfo.MountPoint
-	if d.FileSystemInformation.FileSystem == "" {
-		d.FileSystemInformation.FileSystem = basicMountInfo.FileSystem
+	blockDevice.FSInfo.MountPoint = append(blockDevice.FSInfo.MountPoint, basicMountInfo.MountPoint)
+	if blockDevice.FSInfo.FileSystem == "" {
+		blockDevice.FSInfo.FileSystem = basicMountInfo.FileSystem
 	}
 }
