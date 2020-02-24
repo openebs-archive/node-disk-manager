@@ -189,18 +189,30 @@ type CapacityInformation struct {
 
 	// PhysicalBlockSize is the physical block size in bytes
 	// reported by /sys/class/block/sda/queue/physical_block_size
+	//
+	// This is the unit in which the disk actually reads and writes
+	// the data atomically. Certain 4K sector devices may use a
+	// 4K 'physical_block_size' internally but expose a finer-grained
+	// 512 byte 'logical_block_size' to Linux. Also the current HDDs
+	// are advanced format (https://en.wikipedia.org/wiki/Advanced_Format)
+	// so they support 4k physical sector size.
 	PhysicalBlockSize uint32
 
 	// LogicalBlockSize is the logical block size in bytes
 	// reported by /sys/class/block/sda/queue/logical_block_size
+	//
+	// The smallest size the drive is able to write. This can be
+	// different than hw_sector_size as disks may lie about this
+	// to support lower/higher sector size. This is important for
+	// direct IOs, as IOs should be aligned on a 'logical_block_size'
+	// boundaries.
 	LogicalBlockSize uint32
 
-	// PhysicalSectorSize is the hardware sector size in bytes
+	// HardwareSectorSize is the hardware sector size in bytes
 	// reported by /sys/class/block/sda/queue/hw_sector_size
-	PhysicalSectorSize uint32
-
-	// LogicalSectorSize is the logical sector size in bytes.
-	LogicalSectorSize uint32
+	//
+	// This is the actual sector size of the disk
+	HardwareSectorSize uint32
 }
 
 // DeviceInformation represents the hardcoded information on the device.
