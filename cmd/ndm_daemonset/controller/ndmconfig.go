@@ -20,6 +20,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/openebs/node-disk-manager/pkg/util"
+
 	"github.com/ghodss/yaml"
 	"k8s.io/klog"
 )
@@ -34,6 +36,10 @@ const (
 type NodeDiskManagerConfig struct {
 	ProbeConfigs  []ProbeConfig  `json:"probeconfigs"`  // ProbeConfigs contains configs of Probes
 	FilterConfigs []FilterConfig `json:"filterconfigs"` // FilterConfigs contains configs of Filters
+
+	// FeatureGates contains configs to enable and disable experimental
+	// features
+	FeatureGates []FeatureGate `json:"featuregates,omitempty"`
 }
 
 // ProbeConfig contains configs of Probe
@@ -50,6 +56,15 @@ type FilterConfig struct {
 	State   string `json:"state"`   // State is state of Filter
 	Include string `json:"include"` // Include contains , separated values which we want to include for filter
 	Exclude string `json:"exclude"` // Exclude contains , separated values which we want to exclude for filter
+}
+
+// FeatureGate contains state for an experimental feature.
+type FeatureGate struct {
+	// Feature to be made available
+	Feature string `json:"feature"`
+
+	// State of the feature.
+	State string `json:"state"`
 }
 
 // SetNDMConfig sets config for probes and filters which user provides via configmap. If
@@ -72,6 +87,14 @@ func (c *Controller) SetNDMConfig(opts NDMOptions) {
 		c.NDMConfig = nil
 		klog.Error("unable to set ndm config : ", err)
 		return
+	}
+
+	for _, featureGate := range ndmConfig.FeatureGates {
+		if util.CheckTruthy(featureGate.State) {
+			klog.V(2).Infof("Feature Gate %s enabled", featureGate.Feature)
+		} else {
+			klog.V(2).Infof("Feature Gate %s disabled", featureGate.Feature)
+		}
 	}
 
 	c.NDMConfig = &ndmConfig
