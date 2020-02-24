@@ -176,7 +176,6 @@ func TestApplyFilter(t *testing.T) {
 	disk2 := &blockdevice.BlockDevice{}
 	disk2.UUID = matchDiskUuid
 	tests := map[string]struct {
-		disk     *DiskInfo
 		actual   bool
 		expected bool
 	}{

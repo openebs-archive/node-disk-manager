@@ -91,24 +91,6 @@ func (pe *ProbeEvent) deleteBlockDevice(msg controller.EventMessage) bool {
 	return ok
 }
 
-func (pe *ProbeEvent) deleteDisk(msg controller.EventMessage) bool {
-	diskList, err := pe.Controller.ListDiskResource()
-	if err != nil {
-		klog.Error(err)
-		return false
-	}
-	ok := true
-	for _, diskDetails := range msg.Devices {
-		oldDiskResource := pe.Controller.GetExistingDiskResource(diskList, diskDetails.UUID)
-		if oldDiskResource == nil {
-			ok = false
-			continue
-		}
-		pe.Controller.DeactivateDisk(*oldDiskResource)
-	}
-	return ok
-}
-
 // initOrErrorEvent rescan system and update disk resource this is
 // used for initial setup and when any uid mismatch or error occurred.
 func (pe *ProbeEvent) initOrErrorEvent() {

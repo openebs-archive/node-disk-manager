@@ -54,6 +54,13 @@ func NewDeviceInfo() *DeviceInfo {
 	return deviceInfo
 }
 
+// FSInfo defines the filesystem related information of block device/disk, like mountpoint and
+// filesystem
+type FSInfo struct {
+	FileSystem string // Filesystem on the block device
+	MountPoint string // MountPoint of the block device
+}
+
 // ToDevice convert deviceInfo struct to api.BlockDevice
 // type which will be pushed to etcd
 func (di *DeviceInfo) ToDevice() apis.BlockDevice {
@@ -172,4 +179,11 @@ func (di *DeviceInfo) getDeviceLinks() []apis.DeviceDevLink {
 		devLinks = append(devLinks, byPathLinks)
 	}
 	return devLinks
+}
+
+func (fs *FSInfo) getFileSystemInfo() apis.FileSystemInfo {
+	fsInfo := apis.FileSystemInfo{}
+	fsInfo.Type = fs.FileSystem
+	fsInfo.Mountpoint = fs.MountPoint
+	return fsInfo
 }

@@ -147,7 +147,6 @@ func NewController() (*Controller, error) {
 		return controller, err
 	}
 
-	controller.WaitForDiskCRD()
 	controller.WaitForBlockDeviceCRD()
 	return controller, nil
 }
@@ -235,22 +234,6 @@ func getNamespace() (string, error) {
 	return ns, nil
 }
 
-// WaitForDiskCRD will block till the CRDs are loaded
-// into Kubernetes
-func (c *Controller) WaitForDiskCRD() {
-	for {
-		_, err := c.ListDiskResource()
-		if err != nil {
-			klog.Errorf("Disk CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
-			time.Sleep(CRDRetryInterval)
-			c.newClientSet()
-			continue
-		}
-		klog.Info("Disk CRD is available")
-		break
-	}
-}
-
 // WaitForBlockDeviceCRD will block till the CRDs are loaded
 // into Kubernetes
 func (c *Controller) WaitForBlockDeviceCRD() {
@@ -297,7 +280,6 @@ func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
 	klog.Info("changing the state to unknown before shutting down.")
 	// Changing the state to unknown before shutting down. Similar as when one pod is
 	// running and you stopped kubelet it will make pod status unknown.
-	c.MarkDiskStatusToUnknown()
 	c.MarkBlockDeviceStatusToUnknown()
 	klog.Info("shutting down the controller")
 	return nil

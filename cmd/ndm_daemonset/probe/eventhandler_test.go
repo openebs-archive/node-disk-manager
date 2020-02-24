@@ -228,12 +228,6 @@ func TestDeleteDiskEvent(t *testing.T) {
 		Mutex:          mutex,
 		NodeAttributes: nodeAttributes,
 	}
-	// Create one fake disk resource
-	fakeDr := mockEmptyDiskCr()
-	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
-	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = fakeDiskType
-	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
-	fakeController.CreateDisk(fakeDr)
 
 	// Create one fake block device resource
 	fakeBDr := mockEmptyBlockDeviceCr()
@@ -258,7 +252,6 @@ func TestDeleteDiskEvent(t *testing.T) {
 	// Retrieve resources
 	bdR1, err1 := fakeController.GetBlockDevice(mockBDuid)
 
-	fakeDr.Status.State = controller.NDMInactive
 	fakeBDr.Status.State = controller.NDMInactive
 	tests := map[string]struct {
 		actualBD      apis.BlockDevice
