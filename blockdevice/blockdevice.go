@@ -222,7 +222,7 @@ type DeviceInformation struct {
 	// DeviceType is the type of the blockdevice. can be sparse/disk/partition etc
 	DeviceType string
 
-	// DriveType is the type of backing drive for this blockdevice. HDD/SSD/sparse
+	// DriveType is the type of backing drive for this blockdevice. HDD/SSD
 	DriveType string
 
 	// WWN
