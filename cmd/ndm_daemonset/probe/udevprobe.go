@@ -18,7 +18,7 @@ package probe
 
 import (
 	"errors"
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -125,7 +125,7 @@ func (up *udevProbe) scan() error {
 	if (up.udev == nil) || (up.udevEnumerate == nil) {
 		return errors.New("unable to scan udev and udev enumerate is nil")
 	}
-	diskInfo := make([]*BlockDevice, 0)
+	diskInfo := make([]*blockdevice.BlockDevice, 0)
 	disksUid := make([]string, 0)
 	err := up.udevEnumerate.AddSubsystemFilter(libudevwrapper.UDEV_SUBSYSTEM)
 	if err != nil {
@@ -144,7 +144,7 @@ func (up *udevProbe) scan() error {
 		if newUdevice.IsDisk() || newUdevice.IsParitition() {
 			uuid := newUdevice.GetUid()
 			disksUid = append(disksUid, uuid)
-			deviceDetails := &BlockDevice{}
+			deviceDetails := &blockdevice.BlockDevice{}
 			deviceDetails.UUID = uuid
 			deviceDetails.SysPath = newUdevice.GetSyspath()
 			deviceDetails.DevPath = newUdevice.GetPath()
@@ -173,7 +173,7 @@ func (up *udevProbe) scan() error {
 }
 
 // fillDiskDetails fills details in diskInfo struct using probe information
-func (up *udevProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 	udevDevice, err := newUdevProbeForFillDiskDetails(blockDevice.SysPath)
 	if err != nil {
 		klog.Errorf("%s : %s", blockDevice.SysPath, err)
@@ -187,14 +187,14 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
 	blockDevice.DeviceDetails.Serial = udevDiskDetails.Serial
 	blockDevice.DeviceDetails.Vendor = udevDiskDetails.Vendor
 	if len(udevDiskDetails.ByIdDevLinks) != 0 {
-		blockDevice.DevLinks = append(blockDevice.DevLinks, DevLink{
+		blockDevice.DevLinks = append(blockDevice.DevLinks, blockdevice.DevLink{
 			Kind:  libudevwrapper.BY_ID_LINK,
 			Links: udevDiskDetails.ByIdDevLinks,
 		})
 	}
 
 	if len(udevDiskDetails.ByPathDevLinks) != 0 {
-		blockDevice.DevLinks = append(blockDevice.DevLinks, DevLink{
+		blockDevice.DevLinks = append(blockDevice.DevLinks, blockdevice.DevLink{
 			Kind:  libudevwrapper.BY_PATH_LINK,
 			Links: udevDiskDetails.ByPathDevLinks,
 		})

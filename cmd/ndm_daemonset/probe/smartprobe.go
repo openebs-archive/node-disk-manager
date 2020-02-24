@@ -17,7 +17,7 @@ limitations under the License.
 package probe
 
 import (
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/smart"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -89,7 +89,7 @@ func newSmartProbe(devPath string) *smartProbe {
 func (sp *smartProbe) Start() {}
 
 // fillDiskDetails fills details in diskInfo struct using information it gets from probe
-func (sp *smartProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+func (sp *smartProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 	if blockDevice.DevPath == "" {
 		klog.Error("smartIdentifier is found empty, smart probe will not fill disk details.")
 

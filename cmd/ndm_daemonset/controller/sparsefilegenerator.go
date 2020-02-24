@@ -20,7 +20,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
 
@@ -206,7 +206,7 @@ func (c *Controller) MarkSparseBlockDeviceStateActive(sparseFile string, sparseF
 	BlockDeviceDetails.UUID = GetSparseBlockDeviceUUID(c.NodeAttributes[HostNameKey], sparseFile)
 	BlockDeviceDetails.NodeAttributes = c.NodeAttributes
 
-	BlockDeviceDetails.DeviceType = SparseBlockDeviceType
+	BlockDeviceDetails.DeviceType = blockdevice.SparseBlockDeviceType
 	BlockDeviceDetails.Path = sparseFile
 
 	sparseFileInfo, err := util.SparseFileInfo(sparseFile)

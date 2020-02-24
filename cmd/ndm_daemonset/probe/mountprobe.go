@@ -17,7 +17,7 @@ limitations under the License.
 package probe
 
 import (
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -91,7 +91,7 @@ func newMountProbe(devPath string) *mountProbe {
 func (mp *mountProbe) Start() {}
 
 // FillBlockDeviceDetails fills details in diskInfo struct using information it gets from probe
-func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 	if blockDevice.DevPath == "" {
 		klog.Error("mountIdentifier is found empty, mount probe will not fetch mount information.")
 		return

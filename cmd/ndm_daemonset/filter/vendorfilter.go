@@ -19,7 +19,7 @@ package filter
 import (
 	"strings"
 
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
@@ -90,7 +90,7 @@ func (vf *vendorFilter) Start() {
 
 // Include returns true if vendor of the disk matches with given list
 // or the list of the length is 0
-func (vf *vendorFilter) Include(blockDevice *BlockDevice) bool {
+func (vf *vendorFilter) Include(blockDevice *blockdevice.BlockDevice) bool {
 	if len(vf.includeVendors) == 0 {
 		return true
 	}
@@ -99,7 +99,7 @@ func (vf *vendorFilter) Include(blockDevice *BlockDevice) bool {
 
 // Exclude returns true if vendor of the disk does not match with given
 // list or the list of the length is 0
-func (vf *vendorFilter) Exclude(blockDevice *BlockDevice) bool {
+func (vf *vendorFilter) Exclude(blockDevice *blockdevice.BlockDevice) bool {
 	if len(vf.excludeVendors) == 0 {
 		return true
 	}

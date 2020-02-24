@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"strings"
 
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
@@ -76,7 +76,7 @@ func (cp *capacityProbe) Start() {}
 
 // FillBlockDeviceDetails updates the capacity of the disk , if the capacity is
 // not populated.
-func (cp *capacityProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+func (cp *capacityProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 
 	if blockDevice.Capacity.Storage != 0 {
 		return

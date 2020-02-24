@@ -19,7 +19,7 @@ package controller
 import (
 	"sort"
 
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"k8s.io/klog"
@@ -27,8 +27,8 @@ import (
 
 // EventMessage struct contains attribute of event message info.
 type EventMessage struct {
-	Action  string         // Action is event action like attach/detach
-	Devices []*BlockDevice // list of block device details
+	Action  string                     // Action is event action like attach/detach
+	Devices []*blockdevice.BlockDevice // list of block device details
 }
 
 // Probe contains name, state and probeinterface
@@ -45,14 +45,14 @@ func (p *Probe) Start() {
 }
 
 // FillBlockDeviceDetails implements ProbeInterface's FillBlockDeviceDetails()
-func (p *Probe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+func (p *Probe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 	p.Interface.FillBlockDeviceDetails(blockDevice)
 }
 
 // ProbeInterface contains Start() and  FillBlockDeviceDetails()
 type ProbeInterface interface {
 	Start()
-	FillBlockDeviceDetails(*BlockDevice)
+	FillBlockDeviceDetails(*blockdevice.BlockDevice)
 }
 
 // sortableProbes contains a slice of probes
@@ -99,7 +99,7 @@ func (c *Controller) ListProbe() []*Probe {
 }
 
 // FillBlockDeviceDetails lists registered probes and fills details from each probe
-func (c *Controller) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+func (c *Controller) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 	blockDevice.NodeAttributes = c.NodeAttributes
 	blockDevice.DeviceType = NDMDefaultDiskType
 	probes := c.ListProbe()

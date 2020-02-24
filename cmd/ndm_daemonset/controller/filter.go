@@ -17,7 +17,7 @@ limitations under the License.
 package controller
 
 import (
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"k8s.io/klog"
@@ -33,7 +33,7 @@ type Filter struct {
 // ApplyFilter returns true if both any of include() or exclude() returns true.
 // We are having two types of filter function one is inclusion and exclusion type
 // if any of them returns true then filter doesn't want further process of that event.
-func (f *Filter) ApplyFilter(blockDevice *BlockDevice) bool {
+func (f *Filter) ApplyFilter(blockDevice *blockdevice.BlockDevice) bool {
 	return f.Interface.Include(blockDevice) && f.Interface.Exclude(blockDevice)
 
 }
@@ -54,8 +54,8 @@ type FilterInterface interface {
 // matches with include value then it returns true if passing BlockDevice
 // does not match with exclude value then it returns false
 type Filters interface {
-	Include(*BlockDevice) bool // Include returns True if passing BlockDevice matches with include value
-	Exclude(*BlockDevice) bool // exclude returns True if passing BlockDevice does not match with exclude value
+	Include(*blockdevice.BlockDevice) bool // Include returns True if passing BlockDevice matches with include value
+	Exclude(*blockdevice.BlockDevice) bool // exclude returns True if passing BlockDevice does not match with exclude value
 }
 
 // AddNewFilter adds new filter to controller object
@@ -83,7 +83,7 @@ func (c *Controller) ListFilter() []*Filter {
 
 // ApplyFilter checks status for every registered filters if any of the filters
 // wants to stop further process of the event it returns true else it returns false
-func (c *Controller) ApplyFilter(blockDevice *BlockDevice) bool {
+func (c *Controller) ApplyFilter(blockDevice *blockdevice.BlockDevice) bool {
 	for _, filter := range c.ListFilter() {
 		if !filter.ApplyFilter(blockDevice) {
 			klog.Info(blockDevice.DevPath, " ignored by ", filter.Name)

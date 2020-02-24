@@ -17,7 +17,7 @@ limitations under the License.
 package filter
 
 import (
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"strings"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -90,7 +90,7 @@ func (pf *pathFilter) Start() {
 
 // Include returns true if the disk path matches with given list
 // of keywords
-func (pf *pathFilter) Include(blockDevice *BlockDevice) bool {
+func (pf *pathFilter) Include(blockDevice *blockdevice.BlockDevice) bool {
 	if len(pf.includePaths) == 0 {
 		return true
 	}
@@ -99,7 +99,7 @@ func (pf *pathFilter) Include(blockDevice *BlockDevice) bool {
 
 // Exclude returns true if the disk path does not match any given
 // keywords
-func (pf *pathFilter) Exclude(blockDevice *BlockDevice) bool {
+func (pf *pathFilter) Exclude(blockDevice *blockdevice.BlockDevice) bool {
 	if len(pf.excludePaths) == 0 {
 		return true
 	}

@@ -17,7 +17,7 @@ limitations under the License.
 package probe
 
 import (
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/seachest"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -89,7 +89,7 @@ func newSeachestProbe(devPath string) *seachestProbe {
 func (scp *seachestProbe) Start() {}
 
 // fillDiskDetails fills details in diskInfo struct using information it gets from probe
-func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *BlockDevice) {
+func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 	if blockDevice.DevPath == "" {
 		klog.Error("seachestIdentifier is found empty, seachest probe will not fill disk details.")
 		return
