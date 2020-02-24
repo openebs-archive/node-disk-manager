@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"sync"
 
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	smartmetrics "github.com/openebs/node-disk-manager/pkg/metrics/smart"
 	"github.com/openebs/node-disk-manager/pkg/seachest"
@@ -53,7 +53,7 @@ type SeachestCollector struct {
 // corresponding to each blockdevice
 type SeachestMetricData struct {
 	SeachestIdentifier *seachest.Identifier
-	TempInfo           TemperatureInformation
+	TempInfo           blockdevice.TemperatureInformation
 }
 
 // NewSeachestMetricCollector creates a new instance of SeachestCollector which
@@ -151,12 +151,12 @@ func (sc *SeachestCollector) collectErrors(ch chan<- prometheus.Metric) {
 }
 
 // getMetricData gets the seachest metrics for each blockdevice and fills it in the blockdevice struct
-func getMetricData(bds []BlockDevice) error {
+func getMetricData(bds []blockdevice.BlockDevice) error {
 	var err error
 	ok := false
 	for i, bd := range bds {
 		// do not report metrics for sparse devices
-		if bd.DeviceDetails.DeviceType == SparseBlockDeviceType {
+		if bd.DeviceDetails.DeviceType == blockdevice.SparseBlockDeviceType {
 			continue
 		}
 		sc := SeachestMetricData{
@@ -193,13 +193,13 @@ func (sc *SeachestMetricData) getSeachestData() error {
 
 // setMetricData sets the SMART metric data collected using seachest onto
 // the prometheus metrics
-func (sc *SeachestCollector) setMetricData(blockdevices []BlockDevice) {
+func (sc *SeachestCollector) setMetricData(blockdevices []blockdevice.BlockDevice) {
 	for _, bd := range blockdevices {
 		// sets the label values
 		sc.metrics.WithBlockDeviceUUID(bd.UUID).
 			WithBlockDevicePath(bd.DevPath).
-			WithBlockDeviceHostName(bd.NodeAttributes[HostName]).
-			WithBlockDeviceNodeName(bd.NodeAttributes[NodeName])
+			WithBlockDeviceHostName(bd.NodeAttributes[blockdevice.HostName]).
+			WithBlockDeviceNodeName(bd.NodeAttributes[blockdevice.NodeName])
 
 		// sets the metrics
 		sc.metrics.SetBlockDeviceCurrentTemperature(bd.TemperatureInfo.CurrentTemperature).

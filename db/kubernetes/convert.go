@@ -17,13 +17,13 @@ limitations under the License.
 package kubernetes
 
 import (
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	api "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 )
 
-func convertBlockDeviceAPIListToBlockDeviceList(in *api.BlockDeviceList, out *[]BlockDevice) error {
+func convertBlockDeviceAPIListToBlockDeviceList(in *api.BlockDeviceList, out *[]blockdevice.BlockDevice) error {
 	var err error
-	var bd BlockDevice
+	var bd blockdevice.BlockDevice
 
 	for _, bdAPI := range in.Items {
 		err = convertBlockDeviceAPIToBlockDevice(&bdAPI, &bd)
@@ -35,13 +35,13 @@ func convertBlockDeviceAPIListToBlockDeviceList(in *api.BlockDeviceList, out *[]
 	return nil
 }
 
-func convertBlockDeviceAPIToBlockDevice(in *api.BlockDevice, out *BlockDevice) error {
+func convertBlockDeviceAPIToBlockDevice(in *api.BlockDevice, out *blockdevice.BlockDevice) error {
 	out.UUID = in.Name
 
 	//labels
-	out.NodeAttributes = make(NodeAttribute)
-	out.NodeAttributes[HostName] = in.Labels[KubernetesHostNameLabel]
-	out.NodeAttributes[NodeName] = in.Spec.NodeAttributes.NodeName
+	out.NodeAttributes = make(blockdevice.NodeAttribute)
+	out.NodeAttributes[blockdevice.HostName] = in.Labels[KubernetesHostNameLabel]
+	out.NodeAttributes[blockdevice.NodeName] = in.Spec.NodeAttributes.NodeName
 
 	//spec
 	out.DevPath = in.Spec.Path

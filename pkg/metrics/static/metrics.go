@@ -19,7 +19,7 @@ package static
 import (
 	"strings"
 
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -107,10 +107,10 @@ func (m *Metrics) withErrorRequest() *Metrics {
 }
 
 // SetMetrics is used to set the prometheus metrics to respective fields
-func (m *Metrics) SetMetrics(blockDevices []BlockDevice) {
+func (m *Metrics) SetMetrics(blockDevices []blockdevice.BlockDevice) {
 	for _, blockDevice := range blockDevices {
 		// do not report metrics for sparse devices
-		if blockDevice.DeviceDetails.DeviceType == SparseBlockDeviceType {
+		if blockDevice.DeviceDetails.DeviceType == blockdevice.SparseBlockDeviceType {
 			continue
 		}
 		// remove /dev from the device path so that the device path is similar to the
@@ -118,19 +118,19 @@ func (m *Metrics) SetMetrics(blockDevices []BlockDevice) {
 		path := strings.ReplaceAll(blockDevice.DevPath, "/dev/", "")
 		m.blockDeviceState.WithLabelValues(blockDevice.UUID,
 			path,
-			blockDevice.NodeAttributes[HostName],
-			blockDevice.NodeAttributes[NodeName]).
+			blockDevice.NodeAttributes[blockdevice.HostName],
+			blockDevice.NodeAttributes[blockdevice.NodeName]).
 			Set(getState(blockDevice.Status.State))
 	}
 }
 
 func getState(state string) float64 {
 	switch state {
-	case Active:
+	case blockdevice.Active:
 		return 0
-	case Inactive:
+	case blockdevice.Inactive:
 		return 1
-	case Unknown:
+	case blockdevice.Unknown:
 		return 2
 	}
 	// default return unknown state

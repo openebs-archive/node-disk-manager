@@ -22,7 +22,7 @@ import (
 	"os"
 	"strings"
 
-	. "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 
@@ -127,7 +127,7 @@ func (cl *Client) setNamespace() error {
 
 // ListBlockDevice lists the block device from etcd based on
 // the filters used
-func (cl *Client) ListBlockDevice(filters ...string) ([]BlockDevice, error) {
+func (cl *Client) ListBlockDevice(filters ...string) ([]blockdevice.BlockDevice, error) {
 	bdList := &v1alpha1.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
@@ -148,7 +148,7 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]BlockDevice, error) {
 		return nil, err
 	}
 
-	blockDeviceList := make([]BlockDevice, 0)
+	blockDeviceList := make([]blockdevice.BlockDevice, 0)
 	err = convertBlockDeviceAPIListToBlockDeviceList(bdList, &blockDeviceList)
 	if err != nil {
 		return blockDeviceList, err
