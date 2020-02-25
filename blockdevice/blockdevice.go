@@ -85,7 +85,6 @@ package blockdevice
 // 			}
 //
 type BlockDevice struct {
-
 	// Identifier is the unique identifiers that can be used to identify this
 	// blockdevice
 	Identifier
@@ -98,11 +97,15 @@ type BlockDevice struct {
 	// BlockDevice if it exists
 	FSInfo FileSystemInformation
 
+	// Capacity contains the capacity related information for this blockdevice
 	Capacity CapacityInformation
 
+	// DevLinks contain the devlinks of this blockdevice
 	DevLinks []DevLink
 
-	DeviceDetails DeviceInformation
+	// DeviceAttributes contains the attributes of this device, like hardcoded
+	// information on the disk
+	DeviceAttributes DeviceAttribute
 
 	// Parent is the parent device of this blockdevice, if it exists.
 	// It will always be a single device.
@@ -186,6 +189,17 @@ type CapacityInformation struct {
 	// Storage is the storage capacity of this blockdevice
 	// in bytes
 	Storage uint64
+}
+
+// DeviceAttribute represents the hardcoded information on the device.
+// It is not gauranteed that all these fields should be present for a given
+// blockdevice
+type DeviceAttribute struct {
+	// DeviceType is the type of the blockdevice. can be sparse/disk/partition etc
+	DeviceType string
+
+	// DriveType is the type of backing drive for this blockdevice. HDD/SSD
+	DriveType string
 
 	// PhysicalBlockSize is the physical block size in bytes
 	// reported by /sys/class/block/sda/queue/physical_block_size
@@ -213,17 +227,6 @@ type CapacityInformation struct {
 	//
 	// This is the actual sector size of the disk
 	HardwareSectorSize uint32
-}
-
-// DeviceInformation represents the hardcoded information on the device.
-// It is not gauranteed that all these fields should be present for a given
-// blockdevice
-type DeviceInformation struct {
-	// DeviceType is the type of the blockdevice. can be sparse/disk/partition etc
-	DeviceType string
-
-	// DriveType is the type of backing drive for this blockdevice. HDD/SSD
-	DriveType string
 
 	// WWN
 	WWN string
