@@ -110,7 +110,7 @@ func (m *Metrics) withErrorRequest() *Metrics {
 func (m *Metrics) SetMetrics(blockDevices []blockdevice.BlockDevice) {
 	for _, blockDevice := range blockDevices {
 		// do not report metrics for sparse devices
-		if blockDevice.DeviceDetails.DeviceType == blockdevice.SparseBlockDeviceType {
+		if blockDevice.DeviceAttributes.DeviceType == blockdevice.SparseBlockDeviceType {
 			continue
 		}
 		// remove /dev from the device path so that the device path is similar to the
