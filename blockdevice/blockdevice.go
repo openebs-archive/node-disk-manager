@@ -195,7 +195,8 @@ type CapacityInformation struct {
 // It is not gauranteed that all these fields should be present for a given
 // blockdevice
 type DeviceAttribute struct {
-	// DeviceType is the type of the blockdevice. can be sparse/disk/partition etc
+	// DeviceType is the type of the blockdevice.
+	// Values can be sparse/disk/partition/loop/lvm/raid etc
 	DeviceType string
 
 	// DriveType is the type of backing drive for this blockdevice. HDD/SSD
