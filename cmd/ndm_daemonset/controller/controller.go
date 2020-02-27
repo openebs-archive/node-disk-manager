@@ -29,6 +29,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/openebs/node-disk-manager/pkg/apis"
+	"github.com/openebs/node-disk-manager/pkg/features"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -101,6 +102,8 @@ var ControllerBroadcastChannel = make(chan *Controller)
 // NDMOptions defines the options to run the NDM daemon
 type NDMOptions struct {
 	ConfigFilePath string
+	// holds the slice of feature gates.
+	FeatureGate []string
 }
 
 // Controller is the controller implementation for disk resources
@@ -115,6 +118,8 @@ type Controller struct {
 	// NodeAttribute is a map of various attributes of the node in which this daemon is running.
 	// The attributes can be hostname, nodename, zone, failure-domain etc
 	NodeAttributes map[string]string
+	// Feature gates for the NDM daemon
+	FeatureGates features.FeatureGate
 }
 
 // NewController returns a controller pointer for any error case it will return nil
@@ -157,6 +162,12 @@ func NewController() (*Controller, error) {
 func (c *Controller) SetControllerOptions(opts NDMOptions) error {
 	// set the config for running NDM daemon
 	c.SetNDMConfig(opts)
+	// set the feature gates on NDM daemon
+	if fg, err := features.ParseFeatureGate(opts.FeatureGate, features.DefaultFeatureGates); err != nil {
+		return fmt.Errorf("error setting feature gate %v", err)
+	} else {
+		c.FeatureGates = fg
+	}
 	c.Filters = make([]*Filter, 0)
 	c.Probes = make([]*Probe, 0)
 	c.NodeAttributes = make(map[string]string, 0)
