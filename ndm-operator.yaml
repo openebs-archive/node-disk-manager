@@ -125,6 +125,11 @@ spec:
       containers:
       - name: node-disk-manager
         image: openebs/node-disk-manager-amd64:ci
+        command:
+          - "/usr/local/bin/entrypoint"
+        args:
+          - -v=2
+#          - --feature-gates="GPTBasedUUID"
         imagePullPolicy: Always
         securityContext:
           privileged: true
