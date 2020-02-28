@@ -94,7 +94,7 @@ func (vf *vendorFilter) Include(blockDevice *blockdevice.BlockDevice) bool {
 	if len(vf.includeVendors) == 0 {
 		return true
 	}
-	return util.ContainsIgnoredCase(vf.includeVendors, blockDevice.DeviceDetails.Vendor)
+	return util.ContainsIgnoredCase(vf.includeVendors, blockDevice.DeviceAttributes.Vendor)
 }
 
 // Exclude returns true if vendor of the disk does not match with given
@@ -103,5 +103,5 @@ func (vf *vendorFilter) Exclude(blockDevice *blockdevice.BlockDevice) bool {
 	if len(vf.excludeVendors) == 0 {
 		return true
 	}
-	return !util.ContainsIgnoredCase(vf.excludeVendors, blockDevice.DeviceDetails.Vendor)
+	return !util.ContainsIgnoredCase(vf.excludeVendors, blockDevice.DeviceAttributes.Vendor)
 }

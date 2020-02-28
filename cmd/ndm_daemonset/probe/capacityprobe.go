@@ -104,7 +104,7 @@ func (cp *capacityProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDe
 	}
 	blockDevice.Capacity.Storage = uint64(blockSize * sectorSize)
 
-	if blockDevice.Capacity.LogicalSectorSize == 0 {
-		blockDevice.Capacity.LogicalSectorSize = uint32(sectorSize)
+	if blockDevice.DeviceAttributes.LogicalBlockSize == 0 {
+		blockDevice.DeviceAttributes.LogicalBlockSize = uint32(sectorSize)
 	}
 }

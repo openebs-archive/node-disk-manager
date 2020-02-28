@@ -101,7 +101,7 @@ func (c *Controller) ListProbe() []*Probe {
 // FillBlockDeviceDetails lists registered probes and fills details from each probe
 func (c *Controller) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 	blockDevice.NodeAttributes = c.NodeAttributes
-	blockDevice.DeviceType = NDMDefaultDiskType
+	blockDevice.DeviceAttributes.DeviceType = NDMDefaultDiskType
 	probes := c.ListProbe()
 	for _, probe := range probes {
 		probe.FillBlockDeviceDetails(blockDevice)

@@ -98,9 +98,9 @@ func TestFillDiskDetailsBySmart(t *testing.T) {
 	expectedDiskInfo := &blockdevice.BlockDevice{}
 	expectedDiskInfo.DevPath = mockOsDiskDetails.DevPath
 	expectedDiskInfo.Capacity.Storage = mockOsDiskDetails.Capacity
-	expectedDiskInfo.Capacity.LogicalSectorSize = mockOsDiskDetails.LBSize
-	expectedDiskInfo.DeviceDetails.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
-	expectedDiskInfo.DeviceDetails.Compliance = mockOsDiskDetails.Compliance
+	expectedDiskInfo.DeviceAttributes.LogicalBlockSize = mockOsDiskDetails.LBSize
+	expectedDiskInfo.DeviceAttributes.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
+	expectedDiskInfo.DeviceAttributes.Compliance = mockOsDiskDetails.Compliance
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 

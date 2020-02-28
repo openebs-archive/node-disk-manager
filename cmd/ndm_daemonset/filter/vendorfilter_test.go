@@ -108,7 +108,7 @@ func TestVendorFilterExclude(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			bd := &BlockDevice{}
-			bd.DeviceDetails.Vendor = test.vendor
+			bd.DeviceAttributes.Vendor = test.vendor
 			if test.excludeVendor != "" {
 				test.filter.excludeVendors = strings.Split(test.excludeVendor, ",")
 			}
@@ -134,7 +134,7 @@ func TestVendorFilterInclude(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			bd := &BlockDevice{}
-			bd.DeviceDetails.Vendor = test.vendor
+			bd.DeviceAttributes.Vendor = test.vendor
 			if test.includeVendor != "" {
 				test.filter.includeVendors = strings.Split(test.includeVendor, ",")
 			}

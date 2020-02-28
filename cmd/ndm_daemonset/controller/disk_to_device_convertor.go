@@ -21,6 +21,8 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/udev"
 )
 
+// NewDeviceInfoFromBlockDevice converts the internal BlockDevice struct to
+// the BlockDevice API resource
 func (c *Controller) NewDeviceInfoFromBlockDevice(blockDevice *bd.BlockDevice) *DeviceInfo {
 
 	deviceDetails := NewDeviceInfo()
@@ -34,11 +36,11 @@ func (c *Controller) NewDeviceInfoFromBlockDevice(blockDevice *bd.BlockDevice) *
 
 	deviceDetails.UUID = blockDevice.UUID
 	deviceDetails.Capacity = blockDevice.Capacity.Storage
-	deviceDetails.Model = blockDevice.DeviceDetails.Model
-	deviceDetails.Serial = blockDevice.DeviceDetails.Serial
-	deviceDetails.Vendor = blockDevice.DeviceDetails.Vendor
+	deviceDetails.Model = blockDevice.DeviceAttributes.Model
+	deviceDetails.Serial = blockDevice.DeviceAttributes.Serial
+	deviceDetails.Vendor = blockDevice.DeviceAttributes.Vendor
 	deviceDetails.Path = blockDevice.DevPath
-	deviceDetails.FirmwareRevision = blockDevice.DeviceDetails.FirmwareRevision
+	deviceDetails.FirmwareRevision = blockDevice.DeviceAttributes.FirmwareRevision
 
 	for _, devlink := range blockDevice.DevLinks {
 		if devlink.Kind == udev.BY_ID_LINK {
@@ -47,9 +49,9 @@ func (c *Controller) NewDeviceInfoFromBlockDevice(blockDevice *bd.BlockDevice) *
 			deviceDetails.ByPathDevLinks = devlink.Links
 		}
 	}
-	deviceDetails.LogicalSectorSize = blockDevice.Capacity.LogicalSectorSize
-	deviceDetails.PhysicalSectorSize = blockDevice.Capacity.PhysicalSectorSize
-	deviceDetails.Compliance = blockDevice.DeviceDetails.Compliance
+	deviceDetails.LogicalSectorSize = blockDevice.DeviceAttributes.LogicalBlockSize
+	deviceDetails.PhysicalSectorSize = blockDevice.DeviceAttributes.PhysicalBlockSize
+	deviceDetails.Compliance = blockDevice.DeviceAttributes.Compliance
 	deviceDetails.FileSystemInfo.FileSystem = blockDevice.FSInfo.FileSystem
 	// currently only the first mount point will be taken.
 	if len(blockDevice.FSInfo.MountPoint) != 0 {

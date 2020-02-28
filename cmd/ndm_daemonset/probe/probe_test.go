@@ -32,9 +32,9 @@ type fakeProbe struct {
 func (p *fakeProbe) Start() {}
 
 func (p *fakeProbe) FillBlockDeviceDetails(fakeDiskInfo *blockdevice.BlockDevice) {
-	fakeDiskInfo.DeviceDetails.Model = fakeModel
-	fakeDiskInfo.DeviceDetails.Serial = fakeSerial
-	fakeDiskInfo.DeviceDetails.Vendor = fakeVendor
+	fakeDiskInfo.DeviceAttributes.Model = fakeModel
+	fakeDiskInfo.DeviceAttributes.Serial = fakeSerial
+	fakeDiskInfo.DeviceAttributes.Vendor = fakeVendor
 }
 
 func TestRegisterProbe(t *testing.T) {

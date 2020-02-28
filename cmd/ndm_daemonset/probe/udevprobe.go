@@ -182,10 +182,10 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice
 	udevDiskDetails := udevDevice.udevDevice.DiskInfoFromLibudev()
 	defer udevDevice.free()
 	blockDevice.DevPath = udevDiskDetails.Path
-	blockDevice.DeviceDetails.Model = udevDiskDetails.Model
-	blockDevice.DeviceDetails.WWN = udevDiskDetails.WWN
-	blockDevice.DeviceDetails.Serial = udevDiskDetails.Serial
-	blockDevice.DeviceDetails.Vendor = udevDiskDetails.Vendor
+	blockDevice.DeviceAttributes.Model = udevDiskDetails.Model
+	blockDevice.DeviceAttributes.WWN = udevDiskDetails.WWN
+	blockDevice.DeviceAttributes.Serial = udevDiskDetails.Serial
+	blockDevice.DeviceAttributes.Vendor = udevDiskDetails.Vendor
 	if len(udevDiskDetails.ByIdDevLinks) != 0 {
 		blockDevice.DevLinks = append(blockDevice.DevLinks, blockdevice.DevLink{
 			Kind:  libudevwrapper.BY_ID_LINK,
@@ -199,7 +199,7 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice
 			Links: udevDiskDetails.ByPathDevLinks,
 		})
 	}
-	blockDevice.DeviceType = udevDiskDetails.DiskType
+	blockDevice.DeviceAttributes.DeviceType = udevDiskDetails.DiskType
 	// filesystem info of the attached device. Only filesystem data will be filled in the struct,
 	// as the mountpoint related information will be filled in by the mount probe
 	blockDevice.FSInfo.FileSystem = udevDiskDetails.FileSystem

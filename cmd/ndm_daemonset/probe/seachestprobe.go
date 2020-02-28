@@ -112,14 +112,14 @@ func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockD
 		klog.V(4).Infof("Disk: %s NodeAttribute:%s filled by seachest.", blockDevice.DevPath, blockDevice.NodeAttributes[controller.HostNameKey])
 	}
 
-	if blockDevice.DeviceDetails.Model == "" {
-		blockDevice.DeviceDetails.Model = seachestProbe.SeachestIdentifier.GetModelNumber(driveInfo)
-		klog.V(4).Infof("Disk: %s Model:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.Model)
+	if blockDevice.DeviceAttributes.Model == "" {
+		blockDevice.DeviceAttributes.Model = seachestProbe.SeachestIdentifier.GetModelNumber(driveInfo)
+		klog.V(4).Infof("Disk: %s Model:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.Model)
 	}
 
-	if blockDevice.DeviceDetails.WWN == "" {
-		blockDevice.DeviceDetails.WWN = seachestProbe.SeachestIdentifier.GetUuid(driveInfo)
-		klog.V(4).Infof("Disk: %s WWN:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.WWN)
+	if blockDevice.DeviceAttributes.WWN == "" {
+		blockDevice.DeviceAttributes.WWN = seachestProbe.SeachestIdentifier.GetUuid(driveInfo)
+		klog.V(4).Infof("Disk: %s WWN:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.WWN)
 	}
 
 	if blockDevice.Capacity.Storage == 0 {
@@ -127,29 +127,29 @@ func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockD
 		klog.V(4).Infof("Disk: %s Capacity:%d filled by seachest.", blockDevice.DevPath, blockDevice.Capacity.Storage)
 	}
 
-	if blockDevice.DeviceDetails.Serial == "" {
-		blockDevice.DeviceDetails.Serial = seachestProbe.SeachestIdentifier.GetSerialNumber(driveInfo)
-		klog.V(4).Infof("Disk: %s Serial:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.Serial)
+	if blockDevice.DeviceAttributes.Serial == "" {
+		blockDevice.DeviceAttributes.Serial = seachestProbe.SeachestIdentifier.GetSerialNumber(driveInfo)
+		klog.V(4).Infof("Disk: %s Serial:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.Serial)
 	}
 
-	if blockDevice.DeviceDetails.Vendor == "" {
-		blockDevice.DeviceDetails.Vendor = seachestProbe.SeachestIdentifier.GetVendorID(driveInfo)
-		klog.V(4).Infof("Disk: %s Vendor:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.Vendor)
+	if blockDevice.DeviceAttributes.Vendor == "" {
+		blockDevice.DeviceAttributes.Vendor = seachestProbe.SeachestIdentifier.GetVendorID(driveInfo)
+		klog.V(4).Infof("Disk: %s Vendor:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.Vendor)
 	}
 
-	if blockDevice.DeviceDetails.FirmwareRevision == "" {
-		blockDevice.DeviceDetails.FirmwareRevision = seachestProbe.SeachestIdentifier.GetFirmwareRevision(driveInfo)
-		klog.V(4).Infof("Disk: %s FirmwareRevision:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceDetails.FirmwareRevision)
+	if blockDevice.DeviceAttributes.FirmwareRevision == "" {
+		blockDevice.DeviceAttributes.FirmwareRevision = seachestProbe.SeachestIdentifier.GetFirmwareRevision(driveInfo)
+		klog.V(4).Infof("Disk: %s FirmwareRevision:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.FirmwareRevision)
 	}
 
-	if blockDevice.Capacity.LogicalSectorSize == 0 {
-		blockDevice.Capacity.LogicalSectorSize = seachestProbe.SeachestIdentifier.GetLogicalSectorSize(driveInfo)
-		klog.V(4).Infof("Disk: %s LogicalSectorSize:%d filled by seachest.", blockDevice.DevPath, blockDevice.Capacity.LogicalSectorSize)
+	if blockDevice.DeviceAttributes.LogicalBlockSize == 0 {
+		blockDevice.DeviceAttributes.LogicalBlockSize = seachestProbe.SeachestIdentifier.GetLogicalSectorSize(driveInfo)
+		klog.V(4).Infof("Disk: %s LogicalSectorSize:%d filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.LogicalBlockSize)
 	}
 
-	if blockDevice.Capacity.PhysicalSectorSize == 0 {
-		blockDevice.Capacity.PhysicalSectorSize = seachestProbe.SeachestIdentifier.GetPhysicalSectorSize(driveInfo)
-		klog.V(4).Infof("Disk: %s PhysicalSectorSize:%d filled by seachest.", blockDevice.DevPath, blockDevice.Capacity.PhysicalSectorSize)
+	if blockDevice.DeviceAttributes.PhysicalBlockSize == 0 {
+		blockDevice.DeviceAttributes.PhysicalBlockSize = seachestProbe.SeachestIdentifier.GetPhysicalSectorSize(driveInfo)
+		klog.V(4).Infof("Disk: %s PhysicalSectorSize:%d filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.PhysicalBlockSize)
 	}
 
 	/*if d.RotationRate == 0 {

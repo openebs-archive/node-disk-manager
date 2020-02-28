@@ -101,9 +101,9 @@ func (sp *smartProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 		klog.Error(err)
 	}
 
-	blockDevice.DeviceDetails.Compliance = deviceBasicSCSIInfo.Compliance
-	blockDevice.DeviceDetails.FirmwareRevision = deviceBasicSCSIInfo.FirmwareRevision
+	blockDevice.DeviceAttributes.Compliance = deviceBasicSCSIInfo.Compliance
+	blockDevice.DeviceAttributes.FirmwareRevision = deviceBasicSCSIInfo.FirmwareRevision
 	blockDevice.Capacity.Storage = deviceBasicSCSIInfo.Capacity
-	blockDevice.Capacity.LogicalSectorSize = deviceBasicSCSIInfo.LBSize
+	blockDevice.DeviceAttributes.LogicalBlockSize = deviceBasicSCSIInfo.LBSize
 
 }

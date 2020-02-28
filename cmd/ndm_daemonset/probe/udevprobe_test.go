@@ -107,11 +107,11 @@ func TestFillDiskDetails(t *testing.T) {
 	expectedDiskInfo := &blockdevice.BlockDevice{}
 	expectedDiskInfo.SysPath = mockOsDiskDetails.SysPath
 	expectedDiskInfo.DevPath = mockOsDiskDetails.DevNode
-	expectedDiskInfo.DeviceType = "disk"
-	expectedDiskInfo.DeviceDetails.Model = mockOsDiskDetails.Model
-	expectedDiskInfo.DeviceDetails.Serial = mockOsDiskDetails.Serial
-	expectedDiskInfo.DeviceDetails.Vendor = mockOsDiskDetails.Vendor
-	expectedDiskInfo.DeviceDetails.WWN = mockOsDiskDetails.Wwn
+	expectedDiskInfo.DeviceAttributes.DeviceType = "disk"
+	expectedDiskInfo.DeviceAttributes.Model = mockOsDiskDetails.Model
+	expectedDiskInfo.DeviceAttributes.Serial = mockOsDiskDetails.Serial
+	expectedDiskInfo.DeviceAttributes.Vendor = mockOsDiskDetails.Vendor
+	expectedDiskInfo.DeviceAttributes.WWN = mockOsDiskDetails.Wwn
 	expectedDiskInfo.DevLinks = append(expectedDiskInfo.DevLinks, blockdevice.DevLink{
 		Kind:  libudevwrapper.BY_ID_LINK,
 		Links: mockOsDiskDetails.ByIdDevLinks,
