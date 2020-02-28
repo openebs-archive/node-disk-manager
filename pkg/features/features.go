@@ -16,8 +16,9 @@ type FeatureGate map[Feature]bool
 type Feature string
 
 const (
-	// Feature flag to enable the blockdevice algorithm mentioned
-	// in https://github.com/openebs/openebs/pull/2666
+	// GPTBasedUUID feature flag is used to enable the
+	// blockdevice UUID algorithm mentioned in
+	// https://github.com/openebs/openebs/pull/2666
 	GPTBasedUUID Feature = "GPTBasedUUID"
 )
 
