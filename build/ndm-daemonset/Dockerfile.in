@@ -9,4 +9,8 @@ ARG ARCH
 
 #Copy binary to /usr/sbin/ndm
 COPY bin/${ARCH}/ndm /usr/sbin/ndm
-COPY build/ndm-daemonset/entrypoint.sh /usr/local/bin/entrypoint
+COPY build/ndm-daemonset/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+
+#Set the default command
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
