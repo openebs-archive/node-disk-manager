@@ -53,10 +53,10 @@ func Test_convert_BlockDeviceAPI_To_BlockDevice(t *testing.T) {
 	out1 := createFakeBlockDevice(fakeBDName)
 	out1.NodeAttributes[blockdevice.HostName] = fakeHostName
 	out1.NodeAttributes[blockdevice.NodeName] = fakeNodeName
-	out1.Path = fakeDevicePath
+	out1.DevPath = fakeDevicePath
 	out1.FSInfo.FileSystem = fileSystem
 	out1.FSInfo.MountPoint = append(out1.FSInfo.MountPoint, mountPoint)
-	out1.DeviceType = blockdevice.SparseBlockDeviceType
+	out1.DeviceAttributes.DeviceType = blockdevice.SparseBlockDeviceType
 	out1.Status.State = blockdevice.Active
 	out1.Status.ClaimPhase = blockdevice.Claimed
 
@@ -75,7 +75,7 @@ func Test_convert_BlockDeviceAPI_To_BlockDevice(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			gotOut := &blockdevice.BlockDevice{}
-			err := convert_BlockDeviceAPI_To_BlockDevice(test.args.in, gotOut)
+			err := convertBlockDeviceAPIToBlockDevice(test.args.in, gotOut)
 			assert.Equal(t, test.args.wantOut, gotOut)
 			assert.Equal(t, test.wantErr, err != nil)
 		})

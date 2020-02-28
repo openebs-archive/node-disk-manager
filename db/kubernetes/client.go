@@ -25,6 +25,7 @@ import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
@@ -148,7 +149,7 @@ func (cl *Client) ListBlockDevice(filters ...string) ([]blockdevice.BlockDevice,
 	}
 
 	blockDeviceList := make([]blockdevice.BlockDevice, 0)
-	err = convert_BlockDeviceAPIList_To_BlockDeviceList(bdList, &blockDeviceList)
+	err = convertBlockDeviceAPIListToBlockDeviceList(bdList, &blockDeviceList)
 	if err != nil {
 		return blockDeviceList, err
 	}

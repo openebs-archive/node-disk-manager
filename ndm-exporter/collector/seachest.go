@@ -24,6 +24,7 @@ import (
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	smartmetrics "github.com/openebs/node-disk-manager/pkg/metrics/smart"
 	"github.com/openebs/node-disk-manager/pkg/seachest"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog"
 )
@@ -155,17 +156,17 @@ func getMetricData(bds []blockdevice.BlockDevice) error {
 	ok := false
 	for i, bd := range bds {
 		// do not report metrics for sparse devices
-		if bd.DeviceType == blockdevice.SparseBlockDeviceType {
+		if bd.DeviceAttributes.DeviceType == blockdevice.SparseBlockDeviceType {
 			continue
 		}
 		sc := SeachestMetricData{
 			SeachestIdentifier: &seachest.Identifier{
-				DevPath: bd.Path,
+				DevPath: bd.DevPath,
 			},
 		}
 		err = sc.getSeachestData()
 		if err != nil {
-			klog.Errorf("fetching seachest data for %s failed. %v", bd.Path, err)
+			klog.Errorf("fetching seachest data for %s failed. %v", bd.DevPath, err)
 			continue
 		}
 		ok = true
@@ -196,7 +197,7 @@ func (sc *SeachestCollector) setMetricData(blockdevices []blockdevice.BlockDevic
 	for _, bd := range blockdevices {
 		// sets the label values
 		sc.metrics.WithBlockDeviceUUID(bd.UUID).
-			WithBlockDevicePath(bd.Path).
+			WithBlockDevicePath(bd.DevPath).
 			WithBlockDeviceHostName(bd.NodeAttributes[blockdevice.HostName]).
 			WithBlockDeviceNodeName(bd.NodeAttributes[blockdevice.NodeName])
 

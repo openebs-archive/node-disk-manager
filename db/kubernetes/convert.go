@@ -21,12 +21,12 @@ import (
 	api "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 )
 
-func convert_BlockDeviceAPIList_To_BlockDeviceList(in *api.BlockDeviceList, out *[]blockdevice.BlockDevice) error {
+func convertBlockDeviceAPIListToBlockDeviceList(in *api.BlockDeviceList, out *[]blockdevice.BlockDevice) error {
 	var err error
 	var bd blockdevice.BlockDevice
 
 	for _, bdAPI := range in.Items {
-		err = convert_BlockDeviceAPI_To_BlockDevice(&bdAPI, &bd)
+		err = convertBlockDeviceAPIToBlockDevice(&bdAPI, &bd)
 		if err != nil {
 			return err
 		}
@@ -35,7 +35,7 @@ func convert_BlockDeviceAPIList_To_BlockDeviceList(in *api.BlockDeviceList, out 
 	return nil
 }
 
-func convert_BlockDeviceAPI_To_BlockDevice(in *api.BlockDevice, out *blockdevice.BlockDevice) error {
+func convertBlockDeviceAPIToBlockDevice(in *api.BlockDevice, out *blockdevice.BlockDevice) error {
 	out.UUID = in.Name
 
 	//labels
@@ -44,13 +44,13 @@ func convert_BlockDeviceAPI_To_BlockDevice(in *api.BlockDevice, out *blockdevice
 	out.NodeAttributes[blockdevice.NodeName] = in.Spec.NodeAttributes.NodeName
 
 	//spec
-	out.Path = in.Spec.Path
+	out.DevPath = in.Spec.Path
 	out.FSInfo.FileSystem = in.Spec.FileSystem.Type
 
 	// currently only the first mount point is filled in. When API is changed, multiple mount points
 	// will be added.
 	out.FSInfo.MountPoint = append(out.FSInfo.MountPoint, in.Spec.FileSystem.Mountpoint)
-	out.DeviceType = in.Spec.Details.DeviceType
+	out.DeviceAttributes.DeviceType = in.Spec.Details.DeviceType
 
 	//status
 	out.Status.State = string(in.Status.State)
