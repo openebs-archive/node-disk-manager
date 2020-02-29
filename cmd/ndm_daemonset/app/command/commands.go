@@ -46,6 +46,9 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 	cmd.PersistentFlags().StringVar(&options.ConfigFilePath, "config",
 		controller.DefaultConfigFilePath,
 		"Path to config file")
+	cmd.PersistentFlags().StringSliceVar(&options.FeatureGate, "feature-gates",
+		nil,
+		"FeatureGates to be enabled or disabled")
 	_ = goflag.CommandLine.Parse([]string{})
 
 	cmd.AddCommand(

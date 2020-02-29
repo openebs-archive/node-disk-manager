@@ -27,7 +27,7 @@ else
 fi
 
 echo "[entrypoint.sh] launching ndm process."
-/usr/sbin/ndm start &
+/usr/sbin/ndm start "$@" &
 
 #sigterm caught SIGTERM signal and forward it to child process
 _sigterm() {
