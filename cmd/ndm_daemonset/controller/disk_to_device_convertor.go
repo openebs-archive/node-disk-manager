@@ -17,35 +17,45 @@ limitations under the License.
 package controller
 
 import (
+	bd "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/udev"
-	"strings"
 )
 
-func (c *Controller) NewDeviceInfoFromDiskInfo(diskDetails *DiskInfo) *DeviceInfo {
+// NewDeviceInfoFromBlockDevice converts the internal BlockDevice struct to
+// the BlockDevice API resource
+func (c *Controller) NewDeviceInfoFromBlockDevice(blockDevice *bd.BlockDevice) *DeviceInfo {
 
 	deviceDetails := NewDeviceInfo()
 
-	deviceDetails.NodeAttributes = diskDetails.NodeAttributes
-	deviceDetails.UUID = c.DiskToDeviceUUID(diskDetails.ProbeIdentifiers.Uuid)
-	deviceDetails.Capacity = diskDetails.Capacity
-	deviceDetails.Model = diskDetails.Model
-	deviceDetails.Serial = diskDetails.Serial
-	deviceDetails.Vendor = diskDetails.Vendor
-	deviceDetails.Path = diskDetails.Path
-	deviceDetails.ByIdDevLinks = diskDetails.ByIdDevLinks
-	deviceDetails.ByPathDevLinks = diskDetails.ByPathDevLinks
-	deviceDetails.LogicalSectorSize = diskDetails.LogicalSectorSize
-	deviceDetails.PhysicalSectorSize = diskDetails.PhysicalSectorSize
-	deviceDetails.Compliance = diskDetails.Compliance
-	deviceDetails.DeviceType = diskDetails.DriveType
-	deviceDetails.FileSystemInfo.FileSystem = diskDetails.FileSystemInformation.FileSystem
-	deviceDetails.FileSystemInfo.MountPoint = diskDetails.FileSystemInformation.MountPoint
-	return deviceDetails
-}
+	deviceDetails.NodeAttributes = make(map[string]string)
 
-// DiskToDeviceUUID converts a disk UUID (disk-xxx) to a block-
-// device UUID (blockdevice-xxx)
-func (c *Controller) DiskToDeviceUUID(diskUUID string) string {
-	uuid := strings.TrimPrefix(diskUUID, udev.NDMDiskPrefix)
-	return udev.NDMBlockDevicePrefix + uuid
+	// copying node attributes from core blockdevice to device info
+	for k, v := range blockDevice.NodeAttributes {
+		deviceDetails.NodeAttributes[k] = v
+	}
+
+	deviceDetails.UUID = blockDevice.UUID
+	deviceDetails.Capacity = blockDevice.Capacity.Storage
+	deviceDetails.Model = blockDevice.DeviceAttributes.Model
+	deviceDetails.Serial = blockDevice.DeviceAttributes.Serial
+	deviceDetails.Vendor = blockDevice.DeviceAttributes.Vendor
+	deviceDetails.Path = blockDevice.DevPath
+	deviceDetails.FirmwareRevision = blockDevice.DeviceAttributes.FirmwareRevision
+
+	for _, devlink := range blockDevice.DevLinks {
+		if devlink.Kind == udev.BY_ID_LINK {
+			deviceDetails.ByIdDevLinks = devlink.Links
+		} else if devlink.Kind == udev.BY_PATH_LINK {
+			deviceDetails.ByPathDevLinks = devlink.Links
+		}
+	}
+	deviceDetails.LogicalSectorSize = blockDevice.DeviceAttributes.LogicalBlockSize
+	deviceDetails.PhysicalSectorSize = blockDevice.DeviceAttributes.PhysicalBlockSize
+	deviceDetails.Compliance = blockDevice.DeviceAttributes.Compliance
+	deviceDetails.FileSystemInfo.FileSystem = blockDevice.FSInfo.FileSystem
+	// currently only the first mount point will be taken.
+	if len(blockDevice.FSInfo.MountPoint) != 0 {
+		deviceDetails.FileSystemInfo.MountPoint = blockDevice.FSInfo.MountPoint[0]
+	}
+	return deviceDetails
 }

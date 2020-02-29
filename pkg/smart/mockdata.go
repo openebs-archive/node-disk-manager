@@ -96,7 +96,7 @@ func (d *SCSIDev) mockDiskDetailsBySmart() (MockOsDiskDetails, error) {
 // MockScsiBasicDiskInfo is used to fetch basic disk details for a scsi disk
 func MockScsiBasicDiskInfo() (MockOsDiskDetails, error) {
 
-	osname, err := udev.OsDiskName()
+	osname, _, err := udev.OsDiskName()
 	if err != nil {
 		return diskDetails, err
 	}
@@ -144,7 +144,7 @@ func mockdetectSCSIType(name string) (mockDev, error) {
 }
 
 func getDevPath() (string, error) {
-	osname, err := udev.OsDiskName()
+	osname, _, err := udev.OsDiskName()
 	if err != nil {
 		return "", err
 	}

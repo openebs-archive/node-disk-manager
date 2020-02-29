@@ -17,6 +17,7 @@ limitations under the License.
 package filter
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
 
@@ -30,10 +31,10 @@ type fakeFilter struct {
 
 func (f *fakeFilter) Start() {}
 
-func (f *fakeFilter) Include(*controller.DiskInfo) bool {
+func (f *fakeFilter) Include(*blockdevice.BlockDevice) bool {
 	return false
 }
-func (f *fakeFilter) Exclude(*controller.DiskInfo) bool {
+func (f *fakeFilter) Exclude(*blockdevice.BlockDevice) bool {
 	return true
 }
 

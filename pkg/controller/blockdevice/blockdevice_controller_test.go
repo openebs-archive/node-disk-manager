@@ -92,42 +92,6 @@ func TestDeviceController(t *testing.T) {
 	} else {
 		t.Fatalf("BlockDevice Object state:%v did not match expected state:%v", deviceInstance.Status.State, ndm.NDMActive)
 	}
-
-	// Fetch the Disk CR
-	diskInstance := &openebsv1alpha1.Disk{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: diskName, Namespace: namespace}, diskInstance)
-	if err != nil {
-		t.Errorf("get diskInstance : (%v)", err)
-	}
-
-	diskInstance.Status.State = ndm.NDMInactive
-	err = r.client.Update(context.TODO(), diskInstance)
-	if err != nil {
-		t.Errorf("Error while updating disk obj")
-	}
-
-	res, err = r.Reconcile(req)
-	if err != nil {
-		t.Fatalf("reconcile: (%v)", err)
-	}
-
-	// Check the result of reconciliation to make sure it has the desired state.
-	if !res.Requeue {
-		t.Log("reconcile did not requeue request as expected")
-	}
-
-	// Check Status of Disk object.
-	err = r.client.Get(context.TODO(), req.NamespacedName, deviceInstance)
-	if err != nil {
-		t.Errorf("get deviceInstance : (%v)", err)
-	}
-
-	// Disk Status state should be InActive as expected.
-	if deviceInstance.Status.State == ndm.NDMInactive {
-		t.Logf("BlockDevice Object state:%v match expected state:%v", deviceInstance.Status.State, ndm.NDMInactive)
-	} else {
-		t.Errorf("BlockDevice Object state:%v did not match expected state:%v", deviceInstance.Status.State, ndm.NDMInactive)
-	}
 }
 
 func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {

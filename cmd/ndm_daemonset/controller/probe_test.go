@@ -21,6 +21,8 @@ import (
 	"testing"
 	"time"
 
+	bd "github.com/openebs/node-disk-manager/blockdevice"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,10 +41,10 @@ func (np *fakeProbe) Start() {
 	messageChannel <- message
 }
 
-func (np *fakeProbe) FillDiskDetails(fakeDiskInfo *DiskInfo) {
-	fakeDiskInfo.Model = fakeModel
-	fakeDiskInfo.Serial = fakeSerial
-	fakeDiskInfo.Vendor = fakeVendor
+func (np *fakeProbe) FillBlockDeviceDetails(fakeBlockDevice *bd.BlockDevice) {
+	fakeBlockDevice.DeviceAttributes.Model = fakeModel
+	fakeBlockDevice.DeviceAttributes.Serial = fakeSerial
+	fakeBlockDevice.DeviceAttributes.Vendor = fakeVendor
 }
 
 //Add one new probe and get the list of the probes and match them
@@ -150,15 +152,15 @@ func TestFillDiskDetails(t *testing.T) {
 		State:     true,
 		Interface: testProbe,
 	}
-	actualDisk := &DiskInfo{}
-	expectedDisk := &DiskInfo{}
-	probe1.FillDiskDetails(actualDisk)
-	expectedDisk.Model = fakeModel
-	expectedDisk.Serial = fakeSerial
-	expectedDisk.Vendor = fakeVendor
+	actualDisk := &bd.BlockDevice{}
+	expectedDisk := &bd.BlockDevice{}
+	probe1.FillBlockDeviceDetails(actualDisk)
+	expectedDisk.DeviceAttributes.Model = fakeModel
+	expectedDisk.DeviceAttributes.Serial = fakeSerial
+	expectedDisk.DeviceAttributes.Vendor = fakeVendor
 	tests := map[string]struct {
-		actualDisk   DiskInfo
-		expectedDisk DiskInfo
+		actualDisk   bd.BlockDevice
+		expectedDisk bd.BlockDevice
 	}{
 		"comparing diskinfo struct after feeling details": {actualDisk: *actualDisk, expectedDisk: *expectedDisk},
 	}
@@ -185,19 +187,19 @@ func TestFillDetails(t *testing.T) {
 	}
 
 	// create one fake Disk struct
-	expectedDr := &DiskInfo{}
-	expectedDr.Model = fakeModel
-	expectedDr.Serial = fakeSerial
-	expectedDr.Vendor = fakeVendor
-	expectedDr.DiskType = NDMDefaultDiskType
+	expectedDr := &bd.BlockDevice{}
+	expectedDr.DeviceAttributes.Model = fakeModel
+	expectedDr.DeviceAttributes.Serial = fakeSerial
+	expectedDr.DeviceAttributes.Vendor = fakeVendor
+	expectedDr.DeviceAttributes.DeviceType = NDMDefaultDiskType
 
 	// create one fake Disk struct
-	actualDr := &DiskInfo{}
+	actualDr := &bd.BlockDevice{}
 
-	fakeController.FillDiskDetails(actualDr)
+	fakeController.FillBlockDeviceDetails(actualDr)
 	tests := map[string]struct {
-		actualDisk   *DiskInfo
-		expectedDisk *DiskInfo
+		actualDisk   *bd.BlockDevice
+		expectedDisk *bd.BlockDevice
 	}{
 		"push resource with 'fake-disk-uid' uuid for create resource": {actualDisk: actualDr, expectedDisk: expectedDr},
 	}

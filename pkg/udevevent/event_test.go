@@ -17,6 +17,7 @@ limitations under the License.
 package udevevent
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"testing"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -49,10 +50,10 @@ func TestProcess(t *testing.T) {
 
 	// creating mock event
 	expectedEvent := newEvent()
-	diskInfo := make([]*controller.DiskInfo, 0)
-	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = osDiskDetails.Uid
-	deviceDetails.ProbeIdentifiers.UdevIdentifier = osDiskDetails.SysPath
+	diskInfo := make([]*blockdevice.BlockDevice, 0)
+	deviceDetails := &blockdevice.BlockDevice{}
+	deviceDetails.UUID = osDiskDetails.Uid
+	deviceDetails.SysPath = osDiskDetails.SysPath
 	diskInfo = append(diskInfo, deviceDetails)
 	expectedEvent.eventDetails.Action = ""
 	expectedEvent.eventDetails.Devices = diskInfo

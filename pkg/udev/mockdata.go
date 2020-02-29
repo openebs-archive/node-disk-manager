@@ -56,7 +56,7 @@ func mockDataStructUdev() *C.struct_udev {
 // MockDiskDetails returns os disk details which is used in unit test.
 func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails := MockOsDiskDetails{}
-	osDiskName, err := OsDiskName()
+	osDiskName, osFilesystem, err := OsDiskName()
 	if err != nil {
 		return diskDetails, err
 	}
@@ -83,7 +83,7 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.Vendor = device.GetPropertyValue(UDEV_VENDOR)
 	diskDetails.Wwn = device.GetPropertyValue(UDEV_WWN)
 	diskDetails.Uid = device.GetUid()
-	diskDetails.FileSystem = UDEV_FS_NONE
+	diskDetails.FileSystem = osFilesystem
 	diskDetails.Mountpoint = "/" // always take the disk mounted at /
 	devLinks := device.GetDevLinks()
 	diskDetails.ByIdDevLinks = devLinks[BY_ID_LINK]
@@ -92,12 +92,12 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 }
 
 // OsDiskName returns os disk name given by kernel
-func OsDiskName() (string, error) {
-	var osPartPath string
+func OsDiskName() (string, string, error) {
+	var osPartPath, osFileSystem string
 	// Read /proc/self/mounts file to get which partition is mounted on / path.
 	file, err := os.Open("/proc/self/mounts")
 	if err != nil {
-		return osPartPath, err
+		return osPartPath, osFileSystem, err
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
@@ -107,19 +107,20 @@ func OsDiskName() (string, error) {
 		if parts[1] == "/" {
 			// Get dev path of the partition which is mounted on / path
 			osPartPath = parts[0]
+			osFileSystem = parts[2]
 			break
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		return osPartPath, err
+		return osPartPath, osFileSystem, err
 	}
 	// dev path be like /dev/sda4 we need to remove /dev/ from this string to get sys block path.
 	osPartPath = strings.Replace(osPartPath, "/dev/", "", 1)
 	softlink := "/sys/class/block/" + osPartPath
 	link, err := os.Readlink(softlink)
 	if err != nil {
-		return osPartPath, err
+		return osPartPath, osFileSystem, err
 	}
 	parts := strings.Split(link, "/")
 	if parts[len(parts)-2] != "block" {
@@ -132,12 +133,12 @@ func OsDiskName() (string, error) {
 	}
 	parts = strings.Split(link, "/")
 	osDiskName := parts[len(parts)-1]
-	return osDiskName, nil
+	return osDiskName, osFileSystem, nil
 }
 
 // getSyspathOfOsDisk returns syspath of os disk in success
 func getSyspathOfOsDisk(osDiskName string) (string, error) {
-	data, err := ioutil.ReadFile("/sys/block/" + osDiskName + "/dev")
+	data, err := ioutil.ReadFile("/sys/class/block/" + osDiskName + "/dev")
 	if err != nil {
 		return "", err
 	}
@@ -146,7 +147,7 @@ func getSyspathOfOsDisk(osDiskName string) (string, error) {
 
 // getOsDiskSize returns size of os disk in success
 func getOsDiskSize(osDiskName string) (string, error) {
-	sizeByte, err := ioutil.ReadFile("/sys/block/" + osDiskName + "/size")
+	sizeByte, err := ioutil.ReadFile("/sys/class/block/" + osDiskName + "/size")
 	if err != nil {
 		return "", err
 	}

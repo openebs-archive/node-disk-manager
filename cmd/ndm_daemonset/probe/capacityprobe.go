@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
@@ -73,14 +74,14 @@ func newCapacityProbe() *capacityProbe {
 // It is part of probe interface. Hence, empty implementation.
 func (cp *capacityProbe) Start() {}
 
-// FillDiskDetails updates the capacity of the disk , if the capacity is
+// FillBlockDeviceDetails updates the capacity of the disk , if the capacity is
 // not populated.
-func (cp *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
+func (cp *capacityProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 
-	if d.Capacity != 0 {
+	if blockDevice.Capacity.Storage != 0 {
 		return
 	}
-	sysPath := d.ProbeIdentifiers.UdevIdentifier
+	sysPath := blockDevice.SysPath
 	b, err := ioutil.ReadFile(sysPath + "/size")
 	if err != nil {
 		klog.Error("unable to parse the block size ", err)
@@ -101,9 +102,9 @@ func (cp *capacityProbe) FillDiskDetails(d *controller.DiskInfo) {
 		klog.Error("unable to parse the sector size", err)
 		return
 	}
-	d.Capacity = uint64(blockSize * sectorSize)
+	blockDevice.Capacity.Storage = uint64(blockSize * sectorSize)
 
-	if d.LogicalSectorSize == 0 {
-		d.LogicalSectorSize = uint32(sectorSize)
+	if blockDevice.DeviceAttributes.LogicalBlockSize == 0 {
+		blockDevice.DeviceAttributes.LogicalBlockSize = uint32(sectorSize)
 	}
 }

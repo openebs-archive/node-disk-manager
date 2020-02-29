@@ -18,6 +18,7 @@ package probe
 
 import (
 	"errors"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
 
@@ -32,39 +33,40 @@ type alwaysTrueFilter struct{}
 
 func (nf *alwaysTrueFilter) Start() {}
 
-func (nf *alwaysTrueFilter) Include(fakeDiskInfo *controller.DiskInfo) bool {
+func (nf *alwaysTrueFilter) Include(fakeDiskInfo *blockdevice.BlockDevice) bool {
 	return true
 }
 
-func (nf *alwaysTrueFilter) Exclude(fakeDiskInfo *controller.DiskInfo) bool {
+func (nf *alwaysTrueFilter) Exclude(fakeDiskInfo *blockdevice.BlockDevice) bool {
 	return true
 }
 
-func mockOsDiskToAPI() (apis.Disk, error) {
+func mockOsDiskToAPI() (apis.BlockDevice, error) {
 	mockOsDiskDetails, err := libudevwrapper.MockDiskDetails()
 	if err != nil {
-		return apis.Disk{}, err
+		return apis.BlockDevice{}, err
 	}
-	fakeDetails := apis.DiskDetails{
+	fakeDetails := apis.DeviceDetails{
 		Model:  mockOsDiskDetails.Model,
 		Serial: mockOsDiskDetails.Serial,
 		Vendor: mockOsDiskDetails.Vendor,
 	}
-	fakeObj := apis.DiskSpec{
-		Path:    mockOsDiskDetails.DevNode,
-		Details: fakeDetails,
+	fakeObj := apis.DeviceSpec{
+		Path:        mockOsDiskDetails.DevNode,
+		Details:     fakeDetails,
+		Partitioned: controller.NDMNotPartitioned,
 	}
 
-	devLinks := make([]apis.DiskDevLink, 0)
+	devLinks := make([]apis.DeviceDevLink, 0)
 	if len(mockOsDiskDetails.ByIdDevLinks) != 0 {
-		byIdLinks := apis.DiskDevLink{
+		byIdLinks := apis.DeviceDevLink{
 			Kind:  "by-id",
 			Links: mockOsDiskDetails.ByIdDevLinks,
 		}
 		devLinks = append(devLinks, byIdLinks)
 	}
 	if len(mockOsDiskDetails.ByPathDevLinks) != 0 {
-		byPathLinks := apis.DiskDevLink{
+		byPathLinks := apis.DeviceDevLink{
 			Kind:  "by-path",
 			Links: mockOsDiskDetails.ByPathDevLinks,
 		}
@@ -73,17 +75,18 @@ func mockOsDiskToAPI() (apis.Disk, error) {
 	fakeObj.DevLinks = devLinks
 
 	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       controller.NDMDiskKind,
+		Kind:       controller.NDMBlockDeviceKind,
 		APIVersion: controller.NDMVersion,
 	}
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
 		Name:   mockOsDiskDetails.Uid,
 	}
-	fakeDiskStatus := apis.DiskStatus{
-		State: controller.NDMActive,
+	fakeDiskStatus := apis.DeviceStatus{
+		State:      controller.NDMActive,
+		ClaimState: apis.BlockDeviceUnclaimed,
 	}
-	fakeDr := apis.Disk{
+	fakeDr := apis.BlockDevice{
 		TypeMeta:   fakeTypeMeta,
 		ObjectMeta: fakeObjectMeta,
 		Spec:       fakeObj,
@@ -98,23 +101,25 @@ func TestFillDiskDetails(t *testing.T) {
 		t.Fatal(err)
 	}
 	uProbe := udevProbe{}
-	actualDiskInfo := controller.NewDiskInfo()
-	actualDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsDiskDetails.SysPath
-	uProbe.FillDiskDetails(actualDiskInfo)
-	expectedDiskInfo := &controller.DiskInfo{}
-	expectedDiskInfo.NodeAttributes = make(controller.NodeAttribute)
-	expectedDiskInfo.ProbeIdentifiers.UdevIdentifier = mockOsDiskDetails.SysPath
-	expectedDiskInfo.ProbeIdentifiers.SmartIdentifier = mockOsDiskDetails.DevNode
-	expectedDiskInfo.ProbeIdentifiers.SeachestIdentifier = mockOsDiskDetails.DevNode
-	expectedDiskInfo.ProbeIdentifiers.MountIdentifier = mockOsDiskDetails.DevNode
-	expectedDiskInfo.Model = mockOsDiskDetails.Model
-	expectedDiskInfo.Path = mockOsDiskDetails.DevNode
-	expectedDiskInfo.Serial = mockOsDiskDetails.Serial
-	expectedDiskInfo.Vendor = mockOsDiskDetails.Vendor
-	expectedDiskInfo.DiskType = "disk"
-	expectedDiskInfo.ByIdDevLinks = mockOsDiskDetails.ByIdDevLinks
-	expectedDiskInfo.ByPathDevLinks = mockOsDiskDetails.ByPathDevLinks
-	expectedDiskInfo.FileSystemInformation.FileSystem = mockOsDiskDetails.FileSystem
+	actualDiskInfo := &blockdevice.BlockDevice{}
+	actualDiskInfo.SysPath = mockOsDiskDetails.SysPath
+	uProbe.FillBlockDeviceDetails(actualDiskInfo)
+	expectedDiskInfo := &blockdevice.BlockDevice{}
+	expectedDiskInfo.SysPath = mockOsDiskDetails.SysPath
+	expectedDiskInfo.DevPath = mockOsDiskDetails.DevNode
+	expectedDiskInfo.DeviceAttributes.DeviceType = "disk"
+	expectedDiskInfo.DeviceAttributes.Model = mockOsDiskDetails.Model
+	expectedDiskInfo.DeviceAttributes.Serial = mockOsDiskDetails.Serial
+	expectedDiskInfo.DeviceAttributes.Vendor = mockOsDiskDetails.Vendor
+	expectedDiskInfo.DeviceAttributes.WWN = mockOsDiskDetails.Wwn
+	expectedDiskInfo.DevLinks = append(expectedDiskInfo.DevLinks, blockdevice.DevLink{
+		Kind:  libudevwrapper.BY_ID_LINK,
+		Links: mockOsDiskDetails.ByIdDevLinks,
+	})
+	expectedDiskInfo.DevLinks = append(expectedDiskInfo.DevLinks, blockdevice.DevLink{
+		Kind:  libudevwrapper.BY_PATH_LINK,
+		Links: mockOsDiskDetails.ByPathDevLinks,
+	})
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
@@ -160,28 +165,28 @@ func TestUdevProbe(t *testing.T) {
 	probeEvent := &ProbeEvent{
 		Controller: fakeController,
 	}
-	eventmsg := make([]*controller.DiskInfo, 0)
-	deviceDetails := &controller.DiskInfo{}
-	deviceDetails.ProbeIdentifiers.Uuid = mockOsDiskDetails.Uid
-	deviceDetails.ProbeIdentifiers.UdevIdentifier = mockOsDiskDetails.SysPath
+	eventmsg := make([]*blockdevice.BlockDevice, 0)
+	deviceDetails := &blockdevice.BlockDevice{}
+	deviceDetails.UUID = mockOsDiskDetails.Uid
+	deviceDetails.SysPath = mockOsDiskDetails.SysPath
 	eventmsg = append(eventmsg, deviceDetails)
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: eventmsg,
 	}
-	probeEvent.addDiskEvent(eventDetails)
+	probeEvent.addBlockDeviceEvent(eventDetails)
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetDisk(mockOsDiskDetails.Uid)
+	cdr1, err1 := fakeController.GetBlockDevice(mockOsDiskDetails.Uid)
 	fakeDr, err := mockOsDiskToAPI()
 	if err != nil {
 		t.Fatal(err)
 	}
 	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
-	fakeDr.ObjectMeta.Labels[controller.NDMDiskTypeKey] = "disk"
+	fakeDr.ObjectMeta.Labels[controller.NDMDeviceTypeKey] = "blockdevice"
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 	tests := map[string]struct {
-		actualDisk    apis.Disk
-		expectedDisk  apis.Disk
+		actualDisk    apis.BlockDevice
+		expectedDisk  apis.BlockDevice
 		actualError   error
 		expectedError error
 	}{

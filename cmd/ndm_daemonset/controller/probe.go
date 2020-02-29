@@ -19,14 +19,16 @@ package controller
 import (
 	"sort"
 
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
+
 	"k8s.io/klog"
 )
 
 // EventMessage struct contains attribute of event message info.
 type EventMessage struct {
-	Action  string      // Action is event action like attach/detach
-	Devices []*DiskInfo // list of disks details
+	Action  string                     // Action is event action like attach/detach
+	Devices []*blockdevice.BlockDevice // list of block device details
 }
 
 // Probe contains name, state and probeinterface
@@ -42,15 +44,15 @@ func (p *Probe) Start() {
 	p.Interface.Start()
 }
 
-// FillDiskDetails implements ProbeInterface's FillDiskDetails()
-func (p *Probe) FillDiskDetails(diskInfo *DiskInfo) {
-	p.Interface.FillDiskDetails(diskInfo)
+// FillBlockDeviceDetails implements ProbeInterface's FillBlockDeviceDetails()
+func (p *Probe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
+	p.Interface.FillBlockDeviceDetails(blockDevice)
 }
 
-// ProbeInterface contains Start() and  FillDiskDetails()
+// ProbeInterface contains Start() and  FillBlockDeviceDetails()
 type ProbeInterface interface {
 	Start()
-	FillDiskDetails(*DiskInfo)
+	FillBlockDeviceDetails(*blockdevice.BlockDevice)
 }
 
 // sortableProbes contains a slice of probes
@@ -96,14 +98,13 @@ func (c *Controller) ListProbe() []*Probe {
 	return listProbe
 }
 
-// FillDiskDetails lists registered probes and fills details from each probe
-func (c *Controller) FillDiskDetails(diskDetails *DiskInfo) {
-	diskDetails.NodeAttributes = c.NodeAttributes
-	diskDetails.DiskType = NDMDefaultDiskType
-	diskDetails.Uuid = diskDetails.ProbeIdentifiers.Uuid
+// FillBlockDeviceDetails lists registered probes and fills details from each probe
+func (c *Controller) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
+	blockDevice.NodeAttributes = c.NodeAttributes
+	blockDevice.DeviceAttributes.DeviceType = NDMDefaultDiskType
 	probes := c.ListProbe()
 	for _, probe := range probes {
-		probe.FillDiskDetails(diskDetails)
+		probe.FillBlockDeviceDetails(blockDevice)
 		klog.Info("details filled by ", probe.Name)
 	}
 }

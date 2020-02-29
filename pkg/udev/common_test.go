@@ -80,11 +80,11 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 		Model:          diskDetails.Model,
 		Serial:         diskDetails.Serial,
 		Vendor:         diskDetails.Vendor,
+		WWN:            diskDetails.Wwn,
 		DiskType:       diskDetails.DevType,
 		Path:           diskDetails.DevNode,
 		ByIdDevLinks:   diskDetails.ByIdDevLinks,
 		ByPathDevLinks: diskDetails.ByPathDevLinks,
-		FileSystem:     diskDetails.FileSystem,
 	}
 	assert.Equal(t, expectedDiskDetails, device.DiskInfoFromLibudev())
 	tests := map[string]struct {
@@ -151,7 +151,7 @@ func TestGetUid(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer device.UdevDeviceUnref()
-	expectedUid := NDMDiskPrefix + util.Hash(diskDetails.Wwn+diskDetails.Model+diskDetails.Serial+diskDetails.Vendor)
+	expectedUid := NDMBlockDevicePrefix + util.Hash(diskDetails.Wwn+diskDetails.Model+diskDetails.Serial+diskDetails.Vendor)
 	tests := map[string]struct {
 		actualUuid   string
 		expectedUuid string

@@ -17,16 +17,16 @@ limitations under the License.
 package probe
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"os"
 	"testing"
 
-	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCapacityProbeFillDisk(t *testing.T) {
 	probe := &capacityProbe{}
-	disk := &controller.DiskInfo{}
+	disk := &blockdevice.BlockDevice{}
 	tempSysPath := "/tmp"
 	os.MkdirAll(tempSysPath+"/queue", 0700)
 	file, err := os.Create(tempSysPath + "/queue/hw_sector_size")
@@ -42,8 +42,8 @@ func TestCapacityProbeFillDisk(t *testing.T) {
 	}
 	file.Write([]byte("10"))
 
-	disk.ProbeIdentifiers.UdevIdentifier = tempSysPath
+	disk.SysPath = tempSysPath
 
-	probe.FillDiskDetails(disk)
-	assert.Equal(t, disk.Capacity, uint64(100))
+	probe.FillBlockDeviceDetails(disk)
+	assert.Equal(t, disk.Capacity.Storage, uint64(100))
 }

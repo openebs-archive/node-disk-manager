@@ -20,6 +20,7 @@ import (
 	"k8s.io/klog"
 	"strings"
 
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -110,12 +111,12 @@ func (odf *oSDiskExcludeFilter) Start() {
 }
 
 // Include contains nothing by default it returns false
-func (odf *oSDiskExcludeFilter) Include(d *controller.DiskInfo) bool {
+func (odf *oSDiskExcludeFilter) Include(blockDevice *blockdevice.BlockDevice) bool {
 	return true
 }
 
 // Exclude returns true if disk devpath does not match with excludeDevPath
-func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
+func (odf *oSDiskExcludeFilter) Exclude(blockDevice *blockdevice.BlockDevice) bool {
 	// The partitionRegex is chosen depending on whether the device uses
 	// the p[0-9] partition naming structure or not.
 	var partitionRegex string
@@ -127,6 +128,6 @@ func (odf *oSDiskExcludeFilter) Exclude(d *controller.DiskInfo) bool {
 		partitionRegex = "[0-9]*$"
 	}
 	regex := "^" + odf.excludeDevPath + partitionRegex
-	klog.Infof("applying os-filter regex %s on %s", regex, d.Path)
-	return !util.IsMatchRegex(regex, d.Path)
+	klog.Infof("applying os-filter regex %s on %s", regex, blockDevice.DevPath)
+	return !util.IsMatchRegex(regex, blockDevice.DevPath)
 }

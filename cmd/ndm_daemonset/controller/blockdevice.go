@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	bd "github.com/openebs/node-disk-manager/blockdevice"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,7 +29,7 @@ import (
 type DeviceInfo struct {
 	// NodeAttributes is the attributes of the node to which this block device is attached,
 	// like hostname, nodename
-	NodeAttributes     NodeAttribute
+	NodeAttributes     bd.NodeAttribute
 	UUID               string   // UUID of backing disk
 	Capacity           uint64   // Capacity of blockdevice
 	Model              string   // Do blockdevice have model ??
@@ -51,6 +52,13 @@ type DeviceInfo struct {
 func NewDeviceInfo() *DeviceInfo {
 	deviceInfo := &DeviceInfo{}
 	return deviceInfo
+}
+
+// FSInfo defines the filesystem related information of block device/disk, like mountpoint and
+// filesystem
+type FSInfo struct {
+	FileSystem string // Filesystem on the block device
+	MountPoint string // MountPoint of the block device
 }
 
 // ToDevice convert deviceInfo struct to api.BlockDevice
@@ -171,4 +179,11 @@ func (di *DeviceInfo) getDeviceLinks() []apis.DeviceDevLink {
 		devLinks = append(devLinks, byPathLinks)
 	}
 	return devLinks
+}
+
+func (fs *FSInfo) getFileSystemInfo() apis.FileSystemInfo {
+	fsInfo := apis.FileSystemInfo{}
+	fsInfo.Type = fs.FileSystem
+	fsInfo.Mountpoint = fs.MountPoint
+	return fsInfo
 }
