@@ -46,13 +46,7 @@ func mockOsDiskToAPIBySmart() (apis.BlockDevice, error) {
 		FirmwareRevision: mockOsDiskDetails.FirmwareRevision,
 	}
 
-	fakeCapacity := apis.DeviceCapacity{
-		Storage:           mockOsDiskDetails.Capacity,
-		LogicalSectorSize: mockOsDiskDetails.LBSize,
-	}
-
 	fakeObj := apis.DeviceSpec{
-		Capacity:    fakeCapacity,
 		Details:     fakeDetails,
 		Path:        mockOsDiskDetails.DevPath,
 		Partitioned: controller.NDMNotPartitioned,
@@ -97,8 +91,6 @@ func TestFillDiskDetailsBySmart(t *testing.T) {
 	sProbe.FillBlockDeviceDetails(actualDiskInfo)
 	expectedDiskInfo := &blockdevice.BlockDevice{}
 	expectedDiskInfo.DevPath = mockOsDiskDetails.DevPath
-	expectedDiskInfo.Capacity.Storage = mockOsDiskDetails.Capacity
-	expectedDiskInfo.DeviceAttributes.LogicalBlockSize = mockOsDiskDetails.LBSize
 	expectedDiskInfo.DeviceAttributes.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
 	expectedDiskInfo.DeviceAttributes.Compliance = mockOsDiskDetails.Compliance
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)

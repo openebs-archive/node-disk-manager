@@ -18,13 +18,15 @@ package probe
 
 import (
 	"errors"
-	"github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/pkg/features"
+	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
+
 	"k8s.io/klog"
 )
 
@@ -142,15 +144,26 @@ func (up *udevProbe) scan() error {
 			continue
 		}
 		if newUdevice.IsDisk() || newUdevice.IsParitition() {
-			uuid := newUdevice.GetUid()
-			disksUid = append(disksUid, uuid)
 			deviceDetails := &blockdevice.BlockDevice{}
-			deviceDetails.UUID = uuid
+			if up.controller.FeatureGates.IsEnabled(features.GPTBasedUUID) {
+				// all fields that is used to generate UUID to be filled whenever the event is
+				// generated. This is required so that even if none of the probes work, the
+				// system should be able to generate the UUID of the blockdevice
+				deviceDetails.DeviceAttributes.DeviceType = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
+				deviceDetails.DeviceAttributes.WWN = newUdevice.GetPropertyValue(libudevwrapper.UDEV_WWN)
+				deviceDetails.PartitionInfo.PartitionTableUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_TABLE_UUID)
+				deviceDetails.PartitionInfo.PartitionEntryUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
+				deviceDetails.FSInfo.FileSystemUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_FS_UUID)
+			} else {
+				uuid := newUdevice.GetUid()
+				disksUid = append(disksUid, uuid)
+				deviceDetails.UUID = uuid
+			}
 			deviceDetails.SysPath = newUdevice.GetSyspath()
 			deviceDetails.DevPath = newUdevice.GetPath()
 			diskInfo = append(diskInfo, deviceDetails)
 
-			// get the dependents of the block device and log it
+			// get the dependents of the block device
 			devicePath := hierarchy.Device{
 				Path: deviceDetails.DevPath,
 			}
@@ -158,12 +171,22 @@ func (up *udevProbe) scan() error {
 			if err != nil {
 				klog.Error("error getting dependent devices for ", deviceDetails.DevPath)
 			} else {
+				deviceDetails.Partitions = dependents.Partitions
+				deviceDetails.Holders = dependents.Holders
+				deviceDetails.Parent = dependents.Parent
+				deviceDetails.Slaves = dependents.Slaves
 				klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 			}
 		}
 		newUdevice.UdevDeviceUnref()
 	}
-	up.controller.DeactivateStaleBlockDeviceResource(disksUid)
+	if !up.controller.FeatureGates.IsEnabled(features.GPTBasedUUID) {
+		up.controller.DeactivateStaleBlockDeviceResource(disksUid)
+	} else {
+		// TODO deactivate all the stale blockdevices
+		// can deactivate all the blockdevices and they will be marked as active once
+		// the event is processed.
+	}
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,
@@ -200,9 +223,17 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice
 		})
 	}
 	blockDevice.DeviceAttributes.DeviceType = udevDiskDetails.DiskType
+
 	// filesystem info of the attached device. Only filesystem data will be filled in the struct,
 	// as the mountpoint related information will be filled in by the mount probe
 	blockDevice.FSInfo.FileSystem = udevDiskDetails.FileSystem
+
+	blockDevice.PartitionInfo.PartitionTableType = udevDiskDetails.PartitionTableType
+
+	// if this is a partition, partition number and partition UUID need to be filled
+	if udevDiskDetails.DiskType == libudevwrapper.UDEV_PARTITION {
+		blockDevice.PartitionInfo.PartitionNumber = udevDiskDetails.PartitionNumber
+	}
 }
 
 // listen listens for event message over UdevEventMessages channel

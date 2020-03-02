@@ -102,41 +102,6 @@ func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockD
 		return
 	}
 
-	if blockDevice.DevPath == "" {
-		blockDevice.DevPath = seachestProbe.SeachestIdentifier.GetPath(driveInfo)
-		klog.V(4).Infof("Path:%s filled by seachest.", blockDevice.DevPath)
-	}
-
-	if blockDevice.NodeAttributes[controller.HostNameKey] == "" {
-		blockDevice.NodeAttributes[controller.HostNameKey] = seachestProbe.SeachestIdentifier.GetHostName(driveInfo)
-		klog.V(4).Infof("Disk: %s NodeAttribute:%s filled by seachest.", blockDevice.DevPath, blockDevice.NodeAttributes[controller.HostNameKey])
-	}
-
-	if blockDevice.DeviceAttributes.Model == "" {
-		blockDevice.DeviceAttributes.Model = seachestProbe.SeachestIdentifier.GetModelNumber(driveInfo)
-		klog.V(4).Infof("Disk: %s Model:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.Model)
-	}
-
-	if blockDevice.DeviceAttributes.WWN == "" {
-		blockDevice.DeviceAttributes.WWN = seachestProbe.SeachestIdentifier.GetUuid(driveInfo)
-		klog.V(4).Infof("Disk: %s WWN:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.WWN)
-	}
-
-	if blockDevice.Capacity.Storage == 0 {
-		blockDevice.Capacity.Storage = seachestProbe.SeachestIdentifier.GetCapacity(driveInfo)
-		klog.V(4).Infof("Disk: %s Capacity:%d filled by seachest.", blockDevice.DevPath, blockDevice.Capacity.Storage)
-	}
-
-	if blockDevice.DeviceAttributes.Serial == "" {
-		blockDevice.DeviceAttributes.Serial = seachestProbe.SeachestIdentifier.GetSerialNumber(driveInfo)
-		klog.V(4).Infof("Disk: %s Serial:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.Serial)
-	}
-
-	if blockDevice.DeviceAttributes.Vendor == "" {
-		blockDevice.DeviceAttributes.Vendor = seachestProbe.SeachestIdentifier.GetVendorID(driveInfo)
-		klog.V(4).Infof("Disk: %s Vendor:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.Vendor)
-	}
-
 	if blockDevice.DeviceAttributes.FirmwareRevision == "" {
 		blockDevice.DeviceAttributes.FirmwareRevision = seachestProbe.SeachestIdentifier.GetFirmwareRevision(driveInfo)
 		klog.V(4).Infof("Disk: %s FirmwareRevision:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.FirmwareRevision)
@@ -155,12 +120,12 @@ func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockD
 	/*if d.RotationRate == 0 {
 		d.RotationRate = seachestProbe.SeachestIdentifier.GetRotationRate(driveInfo)
 		klog.V(4).Infof("Disk: %s RotationRate:%d filled by seachest.", d.Path, d.RotationRate)
-	}
-
-	if d.DriveType == "" {
-		d.DriveType = seachestProbe.SeachestIdentifier.DriveType(driveInfo)
-		klog.V(4).Infof("Disk: %s DriveType:%s filled by seachest.", d.Path, d.DriveType)
 	}*/
+
+	if blockDevice.DeviceAttributes.DriveType == "" {
+		blockDevice.DeviceAttributes.DriveType = seachestProbe.SeachestIdentifier.DriveType(driveInfo)
+		klog.V(4).Infof("Disk: %s DriveType:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.DriveType)
+	}
 
 	/*if d.TotalBytesRead == 0 {
 		d.TotalBytesRead = seachestProbe.SeachestIdentifier.GetTotalBytesRead(driveInfo)

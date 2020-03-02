@@ -30,6 +30,9 @@ import (
 const (
 	capacityProbePriority = 4
 	capacityConfigKey     = "capacity-probe"
+	// sectorSize is the sector size as understood by the unix systems. It is kept as 512 bytes.
+	// all entries in /sys/class/block/sda/size are in 512 byte blocks
+	sectorSize = 512
 )
 
 var (
@@ -92,16 +95,15 @@ func (cp *capacityProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDe
 		klog.Error("unable to parse the block size", err)
 		return
 	}
-	b, err = ioutil.ReadFile(sysPath + "/queue/hw_sector_size")
-	if err != nil {
-		klog.Error("unable to read sector size", err)
-		return
-	}
-	sectorSize, err := strconv.ParseInt(strings.TrimSuffix(string(b), "\n"), 10, 64)
-	if err != nil {
-		klog.Error("unable to parse the sector size", err)
-		return
-	}
+
+	// The size (/size) entry returns the `nr_sects` field of the block device structure.
+	// Ref: https://elixir.bootlin.com/linux/v4.4/source/fs/block_dev.c#L1267
+	//
+	// Traditionally, in Unix disk size contexts, “sector” or “block” means 512 bytes,
+	// regardless of what the manufacturer of the underlying hardware might call a “sector” or “block”
+	// Ref: https://elixir.bootlin.com/linux/v4.4/source/fs/block_dev.c#L487
+	//
+	// Therefore, to get the capacity of the device it needs to always multiplied with 512
 	blockDevice.Capacity.Storage = uint64(blockSize * sectorSize)
 
 	if blockDevice.DeviceAttributes.LogicalBlockSize == 0 {

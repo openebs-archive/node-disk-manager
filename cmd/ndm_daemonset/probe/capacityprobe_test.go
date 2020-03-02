@@ -28,14 +28,7 @@ func TestCapacityProbeFillDisk(t *testing.T) {
 	probe := &capacityProbe{}
 	disk := &blockdevice.BlockDevice{}
 	tempSysPath := "/tmp"
-	os.MkdirAll(tempSysPath+"/queue", 0700)
-	file, err := os.Create(tempSysPath + "/queue/hw_sector_size")
-	if err != nil {
-		t.Fatalf("unable to write file to %s %v", tempSysPath, err)
-		return
-	}
-	file.Write([]byte("10"))
-	file, err = os.Create(tempSysPath + "/size")
+	file, err := os.Create(tempSysPath + "/size")
 	if err != nil {
 		t.Fatalf("unable to write file to %s %v", tempSysPath, err)
 		return
@@ -45,5 +38,5 @@ func TestCapacityProbeFillDisk(t *testing.T) {
 	disk.SysPath = tempSysPath
 
 	probe.FillBlockDeviceDetails(disk)
-	assert.Equal(t, disk.Capacity.Storage, uint64(100))
+	assert.Equal(t, disk.Capacity.Storage, uint64(5120))
 }
