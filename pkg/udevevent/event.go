@@ -19,6 +19,7 @@ package udevevent
 import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"k8s.io/klog"
 )
@@ -43,10 +44,37 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 	uuid := device.GetUid()
 	path := device.GetPath()
 	action := device.GetAction()
-	klog.Infof("processing new event for (%s)%s action type %s", path, uuid, action)
+	klog.Infof("processing new event for (%s) action type %s", path, action)
 	deviceDetails := &blockdevice.BlockDevice{}
 	deviceDetails.UUID = uuid
 	deviceDetails.SysPath = device.GetSyspath()
+	deviceDetails.DevPath = path
+
+	// fields used for UUID. These fields will be filled always. But used only if the
+	// GPTBasedUUID feature-gate is enabled.
+	deviceDetails.DeviceAttributes.DeviceType = device.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
+	deviceDetails.DeviceAttributes.WWN = device.GetPropertyValue(libudevwrapper.UDEV_WWN)
+	deviceDetails.PartitionInfo.PartitionTableUUID = device.GetPropertyValue(libudevwrapper.UDEV_PARTITION_TABLE_UUID)
+	deviceDetails.PartitionInfo.PartitionEntryUUID = device.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
+	deviceDetails.FSInfo.FileSystemUUID = device.GetPropertyValue(libudevwrapper.UDEV_FS_UUID)
+
+	// fields used for dependents. dependents cannot be obtained while
+	// removing the device since sysfs entry will be absent
+	if action != libudevwrapper.UDEV_ACTION_REMOVE {
+		devicePath := hierarchy.Device{
+			Path: deviceDetails.DevPath,
+		}
+		dependents, err := devicePath.GetDependents()
+		if err != nil {
+			klog.Errorf("could not get dependents for %s, %v", devicePath, err)
+		}
+		deviceDetails.Partitions = dependents.Partitions
+		deviceDetails.Holders = dependents.Holders
+		deviceDetails.Parent = dependents.Parent
+		deviceDetails.Slaves = dependents.Slaves
+		klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
+	}
+
 	diskInfo = append(diskInfo, deviceDetails)
 	e.eventDetails.Action = action
 	e.eventDetails.Devices = diskInfo
