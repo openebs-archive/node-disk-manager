@@ -21,10 +21,12 @@ import (
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/pkg/features"
 	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
+
 	"k8s.io/klog"
 )
 
@@ -142,20 +144,27 @@ func (up *udevProbe) scan() error {
 			continue
 		}
 		if newUdevice.IsDisk() || newUdevice.IsParitition() {
-			uuid := newUdevice.GetUid()
-			disksUid = append(disksUid, uuid)
 			deviceDetails := &blockdevice.BlockDevice{}
-			deviceDetails.UUID = uuid
+			if up.controller.FeatureGates.IsEnabled(features.GPTBasedUUID) {
+				// all fields that is used to generate UUID to be filled whenever the event is
+				// generated. This is required so that even if none of the probes work, the
+				// system should be able to generate the UUID of the blockdevice
+				deviceDetails.DeviceAttributes.DeviceType = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
+				deviceDetails.DeviceAttributes.WWN = newUdevice.GetPropertyValue(libudevwrapper.UDEV_WWN)
+				deviceDetails.PartitionInfo.PartitionTableUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_TABLE_UUID)
+				deviceDetails.PartitionInfo.PartitionEntryUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
+				deviceDetails.FSInfo.FileSystemUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_FS_UUID)
+			} else {
+				uuid := newUdevice.GetUid()
+				disksUid = append(disksUid, uuid)
+				deviceDetails.UUID = uuid
+			}
 			deviceDetails.SysPath = newUdevice.GetSyspath()
 			deviceDetails.DevPath = newUdevice.GetPath()
-			deviceDetails.DeviceAttributes.DeviceType = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
-			deviceDetails.DeviceAttributes.WWN = newUdevice.GetPropertyValue(libudevwrapper.UDEV_WWN)
-			deviceDetails.PartitionInfo.PartitionTableUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_TABLE_UUID)
-			deviceDetails.PartitionInfo.PartitionEntryUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
-			deviceDetails.FSInfo.FileSystemUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_FS_UUID)
 			diskInfo = append(diskInfo, deviceDetails)
 
-			// get the dependents of the block device and log it
+			// get the dependents of the block device
+			// this is done by scanning sysfs
 			devicePath := hierarchy.Device{
 				Path: deviceDetails.DevPath,
 			}
@@ -172,7 +181,13 @@ func (up *udevProbe) scan() error {
 		}
 		newUdevice.UdevDeviceUnref()
 	}
-	up.controller.DeactivateStaleBlockDeviceResource(disksUid)
+	if !up.controller.FeatureGates.IsEnabled(features.GPTBasedUUID) {
+		up.controller.DeactivateStaleBlockDeviceResource(disksUid)
+	} else {
+		// TODO deactivate all the stale blockdevices
+		// can deactivate all the blockdevices and they will be marked as active once
+		// the event is processed.
+	}
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,

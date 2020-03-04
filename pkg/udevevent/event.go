@@ -72,7 +72,7 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 		deviceDetails.Holders = dependents.Holders
 		deviceDetails.Parent = dependents.Parent
 		deviceDetails.Slaves = dependents.Slaves
-		klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
+		klog.V(4).Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 	}
 
 	diskInfo = append(diskInfo, deviceDetails)

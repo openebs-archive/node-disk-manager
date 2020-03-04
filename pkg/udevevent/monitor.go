@@ -93,7 +93,8 @@ func (m *monitor) process(fd int) error {
 	if err != nil {
 		return err
 	}
-	if !device.IsDisk() {
+	// if device is not disk or partition, do not process it
+	if !device.IsDisk() && !device.IsParitition() {
 		device.UdevDeviceUnref()
 		return nil
 	}

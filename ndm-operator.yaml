@@ -127,16 +127,16 @@ spec:
         image: openebs/node-disk-manager-amd64:ci
         args:
           - -v=2
-#          - --feature-gates="GPTBasedUUID"
+          - --feature-gates="GPTBasedUUID"
         imagePullPolicy: Always
         securityContext:
           privileged: true
-        # make udev database available inside container
         volumeMounts:
         - name: config
           mountPath: /host/node-disk-manager.config
           subPath: node-disk-manager.config
           readOnly: true
+          # make udev database available inside container
         - name: udev
           mountPath: /run/udev
         - name: procmount
@@ -167,7 +167,7 @@ spec:
           value: "1073741824"
         # Specify the number of sparse files to be created
         - name: SPARSE_FILE_COUNT
-          value: "1"
+          value: "0"
         # Set the core dump env to enable core dump for NDM daemon
         #- name: ENABLE_COREDUMP
         #  value: "1"
