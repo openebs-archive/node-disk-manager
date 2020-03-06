@@ -10,6 +10,14 @@ pushd .
 cd ..
 # we need openSeaChest repo to build node-disk-manager
 git clone --recursive --branch Release-19.06.02 https://github.com/openebs/openSeaChest.git
+if [ "$ARCH" == "arm" ]; then
+    # Until #34 is merged, a new release is cut, and it is usable by openebs NDM
+    sed -ne 's@\$(MAKE) -C@$(MAKE) $(MAKEFLAG) -C@g' -i openSeaChest/Make/gcc
+
+    # Enable cross compilation (needed until Travis CI gets arm32 support)
+    apt-get -y -qq install crossbuild-essential-armhf 
+    export CC=arm-linux-gnueabihf-gcc AR=arm-linux-gnueabihf-ar LD=arm-linux-gnueabihf-ld STRIP=arm-linux-gnueabihf-strip
+fi
 cd openSeaChest/Make/gcc
 make release
 cd ../../

@@ -23,12 +23,16 @@ jobs:
       arch: arm64
     - os: linux
       arch: ppc64le
+    - os: linux
+      arch: amd64
+      env: ARCH=arm GOARCH=arm XC_ARCH=arm
 
 addons:
   apt:
     update: true
 
 install:
+  - [ "$ARCH" == "arm" ] && docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   - make bootstrap
   - if [ "$TRAVIS_BUILD_DIR" != "$GOPATH/src/github.com/openebs/node-disk-manager" ]; then
       mkdir -p $GOPATH/src/github.com/openebs/;
@@ -39,7 +43,7 @@ install:
   - make install-test-infra
 
 before_script:
-  - if [ "$TRAVIS_CPU_ARCH" == "amd64" ]; then
+  - if [ "$TRAVIS_CPU_ARCH" == "amd64" ] && [ "$ARCH" != "arm" ]; then
       sudo minikube start --vm-driver=none;
       sudo minikube update-context;
       sudo chown -R $USER $HOME/.minikube;
