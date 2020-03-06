@@ -1,4 +1,18 @@
-v0.4.7 / 2020-02-07
+v0.4.8-RC1 / 2020-03-06
+========================
+
+  * enabled automatic builds of arm64 images ([#371](https://github.com/openebs/node-disk-manager/pull/371),
+  [@akhilerm](https://github.com/akhilerm))
+
+v0.4.7 / 2020-02-14
+========================
+
+  * added support to display blockdevice PATH in kubectl output ([#367](https://github.com/openebs/node-disk-manager/pull/367), 
+  [@chandankumar4](https://github.com/chandankumar4))
+  * customize location for NDM core files ([#362](https://github.com/openebs/node-disk-manager/pull/362), 
+  [@akhilerm](https://github.com/akhilerm))
+  
+v0.4.7-RC1 / 2020-02-07
 ========================
 
   * added support to display blockdevice PATH in kubectl output ([#367](https://github.com/openebs/node-disk-manager/pull/367), 
