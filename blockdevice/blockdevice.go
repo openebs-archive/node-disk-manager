@@ -28,6 +28,7 @@ package blockdevice
 //				}
 // 				NodeAttributes:map[hostname:my-machine]
 // 				FSInfo:{
+// 					FileSystemUUID:7e7f160b-0e79-478b-b006-1ebc6d0050dd
 // 					FileSystem:ext4
 // 					MountPoint:[/home]
 // 				}
@@ -50,6 +51,7 @@ package blockdevice
 //				}
 // 				NodeAttributes:map[hostname:my-machine]
 // 				FSInfo:{
+// 					FileSystemUUID:AQkPql-2MBI-O5cY-gn3O-EFvZ-66Oe-d4mnjD
 // 					FileSystem:LVM2_member
 // 					MountPoint:[]
 // 				}
@@ -71,7 +73,8 @@ package blockdevice
 //				}
 // 				NodeAttributes:map[hostname:my-machine]
 // 				FSInfo:{
-// 					FileSystem:ext4
+// 					FileSystemUUID:7e7f160b-0e79-478b-b006-1ebc6d0050dd
+//					FileSystem:ext4
 // 					MountPoint:[]
 // 				}
 // 				Parent:
@@ -107,6 +110,9 @@ type BlockDevice struct {
 	// DeviceAttributes contains the attributes of this device, like hardcoded
 	// information on the disk
 	DeviceAttributes DeviceAttribute
+
+	// PartitionInfo contains details if this blockdevice is a partition
+	PartitionInfo PartitionInformation
 
 	// Parent is the parent device of this blockdevice, if it exists.
 	// It will always be a single device.
@@ -178,6 +184,9 @@ const (
 
 // FileSystemInformation contains the filesystem and mount information of blockdevice, if present
 type FileSystemInformation struct {
+	// FileSystemUUID is the UUID of the filesystem on the blockdevice
+	FileSystemUUID string
+
 	// FileSystem is the filesystem present on the blockdevice
 	FileSystem string
 
@@ -269,6 +278,22 @@ type TemperatureInformation struct {
 
 	// CurrentTemperature is the temperature of the drive in celsius
 	CurrentTemperature int16
+}
+
+// PartitionInformation contains information related to the partition, if this
+// blockdevice is a partition
+type PartitionInformation struct {
+	// PartitionNumber is the partition number
+	PartitionNumber uint8
+
+	// PartitionEntryUUID is the UUID of the partition
+	PartitionEntryUUID string
+
+	// PartitionTableUUID is the UUID of the partition table
+	PartitionTableUUID string
+
+	// PartitionTableType is the type of the partition (dos/gpt)
+	PartitionTableType string
 }
 
 // Status is used to represent the status of the blockdevice

@@ -25,6 +25,7 @@ package udev
 import "C"
 import (
 	"bufio"
+	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -44,8 +45,11 @@ type MockOsDiskDetails struct {
 	Uid            string
 	FileSystem     string
 	Mountpoint     string
+	PartTableType  string
+	PartTableUUID  string
 	ByIdDevLinks   []string
 	ByPathDevLinks []string
+	Dependents     hierarchy.DependentDevices
 }
 
 // mockDataStructUdev returns C udev struct for unit test.
@@ -84,6 +88,13 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.Wwn = device.GetPropertyValue(UDEV_WWN)
 	diskDetails.Uid = device.GetUid()
 	diskDetails.FileSystem = osFilesystem
+	diskDetails.PartTableType = device.GetPropertyValue(UDEV_PARTITION_TABLE_TYPE)
+	diskDetails.PartTableUUID = device.GetPropertyValue(UDEV_PARTITION_TABLE_UUID)
+	dev := hierarchy.Device{Path: diskDetails.DevNode}
+	diskDetails.Dependents, err = dev.GetDependents()
+	if err != nil {
+		return diskDetails, err
+	}
 	diskDetails.Mountpoint = "/" // always take the disk mounted at /
 	devLinks := device.GetDevLinks()
 	diskDetails.ByIdDevLinks = devLinks[BY_ID_LINK]
