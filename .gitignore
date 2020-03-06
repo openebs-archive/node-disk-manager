@@ -3,6 +3,7 @@ cscope*
 tags
 *.swp
 *.swo
+Dockerfile.exporter
 Dockerfile.ndm
 Dockerfile.ndo
 coverage.txt
