@@ -150,12 +150,12 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 		// Ref: https://elixir.bootlin.com/linux/v4.4/source/fs/block_dev.c#L487
 		//
 		// Therefore, to get the capacity of the device it needs to always multiplied with 512
-		blockSize, err := readSysFSFileAsInt64(sysPath + "/size")
+		numberOfBlocks, err := readSysFSFileAsInt64(sysPath + "/size")
 		if err != nil {
-			klog.Warning("unable to read block size", err)
+			klog.Warning("unable to block count", err)
 			return
-		} else if blockSize != 0 {
-			blockDevice.Capacity.Storage = uint64(blockSize * sectorSize)
+		} else if numberOfBlocks != 0 {
+			blockDevice.Capacity.Storage = uint64(numberOfBlocks * sectorSize)
 			klog.Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.Capacity.Storage)
 		}
