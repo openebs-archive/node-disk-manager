@@ -77,16 +77,16 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 	}
 	defer device.UdevDeviceUnref()
 	expectedDiskDetails := UdevDiskDetails{
-		Model:          diskDetails.Model,
-		Serial:         diskDetails.Serial,
-		Vendor:         diskDetails.Vendor,
-		WWN:            diskDetails.Wwn,
-		DiskType:       diskDetails.DevType,
-		Path:           diskDetails.DevNode,
-		ByIdDevLinks:   diskDetails.ByIdDevLinks,
-		ByPathDevLinks: diskDetails.ByPathDevLinks,
+		Model:              diskDetails.Model,
+		Serial:             diskDetails.Serial,
+		Vendor:             diskDetails.Vendor,
+		WWN:                diskDetails.Wwn,
+		DiskType:           diskDetails.DevType,
+		Path:               diskDetails.DevNode,
+		ByIdDevLinks:       diskDetails.ByIdDevLinks,
+		ByPathDevLinks:     diskDetails.ByPathDevLinks,
+		PartitionTableType: diskDetails.PartTableType,
 	}
-	assert.Equal(t, expectedDiskDetails, device.DiskInfoFromLibudev())
 	tests := map[string]struct {
 		actualDetails   UdevDiskDetails
 		expectedDetails UdevDiskDetails
@@ -95,7 +95,7 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.actualDetails, test.expectedDetails)
+			assert.Equal(t, test.expectedDetails, test.actualDetails)
 		})
 	}
 }

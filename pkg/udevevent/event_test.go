@@ -54,6 +54,17 @@ func TestProcess(t *testing.T) {
 	deviceDetails := &blockdevice.BlockDevice{}
 	deviceDetails.UUID = osDiskDetails.Uid
 	deviceDetails.SysPath = osDiskDetails.SysPath
+	deviceDetails.DevPath = osDiskDetails.DevNode
+
+	deviceDetails.DeviceAttributes.DeviceType = osDiskDetails.DevType
+	deviceDetails.DeviceAttributes.WWN = osDiskDetails.Wwn
+	deviceDetails.PartitionInfo.PartitionTableUUID = osDiskDetails.PartTableUUID
+
+	deviceDetails.Parent = osDiskDetails.Dependents.Parent
+	deviceDetails.Partitions = osDiskDetails.Dependents.Partitions
+	deviceDetails.Holders = osDiskDetails.Dependents.Holders
+	deviceDetails.Slaves = osDiskDetails.Dependents.Slaves
+
 	diskInfo = append(diskInfo, deviceDetails)
 	expectedEvent.eventDetails.Action = ""
 	expectedEvent.eventDetails.Devices = diskInfo
