@@ -98,7 +98,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			klog.Warning("unable to read logical block size", err)
 		} else if logicalBlockSize != 0 {
 			blockDevice.DeviceAttributes.LogicalBlockSize = uint32(logicalBlockSize)
-			klog.Infof("blockdevice path: %s logical sector size :%d filled by sysfs probe.",
+			klog.Infof("blockdevice path: %s logical block size :%d filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.DeviceAttributes.LogicalBlockSize)
 		}
 	}
@@ -109,7 +109,18 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			klog.Warning("unable to read physical block size", err)
 		} else if physicalBlockSize != 0 {
 			blockDevice.DeviceAttributes.PhysicalBlockSize = uint32(physicalBlockSize)
-			klog.Infof("blockdevice path: %s physical sector size :%d filled by sysfs probe.",
+			klog.Infof("blockdevice path: %s physical block size :%d filled by sysfs probe.",
+				blockDevice.DevPath, blockDevice.DeviceAttributes.PhysicalBlockSize)
+		}
+	}
+
+	if blockDevice.DeviceAttributes.HardwareSectorSize == 0 {
+		hwSectorSize, err := readSysFSFileAsInt64(sysPath + "/queue/hw_sector_size")
+		if err != nil {
+			klog.Warning("unable to read hardware sector size", err)
+		} else if hwSectorSize != 0 {
+			blockDevice.DeviceAttributes.HardwareSectorSize = uint32(hwSectorSize)
+			klog.Infof("blockdevice path: %s hardware sector size :%d filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.DeviceAttributes.PhysicalBlockSize)
 		}
 	}
