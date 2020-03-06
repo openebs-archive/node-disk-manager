@@ -35,6 +35,11 @@ export XC_ARCH
 ARCH:=${XC_OS}_${XC_ARCH}
 export ARCH
 
+ifeq (${BASE_DOCKER_IMAGEARM32}, )
+  BASE_DOCKER_IMAGEARM32 = "arm32v7/ubuntu:18.04"
+  export BASE_DOCKER_IMAGEARM32
+endif
+
 ifeq (${BASE_DOCKER_IMAGEARM64}, )
   BASE_DOCKER_IMAGEARM64 = "arm64v8/ubuntu:18.04"
   export BASE_DOCKER_IMAGEARM64
@@ -44,8 +49,12 @@ ifeq (${BASEIMAGE}, )
 ifeq ($(ARCH),linux_arm64)
   BASEIMAGE:=${BASE_DOCKER_IMAGEARM64}
 else
+ifeq ($(ARCH),linux_arm)
+  BASEIMAGE:=${BASE_DOCKER_IMAGEARM32}
+else
   # The ubuntu:16.04 image is being used as base image.
   BASEIMAGE:=ubuntu:16.04
+endif
 endif
 endif
 export BASEIMAGE
