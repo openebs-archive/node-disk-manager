@@ -35,7 +35,7 @@ type seachestProbe struct {
 
 const (
 	seachestConfigKey     = "seachest-probe"
-	seachestProbePriority = 2
+	seachestProbePriority = 4
 )
 
 var (
