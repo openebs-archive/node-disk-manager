@@ -17,14 +17,18 @@ services:
 
 jobs:
   include:
-    - os: linux
+    - name: amd64
+      os: linux
       arch: amd64
-    - os: linux
+    - name: arm64
+      os: linux
       arch: arm64
-    - os: linux
+    - name: ppc64le
+      os: linux
       arch: ppc64le
-    - os: linux
-      arch: amd64
+    - name: arm32
+      os: linux
+      arch: amd64 # only as an emulation / cross-compile host
       env: ARCH=arm GOARCH=arm XC_ARCH=arm
 
 addons:
@@ -33,7 +37,7 @@ addons:
 
 install:
   - if [ "$ARCH" == "arm" ]; then
-      docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      docker run --rm --privileged multiarch/qemu-user-static --reset -p yes;
     fi
   - make bootstrap
   - if [ "$TRAVIS_BUILD_DIR" != "$GOPATH/src/github.com/openebs/node-disk-manager" ]; then
