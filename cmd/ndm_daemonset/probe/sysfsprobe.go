@@ -35,8 +35,12 @@ import (
 )
 
 const (
-	sysfsProbePriority = 4
+	sysfsProbePriority = 2
 	sysfsConfigKey     = "sysfs-probe"
+	// sectorSize is the sector size as understood by the unix systems.
+	// It is kept as 512 bytes. all entries in /sys/class/block/sda/size
+	// are in 512 byte blocks
+	sectorSize int64 = 512
 )
 
 var (
@@ -94,7 +98,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			klog.Warning("unable to read logical block size", err)
 		} else if logicalBlockSize != 0 {
 			blockDevice.DeviceAttributes.LogicalBlockSize = uint32(logicalBlockSize)
-			klog.Infof("blockdevice path: %s logical sector size :%d filled by queuesysfs probe.",
+			klog.Infof("blockdevice path: %s logical sector size :%d filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.DeviceAttributes.LogicalBlockSize)
 		}
 	}
@@ -127,17 +131,20 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 	}
 
 	if blockDevice.Capacity.Storage == 0 {
-		hwSectorSize, err := readSysFSFileAsInt64(sysPath + "/queue/hw_sector_size")
-		if err != nil {
-			klog.Warning("unable to read hw sector size", err)
-			return
-		}
+		// The size (/size) entry returns the `nr_sects` field of the block device structure.
+		// Ref: https://elixir.bootlin.com/linux/v4.4/source/fs/block_dev.c#L1267
+		//
+		// Traditionally, in Unix disk size contexts, “sector” or “block” means 512 bytes,
+		// regardless of what the manufacturer of the underlying hardware might call a “sector” or “block”
+		// Ref: https://elixir.bootlin.com/linux/v4.4/source/fs/block_dev.c#L487
+		//
+		// Therefore, to get the capacity of the device it needs to always multiplied with 512
 		blockSize, err := readSysFSFileAsInt64(sysPath + "/size")
 		if err != nil {
 			klog.Warning("unable to read block size", err)
 			return
 		} else if blockSize != 0 {
-			blockDevice.Capacity.Storage = uint64(uint32(blockSize)) * uint64(uint32(hwSectorSize))
+			blockDevice.Capacity.Storage = uint64(blockSize * sectorSize)
 			klog.Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.Capacity.Storage)
 		}
