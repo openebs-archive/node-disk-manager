@@ -23,6 +23,8 @@ jobs:
       arch: arm64
     - os: linux
       arch: ppc64le
+    - os: linux
+      arch: arm32
 
 addons:
   apt:
