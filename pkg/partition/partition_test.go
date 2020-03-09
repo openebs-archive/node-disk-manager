@@ -17,9 +17,10 @@ limitations under the License.
 package partition
 
 import (
+	"testing"
+
 	"github.com/diskfs/go-diskfs/partition/gpt"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestCreatePartitionTable(t *testing.T) {
