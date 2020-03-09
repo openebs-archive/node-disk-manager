@@ -198,7 +198,6 @@ func TestAddBlockDeviceEvent(t *testing.T) {
 	fakeDr.Spec.Details.Model = fakeModel
 	fakeDr.Spec.Details.Serial = fakeSerial
 	fakeDr.Spec.Details.Vendor = fakeVendor
-	fakeDr.Spec.Details.DeviceType = controller.NDMDefaultDiskType
 	fakeDr.Spec.Partitioned = controller.NDMNotPartitioned
 
 	tests := map[string]struct {
