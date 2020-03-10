@@ -181,13 +181,10 @@ func (up *udevProbe) scan() error {
 		}
 		newUdevice.UdevDeviceUnref()
 	}
-	if !up.controller.FeatureGates.IsEnabled(features.GPTBasedUUID) {
-		up.controller.DeactivateStaleBlockDeviceResource(disksUid)
-	} else {
-		// TODO deactivate all the stale blockdevices
-		// can deactivate all the blockdevices and they will be marked as active once
-		// the event is processed.
-	}
+
+	// when GPTBasedUUID is enabled, all the blockdevices will be made inactive initially.
+	// after that each device that is detected by the probe will be marked as Active.
+	up.controller.DeactivateStaleBlockDeviceResource(disksUid)
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,

@@ -144,8 +144,6 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 		pe.Controller.DeactivateBlockDevice(*existingBlockDeviceResource)
 	}
 
-	// TODO @akhilerm check if rescan is required every time and take appropriate actions
-	//
 	// rescan only if GPT based UUID is disabled.
 	if !isDeactivated && !isGPTBasedUUIDEnabled {
 		go pe.initOrErrorEvent()
