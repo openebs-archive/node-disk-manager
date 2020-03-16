@@ -126,7 +126,7 @@ spec:
       - name: node-disk-manager
         image: openebs/node-disk-manager-amd64:ci
         args:
-          - -v=2
+          - -v=4
           - --feature-gates="GPTBasedUUID"
         imagePullPolicy: Always
         securityContext:

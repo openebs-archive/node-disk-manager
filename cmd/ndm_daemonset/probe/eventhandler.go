@@ -72,9 +72,9 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 				continue
 			}
 			uuid, ok := generateUUID(*device)
-			// manaully create a single partition on the device
+			// manually create a single partition on the device
 			if !ok {
-				klog.Info("starting to create partitions")
+				klog.Info("starting to create partition")
 				d := partition.Disk{
 					DevPath:          device.DevPath,
 					DiskSize:         device.Capacity.Storage,
