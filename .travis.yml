@@ -59,3 +59,9 @@ script:
 after_success:
   - make push
   - bash <(curl -s https://codecov.io/bash)
+
+notifications:
+  email:
+    recipients:
+      - akhil.mohan@mayadata.io
+      - kiran.mova@mayadata.io
