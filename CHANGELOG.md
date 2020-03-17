@@ -1,3 +1,9 @@
+v0.4.8 / 2020-03-15
+========================
+
+  * enabled automatic builds of arm64 images ([#371](https://github.com/openebs/node-disk-manager/pull/371),
+  [@akhilerm](https://github.com/akhilerm))
+
 v0.4.8-RC1 / 2020-03-06
 ========================
 
