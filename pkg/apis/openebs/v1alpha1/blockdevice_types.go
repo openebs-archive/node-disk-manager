@@ -123,8 +123,23 @@ type DeviceCapacity struct {
 
 // DeviceDetails represent certain hardware/static attributes of the block device
 type DeviceDetails struct {
-	// DeviceType represents the type of drive like SSD, HDD etc.,
+	// DeviceType represents the type of device like
+	// sparse, disk, partition, lvm, raid
 	DeviceType string `json:"deviceType"`
+
+	// DriveType is the type of backing drive, HDD/SSD
+	DriveType string `json:"driveType"`
+
+	// LogicalBlockSize is the logical block size in bytes
+	// reported by /sys/class/block/sda/queue/logical_block_size
+	LogicalBlockSize uint32 `json:"logicalBlockSize"`
+
+	// PhysicalBlockSize is the physical block size in bytes
+	// reported by /sys/class/block/sda/queue/physical_block_size
+	PhysicalBlockSize uint32 `json:"physicalBlockSize"`
+
+	// HardwareSectorSize is the hardware sector size in bytes
+	HardwareSectorSize uint32 `json:"hardwareSectorSize"`
 
 	// Model is model of disk
 	Model string `json:"model"`
