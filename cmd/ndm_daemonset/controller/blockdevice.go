@@ -39,10 +39,12 @@ type DeviceInfo struct {
 	ByIdDevLinks       []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks     []string // ByPathDevLinks contains by-path devlinks
 	FirmwareRevision   string   // FirmwareRevision is the firmware revision for a disk
-	LogicalSectorSize  uint32   // LogicalSectorSize is the Logical size of blockdevice sector in bytes
-	PhysicalSectorSize uint32   // PhysicalSectorSize is the Physical size of blockdevice sector in bytes
+	LogicalBlockSize   uint32   // LogicalBlockSize is the logical block size of the device in bytes
+	PhysicalBlockSize  uint32   // PhysicalBlockSize is the physical block size in bytes
+	HardwareSectorSize uint32   // HardwareSectorSize is the hardware sector size in bytes
 	Compliance         string   // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
-	DeviceType         string   // DeviceType represents the type of backing disk
+	DeviceType         string   // DeviceType represents the type of device, like disk/sparse/partition
+	DriveType          string   // DriveType represents the type of backing drive HDD/SSD
 	PartitionType      string   // Partition type if the blockdevice is a partition
 	FileSystemInfo     FSInfo   // FileSystem info of the blockdevice like FSType and MountPoint
 }
@@ -143,6 +145,11 @@ func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
 	deviceDetails.FirmwareRevision = di.FirmwareRevision
 	deviceDetails.Compliance = di.Compliance
 	deviceDetails.DeviceType = di.DeviceType
+	deviceDetails.DriveType = di.DriveType
+	deviceDetails.LogicalBlockSize = di.LogicalBlockSize
+	deviceDetails.PhysicalBlockSize = di.PhysicalBlockSize
+	deviceDetails.HardwareSectorSize = di.HardwareSectorSize
+
 	return deviceDetails
 }
 
@@ -154,8 +161,8 @@ func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
 func (di *DeviceInfo) getDeviceCapacity() apis.DeviceCapacity {
 	capacity := apis.DeviceCapacity{}
 	capacity.Storage = di.Capacity
-	capacity.LogicalSectorSize = di.LogicalSectorSize
-	capacity.PhysicalSectorSize = di.PhysicalSectorSize
+	capacity.LogicalSectorSize = di.LogicalBlockSize
+	capacity.PhysicalSectorSize = di.PhysicalBlockSize
 	return capacity
 }
 

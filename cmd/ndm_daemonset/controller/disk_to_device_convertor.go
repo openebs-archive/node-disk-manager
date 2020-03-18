@@ -49,8 +49,12 @@ func (c *Controller) NewDeviceInfoFromBlockDevice(blockDevice *bd.BlockDevice) *
 			deviceDetails.ByPathDevLinks = devlink.Links
 		}
 	}
-	deviceDetails.LogicalSectorSize = blockDevice.DeviceAttributes.LogicalBlockSize
-	deviceDetails.PhysicalSectorSize = blockDevice.DeviceAttributes.PhysicalBlockSize
+	deviceDetails.LogicalBlockSize = blockDevice.DeviceAttributes.LogicalBlockSize
+	deviceDetails.PhysicalBlockSize = blockDevice.DeviceAttributes.PhysicalBlockSize
+	deviceDetails.HardwareSectorSize = blockDevice.DeviceAttributes.HardwareSectorSize
+	deviceDetails.DriveType = blockDevice.DeviceAttributes.DriveType
+	deviceDetails.DeviceType = blockDevice.DeviceAttributes.DeviceType
+
 	deviceDetails.Compliance = blockDevice.DeviceAttributes.Compliance
 	deviceDetails.FileSystemInfo.FileSystem = blockDevice.FSInfo.FileSystem
 	// currently only the first mount point will be taken.
