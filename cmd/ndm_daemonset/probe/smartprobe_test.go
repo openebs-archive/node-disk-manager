@@ -44,6 +44,8 @@ func mockOsDiskToAPIBySmart() (apis.BlockDevice, error) {
 	fakeDetails := apis.DeviceDetails{
 		Compliance:       mockOsDiskDetails.Compliance,
 		FirmwareRevision: mockOsDiskDetails.FirmwareRevision,
+		DeviceType:       controller.NDMDefaultDiskType,
+		LogicalBlockSize: mockOsDiskDetails.LBSize,
 	}
 
 	fakeCapacity := apis.DeviceCapacity{

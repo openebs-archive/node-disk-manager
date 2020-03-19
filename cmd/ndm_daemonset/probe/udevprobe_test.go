@@ -47,9 +47,10 @@ func mockOsDiskToAPI() (apis.BlockDevice, error) {
 		return apis.BlockDevice{}, err
 	}
 	fakeDetails := apis.DeviceDetails{
-		Model:  mockOsDiskDetails.Model,
-		Serial: mockOsDiskDetails.Serial,
-		Vendor: mockOsDiskDetails.Vendor,
+		Model:      mockOsDiskDetails.Model,
+		Serial:     mockOsDiskDetails.Serial,
+		Vendor:     mockOsDiskDetails.Vendor,
+		DeviceType: controller.NDMDefaultDiskType,
 	}
 	fakeObj := apis.DeviceSpec{
 		Path:        mockOsDiskDetails.DevNode,

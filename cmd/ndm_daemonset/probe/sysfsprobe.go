@@ -98,7 +98,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			klog.Warning("unable to read logical block size", err)
 		} else if logicalBlockSize != 0 {
 			blockDevice.DeviceAttributes.LogicalBlockSize = uint32(logicalBlockSize)
-			klog.Infof("blockdevice path: %s logical block size :%d filled by sysfs probe.",
+			klog.V(4).Infof("blockdevice path: %s logical block size :%d filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.DeviceAttributes.LogicalBlockSize)
 		}
 	}
@@ -109,7 +109,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			klog.Warning("unable to read physical block size", err)
 		} else if physicalBlockSize != 0 {
 			blockDevice.DeviceAttributes.PhysicalBlockSize = uint32(physicalBlockSize)
-			klog.Infof("blockdevice path: %s physical block size :%d filled by sysfs probe.",
+			klog.V(4).Infof("blockdevice path: %s physical block size :%d filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.DeviceAttributes.PhysicalBlockSize)
 		}
 	}
@@ -120,7 +120,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			klog.Warning("unable to read hardware sector size", err)
 		} else if hwSectorSize != 0 {
 			blockDevice.DeviceAttributes.HardwareSectorSize = uint32(hwSectorSize)
-			klog.Infof("blockdevice path: %s hardware sector size :%d filled by sysfs probe.",
+			klog.V(4).Infof("blockdevice path: %s hardware sector size :%d filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.DeviceAttributes.PhysicalBlockSize)
 		}
 	}
@@ -136,7 +136,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			} else if rotational == 0 {
 				blockDevice.DeviceAttributes.DriveType = "SSD"
 			}
-			klog.Infof("blockdevice path: %s drive type :%s filled by sysfs probe.",
+			klog.V(4).Infof("blockdevice path: %s drive type :%s filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.DeviceAttributes.DriveType)
 		}
 	}
@@ -156,7 +156,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			return
 		} else if numberOfBlocks != 0 {
 			blockDevice.Capacity.Storage = uint64(numberOfBlocks * sectorSize)
-			klog.Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
+			klog.V(4).Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
 				blockDevice.DevPath, blockDevice.Capacity.Storage)
 		}
 	}
