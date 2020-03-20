@@ -93,7 +93,42 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 		}
 	}
 
-	blockDeviceCopy.ObjectMeta.ResourceVersion = oldBlockDevice.ObjectMeta.ResourceVersion
+	// metadata of older object which contains -
+	// - name - no patch required we can use old object.
+	// - namespace - no patch required we can use old object.
+	// - generateName - no patch required we are not using it.
+	// - selfLink - populated by the system we should use old object.
+	// - uid - populated by the system we should use old object.
+	// - resourceVersion - populated by the system we should use old object.
+	// - generation - populated by the system we should use old object.
+	// - creationTimestamp - populated by the system we should use old object.
+	// - deletionTimestamp - populated by the system we should use old object.
+	// - deletionGracePeriodSeconds - populated by the system we should use old object.
+	// - labels - we will patch older labels with new labels.
+	// - annotations - we will patch older annotations with new annotations.
+	// - ownerReferences TODO
+	// - initializers TODO
+	// - finalizers TODO
+	// - clusterName - no patch required we can use old object.
+	metadata := oldBlockDevice.ObjectMeta
+
+	// Patch older label with new label. If there is a new key then it will be added
+	// if it is an existing key then value will be overwritten with value from new label
+	if blockDeviceCopy.ObjectMeta.Labels != nil {
+		for key, value := range blockDeviceCopy.ObjectMeta.Labels {
+			metadata.Labels[key] = value
+		}
+	}
+
+	// Patch older annotations with new annotations. If there is a new key then it will be added
+	// if it is an existing key then value will be overwritten with value from new annotations
+	if blockDeviceCopy.ObjectMeta.Annotations != nil {
+		for key, value := range blockDeviceCopy.ObjectMeta.Annotations {
+			metadata.Annotations[key] = value
+		}
+	}
+
+	blockDeviceCopy.ObjectMeta = metadata
 	blockDeviceCopy.Spec.ClaimRef = oldBlockDevice.Spec.ClaimRef
 	blockDeviceCopy.Status.ClaimState = oldBlockDevice.Status.ClaimState
 	err = c.Clientset.Update(context.TODO(), blockDeviceCopy)
