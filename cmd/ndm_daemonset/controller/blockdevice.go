@@ -38,10 +38,12 @@ type DeviceInfo struct {
 	ByIdDevLinks       []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks     []string // ByPathDevLinks contains by-path devlinks
 	FirmwareRevision   string   // FirmwareRevision is the firmware revision for a disk
-	LogicalSectorSize  uint32   // LogicalSectorSize is the Logical size of blockdevice sector in bytes
-	PhysicalSectorSize uint32   // PhysicalSectorSize is the Physical size of blockdevice sector in bytes
+	LogicalBlockSize   uint32   // LogicalBlockSize is the Logical size of disk block in bytes
+	PhysicalBlockSize  uint32   // PhysicalBlockSize is the Physical size of disk block in bytes
+	HardwareSectorSize uint32   //HardwareSector size in bytes
 	Compliance         string   // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
-	DeviceType         string   // DeviceType represents the type of backing disk
+	DeviceType         string   // DeviceType represents the type of device, sparse/partition/lvm
+	DriveType          string   // DriveType represents the type of backing disk HDD/SSD
 	PartitionType      string   // Partition type if the blockdevice is a partition
 	FileSystemInfo     FSInfo   // FileSystem info of the blockdevice like FSType and MountPoint
 }
@@ -129,6 +131,10 @@ func (di *DeviceInfo) getPath() string {
 // It is used to populate data of BlockDevice struct which of BlockDevice CR.
 func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
 	deviceDetails := apis.DeviceDetails{}
+	deviceDetails.LogicalBlockSize = di.LogicalBlockSize
+	deviceDetails.PhysicalBlockSize = di.PhysicalBlockSize
+	deviceDetails.HardwareSectorSize = di.HardwareSectorSize
+	deviceDetails.DriveType = di.DriveType
 	deviceDetails.Model = di.Model
 	deviceDetails.Serial = di.Serial
 	deviceDetails.Vendor = di.Vendor
@@ -146,8 +152,8 @@ func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
 func (di *DeviceInfo) getDeviceCapacity() apis.DeviceCapacity {
 	capacity := apis.DeviceCapacity{}
 	capacity.Storage = di.Capacity
-	capacity.LogicalSectorSize = di.LogicalSectorSize
-	capacity.PhysicalSectorSize = di.PhysicalSectorSize
+	capacity.LogicalSectorSize = di.LogicalBlockSize
+	capacity.PhysicalSectorSize = di.PhysicalBlockSize
 	return capacity
 }
 

@@ -34,10 +34,12 @@ func (c *Controller) NewDeviceInfoFromDiskInfo(diskDetails *DiskInfo) *DeviceInf
 	deviceDetails.Path = diskDetails.Path
 	deviceDetails.ByIdDevLinks = diskDetails.ByIdDevLinks
 	deviceDetails.ByPathDevLinks = diskDetails.ByPathDevLinks
-	deviceDetails.LogicalSectorSize = diskDetails.LogicalSectorSize
-	deviceDetails.PhysicalSectorSize = diskDetails.PhysicalSectorSize
+	deviceDetails.LogicalBlockSize = diskDetails.LogicalSectorSize
+	deviceDetails.PhysicalBlockSize = diskDetails.PhysicalSectorSize
+	deviceDetails.HardwareSectorSize = diskDetails.HardwareSectorSize
 	deviceDetails.Compliance = diskDetails.Compliance
-	deviceDetails.DeviceType = diskDetails.DriveType
+	deviceDetails.DriveType = diskDetails.DriveType
+	deviceDetails.DeviceType = diskDetails.DiskType
 	deviceDetails.FileSystemInfo.FileSystem = diskDetails.FileSystemInformation.FileSystem
 	deviceDetails.FileSystemInfo.MountPoint = diskDetails.FileSystemInformation.MountPoint
 	return deviceDetails
