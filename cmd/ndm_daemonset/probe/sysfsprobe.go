@@ -97,7 +97,7 @@ func (cp *sysfsProbe) FillDiskDetails(d *controller.DiskInfo) {
 			klog.Warning("unable to read logical block size", err)
 		} else if logicalBlockSize != 0 {
 			d.LogicalSectorSize = uint32(logicalBlockSize)
-			klog.V(4).Infof("Disk: %s logica block size: %d filled by sysfs probe.",
+			klog.V(4).Infof("Disk: %s logical block size: %d filled by sysfs probe.",
 				d.Path, d.LogicalSectorSize)
 		}
 	}
@@ -135,7 +135,7 @@ func (cp *sysfsProbe) FillDiskDetails(d *controller.DiskInfo) {
 			} else if rotational == 0 {
 				d.DriveType = "SSD"
 			}
-			klog.V(4).Infof("blockdevice path: %s drive type :%s filled by sysfs probe.",
+			klog.V(4).Infof("Disk path: %s drive type :%s filled by sysfs probe.",
 				d.Path, d.DriveType)
 		}
 	}
@@ -155,7 +155,7 @@ func (cp *sysfsProbe) FillDiskDetails(d *controller.DiskInfo) {
 			return
 		} else if numberOfBlocks != 0 {
 			d.Capacity = uint64(numberOfBlocks * sectorSize)
-			klog.V(4).Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
+			klog.V(4).Infof("Disk path: %s capacity :%d filled by sysfs probe.",
 				d.Path, d.Capacity)
 		}
 	}
