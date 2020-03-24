@@ -21,7 +21,6 @@ import (
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog"
 )
 
 const (
@@ -62,8 +61,6 @@ func (c *Config) ApplyFilters(bdList *apis.BlockDeviceList, filterKeys ...string
 	filteredList := bdList
 	for _, key := range filterKeys {
 		filteredList = filterFuncMap[key](filteredList, c.ClaimSpec)
-		klog.Info("Key : ", key)
-		klog.Info("Items:", filteredList.Items)
 	}
 	return filteredList
 }

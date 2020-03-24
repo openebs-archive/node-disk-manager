@@ -40,8 +40,9 @@ type DiskInfo struct {
 	ByIdDevLinks          []string        // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks        []string        // ByPathDevLinks contains by-path devlinks
 	FirmwareRevision      string          // FirmwareRevision is the firmware revision for a disk
-	LogicalSectorSize     uint32          // LogicalSectorSize is the Logical size of disk sector in bytes
-	PhysicalSectorSize    uint32          // PhysicalSectorSize is the Physical size of disk sector in bytes
+	LogicalSectorSize     uint32          // LogicalBlockSize is the Logical size of disk sector in bytes
+	PhysicalSectorSize    uint32          // PhysicalBlockSize is the Physical size of disk sector in bytes
+	HardwareSectorSize    uint32          // HardwareSectorSize is the sector size of disk in bytes
 	RotationRate          uint16          // 0 = not reported. 1 = SSD, everything else is an RPM
 	Compliance            string          // Compliance is implemented specifications version i.e. SPC-1, SPC-2, etc
 	DiskType              string          // DiskType represents the type of disk like Disk, Sparse etc.,

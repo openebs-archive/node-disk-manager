@@ -20,13 +20,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCapacityProbeFillDisk(t *testing.T) {
-	probe := &capacityProbe{}
-	disk := &controller.DiskInfo{}
+func TestReadSysFSFileAsInt64(t *testing.T) {
 	tempSysPath := "/tmp"
 	os.MkdirAll(tempSysPath+"/queue", 0700)
 	file, err := os.Create(tempSysPath + "/queue/hw_sector_size")
@@ -35,15 +32,12 @@ func TestCapacityProbeFillDisk(t *testing.T) {
 		return
 	}
 	file.Write([]byte("10"))
-	file, err = os.Create(tempSysPath + "/size")
+	file.Close()
+
+	value, err := readSysFSFileAsInt64(tempSysPath + "/queue/hw_sector_size")
 	if err != nil {
-		t.Fatalf("unable to write file to %s %v", tempSysPath, err)
+		t.Fatalf("unable to read file to %s %v", tempSysPath, err)
 		return
 	}
-	file.Write([]byte("10"))
-
-	disk.ProbeIdentifiers.UdevIdentifier = tempSysPath
-
-	probe.FillDiskDetails(disk)
-	assert.Equal(t, disk.Capacity, uint64(100))
+	assert.Equal(t, value, int64(10))
 }

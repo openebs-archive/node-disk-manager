@@ -102,7 +102,15 @@ func (sp *smartProbe) FillDiskDetails(d *controller.DiskInfo) {
 
 	d.Compliance = deviceBasicSCSIInfo.Compliance
 	d.FirmwareRevision = deviceBasicSCSIInfo.FirmwareRevision
-	d.Capacity = deviceBasicSCSIInfo.Capacity
-	d.LogicalSectorSize = deviceBasicSCSIInfo.LBSize
+	if d.Capacity == 0 {
+		d.Capacity = deviceBasicSCSIInfo.Capacity
+		klog.V(4).Infof("Disk path: %s capacity :%d filled by smart probe.",
+			d.Path, d.Capacity)
+	}
+	if d.LogicalSectorSize == 0 {
+		d.LogicalSectorSize = deviceBasicSCSIInfo.LBSize
+		klog.V(4).Infof("Disk path: %s logical block size :%d filled by smart probe.",
+			d.Path, d.LogicalSectorSize)
+	}
 
 }

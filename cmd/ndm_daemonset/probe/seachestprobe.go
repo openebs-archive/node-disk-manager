@@ -34,7 +34,7 @@ type seachestProbe struct {
 
 const (
 	seachestConfigKey     = "seachest-probe"
-	seachestProbePriority = 2
+	seachestProbePriority = 4
 )
 
 var (
@@ -143,12 +143,12 @@ func (scp *seachestProbe) FillDiskDetails(d *controller.DiskInfo) {
 
 	if d.LogicalSectorSize == 0 {
 		d.LogicalSectorSize = seachestProbe.SeachestIdentifier.GetLogicalSectorSize(driveInfo)
-		klog.V(4).Infof("Disk: %s LogicalSectorSize:%d filled by seachest.", d.Path, d.LogicalSectorSize)
+		klog.V(4).Infof("Disk: %s LogicalBlockSize:%d filled by seachest.", d.Path, d.LogicalSectorSize)
 	}
 
 	if d.PhysicalSectorSize == 0 {
 		d.PhysicalSectorSize = seachestProbe.SeachestIdentifier.GetPhysicalSectorSize(driveInfo)
-		klog.V(4).Infof("Disk: %s PhysicalSectorSize:%d filled by seachest.", d.Path, d.PhysicalSectorSize)
+		klog.V(4).Infof("Disk: %s PhysicalBlockSize:%d filled by seachest.", d.Path, d.PhysicalSectorSize)
 	}
 
 	if d.RotationRate == 0 {
