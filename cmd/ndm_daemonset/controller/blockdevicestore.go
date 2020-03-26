@@ -93,42 +93,7 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 		}
 	}
 
-	// metadata of older object which contains -
-	// - name - no patch required we can use old object.
-	// - namespace - no patch required we can use old object.
-	// - generateName - no patch required we are not using it.
-	// - selfLink - populated by the system we should use old object.
-	// - uid - populated by the system we should use old object.
-	// - resourceVersion - populated by the system we should use old object.
-	// - generation - populated by the system we should use old object.
-	// - creationTimestamp - populated by the system we should use old object.
-	// - deletionTimestamp - populated by the system we should use old object.
-	// - deletionGracePeriodSeconds - populated by the system we should use old object.
-	// - labels - we will patch older labels with new labels.
-	// - annotations - we will patch older annotations with new annotations.
-	// - ownerReferences TODO
-	// - initializers TODO
-	// - finalizers TODO
-	// - clusterName - no patch required we can use old object.
-	metadata := oldBlockDevice.ObjectMeta
-
-	// Patch older label with new label. If there is a new key then it will be added
-	// if it is an existing key then value will be overwritten with value from new label
-	if blockDeviceCopy.ObjectMeta.Labels != nil {
-		for key, value := range blockDeviceCopy.ObjectMeta.Labels {
-			metadata.Labels[key] = value
-		}
-	}
-
-	// Patch older annotations with new annotations. If there is a new key then it will be added
-	// if it is an existing key then value will be overwritten with value from new annotations
-	if blockDeviceCopy.ObjectMeta.Annotations != nil {
-		for key, value := range blockDeviceCopy.ObjectMeta.Annotations {
-			metadata.Annotations[key] = value
-		}
-	}
-
-	blockDeviceCopy.ObjectMeta = metadata
+	blockDeviceCopy.ObjectMeta = mergeMetadata(blockDeviceCopy.ObjectMeta, oldBlockDevice.ObjectMeta)
 	blockDeviceCopy.Spec.ClaimRef = oldBlockDevice.Spec.ClaimRef
 	blockDeviceCopy.Status.ClaimState = oldBlockDevice.Status.ClaimState
 	err = c.Clientset.Update(context.TODO(), blockDeviceCopy)
@@ -287,4 +252,41 @@ func (c *Controller) MarkBlockDeviceStatusToUnknown() {
 				blockDeviceCopy.ObjectMeta.Name)
 		}
 	}
+}
+
+func mergeMetadata(newMetadata, oldMetadata metav1.ObjectMeta) metav1.ObjectMeta {
+	// metadata of older object which contains -
+	// - name - no patch required we can use old object.
+	// - namespace - no patch required we can use old object.
+	// - generateName - no patch required we are not using it.
+	// - selfLink - populated by the system we should use old object.
+	// - uid - populated by the system we should use old object.
+	// - resourceVersion - populated by the system we should use old object.
+	// - generation - populated by the system we should use old object.
+	// - creationTimestamp - populated by the system we should use old object.
+	// - deletionTimestamp - populated by the system we should use old object.
+	// - deletionGracePeriodSeconds - populated by the system we should use old object.
+	// - labels - we will patch older labels with new labels.
+	// - annotations - we will patch older annotations with new annotations.
+	// - ownerReferences as ndm-ds is not adding ownerReferences we can go with old object.
+	// - initializers ^^^
+	// - finalizers ^^^
+	// - clusterName - no patch required we can use old object.
+	metadata := oldMetadata
+	// Patch older label with new label. If there is a new key then it will be added
+	// if it is an existing key then value will be overwritten with value from new label
+	if newMetadata.Labels != nil {
+		for key, value := range newMetadata.Labels {
+			metadata.Labels[key] = value
+		}
+	}
+
+	// Patch older annotations with new annotations. If there is a new key then it will be added
+	// if it is an existing key then value will be overwritten with value from new annotations
+	if newMetadata.Annotations != nil {
+		for key, value := range newMetadata.Annotations {
+			metadata.Annotations[key] = value
+		}
+	}
+	return metadata
 }
