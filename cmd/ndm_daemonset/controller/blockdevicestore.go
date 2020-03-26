@@ -254,6 +254,8 @@ func (c *Controller) MarkBlockDeviceStatusToUnknown() {
 	}
 }
 
+// mergeMetadata merges oldMetadata with newMetadata. It takes old metadata and
+// update it's value with the help of new metadata.
 func mergeMetadata(newMetadata, oldMetadata metav1.ObjectMeta) metav1.ObjectMeta {
 	// metadata of older object which contains -
 	// - name - no patch required we can use old object.
