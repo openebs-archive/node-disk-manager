@@ -45,6 +45,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 		go pe.initOrErrorEvent()
 		return
 	}
+	isErrorDuringUpdate := false
 	// iterate through each block device and perform the add/update operation
 	for _, device := range msg.Devices {
 		klog.Infof("Processing details for %s", device.UUID)
@@ -57,7 +58,15 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(device)
 
 		existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdList, deviceInfo.UUID)
-		pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+		err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+		if err != nil {
+			isErrorDuringUpdate = true
+			klog.Error(err)
+		}
+	}
+
+	if isErrorDuringUpdate {
+		go pe.initOrErrorEvent()
 	}
 }
 
