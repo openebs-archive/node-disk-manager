@@ -30,7 +30,7 @@ import (
 // CreateBlockDevice creates the BlockDevice resource in etcd
 // This API will be called for each new addDiskEvent
 // blockDevice is DeviceResource-CR
-func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
+func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) error {
 
 	blockDeviceCopy := blockDevice.DeepCopy()
 	err := c.Clientset.Create(context.TODO(), blockDeviceCopy)
@@ -38,14 +38,14 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 		klog.Infof("eventcode=%s msg=%s rname=%v",
 			"ndm.blockdevice.create.success", "Created blockdevice object in etcd",
 			blockDeviceCopy.ObjectMeta.Name)
-		return
+		return err
 	}
 
 	if !errors.IsAlreadyExists(err) {
 		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
 			"ndm.blockdevice.create.failure", "Creation of blockdevice object failed",
 			err, blockDeviceCopy.ObjectMeta.Name)
-		return
+		return err
 	}
 
 	/*
@@ -55,12 +55,12 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 	 */
 	err = c.UpdateBlockDevice(blockDevice, nil)
 	if err == nil {
-		return
+		return err
 	}
 
 	if !errors.IsConflict(err) {
 		klog.Error("Updating of BlockDevice Object failed: ", err)
-		return
+		return err
 	}
 
 	/*
@@ -69,9 +69,10 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) {
 	 */
 	err = c.UpdateBlockDevice(blockDevice, nil)
 	if err == nil {
-		return
+		return err
 	}
 	klog.Error("Update to blockdevice object failed: ", blockDevice.ObjectMeta.Name)
+	return nil
 }
 
 // UpdateBlockDevice update the BlockDevice resource in etcd
@@ -225,14 +226,13 @@ func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
 // present or not. If it presents in etcd then it updates the resource
 // else it creates new blockdevice resource in etcd
 func (c *Controller) PushBlockDeviceResource(oldBlockDevice *apis.BlockDevice,
-	deviceDetails *DeviceInfo) {
+	deviceDetails *DeviceInfo) error {
 	deviceDetails.NodeAttributes = c.NodeAttributes
 	deviceAPI := deviceDetails.ToDevice()
 	if oldBlockDevice != nil {
-		c.UpdateBlockDevice(deviceAPI, oldBlockDevice)
-		return
+		return c.UpdateBlockDevice(deviceAPI, oldBlockDevice)
 	}
-	c.CreateBlockDevice(deviceAPI)
+	return c.CreateBlockDevice(deviceAPI)
 }
 
 // MarkBlockDeviceStatusToUnknown makes state of all resources owned by node unknown
@@ -274,21 +274,18 @@ func mergeMetadata(newMetadata, oldMetadata metav1.ObjectMeta) metav1.ObjectMeta
 	// - initializers ^^^
 	// - finalizers ^^^
 	// - clusterName - no patch required we can use old object.
-	metadata := oldMetadata
+
 	// Patch older label with new label. If there is a new key then it will be added
 	// if it is an existing key then value will be overwritten with value from new label
-	if newMetadata.Labels != nil {
-		for key, value := range newMetadata.Labels {
-			metadata.Labels[key] = value
-		}
+	for key, value := range newMetadata.Labels {
+		oldMetadata.Labels[key] = value
 	}
 
 	// Patch older annotations with new annotations. If there is a new key then it will be added
 	// if it is an existing key then value will be overwritten with value from new annotations
-	if newMetadata.Annotations != nil {
-		for key, value := range newMetadata.Annotations {
-			metadata.Annotations[key] = value
-		}
+	for key, value := range newMetadata.Annotations {
+		oldMetadata.Annotations[key] = value
 	}
-	return metadata
+
+	return oldMetadata
 }
