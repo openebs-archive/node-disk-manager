@@ -168,8 +168,17 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 	var uuidField, uuid string
 
 	// select the field which is to be used for generating UUID
+	//
+	// Serial number is not used for UUID generation. This is because serial number is not
+	// unique in some cloud environments. For example, in GCP the serial number is
+	// configurable by the --device-name flag while attaching the disk.
+	// If this flag is not provided, GCP automatically assigns the serial number
+	// which is unique only to the node.
 	switch {
 	case bd.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION:
+		// The partition entry UUID is used when a partition (/dev/sda1) is processed. The partition UUID should be used
+		// if available, other than the partition table UUID, because multiple partitions can have the same partition table
+		// UUID, but each partition will have a different UUID.
 		klog.Infof("device(%s) is a partition, using partition UUID: %s", bd.DevPath, bd.PartitionInfo.PartitionEntryUUID)
 		uuidField = bd.PartitionInfo.PartitionEntryUUID
 		ok = true
@@ -178,6 +187,10 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 		uuidField = bd.DeviceAttributes.WWN
 		ok = true
 	case len(bd.PartitionInfo.PartitionTableUUID) > 0:
+		// PartitionTable UUID is used if the disk contains only the partition table and not a partition. This is a very rare
+		// case where the user creates the partition table, but does not create any partition on the disk. In such a case
+		// partition table UUID will be used. In all other cases where partition table UUID is present, the disk will also
+		// have partition entries and it will be used.
 		klog.Infof("device(%s) has a partition table, using partition table UUID: %s", bd.DevPath, bd.PartitionInfo.PartitionTableUUID)
 		uuidField = bd.PartitionInfo.PartitionTableUUID
 		ok = true
