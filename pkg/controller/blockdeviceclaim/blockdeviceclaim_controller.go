@@ -19,23 +19,21 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/db/kubernetes"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/select/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
 	"github.com/openebs/node-disk-manager/pkg/util"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/reference"
-
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/go-logr/logr"
+	"k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/reference"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -169,7 +167,6 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 	}
 
 	//select block device from list of devices.
-	labelFilter := make([]string, 0)
 	var hostName string
 	if len(instance.Spec.HostName) != 0 {
 		hostName = instance.Spec.HostName
@@ -179,12 +176,23 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 	if len(instance.Spec.BlockDeviceNodeAttributes.HostName) != 0 {
 		hostName = instance.Spec.BlockDeviceNodeAttributes.HostName
 	}
-	// only if any hostname is provided create the filter
-	if len(hostName) != 0 {
-		labelFilter = append(labelFilter, ndm.KubernetesHostNameLabel+"="+hostName)
+
+	// the hostname label is added into the user given list of labels. If the user hasn't
+	// given any selector, then the selector object is initialized.
+	selector := instance.Spec.Selector
+	if selector == nil {
+		selector = &v1.LabelSelector{}
+	}
+	if selector.MatchLabels == nil {
+		selector.MatchLabels = make(map[string]string)
 	}
 
-	bdList, err := r.getListofDevices(labelFilter...)
+	// if any hostname is provided, add it to selector
+	if len(hostName) != 0 {
+		selector.MatchLabels[kubernetes.KubernetesHostNameLabel] = hostName
+	}
+
+	bdList, err := r.getListofDevices(selector)
 	if err != nil {
 		return err
 	}
@@ -284,13 +292,15 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 	reqLogger.Info("Deleting external dependencies for CR:" + instance.Name)
 
 	//Get BlockDevice list on all nodes
-	listDVR, err := r.getListofDevices()
+	//empty selector is used to select everything.
+	selector := &v1.LabelSelector{}
+	bdList, err := r.getListofDevices(selector)
 	if err != nil {
 		return err
 	}
 
 	// Check if same deviceclaim holding the ObjRef
-	for _, item := range listDVR.Items {
+	for _, item := range bdList.Items {
 		if !r.isDeviceRequestedByThisDeviceClaim(instance, item, reqLogger) {
 			continue
 		}
@@ -342,7 +352,7 @@ func (r *ReconcileBlockDeviceClaim) GetBlockDevice(name string) (*apis.BlockDevi
 // TODO:
 //  ListBlockDeviceResource in package cmd/ndm_daemonset/controller has the same functionality.
 //  Need to merge these 2 functions.
-func (r *ReconcileBlockDeviceClaim) getListofDevices(filters ...string) (*apis.BlockDeviceList, error) {
+func (r *ReconcileBlockDeviceClaim) getListofDevices(selector *v1.LabelSelector) (*apis.BlockDeviceList, error) {
 
 	//Initialize a deviceList object.
 	listBlockDevice := &apis.BlockDeviceList{
@@ -354,9 +364,11 @@ func (r *ReconcileBlockDeviceClaim) getListofDevices(filters ...string) (*apis.B
 
 	opts := &client.ListOptions{}
 
-	// if filter strings are present, apply them before querying etcd
-	if len(filters) != 0 {
-		opts.SetLabelSelector(strings.Join(filters, ","))
+	if sel, err := v1.LabelSelectorAsSelector(selector); err != nil {
+		// if conversion of selector errors out, the list call will be errored
+		return nil, err
+	} else {
+		opts.LabelSelector = sel
 	}
 
 	//Fetch deviceList with matching criteria
