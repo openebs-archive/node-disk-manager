@@ -2,9 +2,9 @@
 
 ## Prerequisites
 
-* You have Go 1.9 installed on your local host/development machine.
+* You have Go 1.12 installed on your local host/development machine.
 * You have Docker installed on your local host/development machine. Docker is required for building NDM container images and to push them into a Kubernetes cluster for testing. 
-* You have `kubectl` installed. For running integration tests, you will either require to use an existing cluster or NDM will create a Minikube cluster on the local host/development machine. Don't worry if you don't have access to the Kubernetes cluster, raising a PR with the NDM repository will run integration tests for your changes against a Minikube cluster.
+* You have `kubectl` installed. For running integration tests, you will require an existing single node cluster. Don't worry if you don't have access to the Kubernetes cluster, raising a PR with the NDM repository will run integration tests for your changes against a Minikube cluster.
 
 ## Initial Setup
 
@@ -54,6 +54,17 @@ Install the build dependencies.
     sudo cp opensea-operations/Make/gcc/lib/libopensea-operations.a /usr/lib
     sudo cp opensea-transport/Make/gcc/lib/libopensea-transport.a /usr/lib
     ```
+
+### Building and Testing your changes
+
+* run `make` in the top directory. It will:
+  * Build the binary.
+  * Build the docker image with the binary.
+
+* Test your changes
+  * `sudo -E env "PATH=$PATH" make test` execute the unit tests
+  * Integration tests are written in ginkgo and run against a minikube cluster. Minikube cluster should be running so as to execute the tests. To install minikube follow the doc [here](https://kubernetes.io/docs/tasks/tools/install-minikube/). 
+  `make integration-test` will run the integration tests on the minikube cluster.
 
 ## Git Development Workflow
 
@@ -146,17 +157,6 @@ Always start with creating a new branch from master to work on a new feature or 
  Switched to a new branch '1234-fix-developer-docs'
  ```
 Happy Hacking!
-
-### Building and Testing your changes
-
-* run `make` in the top directory. It will:
-  * Build the binary.
-  * Build the docker image with the binary.
-
-* Test your changes
-  * `sudo -E env "PATH=$PATH" make test` execute the unit tests
-  * Integration tests are written in ginkgo and run against a minikube cluster. Minikube cluster should be running so as to execute the tests. To install minikube follow the doc [here](https://kubernetes.io/docs/tasks/tools/install-minikube/). 
-  `make integration-test` will run the integration tests on the minikube cluster.
 
 ### Keep your branch in sync
 
