@@ -8,59 +8,41 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager?ref=badge_shield)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1953/badge)](https://bestpractices.coreinfrastructure.org/projects/1953)
 
-`node-disk-manager` aims to make it easy to manage the disks attached to the node. It treats disks as resources that need to be monitored and managed just like other resources like CPU, Memory and Network. It is a daemon which runs on each node, detects attached disks and loads them as Disk objects (custom resource) into Kubernetes. 
+`node-disk-manager` (NDM) aims to make it easy to manage the disks attached to the node. It treats disks as resources that need to be monitored and managed just like other resources like CPU, Memory and Network. It contains a daemon which runs on each node, detects attached disks and loads them as BlockDevice objects (custom resource) into Kubernetes. 
 
-While PVs are well suited for stateful workloads, the Disk objects are aimed towards helping hyper-converged Storage Operators by providing abilities like:
-- Easy to access the inventory of Disks available across the Kubernetes Cluster.
-- Predict failures on the Disks, to help with taking preventive actions.
-- Allow for dynamically attaching/detaching Disks to a Storage Pod, without requiring a restart.
+While PVs are well suited for stateful workloads, the BlockDevice objects are aimed towards helping hyper-converged Storage Operators by providing abilities like:
+- Easy to access inventory of block devices available across the Kubernetes Cluster.
+- Predict failures on the blockdevices, to help with taking preventive actions.
+- Allow for dynamically attaching/detaching blockdevices to a Storage Pod, without requiring a restart.
+
+NDM has 2 main components:
+- node-disk-manager daemonset, which runs on each node and is responsible for device detection.
+- node-disk-operator deployment, which acts as an inventory of block devices in the cluster.
+
+and 2 optional components:
+- ndm-cluster-exporter deployment, which fetches block device object from etcd and exposes it as prometheus metrics.
+- ndm-node-exporter daemonset, which runs on each node, queries the disk for details like SMART and expose it as prometheus metrics.
 
 The design and implementation are currently in progress. The design is covered under this [design proposal](./docs/design.md)
 
 # Usage
 A detailed usage documentation is maintained in the [wiki](https://github.com/openebs/node-disk-manager/wiki).
 
-## Start Node Disk Manager DaemonSet
+## Start Node Disk Manager
 * Edit [ndm-operator.yaml](./ndm-operator.yaml) to fit your environment: Set the `namespace`, `serviceAccount`, configure filters in the `node-disk-manager-config-map`.
-* Switch to Cluster Admin context and create the DaemonSet with `kubectl create -f ndm-operator.yaml`.
+* Switch to Cluster Admin context and create the components with `kubectl create -f ndm-operator.yaml`.
+* This will install the daemon, operator and the exporters
 
-## Using `kubectl` to fetch Disk Information
-* `kubectl get disks --show-labels` displays the disks across the cluster, with `kubernetes.io/hostname` showing the node to which disk is attached. 
-* `kubectl get disks -l "kubernetes.io/hostname=<hostname>"` displays the disks attached to node with the provided hostname.
-* `kubectl get disk <disk-cr-name> -o yaml` displays all the details of the disk captured by `ndm` for given disk resource.
+## Using `kubectl` to fetch BlockDevice Information
+* `kubectl get blockdevices` displays the blockdevices across the cluster, with `NODENAME` showing the node to which disk is attached,
+  `CLAIMSTATE` showing whether the device is currently in use and `STATE` showing whether the device is connected to the node.
+* `kubectl get blockdevices -o wide` displays the blockdevice along with the path at which the device is attached on the node
+* `kubectl get blockdevices <disk-cr-name> -o yaml` displays all the details of the disk captured by `ndm` for given disk resource.
 
-## Build Image
-* `go get` or `git clone` node-disk-manager repo into `$GOPATH/src/github.com/openebs/`
-with one of the below directions:
-  * `cd $GOPATH/src/github.com/openebs && git clone git@github.com:openebs/node-disk-manager.git`
-  * `cd $GOPATH/src/github.com/openebs && go get github.com/openebs/node-disk-manager`
+## Building, Testing and Pushing Image
+Before building the image locally, you need to setup your development environment. The detailed instructions for setting up development environment, building and testing are available [here](./docs/developer-setup.md).
 
-* Setup build tools:
-  * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
-  * `make bootstrap` installs the required Go tools.
-  * NDM uses SeaChest to probe for drive details. Use the following to setup the SeaChest libraries:
-    ```
-    pushd .
-    cd ..
-    git clone --recursive --branch Release-19.06.02 https://github.com/openebs/openSeaChest.git
-    cd openSeaChest/Make/gcc 
-    make release
-    cd ../../
-    sudo cp opensea-common/Make/gcc/lib/libopensea-common.a /usr/lib 
-    sudo cp opensea-operations/Make/gcc/lib/libopensea-operations.a /usr/lib 
-    sudo cp opensea-transport/Make/gcc/lib/libopensea-transport.a /usr/lib
-    popd
-    ```
-
-* run `make` in the top directory. It will:
-  * Build the binary.
-  * Build the docker image with the binary.
-
-* Test your changes
-  * `sudo -E env "PATH=$PATH" make test` execute the unit tests.
-  * `make integration-test` will launch minikube to run the tests. Make sure that minikube can be executed via `sudo -E minikube start --vm-driver=none`.
-
-## Push Image
+#### Push Image
 By default travis pushes the docker image to `openebs/node-disk-manager-amd64`, with *ci* as well as commit tags. 
 You can push to your custom registry and modify the ndm-operator.yaml file for your testing. 
 
