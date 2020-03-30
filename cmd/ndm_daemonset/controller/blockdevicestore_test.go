@@ -168,9 +168,11 @@ func TestUpdateDevice(t *testing.T) {
 
 	// Retrieve disk resource
 	cdevR, err := fakeController.GetBlockDevice(fakeDeviceUID)
-
-	devR.ObjectMeta.Name = "disk-updated-fake-uuid"
-	err = fakeController.UpdateBlockDevice(devR, cdevR)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cdevR.ObjectMeta.Name = "disk-updated-fake-uuid"
+	err = fakeController.UpdateBlockDevice(*cdevR, nil)
 	if err == nil {
 		t.Error("if resource is not present then it should return error")
 	}

@@ -45,6 +45,7 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 		go pe.initOrErrorEvent()
 		return
 	}
+	isErrorDuringUpdate := false
 	for _, diskDetails := range msg.Devices {
 		klog.Info("Processing details for ", diskDetails.ProbeIdentifiers.Uuid)
 		pe.Controller.FillDiskDetails(diskDetails)
@@ -89,12 +90,18 @@ func (pe *ProbeEvent) addDiskEvent(msg controller.EventMessage) {
 					return
 				}
 				oldDvr := pe.Controller.GetExistingBlockDeviceResource(deviceList, deviceDetails.UUID)
-				pe.Controller.PushBlockDeviceResource(oldDvr, deviceDetails)
+				err = pe.Controller.PushBlockDeviceResource(oldDvr, deviceDetails)
+				if err != nil {
+					klog.Errorf("error pushing block device resource to etcd: %v", err)
+					isErrorDuringUpdate = true
+				}
 			}
 		}
 		/// update the list of DiskCRs
 		diskList, err = pe.Controller.ListDiskResource()
-		if err != nil {
+		// if the listing errored out, or there was an error during pushing the resource
+		// to etcd, we do a rescan.
+		if err != nil || isErrorDuringUpdate {
 			klog.Error(err)
 			go pe.initOrErrorEvent()
 			return
