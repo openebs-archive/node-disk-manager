@@ -174,6 +174,15 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 	// configurable by the --device-name flag while attaching the disk.
 	// If this flag is not provided, GCP automatically assigns the serial number
 	// which is unique only to the node.
+	//
+	// PartitionTableUUID is not used for UUID generation in NDM. The only case where the disk has a PartitionTable
+	// and not partition is when, the user has manually created a partition table without writing any actual partitions.
+	// This means NDM will have to give its consumers the entire disk, i.e consumers will have access to the sectors
+	// where partition table is written. If consumers decide to reformat or erase the disk completely the partition
+	// table UUID is also lost, making NDM unable to identify the disk. Hence, even if a partition table is present
+	// NDM will rewrite it and create a new GPT table and a single partition. Thus consumers will have access only to
+	// the partition and the unique data will be stored in sectors where consumers do not have access.
+
 	switch {
 	case bd.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION:
 		// The partition entry UUID is used when a partition (/dev/sda1) is processed. The partition UUID should be used
@@ -185,14 +194,6 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 	case len(bd.DeviceAttributes.WWN) > 0:
 		klog.Infof("device(%s) has a WWN, using WWN: %s", bd.DevPath, bd.DeviceAttributes.WWN)
 		uuidField = bd.DeviceAttributes.WWN
-		ok = true
-	case len(bd.PartitionInfo.PartitionTableUUID) > 0:
-		// PartitionTable UUID is used if the disk contains only the partition table and not a partition. This is a very rare
-		// case where the user creates the partition table, but does not create any partition on the disk. In such a case
-		// partition table UUID will be used. In all other cases where partition table UUID is present, the disk will also
-		// have partition entries and it will be used.
-		klog.Infof("device(%s) has a partition table, using partition table UUID: %s", bd.DevPath, bd.PartitionInfo.PartitionTableUUID)
-		uuidField = bd.PartitionInfo.PartitionTableUUID
 		ok = true
 	case len(bd.FSInfo.FileSystemUUID) > 0:
 		klog.Infof("device(%s) has a filesystem, using filesystem UUID: %s", bd.DevPath, bd.FSInfo.FileSystemUUID)
