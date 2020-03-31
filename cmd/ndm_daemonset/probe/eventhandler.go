@@ -49,6 +49,9 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 		go pe.initOrErrorEvent()
 		return
 	}
+
+	isGPTBasedUUIDEnabled := pe.Controller.FeatureGates.IsEnabled(features.GPTBasedUUID)
+
 	isErrorDuringUpdate := false
 	// iterate through each block device and perform the add/update operation
 	for _, device := range msg.Devices {
@@ -62,7 +65,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 
 		// if GPTBasedUUID need to be used, generate the UUID,
 		// if UUID cannot be generated create a GPT partition
-		if pe.Controller.FeatureGates.IsEnabled(features.GPTBasedUUID) {
+		if isGPTBasedUUIDEnabled {
 			if len(device.Partitions) > 0 {
 				klog.Info("device has partitions. not creating blockdevice resource")
 				continue
@@ -97,6 +100,14 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 			}
 			klog.Infof("generated UUID: %s for device: %s", uuid, device.DevPath)
 			device.UUID = uuid
+		}
+
+		// if GPTBasedUUID is disabled and the device type is partition,
+		// the event can be skipped.
+		if !isGPTBasedUUIDEnabled &&
+			device.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION {
+			klog.Info("GPTBasedUUID disabled. skip creating block device resource for partition.")
+			continue
 		}
 
 		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(device)

@@ -150,7 +150,6 @@ func (up *udevProbe) scan() error {
 				// are the fields we use to generate the UUID. These fields will be fetched
 				// from the udev event itself. This is to guarantee that we do not need to rely
 				// on any other probes to fill in those details which are critical for device identification.
-				deviceDetails.DeviceAttributes.DeviceType = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
 				deviceDetails.DeviceAttributes.WWN = newUdevice.GetPropertyValue(libudevwrapper.UDEV_WWN)
 				deviceDetails.PartitionInfo.PartitionTableUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_TABLE_UUID)
 				deviceDetails.PartitionInfo.PartitionEntryUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
@@ -160,6 +159,7 @@ func (up *udevProbe) scan() error {
 				disksUid = append(disksUid, uuid)
 				deviceDetails.UUID = uuid
 			}
+			deviceDetails.DeviceAttributes.DeviceType = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
 			deviceDetails.SysPath = newUdevice.GetSyspath()
 			deviceDetails.DevPath = newUdevice.GetPath()
 			diskInfo = append(diskInfo, deviceDetails)
