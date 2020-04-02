@@ -531,3 +531,116 @@ func CreateFakeClient() (client.Client, *runtime.Scheme) {
 
 	return fakeNdmClient, s
 }
+
+func TestGenerateSelector(t *testing.T) {
+	tests := map[string]struct {
+		bdc  openebsv1alpha1.BlockDeviceClaim
+		want *metav1.LabelSelector
+	}{
+		"hostname/node attributes not given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: make(map[string]string),
+			},
+		},
+		"hostname is given, node attributes not given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					HostName: "hostname",
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname",
+				},
+			},
+		},
+		"hostname is not given, node attribute is given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					BlockDeviceNodeAttributes: openebsv1alpha1.BlockDeviceNodeAttributes{
+						HostName: "hostname",
+					},
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname",
+				},
+			},
+		},
+		"same hostname, node attribute is given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					HostName: "hostname",
+					BlockDeviceNodeAttributes: openebsv1alpha1.BlockDeviceNodeAttributes{
+						HostName: "hostname",
+					},
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname",
+				},
+			},
+		},
+		"different hostname and node attributes is given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					HostName: "hostname1",
+					BlockDeviceNodeAttributes: openebsv1alpha1.BlockDeviceNodeAttributes{
+						HostName: "hostname2",
+					},
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname2",
+				},
+			},
+		},
+		"no hostname and custom selector is given": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"ndm.io/test": "test",
+						},
+					},
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"ndm.io/test": "test",
+				},
+			},
+		},
+		"hostname given and selector also contains custom label name": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							ndm.KubernetesHostNameLabel: "hostname1",
+							"ndm.io/test":               "test",
+						},
+					},
+					HostName: "hostname2",
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname2",
+					"ndm.io/test":               "test",
+				},
+			},
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := generateSelector(test.bdc)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
