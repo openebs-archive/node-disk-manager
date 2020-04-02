@@ -166,32 +166,10 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 		}
 	}
 
-	//select block device from list of devices.
-	var hostName string
-	if len(instance.Spec.HostName) != 0 {
-		hostName = instance.Spec.HostName
-	}
-	// the hostname in NodeAttribute will override the hostname in spec, since spec.hostName
-	// will be deprecated shortly
-	if len(instance.Spec.BlockDeviceNodeAttributes.HostName) != 0 {
-		hostName = instance.Spec.BlockDeviceNodeAttributes.HostName
-	}
+	// create selector from the label selector given in BDC spec.
+	selector := generateSelector(*instance)
 
-	// the hostname label is added into the user given list of labels. If the user hasn't
-	// given any selector, then the selector object is initialized.
-	selector := instance.Spec.Selector
-	if selector == nil {
-		selector = &v1.LabelSelector{}
-	}
-	if selector.MatchLabels == nil {
-		selector.MatchLabels = make(map[string]string)
-	}
-
-	// if any hostname is provided, add it to selector
-	if len(hostName) != 0 {
-		selector.MatchLabels[kubernetes.KubernetesHostNameLabel] = hostName
-	}
-
+	// get list of block devices.
 	bdList, err := r.getListofDevices(selector)
 	if err != nil {
 		return err
@@ -384,4 +362,35 @@ func (r *ReconcileBlockDeviceClaim) getListofDevices(selector *v1.LabelSelector)
 // BlockDeviceClaim
 func IsReconcileDisabled(bdc *apis.BlockDeviceClaim) bool {
 	return bdc.Annotations[ndm.OpenEBSReconcile] == "false"
+}
+
+// generateSelector creates the label selector for BlockDevices from
+// the BlockDeviceClaim spec
+func generateSelector(bdc apis.BlockDeviceClaim) *v1.LabelSelector {
+	var hostName string
+	// get the hostname
+	if len(bdc.Spec.HostName) != 0 {
+		hostName = bdc.Spec.HostName
+	}
+	// the hostname in NodeAttribute will override the hostname in spec, since spec.hostName
+	// will be deprecated shortly
+	if len(bdc.Spec.BlockDeviceNodeAttributes.HostName) != 0 {
+		hostName = bdc.Spec.BlockDeviceNodeAttributes.HostName
+	}
+
+	// the hostname label is added into the user given list of labels. If the user hasn't
+	// given any selector, then the selector object is initialized.
+	selector := bdc.Spec.Selector
+	if selector == nil {
+		selector = &v1.LabelSelector{}
+	}
+	if selector.MatchLabels == nil {
+		selector.MatchLabels = make(map[string]string)
+	}
+
+	// if any hostname is provided, add it to selector
+	if len(hostName) != 0 {
+		selector.MatchLabels[kubernetes.KubernetesHostNameLabel] = hostName
+	}
+	return selector
 }
