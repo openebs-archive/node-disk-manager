@@ -22,12 +22,13 @@ import (
 	"testing"
 	"time"
 
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+
+	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -57,7 +58,21 @@ func TestBlockDeviceClaimController(t *testing.T) {
 	logf.SetLogger(logf.ZapLogger(true))
 
 	// Create a fake client to mock API calls.
-	cl, s := CreateFakeClient(t)
+	cl, s := CreateFakeClient()
+
+	deviceR := GetFakeDeviceObject(deviceName, capacity)
+	deviceClaimR := GetFakeBlockDeviceClaimObject()
+	// Create a new blockdevice obj
+	err := cl.Create(context.TODO(), deviceR)
+	if err != nil {
+		fmt.Println("BlockDevice object is not created", err)
+	}
+
+	// Create a new deviceclaim obj
+	err = cl.Create(context.TODO(), deviceClaimR)
+	if err != nil {
+		fmt.Println("BlockDeviceClaim object is not created", err)
+	}
 
 	// Create a ReconcileDevice object with the scheme and fake client.
 	r := &ReconcileBlockDeviceClaim{client: cl, scheme: s}
@@ -82,7 +97,7 @@ func TestBlockDeviceClaimController(t *testing.T) {
 	// trigger reconciliation event. This time, it should
 	// bound.
 	deviceClaim := &openebsv1alpha1.BlockDeviceClaim{}
-	err := r.client.Get(context.TODO(), req.NamespacedName, deviceClaim)
+	err = r.client.Get(context.TODO(), req.NamespacedName, deviceClaim)
 	if err != nil {
 		t.Errorf("Get deviceClaim: (%v)", err)
 	}
@@ -238,6 +253,121 @@ func (r *ReconcileBlockDeviceClaim) InvalidCapacityTest(t *testing.T,
 	r.CheckBlockDeviceClaimStatus(t, req, openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity)
 }
 
+func TestBlockDeviceClaimsLabelSelector(t *testing.T) {
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(logf.ZapLogger(true))
+
+	tests := map[string]struct {
+		bdLabels           map[string]string
+		selector           *metav1.LabelSelector
+		expectedClaimPhase openebsv1alpha1.DeviceClaimPhase
+	}{
+		"only hostname label is present and no selector": {
+			bdLabels: map[string]string{
+				ndm.KubernetesHostNameLabel: fakeHostName,
+			},
+			selector:           nil,
+			expectedClaimPhase: openebsv1alpha1.BlockDeviceClaimStatusDone,
+		},
+		"no label is present and no selector": {
+			bdLabels:           map[string]string{},
+			selector:           nil,
+			expectedClaimPhase: openebsv1alpha1.BlockDeviceClaimStatusDone,
+		},
+		"custom label and hostname present on bd and selector": {
+			bdLabels: map[string]string{
+				ndm.KubernetesHostNameLabel: fakeHostName,
+				"ndm.io.test":               "1234",
+			},
+			selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: fakeHostName,
+					"ndm.io/test":               "1234",
+				},
+			},
+			expectedClaimPhase: openebsv1alpha1.BlockDeviceClaimStatusDone,
+		},
+		"custom labels on bd": {
+			bdLabels: map[string]string{
+				"ndm.io/test": "1234",
+			},
+			selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"ndm.io/test": "1234",
+				},
+			},
+			expectedClaimPhase: openebsv1alpha1.BlockDeviceClaimStatusDone,
+		},
+		"custom labels and hostname": {
+			bdLabels: map[string]string{
+				ndm.KubernetesHostNameLabel: fakeHostName,
+				"ndm.io/test":               "1234",
+			},
+			selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"ndm.io/test": "1234",
+				},
+			},
+			expectedClaimPhase: openebsv1alpha1.BlockDeviceClaimStatusDone,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+
+			// Create a fake client to mock API calls.
+			cl, s := CreateFakeClient()
+
+			// Create a ReconcileDevice object with the scheme and fake client.
+			r := &ReconcileBlockDeviceClaim{client: cl, scheme: s}
+
+			// Mock request to simulate Reconcile() being called on an event for a
+			// watched resource .
+			req := reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      blockDeviceClaimName,
+					Namespace: namespace,
+				},
+			}
+
+			bdcR := GetFakeBlockDeviceClaimObject()
+			if err := cl.Create(context.TODO(), bdcR); err != nil {
+				t.Fatal(err)
+			}
+
+			bd := GetFakeDeviceObject("bd-1", capacity*10)
+
+			bd.Labels = test.bdLabels
+			// mark the device as unclaimed
+			bd.Spec.ClaimRef = nil
+			bd.Status.ClaimState = openebsv1alpha1.BlockDeviceUnclaimed
+
+			err := cl.Create(context.TODO(), bd)
+			if err != nil {
+				t.Fatalf("error updating BD. %v", err)
+			}
+			bdc := GetFakeBlockDeviceClaimObject()
+			bdc.Spec.BlockDeviceName = ""
+			bdc.Spec.Selector = test.selector
+			err = cl.Update(context.TODO(), bdc)
+			if err != nil {
+				t.Fatalf("error updating BDC. %v", err)
+			}
+			_, _ = r.Reconcile(req)
+
+			err = cl.Get(context.TODO(), req.NamespacedName, bdc)
+			if err != nil {
+				t.Fatalf("error getting BDC. %v", err)
+			}
+
+			err = cl.Delete(context.TODO(), bd)
+			if err != nil {
+				t.Fatalf("error deleting BDC. %v", err)
+			}
+			assert.Equal(t, test.expectedClaimPhase, bdc.Status.Phase)
+		})
+	}
+}
+
 func (r *ReconcileBlockDeviceClaim) CheckBlockDeviceClaimStatus(t *testing.T,
 	req reconcile.Request, phase openebsv1alpha1.DeviceClaimPhase) {
 
@@ -356,7 +486,7 @@ func GetFakeDiskObject() *openebsv1alpha1.Disk {
 	return disk
 }
 
-func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
+func CreateFakeClient() (client.Client, *runtime.Scheme) {
 
 	diskR := GetFakeDiskObject()
 
@@ -384,7 +514,6 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 		},
 	}
 
-	objects := []runtime.Object{diskR, deviceR, deviceClaimR}
 	s := scheme.Scheme
 
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, diskR)
@@ -394,21 +523,123 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceClaimR)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceclaimList)
 
-	fakeNdmClient := fake.NewFakeClient(objects...)
+	fakeNdmClient := fake.NewFakeClient()
 	if fakeNdmClient == nil {
 		fmt.Println("NDMClient is not created")
 	}
 
-	// Create a new blockdevice obj
-	err := fakeNdmClient.Create(context.TODO(), deviceR)
-	if err != nil {
-		fmt.Println("BlockDevice object is not created", err)
-	}
-
-	// Create a new deviceclaim obj
-	err = fakeNdmClient.Create(context.TODO(), deviceClaimR)
-	if err != nil {
-		fmt.Println("BlockDeviceClaim object is not created", err)
-	}
 	return fakeNdmClient, s
+}
+
+func TestGenerateSelector(t *testing.T) {
+	tests := map[string]struct {
+		bdc  openebsv1alpha1.BlockDeviceClaim
+		want *metav1.LabelSelector
+	}{
+		"hostname/node attributes not given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: make(map[string]string),
+			},
+		},
+		"hostname is given, node attributes not given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					HostName: "hostname",
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname",
+				},
+			},
+		},
+		"hostname is not given, node attribute is given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					BlockDeviceNodeAttributes: openebsv1alpha1.BlockDeviceNodeAttributes{
+						HostName: "hostname",
+					},
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname",
+				},
+			},
+		},
+		"same hostname, node attribute is given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					HostName: "hostname",
+					BlockDeviceNodeAttributes: openebsv1alpha1.BlockDeviceNodeAttributes{
+						HostName: "hostname",
+					},
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname",
+				},
+			},
+		},
+		"different hostname and node attributes is given and no selector": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					HostName: "hostname1",
+					BlockDeviceNodeAttributes: openebsv1alpha1.BlockDeviceNodeAttributes{
+						HostName: "hostname2",
+					},
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname2",
+				},
+			},
+		},
+		"no hostname and custom selector is given": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"ndm.io/test": "test",
+						},
+					},
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"ndm.io/test": "test",
+				},
+			},
+		},
+		"hostname given and selector also contains custom label name": {
+			bdc: openebsv1alpha1.BlockDeviceClaim{
+				Spec: openebsv1alpha1.DeviceClaimSpec{
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							ndm.KubernetesHostNameLabel: "hostname1",
+							"ndm.io/test":               "test",
+						},
+					},
+					HostName: "hostname2",
+				},
+			},
+			want: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					ndm.KubernetesHostNameLabel: "hostname2",
+					"ndm.io/test":               "test",
+				},
+			},
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := generateSelector(test.bdc)
+			assert.Equal(t, test.want, got)
+		})
+	}
 }
