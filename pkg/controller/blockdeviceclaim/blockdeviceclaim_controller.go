@@ -380,7 +380,7 @@ func generateSelector(bdc apis.BlockDeviceClaim) *v1.LabelSelector {
 
 	// the hostname label is added into the user given list of labels. If the user hasn't
 	// given any selector, then the selector object is initialized.
-	selector := bdc.Spec.Selector
+	selector := bdc.Spec.Selector.DeepCopy()
 	if selector == nil {
 		selector = &v1.LabelSelector{}
 	}
