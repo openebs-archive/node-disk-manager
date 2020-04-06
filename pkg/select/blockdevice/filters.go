@@ -261,7 +261,7 @@ func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceCla
 	// is because it would have already performed the filter operation with the
 	// label. If the label is not present, a new selector is made to remove
 	// devices which have that label.
-	if !isBlockDeviceTagSelectorRequired(spec.Selector) {
+	if !isBDTagDoesNotExistSelectorRequired(spec.Selector) {
 		return originalBD
 	}
 
@@ -296,13 +296,16 @@ func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceCla
 	return filteredBDList
 }
 
-// isBlockDeviceTagSelectorRequired is used to check whether a selector
+// isBDTagDoesNotExistSelectorRequired is used to check whether a selector
 // was present on the BDC. It is used to decide whether a `does not exist` selector
 // for the block-device-tag label should be applied or not.
 //
 // all the filters are applied after the List call which uses the selector.
 // therefore, we don't need to again apply a label selector.
-func isBlockDeviceTagSelectorRequired(options *metav1.LabelSelector) bool {
+func isBDTagDoesNotExistSelectorRequired(options *metav1.LabelSelector) bool {
+	if options == nil {
+		return true
+	}
 	if _, ok := options.MatchLabels[kubernetes.BlockDeviceTagLabel]; ok {
 		return false
 	}
