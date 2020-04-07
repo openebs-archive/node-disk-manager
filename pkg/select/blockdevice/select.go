@@ -52,6 +52,8 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 			// Sparse BDs can be claimed only by manual selection. Therefore, all
 			// sparse BDs will be filtered out in auto mode
 			FilterOutSparseBlockDevices,
+			// remove block devices which do not have the blockdevice tag
+			FilterBlockDeviceTag,
 			FilterDeviceType,
 			FilterVolumeMode,
 			FilterNodeName,

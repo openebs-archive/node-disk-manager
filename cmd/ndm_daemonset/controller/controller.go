@@ -59,8 +59,13 @@ const (
 	NDMVersion = openEBSLabelPrefix + "v1alpha1"
 	// reconcileKey is the key used for enable/disable of reconciliation
 	reconcileKey = "reconcile"
+	// blockDeviceTagKey is the key used to tag a block device
+	blockDeviceTagKey = "block-device-tag"
 	// OpenEBSReconcile is used in annotation to check whether CR is to be reconciled or not
 	OpenEBSReconcile = openEBSLabelPrefix + reconcileKey
+	// BlockDeviceTagLabel is the label to tag a blockdevice so that it can be claimed
+	// only by BDC having a matching label selector
+	BlockDeviceTagLabel = openEBSLabelPrefix + blockDeviceTagKey
 	// NDMNotPartitioned is used to say blockdevice does not have any partition.
 	NDMNotPartitioned = "No"
 	// NDMPartitioned is used to say blockdevice has some partitions.
