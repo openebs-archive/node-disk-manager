@@ -39,6 +39,26 @@ const (
 	NamespaceENV = "NAMESPACE"
 )
 
+const (
+	// kubernetesLabelPrefix is the label prefix for kubernetes
+	kubernetesLabelPrefix = "kubernetes.io/"
+
+	// openebsLabelPrefix is the label prefix for openebs labels
+	openebsLabelPrefix = "openebs.io/"
+
+	// blockDeviceTag is the label suffix used to tag a blockdevice
+	blockDeviceTag = "block-device-tag"
+
+	// KubernetesHostNameLabel is the kubernetes hostname label
+	KubernetesHostNameLabel = kubernetesLabelPrefix + blockdevice.HostName
+
+	// BlockDeviceTagLabel is the label used to tag a blockdevice for
+	// a particular use case.
+	// BlockDevices having this label can only be claimed by BDCs which
+	// have a matching label selector.
+	BlockDeviceTagLabel = openebsLabelPrefix + blockDeviceTag
+)
+
 // Client is the wrapper over the k8s client that will be used by
 // NDM to interface with etcd
 type Client struct {

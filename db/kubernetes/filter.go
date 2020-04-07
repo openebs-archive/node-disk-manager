@@ -18,14 +18,6 @@ package kubernetes
 
 import "github.com/openebs/node-disk-manager/blockdevice"
 
-const (
-	// kubernetesLabelPrefix is the label prefix for kubernetes
-	kubernetesLabelPrefix = "kubernetes.io/"
-
-	// KubernetesHostNameLabel is the kubernetes hostname label
-	KubernetesHostNameLabel = kubernetesLabelPrefix + blockdevice.HostName
-)
-
 // GenerateLabelFilter is used to generate a label filter that can be used
 // while listing resources
 func GenerateLabelFilter(key, value string) string {

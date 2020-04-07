@@ -19,9 +19,13 @@ package blockdevice
 import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/db/kubernetes"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
+	"k8s.io/klog"
 )
 
 const (
@@ -41,6 +45,9 @@ const (
 	FilterOutSparseBlockDevices = "filterSparseBlockDevice"
 	// FilterNodeName is used to filter based on nodename
 	FilterNodeName = "filterNodeName"
+	// FilterBlockDeviceTag is used to filter out blockdevices having
+	// openebs.io/blockdevice-tag label
+	FilterBlockDeviceTag = "filterBlockDeviceTag"
 )
 
 // filterFunc is the func type for the filter functions
@@ -55,6 +62,7 @@ var filterFuncMap = map[string]filterFunc{
 	FilterResourceStorage:       filterResourceStorage,
 	FilterOutSparseBlockDevices: filterOutSparseBlockDevice,
 	FilterNodeName:              filterNodeName,
+	FilterBlockDeviceTag:        filterBlockDeviceTag,
 }
 
 // ApplyFilters apply the filter specified in the filterkeys on the given BD List,
@@ -241,4 +249,71 @@ func filterNodeName(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec
 		}
 	}
 	return filteredBDList
+}
+
+// filterBlockDeviceTag is used to filter out BlockDevices which do not have the
+// block-device-tag label. This filter works on a block device list which has
+// already been filtered by the given selector.
+func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
+
+	// if the block-device-tag label was already included in the selector
+	// given in the BDC by the user, then this filter is not required. This
+	// is because it would have already performed the filter operation with the
+	// label. If the label is not present, a new selector is made to remove
+	// devices which have that label.
+	if !isBDTagDoesNotExistSelectorRequired(spec.Selector) {
+		return originalBD
+	}
+
+	// a DoesNotExist requirement is created to filter out devices which have
+	// the block-device-tag label
+	blockDeviceTagRequirement, err := labels.NewRequirement(kubernetes.BlockDeviceTagLabel, selection.DoesNotExist, []string{})
+
+	// this error should never occur, because error for DoesNotExist happen
+	// only when non zero length of values are passed
+	if err != nil {
+		klog.Info("could not create requirement for label ", kubernetes.BlockDeviceTagLabel)
+		return originalBD
+	}
+
+	blockDeviceTagDoesNotExistSelector := labels.NewSelector()
+	blockDeviceTagDoesNotExistSelector =
+		blockDeviceTagDoesNotExistSelector.Add(*blockDeviceTagRequirement)
+
+	filteredBDList := &apis.BlockDeviceList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "BlockDevice",
+			APIVersion: "openebs.io/v1alpha1",
+		},
+	}
+
+	for _, bd := range originalBD.Items {
+		// if the tag label is not present, the BD will be included in the list
+		if blockDeviceTagDoesNotExistSelector.Matches(labels.Set(bd.Labels)) {
+			filteredBDList.Items = append(filteredBDList.Items, bd)
+		}
+	}
+	return filteredBDList
+}
+
+// isBDTagDoesNotExistSelectorRequired is used to check whether a selector
+// was present on the BDC. It is used to decide whether a `does not exist` selector
+// for the block-device-tag label should be applied or not.
+//
+// all the filters are applied after the List call which uses the selector.
+// therefore, we don't need to again apply a label selector.
+func isBDTagDoesNotExistSelectorRequired(options *metav1.LabelSelector) bool {
+	if options == nil {
+		return true
+	}
+	if _, ok := options.MatchLabels[kubernetes.BlockDeviceTagLabel]; ok {
+		return false
+	}
+	requirements := options.MatchExpressions
+	for _, req := range requirements {
+		if req.Key == kubernetes.BlockDeviceTagLabel {
+			return false
+		}
+	}
+	return true
 }
