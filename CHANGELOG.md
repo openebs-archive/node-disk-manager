@@ -1,3 +1,17 @@
+v0.4.9 / 2020-04-15
+========================
+
+  * add physical/logical block size, hardware sector size and drive type into BlockDevice resource
+  ([#388](https://github.com/openebs/node-disk-manager/pull/388), [@akhilerm](https://github.com/akhilerm))
+  * add new sysfs probe to fetch block device details from sysfs ([#375](https://github.com/openebs/node-disk-manager/pull/375), 
+  [shovanmaity](https://github.com/shovanmaity))
+  * enable persisting of labels and annotations on BlockDevice resource ([#394](https://github.com/openebs/node-disk-manager/pull/394), 
+  [shovanmaity](https://github.com/shovanmaity))
+  * add label selector to BlockDeviceClaim resource ([#397](https://github.com/openebs/node-disk-manager/pull/397), 
+  [@akhilerm](https://github.com/akhilerm))
+  * add support for `openebs.io/block-device-tag` label on BlockDevice ([#400](https://github.com/openebs/node-disk-manager/pull/400), 
+  [@akhilerm](https://github.com/akhilerm))
+
 v0.4.9-RC1 / 2020-04-07
 ========================
 
