@@ -4,6 +4,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ea8d7835d7224178af058d98e5dac117)](https://www.codacy.com/app/OpenEBS/node-disk-manager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=openebs/node-disk-manager&amp;utm_campaign=Badge_Grade)
 [![Go Report](https://goreportcard.com/badge/github.com/openebs/node-disk-manager)](https://goreportcard.com/report/github.com/openebs/node-disk-manager)
 [![codecov](https://codecov.io/gh/openebs/node-disk-manager/branch/master/graph/badge.svg)](https://codecov.io/gh/openebs/node-disk-manager)
+[![Slack](https://img.shields.io/badge/chat!!!-slack-ff1493.svg?style=flat-square)](https://kubernetes.slack.com/messages/openebs)
 [![BCH compliance](https://bettercodehub.com/edge/badge/openebs/node-disk-manager?branch=master)](https://bettercodehub.com/results/openebs/node-disk-manager)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager?ref=badge_shield)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1953/badge)](https://bestpractices.coreinfrastructure.org/projects/1953)
@@ -36,8 +37,8 @@ A detailed usage documentation is maintained in the [wiki](https://github.com/op
 ## Using `kubectl` to fetch BlockDevice Information
 * `kubectl get blockdevices` displays the blockdevices across the cluster, with `NODENAME` showing the node to which disk is attached,
   `CLAIMSTATE` showing whether the device is currently in use and `STATE` showing whether the device is connected to the node.
-* `kubectl get blockdevices -o wide` displays the blockdevice along with the path at which the device is attached on the node
-* `kubectl get blockdevices <disk-cr-name> -o yaml` displays all the details of the disk captured by `ndm` for given disk resource.
+* `kubectl get blockdevices -o wide` displays the blockdevice along with the path at which the device is attached on the node.
+* `kubectl get blockdevices <blockdevice-cr-name> -o yaml` displays all the details of the disk captured by `ndm` for given disk resource.
 
 ## Building, Testing and Pushing Image
 Before building the image locally, you need to setup your development environment. The detailed instructions for setting up development environment, building and testing are available [here](./docs/developer-setup.md).
