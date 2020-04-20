@@ -83,16 +83,8 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 					DiskSize:         device.Capacity.Storage,
 					LogicalBlockSize: uint64(device.DeviceAttributes.LogicalBlockSize),
 				}
-				if err := d.CreatePartitionTable(); err != nil {
-					klog.Errorf("error creating partition table for %s, %v", device.DevPath, err)
-					continue
-				}
-				if err = d.AddPartition(); err != nil {
+				if err := d.CreateSinglePartition(); err != nil {
 					klog.Errorf("error creating partition for %s, %v", device.DevPath, err)
-					continue
-				}
-				if err = d.ApplyPartitionTable(); err != nil {
-					klog.Errorf("error writing partition data to %s, %v", device.DevPath, err)
 					continue
 				}
 				klog.Infof("created new partition in %s", device.DevPath)
