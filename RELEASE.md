@@ -1,5 +1,5 @@
 # Release Process
-node-disk-manager follows a monthly release cadence. The scope of the release is determined by contributor availability. The scope is published in the [Release Tracker Projects](https://github.com/openebs/openebs/projects).
+node-disk-manager follows a monthly release cadence. The scope of the release is determined by contributor availability. The scope is published in the [Release Tracker Projects](https://github.com/orgs/openebs/projects).
 
 ## Release Candidate Verification Checklist
 
@@ -28,9 +28,19 @@ The format of the release tag is either "Release-Name-RC1" or "Release-Name" dep
 
 Once the release is triggered, Travis build process has to be monitored. Once Travis build passes, images are pushed to docker hub and quay.io. Images can be verified by going through docker hub and quay.io. Also, the images shouldn't have any high level vulnerabilities.
 
-Images are published at following location depending on the architecture (amd64, arm64, ppc64le):
-https://quay.io/repository/openebs/node-disk-manager-{ARCH}?tab=tags
-https://hub.docker.com/r/openebs/node-disk-manager-{ARCH}/tags
+Images for the different components are published at the following location depending on the architecture (amd64, arm64, ppc64le):
+
+- Node Disk Manager Daemon  
+    https://quay.io/repository/openebs/node-disk-manager-{ARCH}?tab=tags  
+    https://hub.docker.com/r/openebs/node-disk-manager-{ARCH}/tags
+
+- Node Disk Operator  
+    https://quay.io/repository/openebs/node-disk-operator-{ARCH}?tab=tags  
+    https://hub.docker.com/r/openebs/node-disk-operator-{ARCH}/tags
+
+- Node Disk Exporter  
+    https://quay.io/repository/openebs/node-disk-exporter-{ARCH}?tab=tags  
+    https://hub.docker.com/r/openebs/node-disk-exporter-{ARCH}/tags
 
 
 Once a release is created, update the release description with the change log mentioned in `changelog/v0.5.x`. Once the change logs are updated in release, repo owner needs to create a PR to `master` with the following details:
