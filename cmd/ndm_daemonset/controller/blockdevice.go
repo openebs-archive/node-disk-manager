@@ -79,9 +79,8 @@ func (di *DeviceInfo) ToDevice() apis.BlockDevice {
 // of BlockDevice struct of BlockDevice CR.
 func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 	objectMeta := metav1.ObjectMeta{
-		Labels:    make(map[string]string),
-		Name:      di.UUID,
-		Namespace: Namespace,
+		Labels: make(map[string]string),
+		Name:   di.UUID,
 	}
 	objectMeta.Labels[KubernetesHostNameLabel] = di.NodeAttributes[HostNameKey]
 	objectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType

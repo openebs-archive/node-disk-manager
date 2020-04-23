@@ -32,6 +32,9 @@ import (
 // blockDevice is DeviceResource-CR
 func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) error {
 
+	// set namespace on the api resource
+	blockDevice.SetNamespace(c.Namespace)
+
 	blockDeviceCopy := blockDevice.DeepCopy()
 	err := c.Clientset.Create(context.TODO(), blockDeviceCopy)
 	if err == nil {
@@ -131,7 +134,7 @@ func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 func (c *Controller) GetBlockDevice(name string) (*apis.BlockDevice, error) {
 	dvr := &apis.BlockDevice{}
 	err := c.Clientset.Get(context.TODO(),
-		client.ObjectKey{Namespace: "", Name: name}, dvr)
+		client.ObjectKey{Namespace: c.Namespace, Name: name}, dvr)
 
 	if err != nil {
 		klog.Error("Unable to get blockdevice object : ", err)
