@@ -92,9 +92,6 @@ const (
 	CRDRetryInterval = 10 * time.Second
 )
 
-// Namespace is the namespace in which NDM is installed
-var Namespace string
-
 // ControllerBroadcastChannel is used to send a copy of controller object to each probe.
 // Each probe can get the copy of controller struct any time they need to read the channel.
 var ControllerBroadcastChannel = make(chan *Controller)
@@ -109,6 +106,8 @@ type NDMOptions struct {
 // Controller is the controller implementation for disk resources
 type Controller struct {
 	config *rest.Config // config is the generated config using kubeconfig/incluster config
+	// Namespace is the namespace in which NDM is installed
+	Namespace string
 	// Clientset is the client used to interface with API server
 	Clientset client.Client
 	NDMConfig *NodeDiskManagerConfig // NDMConfig contains custom config for ndm
@@ -131,7 +130,14 @@ func NewController() (*Controller, error) {
 	}
 	controller.config = cfg
 
-	mgr, err := manager.New(controller.config, manager.Options{Namespace: Namespace})
+	// get the namespace in which NDM is installed
+	ns, err := getNamespace()
+	if err != nil {
+		return controller, err
+	}
+	controller.Namespace = ns
+
+	mgr, err := manager.New(controller.config, manager.Options{Namespace: controller.Namespace})
 	if err != nil {
 		return controller, err
 	}
@@ -142,12 +148,6 @@ func NewController() (*Controller, error) {
 	}
 
 	_, err = controller.newClientSet()
-	if err != nil {
-		return controller, err
-	}
-
-	// get the namespace in which NDM is installed
-	Namespace, err = getNamespace()
 	if err != nil {
 		return controller, err
 	}
