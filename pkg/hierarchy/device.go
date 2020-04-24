@@ -16,6 +16,8 @@ limitations under the License.
 
 package hierarchy
 
+import "github.com/openebs/node-disk-manager/blockdevice"
+
 var sysFSDirectoryPath = "/sys/"
 
 // Device represents a blockdevice. This struct is used by hierarchy pkg which is used to
@@ -25,26 +27,9 @@ type Device struct {
 	Path string
 }
 
-// DependentDevices represents all the dependent blockdevices of the given Device
-type DependentDevices struct {
-	// Parent is the parent device of the given blockdevice
-	Parent string
-
-	// Partitions are the partitions of this device if any
-	Partitions []string
-
-	// Holders is the slice of block-devices that are held by a given
-	// blockdevice
-	Holders []string
-
-	// Slaves is the slice of blockdevices to which the given blockdevice
-	// is a slave
-	Slaves []string
-}
-
 // GetDependents gets all the dependent devices for a given Device
-func (d *Device) GetDependents() (DependentDevices, error) {
-	dependents := DependentDevices{}
+func (d *Device) GetDependents() (blockdevice.DependentBlockDevices, error) {
+	dependents := blockdevice.DependentBlockDevices{}
 
 	// get the syspath of the blockdevice
 	blockDeviceSysPath, err := getDeviceSysPath(d.Path)

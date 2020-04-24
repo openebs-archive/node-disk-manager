@@ -137,6 +137,9 @@ func (up *udevProbe) scan() error {
 	if err != nil {
 		return err
 	}
+	// everytime while performing the scan, we are re-initializing the
+	// disk map of the system
+	up.controller.BDHierarchy = make(blockdevice.Hierarchy)
 	for l := up.udevEnumerate.ListEntry(); l != nil; l = l.GetNextEntry() {
 		s := l.GetName()
 		newUdevice, err := up.udev.NewDeviceFromSysPath(s)
@@ -173,10 +176,7 @@ func (up *udevProbe) scan() error {
 			if err != nil {
 				klog.Error("error getting dependent devices for ", deviceDetails.DevPath)
 			} else {
-				deviceDetails.Partitions = dependents.Partitions
-				deviceDetails.Holders = dependents.Holders
-				deviceDetails.Parent = dependents.Parent
-				deviceDetails.Slaves = dependents.Slaves
+				deviceDetails.DependentDevices = dependents
 				klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 			}
 		}

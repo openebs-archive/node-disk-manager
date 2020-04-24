@@ -68,10 +68,7 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 		if err != nil {
 			klog.Errorf("could not get dependents for %s, %v", devicePath, err)
 		}
-		deviceDetails.Partitions = dependents.Partitions
-		deviceDetails.Holders = dependents.Holders
-		deviceDetails.Parent = dependents.Parent
-		deviceDetails.Slaves = dependents.Slaves
+		deviceDetails.DependentDevices = dependents
 		klog.V(4).Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 	}
 
