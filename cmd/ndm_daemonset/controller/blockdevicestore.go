@@ -164,9 +164,9 @@ func (c *Controller) DeleteBlockDevice(name string) {
 		"ndm.blockdevice.delete.success", "Deleted blockdevice object ", name)
 }
 
-// ListBlockDeviceResource queries the etcd for the devices for the host/node
+// ListBlockDeviceResource queries the etcd for the devices
 // and returns list of blockdevice resources.
-func (c *Controller) ListBlockDeviceResource() (*apis.BlockDeviceList, error) {
+func (c *Controller) ListBlockDeviceResource(listAll bool) (*apis.BlockDeviceList, error) {
 
 	blockDeviceList := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
@@ -174,8 +174,11 @@ func (c *Controller) ListBlockDeviceResource() (*apis.BlockDeviceList, error) {
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
-	filter := KubernetesHostNameLabel + "=" + c.NodeAttributes[HostNameKey]
-	filter = filter + "," + NDMManagedKey + "!=" + FalseString
+	filter := NDMManagedKey + "!=" + FalseString
+	// whether to list all devices in the cluster, or the devices that belong to this node
+	if !listAll {
+		filter = filter + "," + KubernetesHostNameLabel + "=" + c.NodeAttributes[HostNameKey]
+	}
 	opts := &client.ListOptions{}
 	_ = opts.SetLabelSelector(filter)
 	err := c.Clientset.List(context.TODO(), opts, blockDeviceList)
@@ -213,7 +216,7 @@ func (c *Controller) GetExistingBlockDeviceResource(blockDeviceList *apis.BlockD
 // system that will be marked as inactive.
 func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
 	listDevices := append(devices, GetActiveSparseBlockDevicesUUID(c.NodeAttributes[HostNameKey])...)
-	blockDeviceList, err := c.ListBlockDeviceResource()
+	blockDeviceList, err := c.ListBlockDeviceResource(false)
 	if err != nil {
 		klog.Error(err)
 		return
@@ -241,7 +244,7 @@ func (c *Controller) PushBlockDeviceResource(oldBlockDevice *apis.BlockDevice,
 // MarkBlockDeviceStatusToUnknown makes state of all resources owned by node unknown
 // This will call as a cleanup process before shutting down.
 func (c *Controller) MarkBlockDeviceStatusToUnknown() {
-	blockDeviceList, err := c.ListBlockDeviceResource()
+	blockDeviceList, err := c.ListBlockDeviceResource(false)
 	if err != nil {
 		klog.Error(err)
 		return
