@@ -17,12 +17,15 @@ limitations under the License.
 package probe
 
 import (
+	"fmt"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/features"
 	"github.com/openebs/node-disk-manager/pkg/partition"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/klog"
 )
 
@@ -43,7 +46,7 @@ type ProbeEvent struct {
 
 // addBlockDeviceEvent fill block device details from different probes and push it to etcd
 func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
-	bdList, err := pe.Controller.ListBlockDeviceResource()
+	bdAPIList, err := pe.Controller.ListBlockDeviceResource(true)
 	if err != nil {
 		klog.Error(err)
 		go pe.initOrErrorEvent()
@@ -66,49 +69,26 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 		// if GPTBasedUUID need to be used, generate the UUID,
 		// if UUID cannot be generated create a GPT partition
 		if isGPTBasedUUIDEnabled {
-			if len(device.Partitions) > 0 {
-				klog.Info("device has partitions. not creating blockdevice resource")
+			err := pe.addBlockDevice(*device)
+			if err != nil {
+				isErrorDuringUpdate = true
+				klog.Error(err)
+			}
+		} else {
+			// if GPTBasedUUID is disabled and the device type is partition,
+			// the event can be skipped.
+			if device.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION {
+				klog.Info("GPTBasedUUID disabled. skip creating block device resource for partition.")
 				continue
 			}
-			if len(device.Holders) > 0 {
-				klog.Info("device has holder devices, not creating blockdevice resource")
-				continue
+			deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(device)
+
+			existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
+			err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+			if err != nil {
+				isErrorDuringUpdate = true
+				klog.Error(err)
 			}
-			uuid, ok := generateUUID(*device)
-			// manually create a single partition on the device
-			if !ok {
-				klog.Info("starting to create partition")
-				d := partition.Disk{
-					DevPath:          device.DevPath,
-					DiskSize:         device.Capacity.Storage,
-					LogicalBlockSize: uint64(device.DeviceAttributes.LogicalBlockSize),
-				}
-				if err := d.CreateSinglePartition(); err != nil {
-					klog.Errorf("error creating partition for %s, %v", device.DevPath, err)
-					continue
-				}
-				klog.Infof("created new partition in %s", device.DevPath)
-				continue
-			}
-			klog.Infof("generated UUID: %s for device: %s", uuid, device.DevPath)
-			device.UUID = uuid
-		}
-
-		// if GPTBasedUUID is disabled and the device type is partition,
-		// the event can be skipped.
-		if !isGPTBasedUUIDEnabled &&
-			device.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION {
-			klog.Info("GPTBasedUUID disabled. skip creating block device resource for partition.")
-			continue
-		}
-
-		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(device)
-
-		existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdList, deviceInfo.UUID)
-		err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
-		if err != nil {
-			isErrorDuringUpdate = true
-			klog.Error(err)
 		}
 	}
 
@@ -119,7 +99,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 
 // deleteBlockDeviceEvent deactivate blockdevice resource using uuid from etcd
 func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
-	bdList, err := pe.Controller.ListBlockDeviceResource()
+	bdAPIList, err := pe.Controller.ListBlockDeviceResource(false)
 	if err != nil {
 		klog.Error(err)
 	}
@@ -130,6 +110,15 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 	for _, device := range msg.Devices {
 		// create the new UUID for removing the device
 		if isGPTBasedUUIDEnabled {
+			_, ok := pe.Controller.BDHierarchy[device.DevPath]
+			if !ok {
+				klog.Infof("Disk %s not in hierarchy", device.DevPath)
+				// not in hierarchy continue
+				continue
+			}
+			// remove from the hierarchy
+			delete(pe.Controller.BDHierarchy, device.DevPath)
+
 			uuid, ok := generateUUID(*device)
 			if !ok {
 				klog.Info("could not recreate UUID while removing device")
@@ -139,8 +128,9 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 			device.UUID = uuid
 		}
 
-		existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdList, device.UUID)
+		existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, device.UUID)
 		if existingBlockDeviceResource == nil {
+			// do nothing, may be the disk was filtered, or it was not created
 			isDeactivated = false
 			continue
 		}
@@ -210,4 +200,207 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 	}
 
 	return uuid, ok
+}
+
+func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice) error {
+
+	bdAPIList, err := pe.Controller.ListBlockDeviceResource(true)
+	if err != nil {
+		klog.Error(err)
+		return err
+	}
+
+	// check if the device already exists in the cache
+	_, ok := pe.Controller.BDHierarchy[bd.DevPath]
+	if ok {
+		klog.V(4).Infof("device: %s already exists in cache, "+
+			"the event was likely generated by a partition table re-read", bd.DevPath)
+	}
+	if !ok {
+		klog.V(4).Infof("device: %s does not exist in cache, "+
+			"the device is now connected to this node", bd.DevPath)
+	}
+
+	// in either case, whether is existed or not, we will update with the latest BD into the cache
+	pe.Controller.BDHierarchy[bd.DevPath] = bd
+
+	/*
+		Cases when an add event is generated
+		1. A new disk is added to the cluster to this node -  the disk is first time in this cluster
+		2. A new disk is added to this node -  the disk was already present in the cluster and it was moved to this node
+		3. A disk was detached and reconnected to this node
+		4. An add event due to partition table reread . This may cause events to be generated without the disk
+			being physically removed this node - (when a new partition is created on the device also, its the same case)
+	*/
+
+	// check if the disk can be uniquely identified. we try to generate the UUID for the device
+	klog.V(4).Infof("checking if device: %s can be uniquely identified", bd.DevPath)
+	uuid, ok := generateUUID(bd)
+	if ok {
+		bd.UUID = uuid
+		klog.V(4).Infof("uuid: %s has been generated for device: %s", uuid, bd.DevPath)
+		bdAPI, err := pe.Controller.GetBlockDevice(uuid)
+
+		if errors.IsNotFound(err) {
+			klog.V(4).Infof("device: %s, uuid: %s not found in etcd", bd.DevPath, uuid)
+			/*
+				Cases when the BlockDevice is not found in etcd
+				1. The device is appearing in this cluster for the first time
+				2. The device had partitions and BlockDevice was not created
+			*/
+
+			if bd.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION {
+				klog.V(4).Infof("device: %s is partition", bd.DevPath)
+				klog.V(4).Info("checking if device has a parent")
+				// check if device has a parent that is claimed
+				parentBD, ok := pe.Controller.BDHierarchy[bd.DependentDevices.Parent]
+				if !ok {
+					klog.V(4).Infof("unable to find parent device for device: %s", bd.DevPath)
+					return fmt.Errorf("cannot get parent device for device: %s", bd.DevPath)
+				}
+
+				klog.V(4).Infof("parent device: %s found for device: %s", parentBD.DevPath, bd.DevPath)
+				klog.V(4).Infof("checking if parent device can be uniquely identified")
+				parentUUID, parentOK := generateUUID(parentBD)
+				if !parentOK {
+					klog.V(4).Infof("unable to generate UUID for parent device, may be a device without WWN")
+					// cannot generate UUID for parent, may be a device without WWN
+					// used the new algorithm to create partitions
+					if len(bd.DependentDevices.Holders) > 0 {
+						klog.V(4).Infof("device: %s has holder devices %+v", bd.DevPath, bd.DependentDevices.Holders)
+						klog.V(4).Infof("skip creating BlockDevice resource")
+						return nil
+					}
+					// create BlockDevice resource for partition
+					klog.V(4).Infof("creating BlockDevice resource for device: %s with uuid: %s", bd.DevPath, bd.UUID)
+					deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+					existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
+					err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+					if err != nil {
+						klog.Error(err)
+						return err
+					}
+					return nil
+				}
+
+				klog.V(4).Infof("uuid: %s generated for parent device: %s", parentUUID, parentBD.DevPath)
+
+				parentBDAPI, err := pe.Controller.GetBlockDevice(parentUUID)
+
+				if errors.IsNotFound(err) {
+					// parent not present in etcd, may be device without wwn or had partitions/holders
+					klog.V(4).Infof("parent device: %s, uuid: %s not found in etcd", parentBD.DevPath, parentUUID)
+					if len(bd.DependentDevices.Holders) > 0 {
+						klog.V(4).Infof("device: %s has holder devices: %+v", bd.DevPath, bd.DependentDevices.Holders)
+						return nil
+					}
+
+					deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+					existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
+					err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+					if err != nil {
+						klog.Error(err)
+						return err
+					}
+					return nil
+				}
+
+				if err != nil {
+					klog.Error(err)
+					return err
+					// get call failed
+				}
+
+				if parentBDAPI.Status.ClaimState != apis.BlockDeviceUnclaimed {
+					// device is in use, and the consumer is doing something
+					// do nothing
+					klog.V(4).Infof("parent device: %s is in use, device: %s can be ignored", parentBD.DevPath, bd.DevPath)
+					return nil
+				} else {
+					// the consumer created some partitions on the disk.
+					// So the parent BD need to be deactivated and partition BD need to be created.
+					// 1. deactivate parent
+					// 2. create resource for partition
+
+					pe.Controller.DeactivateBlockDevice(*parentBDAPI)
+					deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+					existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
+					err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+					if err != nil {
+						klog.Error(err)
+						return err
+					}
+					return nil
+				}
+
+			}
+
+			if bd.DeviceAttributes.DeviceType != libudevwrapper.UDEV_PARTITION &&
+				len(bd.DependentDevices.Partitions) > 0 {
+				klog.V(4).Infof("device: %s has partitions: %+v", bd.DevPath, bd.DependentDevices.Partitions)
+				return nil
+			}
+
+			if len(bd.DependentDevices.Holders) > 0 {
+				klog.V(4).Infof("device: %s has holders: %+v", bd.DevPath, bd.DependentDevices.Holders)
+				return nil
+			}
+
+			klog.V(4).Infof("creating block device resource for device: %s with uuid: %s", bd.DevPath, bd.UUID)
+			deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+			existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
+			err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+			if err != nil {
+				klog.Errorf("could not create block device resource, %+v", err)
+				return err
+			}
+			return nil
+		}
+
+		if err != nil {
+			klog.Errorf("querying etcd failed: %+v", err)
+			return err
+		}
+
+		if bdAPI.Status.ClaimState != apis.BlockDeviceUnclaimed {
+			klog.V(4).Infof("device: %s is in use. update the details of the blockdevice", bd.DevPath)
+			deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+			err = pe.Controller.PushBlockDeviceResource(bdAPI, deviceInfo)
+			if err != nil {
+				klog.Errorf("updating block device resource failed: %+v", err)
+				return err
+			}
+			return nil
+		}
+
+		klog.V(4).Infof("creating resource for device: %s with uuid: %s", bd.DevPath, bd.UUID)
+		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+		existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
+		err = pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+		if err != nil {
+			klog.Errorf("creation of resource failed: %+v", err)
+			return err
+		}
+		return nil
+	} else {
+		klog.V(4).Infof("device: %s cannot be uniquely identified", bd.DevPath)
+		if len(bd.DependentDevices.Partitions) > 0 ||
+			len(bd.DependentDevices.Holders) > 0 {
+			klog.V(4).Infof("device: %s has holders/partitions. %+v", bd.DevPath, bd.DependentDevices)
+		} else {
+			klog.Infof("starting to create partition on device: %s", bd.DevPath)
+			d := partition.Disk{
+				DevPath:          bd.DevPath,
+				DiskSize:         bd.Capacity.Storage,
+				LogicalBlockSize: uint64(bd.DeviceAttributes.LogicalBlockSize),
+			}
+			if err := d.CreateSinglePartition(); err != nil {
+				klog.Errorf("error creating partition for %s, %v", bd.DevPath, err)
+				return err
+			}
+			klog.Infof("created new partition in %s", bd.DevPath)
+			return nil
+		}
+	}
+	return nil
 }
