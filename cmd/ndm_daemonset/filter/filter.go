@@ -30,7 +30,9 @@ const (
 var RegisteredFilters = []func(){
 	oSDiskExcludeFilterRegister,
 	vendorFilterRegister,
-	pathFilterRegister}
+	pathFilterRegister,
+	deviceValidityFilterRegister,
+}
 
 type registerFilter struct {
 	name       string
