@@ -40,7 +40,8 @@ func TestVendorFilterRegister(t *testing.T) {
 	var fi controller.FilterInterface = &vendorFilter{
 		controller:     fakeController,
 		includeVendors: make([]string, 0),
-		excludeVendors: make([]string, 0),
+		// default vendor OpenEBS is always excluded
+		excludeVendors: []string{vendorValueOpenEBS},
 	}
 	filter := &controller.Filter{
 		Name:      vendorFilterName,
@@ -77,11 +78,16 @@ func TestVendorStart(t *testing.T) {
 			includeVendors = test.includeVendor
 			excludeVendors = test.excludeVendor
 			test.filter.Start()
+
+			// even if no vendors are specified in the filter config
+			// by default the registered filter will have OpenEBS vendor for excluding
+			excludedVendors := []string{vendorValueOpenEBS}
 			if test.excludeVendor != "" {
-				assert.Equal(t, strings.Split(test.excludeVendor, ","), test.filter.excludeVendors)
-			} else {
-				assert.Equal(t, make([]string, 0), test.filter.excludeVendors)
+				excludedVendors = append(excludedVendors, strings.Split(test.excludeVendor, ",")...)
 			}
+
+			assert.Equal(t, excludedVendors, test.filter.excludeVendors)
+
 			if test.includeVendor != "" {
 				assert.Equal(t, strings.Split(test.excludeVendor, ","), test.filter.includeVendors)
 			} else {
