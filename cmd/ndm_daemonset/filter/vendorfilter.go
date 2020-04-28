@@ -26,6 +26,8 @@ import (
 
 const (
 	vendorFilterKey = "vendor-filter"
+	// vendorValueOpenEBS is the vendor for iscsi disks created by OpenEBS
+	vendorValueOpenEBS = "OpenEBS"
 )
 
 var (
@@ -33,6 +35,9 @@ var (
 	vendorFilterState = defaultEnabled  // filter state
 	includeVendors    = ""
 	excludeVendors    = ""
+	// list of vendors that are excluded by default. This is done so that OpenEBS created disks are excluded
+	// by default
+	defaultExcludedVendors = []string{vendorValueOpenEBS}
 )
 
 // vendorFilterRegister contains registration process of VendorFilter
@@ -80,11 +85,15 @@ func newVendorFilter(ctrl *controller.Controller) *vendorFilter {
 func (vf *vendorFilter) Start() {
 	vf.includeVendors = make([]string, 0)
 	vf.excludeVendors = make([]string, 0)
+
+	// add the default exclude list to exclude vendors.
+	vf.excludeVendors = append(vf.excludeVendors, defaultExcludedVendors...)
+
 	if includeVendors != "" {
 		vf.includeVendors = strings.Split(includeVendors, ",")
 	}
 	if excludeVendors != "" {
-		vf.excludeVendors = strings.Split(excludeVendors, ",")
+		vf.excludeVendors = append(vf.excludeVendors, strings.Split(excludeVendors, ",")...)
 	}
 }
 
