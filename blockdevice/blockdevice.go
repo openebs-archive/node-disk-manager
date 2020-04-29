@@ -331,5 +331,11 @@ const (
 	Unclaimed string = "Unclaimed"
 )
 
-// Hierarchy is the block device hierarchy on the system
+// Hierarchy is the block device hierarchy on the system.
+// This map will be used as in memory cache for storing the current state of
+// all block devices on the system. This cache helps to get the details of any
+// dependent blockdevices from a device.
+// eg: If at a certain point, we are processing sda1 and we need to get the UUID
+// of its parent device. We will get /dev/sda is the parent of /dev/sda1.
+// This will be used to query the cache and get/generate the UUID of /dev/sda.
 type Hierarchy map[string]BlockDevice

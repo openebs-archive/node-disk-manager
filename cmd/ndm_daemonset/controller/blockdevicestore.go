@@ -165,6 +165,8 @@ func (c *Controller) DeleteBlockDevice(name string) {
 
 // ListBlockDeviceResource queries the etcd for the devices
 // and returns list of blockdevice resources.
+// if listAll = true, all the BlockDevices in the cluster will be listed,
+// else only devices present in this node will be listed.
 func (c *Controller) ListBlockDeviceResource(listAll bool) (*apis.BlockDeviceList, error) {
 
 	blockDeviceList := &apis.BlockDeviceList{

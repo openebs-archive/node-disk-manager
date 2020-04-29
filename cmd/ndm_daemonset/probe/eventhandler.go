@@ -46,6 +46,7 @@ type ProbeEvent struct {
 
 // addBlockDeviceEvent fill block device details from different probes and push it to etcd
 func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
+	// bdAPIList is the list of all the BlockDevice resources in the cluster
 	bdAPIList, err := pe.Controller.ListBlockDeviceResource(true)
 	if err != nil {
 		klog.Error(err)
@@ -66,8 +67,6 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 		}
 		klog.Infof("Processed details for %s", device.DevPath)
 
-		// if GPTBasedUUID need to be used, generate the UUID,
-		// if UUID cannot be generated create a GPT partition
 		if isGPTBasedUUIDEnabled {
 			err := pe.addBlockDevice(*device)
 			if err != nil {
@@ -120,6 +119,7 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 			delete(pe.Controller.BDHierarchy, device.DevPath)
 
 			uuid, ok := generateUUID(*device)
+			// this can happen if the device didn't have any unique identifiers
 			if !ok {
 				klog.Info("could not recreate UUID while removing device")
 				continue
@@ -236,7 +236,27 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice) error {
 	// check if the disk can be uniquely identified. we try to generate the UUID for the device
 	klog.V(4).Infof("checking if device: %s can be uniquely identified", bd.DevPath)
 	uuid, ok := generateUUID(bd)
-	if ok {
+	// if UUID cannot be generated create a GPT partition on the device
+	if !ok {
+		klog.V(4).Infof("device: %s cannot be uniquely identified", bd.DevPath)
+		if len(bd.DependentDevices.Partitions) > 0 ||
+			len(bd.DependentDevices.Holders) > 0 {
+			klog.V(4).Infof("device: %s has holders/partitions. %+v", bd.DevPath, bd.DependentDevices)
+		} else {
+			klog.Infof("starting to create partition on device: %s", bd.DevPath)
+			d := partition.Disk{
+				DevPath:          bd.DevPath,
+				DiskSize:         bd.Capacity.Storage,
+				LogicalBlockSize: uint64(bd.DeviceAttributes.LogicalBlockSize),
+			}
+			if err := d.CreateSinglePartition(); err != nil {
+				klog.Errorf("error creating partition for %s, %v", bd.DevPath, err)
+				return err
+			}
+			klog.Infof("created new partition in %s", bd.DevPath)
+			return nil
+		}
+	} else {
 		bd.UUID = uuid
 		klog.V(4).Infof("uuid: %s has been generated for device: %s", uuid, bd.DevPath)
 		bdAPI, err := pe.Controller.GetBlockDevice(uuid)
@@ -382,25 +402,6 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice) error {
 			return err
 		}
 		return nil
-	} else {
-		klog.V(4).Infof("device: %s cannot be uniquely identified", bd.DevPath)
-		if len(bd.DependentDevices.Partitions) > 0 ||
-			len(bd.DependentDevices.Holders) > 0 {
-			klog.V(4).Infof("device: %s has holders/partitions. %+v", bd.DevPath, bd.DependentDevices)
-		} else {
-			klog.Infof("starting to create partition on device: %s", bd.DevPath)
-			d := partition.Disk{
-				DevPath:          bd.DevPath,
-				DiskSize:         bd.Capacity.Storage,
-				LogicalBlockSize: uint64(bd.DeviceAttributes.LogicalBlockSize),
-			}
-			if err := d.CreateSinglePartition(); err != nil {
-				klog.Errorf("error creating partition for %s, %v", bd.DevPath, err)
-				return err
-			}
-			klog.Infof("created new partition in %s", bd.DevPath)
-			return nil
-		}
 	}
 	return nil
 }
