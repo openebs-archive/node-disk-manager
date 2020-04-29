@@ -97,9 +97,8 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 		}
 	}
 
-	blockDeviceCopy.ObjectMeta = mergeMetadata(blockDeviceCopy.ObjectMeta, oldBlockDevice.ObjectMeta)
-	blockDeviceCopy.Spec.ClaimRef = oldBlockDevice.Spec.ClaimRef
-	blockDeviceCopy.Status.ClaimState = oldBlockDevice.Status.ClaimState
+	blockDeviceCopy = mergeBlockDeviceData(*blockDeviceCopy, *oldBlockDevice)
+
 	err = c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
 		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
@@ -258,6 +257,29 @@ func (c *Controller) MarkBlockDeviceStatusToUnknown() {
 				blockDeviceCopy.ObjectMeta.Name)
 		}
 	}
+}
+
+// mergeBlockDeviceData merges the data from BlockDevice resource available in etcd
+// with the system generated BlockDevice information
+// If the device is in use, then only the capacity, node attributes, path, devlinks
+// and state will be updated. This is because, these are the fields relevant even if
+// the device is in use.
+func mergeBlockDeviceData(newBD, oldBD apis.BlockDevice) *apis.BlockDevice {
+	oldBD.TypeMeta = newBD.TypeMeta
+	oldBD.ObjectMeta = mergeMetadata(newBD.ObjectMeta, oldBD.ObjectMeta)
+	// if the device is in use, only the below fields will be updated.
+	if oldBD.Status.ClaimState != apis.BlockDeviceUnclaimed {
+		klog.V(4).Infof("device: %s is in use, updating only relevant fields", newBD.Spec.Path)
+		oldBD.Spec.NodeAttributes = newBD.Spec.NodeAttributes
+		oldBD.Spec.Capacity.Storage = newBD.Spec.Capacity.Storage
+		oldBD.Spec.Path = newBD.Spec.Path
+		oldBD.Spec.DevLinks = newBD.Spec.DevLinks
+		oldBD.Status.State = newBD.Status.State
+	} else {
+		oldBD.Spec = newBD.Spec
+		oldBD.Status = newBD.Status
+	}
+	return &oldBD
 }
 
 // mergeMetadata merges oldMetadata with newMetadata. It takes old metadata and
