@@ -1,4 +1,4 @@
-# Copyright 2018-2019 The OpenEBS Authors. All rights reserved.
+# Copyright 2018-2020 The OpenEBS Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,6 +50,25 @@ endif
 endif
 export BASEIMAGE
 
+ifeq (${IMAGE_REPO}, )
+  IMAGE_REPO = "openebs"
+  export IMAGE_REPO
+endif
+
+# Specify the docker arg for repository url
+ifeq (${DBUILD_REPO_URL}, )
+  DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
+  export DBUILD_REPO_URL
+endif
+
+# Specify the docker arg for website url
+ifeq (${DBUILD_SITE_URL}, )
+  DBUILD_SITE_URL="https://openebs.io"
+  export DBUILD_SITE_URL
+endif
+
+export DBUILD_ARGS=--build-arg DBUILD_DATE=${DBUILD_DATE} --build-arg DBUILD_REPO_URL=${DBUILD_REPO_URL} --build-arg DBUILD_SITE_URL=${DBUILD_SITE_URL} --build-arg ARCH=${ARCH}
+
 
 # Initialize the NDM DaemonSet variables
 # Specify the NDM DaemonSet binary name
@@ -57,7 +76,7 @@ NODE_DISK_MANAGER=ndm
 # Specify the sub path under ./cmd/ for NDM DaemonSet
 BUILD_PATH_NDM=ndm_daemonset
 # Name of the image for NDM DaemoneSet
-DOCKER_IMAGE_NDM:=openebs/node-disk-manager-${XC_ARCH}:ci
+DOCKER_IMAGE_NDM:=${IMAGE_REPO}/node-disk-manager-${XC_ARCH}:ci
 
 # Initialize the NDM Operator variables
 # Specify the NDM Operator binary name
@@ -65,7 +84,7 @@ NODE_DISK_OPERATOR=ndo
 # Specify the sub path under ./cmd/ for NDM Operator
 BUILD_PATH_NDO=manager
 # Name of the image for ndm operator
-DOCKER_IMAGE_NDO:=openebs/node-disk-operator-${XC_ARCH}:ci
+DOCKER_IMAGE_NDO:=${IMAGE_REPO}/node-disk-operator-${XC_ARCH}:ci
 
 # Initialize the NDM Exporter variables
 # Specfiy the NDM Exporter binary name
@@ -73,7 +92,7 @@ NODE_DISK_EXPORTER=exporter
 # Specify the sub path under ./cmd/ for NDM Exporter
 BUILD_PATH_EXPORTER=ndm-exporter
 # Name of the image for ndm exporter
-DOCKER_IMAGE_EXPORTER:=openebs/node-disk-exporter-${XC_ARCH}:ci
+DOCKER_IMAGE_EXPORTER:=${IMAGE_REPO}/node-disk-exporter-${XC_ARCH}:ci
 
 # Compile binaries and build docker images
 .PHONY: build
@@ -175,7 +194,7 @@ build.ndm:
 .PHONY: docker.ndm
 docker.ndm: build.ndm Dockerfile.ndm 
 	@echo "--> Building docker image for ndm-daemonset..."
-	@sudo docker build -t "$(DOCKER_IMAGE_NDM)" --build-arg ARCH=${ARCH} -f Dockerfile.ndm .
+	@sudo docker build -t "$(DOCKER_IMAGE_NDM)" ${DBUILD_ARGS} -f Dockerfile.ndm .
 	@echo "--> Build docker image: $(DOCKER_IMAGE_NDM)"
 	@echo
 
@@ -190,7 +209,7 @@ build.ndo:
 .PHONY: docker.ndo
 docker.ndo: build.ndo Dockerfile.ndo 
 	@echo "--> Building docker image for ndm-operator..."
-	@sudo docker build -t "$(DOCKER_IMAGE_NDO)" --build-arg ARCH=${ARCH} -f Dockerfile.ndo .
+	@sudo docker build -t "$(DOCKER_IMAGE_NDO)" ${DBUILD_ARGS} -f Dockerfile.ndo .
 	@echo "--> Build docker image: $(DOCKER_IMAGE_NDO)"
 	@echo
 
@@ -205,7 +224,7 @@ build.exporter:
 .PHONY: docker.exporter
 docker.exporter: build.exporter Dockerfile.exporter
 	@echo "--> Building docker image for ndm-exporter..."
-	@sudo docker build -t "$(DOCKER_IMAGE_EXPORTER)" --build-arg ARCH=${ARCH} -f Dockerfile.exporter .
+	@sudo docker build -t "$(DOCKER_IMAGE_EXPORTER)" ${DBUILD_ARGS} -f Dockerfile.exporter .
 	@echo "--> Build docker image: $(DOCKER_IMAGE_EXPORTER)"
 	@echo
 
@@ -223,7 +242,9 @@ clean: header
 	rm -rf ${GOPATH}/bin/${NODE_DISK_MANAGER}
 	rm -rf ${GOPATH}/bin/${NODE_DISK_OPERATOR}
 	rm -rf ${GOPATH}/bin/${NODE_DISK_EXPORTER}
-	rm -rf ${GOPATH}/pkg/*
+	rm -rf Dockerfile.ndm
+	rm -rf Dockerfile.ndo
+	rm -rf Dockerfile.exporter
 	@echo '--> Done cleaning.'
 	@echo
 
@@ -242,6 +263,6 @@ license-check-go:
 
 .PHONY: push
 push: 
-	DIMAGE=openebs/node-disk-manager-${XC_ARCH} ./build/push;
-	DIMAGE=openebs/node-disk-operator-${XC_ARCH} ./build/push;
-	DIMAGE=openebs/node-disk-exporter-${XC_ARCH} ./build/push;
+	DIMAGE=${IMAGE_REPO}/node-disk-manager-${XC_ARCH} ./build/push;
+	DIMAGE=${IMAGE_REPO}/node-disk-operator-${XC_ARCH} ./build/push;
+	DIMAGE=${IMAGE_REPO}/node-disk-exporter-${XC_ARCH} ./build/push;
