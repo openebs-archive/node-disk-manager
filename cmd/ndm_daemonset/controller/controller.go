@@ -72,11 +72,9 @@ const (
 	NDMInactive = "Inactive"
 	// NDMUnknown is constant for resource unknown status.
 	NDMUnknown = "Unknown"
-	// NDMDiskTypeKey specifies the type of disk.
-	NDMDiskTypeKey = "ndm.io/disk-type"
 	// NDMDeviceTypeKey specifies the block device type
 	NDMDeviceTypeKey = "ndm.io/blockdevice-type"
-	// NDMManagedKey specifies disk cr should be managed by ndm or not.
+	// NDMManagedKey specifies blockdevice cr should be managed by ndm or not.
 	NDMManagedKey = "ndm.io/managed"
 )
 

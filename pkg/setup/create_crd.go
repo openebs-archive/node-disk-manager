@@ -26,15 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-// createDiskCRD creates a Disk CRD
-func (sc Config) createDiskCRD() error {
-	diskCRD, err := buildDiskCRD()
-	if err != nil {
-		return err
-	}
-	return sc.createCRD(diskCRD)
-}
-
 // createBlockDeviceCRD creates a BlockDevice CRD
 func (sc Config) createBlockDeviceCRD() error {
 	blockDeviceCRD, err := buildBlockDeviceCRD()
