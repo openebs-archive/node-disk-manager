@@ -286,21 +286,7 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice) error {
 					klog.V(4).Infof("unable to generate UUID for parent device, may be a device without WWN")
 					// cannot generate UUID for parent, may be a device without WWN
 					// used the new algorithm to create partitions
-					if len(bd.DependentDevices.Holders) > 0 {
-						klog.V(4).Infof("device: %s has holder devices %+v", bd.DevPath, bd.DependentDevices.Holders)
-						klog.V(4).Infof("skip creating BlockDevice resource")
-						return nil
-					}
-					// create BlockDevice resource for partition
-					klog.V(4).Infof("creating BlockDevice resource for device: %s with uuid: %s", bd.DevPath, bd.UUID)
-					deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-					existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
-					err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
-					if err != nil {
-						klog.Error(err)
-						return err
-					}
-					return nil
+					return pe.createBlockDeviceResourceIfNoHolders(bd, bdAPIList)
 				}
 
 				klog.V(4).Infof("uuid: %s generated for parent device: %s", parentUUID, parentBD.DevPath)
@@ -310,19 +296,7 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice) error {
 				if errors.IsNotFound(err) {
 					// parent not present in etcd, may be device without wwn or had partitions/holders
 					klog.V(4).Infof("parent device: %s, uuid: %s not found in etcd", parentBD.DevPath, parentUUID)
-					if len(bd.DependentDevices.Holders) > 0 {
-						klog.V(4).Infof("device: %s has holder devices: %+v", bd.DevPath, bd.DependentDevices.Holders)
-						return nil
-					}
-
-					deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-					existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
-					err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
-					if err != nil {
-						klog.Error(err)
-						return err
-					}
-					return nil
+					return pe.createBlockDeviceResourceIfNoHolders(bd, bdAPIList)
 				}
 
 				if err != nil {
@@ -361,20 +335,7 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice) error {
 				return nil
 			}
 
-			if len(bd.DependentDevices.Holders) > 0 {
-				klog.V(4).Infof("device: %s has holders: %+v", bd.DevPath, bd.DependentDevices.Holders)
-				return nil
-			}
-
-			klog.V(4).Infof("creating block device resource for device: %s with uuid: %s", bd.DevPath, bd.UUID)
-			deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-			existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
-			err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
-			if err != nil {
-				klog.Errorf("could not create block device resource, %+v", err)
-				return err
-			}
-			return nil
+			return pe.createBlockDeviceResourceIfNoHolders(bd, bdAPIList)
 		}
 
 		if err != nil {
@@ -402,6 +363,26 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice) error {
 			return err
 		}
 		return nil
+	}
+	return nil
+}
+
+// createBlockDeviceResourceIfNoHolders creates/updates a blockdevice resource if it does not have any
+// holder devices
+func (pe *ProbeEvent) createBlockDeviceResourceIfNoHolders(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) error {
+	if len(bd.DependentDevices.Holders) > 0 {
+		klog.V(4).Infof("device: %s has holder devices: %+v", bd.DevPath, bd.DependentDevices.Holders)
+		klog.V(4).Infof("skip creating BlockDevice resource")
+		return nil
+	}
+
+	klog.V(4).Infof("creating block device resource for device: %s with uuid: %s", bd.DevPath, bd.UUID)
+	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+	existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
+	err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+	if err != nil {
+		klog.Error(err)
+		return err
 	}
 	return nil
 }
