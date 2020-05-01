@@ -5,14 +5,14 @@ metadata:
   labels:
     kubernetes.io/hostname: <host name in which disk/blockdevice is attached> # like gke-openebs-user-default-pool-044afcb8-bmc0
     ndm.io/managed: "false" # for manual blockdevice creation put false
-    ndm.io/blockdevice-type: <blockdevice type> # like blockdevice, sparse
+    ndm.io/blockdevice-type: <blockdevice type> # like blockdevice
+    openebs.io/block-device-tag: <value> # optional label to tag a blockdevice for a particular use
 status:
   claimState: Unclaimed
   state: Active
 spec:
   capacity:
-    logicalSectorSize: <logical sector size of lockdevice> # like 512
-    storage: <total capacity in bits> #like 53687091200
+    storage: <total capacity in bytes> #like 53687091200
   details:
     firmwareRevision: <firmware revision>
     model: <model name of blockdevice> # like PersistentDisk

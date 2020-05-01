@@ -1,11 +1,17 @@
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
+# Bind the Service Account with the Role Privileges.
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: node-disk-manager
+  name: openebs-ndm-operator
+  namespace: default
 subjects:
-- kind: ServiceAccount
-  name: node-disk-manager
+  - kind: ServiceAccount
+    name: openebs-ndm-operator
+    namespace: default
+  - kind: User
+    name: system:serviceaccount:default:default
+    apiGroup: rbac.authorization.k8s.io
 roleRef:
-  kind: Role
-  name: node-disk-manager
+  kind: ClusterRole
+  name: openebs-ndm-operator
   apiGroup: rbac.authorization.k8s.io

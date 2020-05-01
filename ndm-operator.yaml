@@ -71,7 +71,6 @@ rules:
 - apiGroups:
   - openebs.io
   resources:
-  - disks
   - blockdevices
   - blockdeviceclaims
   verbs:
@@ -167,7 +166,7 @@ spec:
           value: "1073741824"
         # Specify the number of sparse files to be created
         - name: SPARSE_FILE_COUNT
-          value: "1"
+          value: "0"
         # Set the core dump env to enable core dump for NDM daemon
         #- name: ENABLE_COREDUMP
         #  value: "1"

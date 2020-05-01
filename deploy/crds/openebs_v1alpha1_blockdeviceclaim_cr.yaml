@@ -3,7 +3,10 @@ kind: BlockDeviceClaim
 metadata:
   name: example-blockdeviceclaim
 spec:
-  nodeAttributes:
+  selector:
+    matchLabels:
+      openebs.io/block-device-tag: <value> # optional tag that can be used to select block devices
+  blockDeviceNodeAttributes:
     nodeName: "" # node name of the k8s node. Output from `kubectl get nodes`
     hostName: "" # hostname of the node from which you want to get a BD
   blockDeviceName: "" # BD name, if you want to claim a specific block device
