@@ -20,8 +20,8 @@ FROM @BASEIMAGE@
 
 ARG ARCH
 ARG DBUILD_DATE
-ARG DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
-ARG DBUILD_SITE_URL="http://www.openebs.io/"
+ARG DBUILD_REPO_URL
+ARG DBUILD_SITE_URL
 
 LABEL org.label-schema.schema-version="1.0"
 LABEL org.label-schema.name="node-disk-manager"

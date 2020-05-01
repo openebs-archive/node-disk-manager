@@ -50,10 +50,30 @@ endif
 endif
 export BASEIMAGE
 
-ifeq (${IMAGE_REPO}, )
-  IMAGE_REPO = "openebs"
-  export IMAGE_REPO
+# The images can be pushed to any docker/image registeries
+# like docker hub, quay. The registries are specified in 
+# the `build/push` script.
+#
+# The images of a project or company can then be grouped
+# or hosted under a unique organization key like `openebs`
+#
+# Each component (container) will be pushed to a unique 
+# repository under an organization. 
+# Putting all this together, an unique uri for a given 
+# image comprises of:
+#   <registry url>/<image org>/<image repo>:<image-tag>
+#
+# IMAGE_REPO can be used to customize the organization 
+# under which images should be pushed. 
+# By default the organization name is `openebs`. 
+
+ifeq (${IMAGE_ORG}, )
+  IMAGE_ORG="openebs"
+  export IMAGE_ORG
 endif
+
+# Specify the date of build
+DBUILD_DATE=$(shell date +'%Y%m%d%H%M%S')
 
 # Specify the docker arg for repository url
 ifeq (${DBUILD_REPO_URL}, )
@@ -76,7 +96,7 @@ NODE_DISK_MANAGER=ndm
 # Specify the sub path under ./cmd/ for NDM DaemonSet
 BUILD_PATH_NDM=ndm_daemonset
 # Name of the image for NDM DaemoneSet
-DOCKER_IMAGE_NDM:=${IMAGE_REPO}/node-disk-manager-${XC_ARCH}:ci
+DOCKER_IMAGE_NDM:=${IMAGE_ORG}/node-disk-manager-${XC_ARCH}:ci
 
 # Initialize the NDM Operator variables
 # Specify the NDM Operator binary name
@@ -84,7 +104,7 @@ NODE_DISK_OPERATOR=ndo
 # Specify the sub path under ./cmd/ for NDM Operator
 BUILD_PATH_NDO=manager
 # Name of the image for ndm operator
-DOCKER_IMAGE_NDO:=${IMAGE_REPO}/node-disk-operator-${XC_ARCH}:ci
+DOCKER_IMAGE_NDO:=${IMAGE_ORG}/node-disk-operator-${XC_ARCH}:ci
 
 # Initialize the NDM Exporter variables
 # Specfiy the NDM Exporter binary name
@@ -92,7 +112,7 @@ NODE_DISK_EXPORTER=exporter
 # Specify the sub path under ./cmd/ for NDM Exporter
 BUILD_PATH_EXPORTER=ndm-exporter
 # Name of the image for ndm exporter
-DOCKER_IMAGE_EXPORTER:=${IMAGE_REPO}/node-disk-exporter-${XC_ARCH}:ci
+DOCKER_IMAGE_EXPORTER:=${IMAGE_ORG}/node-disk-exporter-${XC_ARCH}:ci
 
 # Compile binaries and build docker images
 .PHONY: build
@@ -263,6 +283,6 @@ license-check-go:
 
 .PHONY: push
 push: 
-	DIMAGE=${IMAGE_REPO}/node-disk-manager-${XC_ARCH} ./build/push;
-	DIMAGE=${IMAGE_REPO}/node-disk-operator-${XC_ARCH} ./build/push;
-	DIMAGE=${IMAGE_REPO}/node-disk-exporter-${XC_ARCH} ./build/push;
+	DIMAGE=${IMAGE_ORG}/node-disk-manager-${XC_ARCH} ./build/push;
+	DIMAGE=${IMAGE_ORG}/node-disk-operator-${XC_ARCH} ./build/push;
+	DIMAGE=${IMAGE_ORG}/node-disk-exporter-${XC_ARCH} ./build/push;
