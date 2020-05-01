@@ -17,17 +17,6 @@ limitations under the License.
 package v1alpha1
 
 const (
-	// DiskResourceKind is the kind of Disk CRD
-	DiskResourceKind = "Disk"
-	// DiskResourceListKind is the list kind for Disk
-	DiskResourceListKind = "DiskList"
-	// DiskResourcePlural is the plural form used for disk
-	DiskResourcePlural = "disks"
-	// DiskResourceShort is the short name used for disk CRD
-	DiskResourceShort = "disk"
-	// DiskResourceName is the name of the disk resource
-	DiskResourceName = DiskResourcePlural + "." + GroupName
-
 	// BlockDeviceResourceKind is the kind of block device CRD
 	BlockDeviceResourceKind = "BlockDevice"
 	// BlockDeviceResourceListKind is the list kind for block device

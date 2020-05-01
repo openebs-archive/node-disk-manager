@@ -27,9 +27,6 @@ const (
 	// SparseBlockDeviceName is the name given to blockDevice CRs created for a
 	// sparse image
 	SparseBlockDeviceName = "sparse-"
-	// DiskName is the name of the disk CRs created corresponding to
-	// physical disks
-	DiskName = "disk-"
 	// BlockDeviceName is the name of the blockDevice CRs created corresponding to
 	// physical/virtual disks or blockdevices
 	BlockDeviceName = "blockdevice-"

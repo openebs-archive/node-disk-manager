@@ -38,11 +38,11 @@ should be located.
 
 On Startup, if a sparse directory (EnvSparseFileDir) is specified as a
 environment variable, a Sparse file with specified size (EnvSparseFileSize) will
-be created and an associated Disk CR will be added to Kubernetes. By default
+be created and an associated BlockDevice CR will be added to Kubernetes. By default
 only one sparse file will be created which can be changed by passing the desired
 number of sparse files required via the environment variable EnvSparseFileCount.
 
-On Shutdown, the status of the sparse file Disk CR will be marked as Unknown.
+On Shutdown, the status of the sparse file BlockDevice CR will be marked as Unknown.
 */
 
 const (
@@ -135,7 +135,7 @@ func GetSparseFileSize() int64 {
 }
 
 // InitializeSparseFiles will check if the sparse file exist or have to be
-// created and will update or create the associated Disk CR accordingly
+// created and will update or create the associated BlockDevice CR accordingly
 func (c *Controller) InitializeSparseFiles() {
 	sparseFileDir := GetSparseFileDir()
 	sparseFileSize := GetSparseFileSize()
