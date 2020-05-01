@@ -63,7 +63,7 @@ export BASEIMAGE
 # image comprises of:
 #   <registry url>/<image org>/<image repo>:<image-tag>
 #
-# IMAGE_REPO can be used to customize the organization 
+# IMAGE_ORG can be used to customize the organization 
 # under which images should be pushed. 
 # By default the organization name is `openebs`. 
 
