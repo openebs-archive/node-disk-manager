@@ -73,7 +73,7 @@ ifeq (${IMAGE_ORG}, )
 endif
 
 # Specify the date of build
-DBUILD_DATE=$(shell date +'%Y%m%d%H%M%S')
+DBUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
 # Specify the docker arg for repository url
 ifeq (${DBUILD_REPO_URL}, )
