@@ -119,7 +119,7 @@ DOCKER_IMAGE_EXPORTER:=${IMAGE_ORG}/node-disk-exporter-${XC_ARCH}:ci
 build: clean build.common docker.ndm docker.ndo docker.exporter
 
 .PHONY: build.common
-.build.common: license-check-go version
+build.common: license-check-go version
 
 # Tools required for different make targets or for development purposes
 EXTERNAL_TOOLS=\
