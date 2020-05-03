@@ -114,23 +114,8 @@ type BlockDevice struct {
 	// PartitionInfo contains details if this blockdevice is a partition
 	PartitionInfo PartitionInformation
 
-	// Parent is the parent device of this blockdevice, if it exists.
-	// It will always be a single device.
-	Parent string
-
-	// Partitions is the list of partitions(again blockdevices) for
-	// this blockdevice, if it exists.
-	Partitions []string
-
-	// Holders is the list of blockdevices that are held by this blockdevice.
-	// eg: sda1 can hold dm-0. Then the list of sda1 will contain dm-0.
-	Holders []string
-
-	// Slaves is the list of blockdevices to which this blockdevice is a slave.
-	// Slaves are represented in SysFS under the block device layer,
-	// so they are dependent on the device
-	// eg: dm-0 is a slave to sda1. Then the list of dm-0 will contain sda1
-	Slaves []string
+	// DependentDevices stores the dependent devices
+	DependentDevices DependentBlockDevices
 
 	// TemperatureInfo stores the temperature information of the drive
 	TemperatureInfo TemperatureInformation
@@ -296,6 +281,28 @@ type PartitionInformation struct {
 	PartitionTableType string
 }
 
+// DependentBlockDevices contains path of all devices that are
+// related to this BlockDevice
+type DependentBlockDevices struct {
+	// Parent is the parent device of this blockdevice, if it exists.
+	// It will always be a single device.
+	Parent string
+
+	// Partitions is the list of partitions(again blockdevices) for
+	// this blockdevice, if it exists.
+	Partitions []string
+
+	// Holders is the list of blockdevices that are held by this blockdevice.
+	// eg: sda1 can hold dm-0. Then the list of sda1 will contain dm-0.
+	Holders []string
+
+	// Slaves is the list of blockdevices to which this blockdevice is a slave.
+	// Slaves are represented in SysFS under the block device layer,
+	// so they are dependent on the device
+	// eg: dm-0 is a slave to sda1. Then the list of dm-0 will contain sda1
+	Slaves []string
+}
+
 // Status is used to represent the status of the blockdevice
 type Status struct {
 	// State is the state of this BD like Active(Online), Inactive(Offline) or
@@ -323,3 +330,12 @@ const (
 	// claiming
 	Unclaimed string = "Unclaimed"
 )
+
+// Hierarchy is the block device hierarchy on the system.
+// This map will be used as in memory cache for storing the current state of
+// all block devices on the system. This cache helps to get the details of any
+// dependent blockdevices from a device.
+// eg: If at a certain point, we are processing sda1 and we need to get the UUID
+// of its parent device. We will get /dev/sda is the parent of /dev/sda1.
+// This will be used to query the cache and get/generate the UUID of /dev/sda.
+type Hierarchy map[string]BlockDevice

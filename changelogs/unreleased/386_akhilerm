@@ -1,0 +1,1 @@
+add support for partitions and enable the new UUID algorithm for blockdevice UUID generation

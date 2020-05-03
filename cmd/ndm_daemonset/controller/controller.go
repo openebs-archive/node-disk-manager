@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"os"
 	"sync"
 	"time"
@@ -117,6 +118,8 @@ type Controller struct {
 	NodeAttributes map[string]string
 	// Feature gates for the NDM daemon
 	FeatureGates features.FeatureGate
+	// BDHierarchy stores the hierarchy of devices on this node
+	BDHierarchy blockdevice.Hierarchy
 }
 
 // NewController returns a controller pointer for any error case it will return nil
@@ -247,7 +250,7 @@ func getNamespace() (string, error) {
 // into Kubernetes
 func (c *Controller) WaitForBlockDeviceCRD() {
 	for {
-		_, err := c.ListBlockDeviceResource()
+		_, err := c.ListBlockDeviceResource(false)
 		if err != nil {
 			klog.Errorf("BlockDevice CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
 			time.Sleep(CRDRetryInterval)

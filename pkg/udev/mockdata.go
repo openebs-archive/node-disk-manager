@@ -25,6 +25,7 @@ package udev
 import "C"
 import (
 	"bufio"
+	bd "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 	"io/ioutil"
 	"os"
@@ -49,7 +50,7 @@ type MockOsDiskDetails struct {
 	PartTableUUID  string
 	ByIdDevLinks   []string
 	ByPathDevLinks []string
-	Dependents     hierarchy.DependentDevices
+	Dependents     bd.DependentBlockDevices
 }
 
 // mockDataStructUdev returns C udev struct for unit test.

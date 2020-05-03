@@ -87,7 +87,7 @@ func deviceList() error {
 		return err
 	}
 	// TODO @akhilerm should pass the filter as args to List, so that all devices will be listed
-	diskList, err := ctrl.ListBlockDeviceResource()
+	diskList, err := ctrl.ListBlockDeviceResource(false)
 	if err != nil {
 		return err
 	}

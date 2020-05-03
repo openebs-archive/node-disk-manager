@@ -65,14 +65,12 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 			Path: deviceDetails.DevPath,
 		}
 		dependents, err := devicePath.GetDependents()
+		// TODO if error occurs need to do a scan from the beginning
 		if err != nil {
 			klog.Errorf("could not get dependents for %s, %v", devicePath, err)
 		}
-		deviceDetails.Partitions = dependents.Partitions
-		deviceDetails.Holders = dependents.Holders
-		deviceDetails.Parent = dependents.Parent
-		deviceDetails.Slaves = dependents.Slaves
-		klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
+		deviceDetails.DependentDevices = dependents
+		klog.V(4).Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 	}
 
 	diskInfo = append(diskInfo, deviceDetails)

@@ -301,7 +301,7 @@ func TestListDeviceResource(t *testing.T) {
 	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(newDr)
-	listDevice, err := fakeController.ListBlockDeviceResource()
+	listDevice, err := fakeController.ListBlockDeviceResource(false)
 
 	// TypeMeta should be same
 	typeMeta := newFakeDeviceTypeMeta
@@ -352,7 +352,7 @@ func TestGetExistingDeviceResource(t *testing.T) {
 	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(newDr)
 
-	listDr, err := fakeController.ListBlockDeviceResource()
+	listDr, err := fakeController.ListBlockDeviceResource(false)
 	if err != nil {
 		t.Fatal(err)
 	}
