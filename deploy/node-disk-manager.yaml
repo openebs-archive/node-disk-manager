@@ -2,16 +2,25 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: node-disk-manager
+  labels:
+    app: openebs
+    component: ndm
+    openebs.io/component-name: ndm
 spec:
   updateStrategy:
     type: RollingUpdate
   selector:
     matchLabels:
-      name: node-disk-manager
+      app: openebs
+      component: ndm
+      openebs.io/component-name: ndm
   template:
     metadata:
       labels:
         name: node-disk-manager
+        app: openebs
+        component: ndm
+        openebs.io/component-name: ndm
     spec:
       # By default the node-disk-manager will be run on all kubernetes nodes
       # If you would like to limit this to only some nodes, say the nodes
@@ -23,7 +32,7 @@ spec:
       # Use host network as container network to monitor udev source using netlink
       # to detect disk attach and detach events using fd.
       hostNetwork: true
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-ndm
       containers:
         - name: node-disk-manager
           image: openebs/node-disk-manager-amd64:ci

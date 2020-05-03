@@ -2,23 +2,32 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: ndm-node-exporter
+  labels:
+    app: openebs
+    component: ndm-node-exporter
+    openebs.io/component-name: ndm-node-exporter
 spec:
   updateStrategy:
     type: RollingUpdate
   selector:
     matchLabels:
-      name: ndm-node-exporter
+      app: openebs
+      component: ndm-node-exporter
+      openebs.io/component-name: ndm-node-exporter
   template:
     metadata:
       labels:
         name: ndm-node-exporter
+        app: openebs
+        component: ndm-node-exporter
+        openebs.io/component-name: ndm-node-exporter
       annotations:
         # Annotations added so that prometheus can automatically scrape metrics from the
         # deamon pod on each node
         prometheus.io/scrape: 'true'
         prometheus.io/port: '9101'
     spec:
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-ndm
       containers:
         - name: node-disk-exporter
           image: openebs/node-disk-exporter-amd64:ci

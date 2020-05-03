@@ -2,24 +2,33 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ndm-cluster-exporter
+  labels:
+    app: openebs
+    component: ndm-cluster-exporter
+    openebs.io/component-name: ndm-cluster-exporter
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      name: ndm-cluster-exporter
+      app: openebs
+      component: ndm-cluster-exporter
+      openebs.io/component-name: ndm-cluster-exporter
   template:
     metadata:
       labels:
         name: ndm-cluster-exporter
+        app: openebs
+        component: ndm-cluster-exporter
+        openebs.io/component-name: ndm-cluster-exporter
       annotations:
         # Annotations added so that prometheus can automatically scrape metrics from the
         # exporter
         prometheus.io/scrape: 'true'
         prometheus.io/port: '9100'
     spec:
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-ndm
       containers:
         - name: ndm-cluster-exporter
           image: openebs/node-disk-exporter-amd64:ci

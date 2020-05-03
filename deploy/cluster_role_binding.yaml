@@ -2,16 +2,18 @@
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: openebs-ndm-operator
+  name: openebs-ndm
   namespace: default
+  labels:
+    app: openebs
 subjects:
   - kind: ServiceAccount
-    name: openebs-ndm-operator
+    name: openebs-ndm
     namespace: default
   - kind: User
     name: system:serviceaccount:default:default
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole
-  name: openebs-ndm-operator
+  name: openebs-ndm
   apiGroup: rbac.authorization.k8s.io

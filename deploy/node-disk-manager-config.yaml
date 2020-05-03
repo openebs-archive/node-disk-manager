@@ -4,6 +4,10 @@ kind: ConfigMap
 metadata:
   name: node-disk-manager-config
   namespace: default
+  labels:
+    app: openebs
+    component: ndm-config
+    openebs.io/component-name: ndm-config
 data:
   # node-disk-manager-config contains config of available probes and filters.
   # Probes and Filters will initialize with default values if config for that
