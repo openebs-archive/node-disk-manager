@@ -72,6 +72,8 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 			if err != nil {
 				isErrorDuringUpdate = true
 				klog.Error(err)
+				// if error occurs we should start the scan again
+				break
 			}
 		} else {
 			// if GPTBasedUUID is disabled and the device type is partition,

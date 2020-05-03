@@ -173,6 +173,7 @@ func (up *udevProbe) scan() error {
 				Path: deviceDetails.DevPath,
 			}
 			dependents, err := devicePath.GetDependents()
+			// TODO if error occurs need to do a scan from the beginning
 			if err != nil {
 				klog.Error("error getting dependent devices for ", deviceDetails.DevPath)
 			} else {
