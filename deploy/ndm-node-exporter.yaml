@@ -12,6 +12,11 @@ spec:
     metadata:
       labels:
         name: ndm-node-exporter
+      annotations:
+        # Annotations added so that prometheus can automatically scrape metrics from the
+        # deamon pod on each node
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9101'
     spec:
       serviceAccountName: openebs-ndm-operator
       containers:

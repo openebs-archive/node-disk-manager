@@ -13,6 +13,11 @@ spec:
     metadata:
       labels:
         name: ndm-cluster-exporter
+      annotations:
+        # Annotations added so that prometheus can automatically scrape metrics from the
+        # exporter
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9100'
     spec:
       serviceAccountName: openebs-ndm-operator
       containers:
