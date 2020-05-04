@@ -71,7 +71,6 @@ rules:
 - apiGroups:
   - openebs.io
   resources:
-  - disks
   - blockdevices
   - blockdeviceclaims
   verbs:
