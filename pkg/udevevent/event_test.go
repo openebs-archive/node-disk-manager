@@ -58,6 +58,7 @@ func TestProcess(t *testing.T) {
 
 	deviceDetails.DeviceAttributes.DeviceType = osDiskDetails.DevType
 	deviceDetails.DeviceAttributes.WWN = osDiskDetails.Wwn
+	deviceDetails.DeviceAttributes.Serial = osDiskDetails.Serial
 	deviceDetails.PartitionInfo.PartitionTableUUID = osDiskDetails.PartTableUUID
 
 	deviceDetails.DependentDevices = osDiskDetails.Dependents
