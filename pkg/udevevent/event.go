@@ -54,6 +54,7 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 	// GPTBasedUUID feature-gate is enabled.
 	deviceDetails.DeviceAttributes.DeviceType = device.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
 	deviceDetails.DeviceAttributes.WWN = device.GetPropertyValue(libudevwrapper.UDEV_WWN)
+	deviceDetails.DeviceAttributes.Serial = device.GetPropertyValue(libudevwrapper.UDEV_SERIAL)
 	deviceDetails.PartitionInfo.PartitionTableUUID = device.GetPropertyValue(libudevwrapper.UDEV_PARTITION_TABLE_UUID)
 	deviceDetails.PartitionInfo.PartitionEntryUUID = device.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
 	deviceDetails.FSInfo.FileSystemUUID = device.GetPropertyValue(libudevwrapper.UDEV_FS_UUID)

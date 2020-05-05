@@ -164,11 +164,16 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 
 	// select the field which is to be used for generating UUID
 	//
-	// Serial number is not used for UUID generation. This is because serial number is not
+	// Serial number is not used directly for UUID generation. This is because serial number is not
 	// unique in some cloud environments. For example, in GCP the serial number is
 	// configurable by the --device-name flag while attaching the disk.
 	// If this flag is not provided, GCP automatically assigns the serial number
-	// which is unique only to the node.
+	// which is unique only to the node. Therefore Serial number is used only in cases
+	// where the disk has a WWN.
+	//
+	// If disk has WWN, a combination of WWN+Serial will be used. This is done because there are cases
+	// where the disks has same WWN but different serial. It is seen in some storage arrays.
+	// All the LUNs will have same WWN, but different serial.
 	//
 	// PartitionTableUUID is not used for UUID generation in NDM. The only case where the disk has a PartitionTable
 	// and not partition is when, the user has manually created a partition table without writing any actual partitions.
@@ -187,8 +192,12 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 		uuidField = bd.PartitionInfo.PartitionEntryUUID
 		ok = true
 	case len(bd.DeviceAttributes.WWN) > 0:
-		klog.Infof("device(%s) has a WWN, using WWN: %s", bd.DevPath, bd.DeviceAttributes.WWN)
-		uuidField = bd.DeviceAttributes.WWN
+		// if device has WWN, both WWN and Serial will be used for UUID generation.
+		klog.Infof("device(%s) has a WWN, using WWN: %s and Serial: %s",
+			bd.DevPath,
+			bd.DeviceAttributes.WWN, bd.DeviceAttributes.Serial)
+		uuidField = bd.DeviceAttributes.WWN +
+			bd.DeviceAttributes.Serial
 		ok = true
 	case len(bd.FSInfo.FileSystemUUID) > 0:
 		klog.Infof("device(%s) has a filesystem, using filesystem UUID: %s", bd.DevPath, bd.FSInfo.FileSystemUUID)
