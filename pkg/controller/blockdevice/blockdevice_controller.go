@@ -18,16 +18,17 @@ package blockdevice
 
 import (
 	"context"
+
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/cleaner"
-	//corev1 "k8s.io/api/core/v1"
+	controllerutil "github.com/openebs/node-disk-manager/pkg/controller/util"
+	"github.com/openebs/node-disk-manager/pkg/util"
+
 	"k8s.io/apimachinery/pkg/api/errors"
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -117,11 +118,24 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 			break
 		}
 		if ok {
+			// remove the finalizer string from BlockDevice resource
+			instance.Finalizers = util.RemoveString(instance.Finalizers, controllerutil.BlockDeviceFinalizer)
 			err := r.updateBDStatus(openebsv1alpha1.BlockDeviceUnclaimed, instance)
 			if err != nil {
 				reqLogger.Error(err, "marking blockdevice "+instance.Name+" as Unclaimed failed")
 			}
 		}
+	case openebsv1alpha1.BlockDeviceClaimed:
+		if !util.Contains(instance.GetFinalizers(), controllerutil.BlockDeviceFinalizer) {
+			// finalizer is not present, may be a BlockDevice claimed from previous release
+			instance.Finalizers = append(instance.Finalizers, controllerutil.BlockDeviceFinalizer)
+			err := r.client.Update(context.TODO(), instance)
+			if err != nil {
+				reqLogger.Error(err, "error updating finalizer on "+instance.Name)
+			}
+			reqLogger.Info(instance.Name + " updated with " + controllerutil.BlockDeviceFinalizer + " finalizer")
+		}
+		// if finalizer is already present. do nothing
 	}
 
 	return reconcile.Result{}, nil
