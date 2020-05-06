@@ -57,6 +57,27 @@ func ParseFeatureGate(features []string, defaultFGs []Feature) (FeatureGate, err
 	}
 	// iterate through each feature and set its state onto the FeatureGate map
 	for _, feature := range features {
+		// if feature is just an empty string "", it should be ignored.
+		// This can happen if the image is run from k8s.
+		//
+		// If running from k8s, the container specs will be like
+		// "Cmd": [
+		//        "-v=4",
+		//        "--feature-gates=\"\""
+		//      ],
+		//
+		// If running as a standalone docker image, the container spec will be like
+		// "Cmd": [
+		//        "-v=4",
+		//        "--feature-gates=",
+		//      ],
+		//
+		// The additional escaped double quotes will be parsed as a string with "" by cobra CLI.
+		// Thus we need to remove that empty string while checking for features
+		if len(feature) == 0 {
+			continue
+		}
+
 		var f Feature
 		// by default if a feature gate is provided, it is enabled
 		isEnabled := true

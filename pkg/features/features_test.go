@@ -81,6 +81,14 @@ func TestParseFeatureGate(t *testing.T) {
 			want:    make(map[Feature]bool),
 			wantErr: false,
 		},
+		"feature gate slice with escaped strings": {
+			args: args{
+				features:   []string{"\"\""},
+				defaultFGs: DefaultFeatureGates,
+			},
+			want:    make(map[Feature]bool),
+			wantErr: false,
+		},
 		"a single feature is added": {
 			args: args{
 				features:   []string{"GPTBasedUUID"},
