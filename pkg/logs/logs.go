@@ -33,18 +33,18 @@ func init() {
 	flag.Set("logtostderr", "true")
 }
 
-// GlogWriter serves as a bridge between the standard log package and the glog package.
-type GlogWriter struct{}
+// KlogWriter serves as a bridge between the standard log package and the klog package.
+type KlogWriter struct{}
 
 // Write implements the io.Writer interface.
-func (writer GlogWriter) Write(data []byte) (n int, err error) {
+func (writer KlogWriter) Write(data []byte) (n int, err error) {
 	klog.Info(string(data))
 	return len(data), nil
 }
 
 // InitLogs initializes logs the way we want for kubernetes.
 func InitLogs() {
-	log.SetOutput(GlogWriter{})
+	log.SetOutput(KlogWriter{})
 	log.SetFlags(0)
 	// The default glog flush interval is 30 seconds, which is frighteningly long.
 	go wait.Until(klog.Flush, *logFlushFreq, wait.NeverStop)
@@ -57,5 +57,5 @@ func FlushLogs() {
 
 // NewLogger creates a new log.Logger which sends logs to klog.Info.
 func NewLogger(prefix string) *log.Logger {
-	return log.New(GlogWriter{}, prefix, 0)
+	return log.New(KlogWriter{}, prefix, 0)
 }
