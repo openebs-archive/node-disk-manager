@@ -19,25 +19,26 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
+	"os"
+	"runtime"
+	"time"
+
+	"github.com/openebs/node-disk-manager/pkg/apis"
+	"github.com/openebs/node-disk-manager/pkg/controller"
 	"github.com/openebs/node-disk-manager/pkg/env"
+	ndmlogger "github.com/openebs/node-disk-manager/pkg/logs"
 	"github.com/openebs/node-disk-manager/pkg/setup"
 	"github.com/openebs/node-disk-manager/pkg/upgrade"
 	"github.com/openebs/node-disk-manager/pkg/upgrade/v040_041"
 	"github.com/openebs/node-disk-manager/pkg/upgrade/v041_042"
 	"github.com/openebs/node-disk-manager/pkg/version"
-	"os"
-	"runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 
-	"github.com/openebs/node-disk-manager/pkg/apis"
-	"github.com/openebs/node-disk-manager/pkg/controller"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/ready"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"k8s.io/klog"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -47,17 +48,17 @@ import (
 //ReconciliationInterval defines the triggering interval for reconciliation operation
 const ReconciliationInterval = 5 * time.Second
 
-var log = logf.Log.WithName("ndm-operator")
-
 func printVersion() {
-	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
-	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
-	log.Info(fmt.Sprintf("operator-sdk Version: %v", sdkVersion.Version))
-	log.Info(fmt.Sprintf("Version Tag: %s", version.GetVersion()))
-	log.Info(fmt.Sprintf("Git Commit: %s", version.GetGitCommit()))
+	klog.Infof("Go Version: %s", runtime.Version())
+	klog.Infof("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH)
+	klog.Infof("operator-sdk Version: %v", sdkVersion.Version)
+	klog.Infof("Version Tag: %s", version.GetVersion())
+	klog.Infof("Git Commit: %s", version.GetGitCommit())
 }
 
 func main() {
+	// define klog flags
+	klog.InitFlags(nil)
 	flag.Parse()
 
 	// The logger instantiated here can be changed to any logger
@@ -66,18 +67,22 @@ func main() {
 	// uniform and structured logs.
 	logf.SetLogger(logf.ZapLogger(false))
 
+	// Init logging
+	ndmlogger.InitLogs()
+	defer ndmlogger.FlushLogs()
+
 	printVersion()
 
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
-		log.Error(err, "failed to get watch namespace")
+		klog.Errorf("Failed to get watch namespace: %v", err)
 		os.Exit(1)
 	}
 
 	// Get a config to talk to the apiserver
 	cfg, err := config.GetConfig()
 	if err != nil {
-		log.Error(err, "")
+		klog.Errorf("Failed to get config: %v", err)
 		os.Exit(1)
 	}
 
@@ -87,7 +92,7 @@ func main() {
 	r := ready.NewFileReady()
 	err = r.Set()
 	if err != nil {
-		log.Error(err, "")
+		klog.Errorf("Checking for /tmp/operator-sdk-ready failed: %v", err)
 		os.Exit(1)
 	}
 	defer r.Unset()
@@ -97,61 +102,61 @@ func main() {
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &reconInterval})
 	if err != nil {
-		log.Error(err, "")
+		klog.Errorf("Failed to create a new manager: %v", err)
 		os.Exit(1)
 	}
 
 	// check if CRDs need to be installed.
 	// The OPENEBS_IO_INSTALL_CRD env is checked
 	if env.IsInstallCRDEnabled() {
-		log.Info("Installing the components")
+		klog.Info("Installing the components")
 		// get a new install setup
 		setupConfig, err := setup.NewInstallSetup(cfg)
 		if err != nil {
-			log.Error(err, "")
+			klog.Errorf("Unable to get config for setting up CRDs: %v", err)
 			os.Exit(1)
 		}
 
 		// install the components
 		if err = setupConfig.Install(); err != nil {
-			log.Error(err, "")
+			klog.Errorf("Failed to setup CRDs: %v", err)
 			os.Exit(1)
 		}
 	}
 
-	log.Info("Registering Components")
+	klog.Info("Registering Components")
 
 	// Setup Scheme for all resources
 	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
-		log.Error(err, "")
+		klog.Errorf("Failed to add APIs to scheme: %v", err)
 		os.Exit(1)
 	}
 
 	// Upgrade the components if required
 	k8sClient, err := client.New(cfg, client.Options{})
 	if err != nil {
-		log.Error(err, "")
+		klog.Errorf("Failed to get client: %v", err)
 		os.Exit(1)
 	}
 
-	log.Info("Check if CR has to be upgraded, and perform upgrade")
+	klog.Info("Check if CR has to be upgraded, and perform upgrade")
 	err = performUpgrade(k8sClient)
 	if err != nil {
-		log.Error(err, "Upgrade failed")
+		klog.Errorf("Upgrade failed: %v", err)
 		os.Exit(1)
 	}
 
 	// Setup all Controllers
 	if err := controller.AddToManager(mgr); err != nil {
-		log.Error(err, "")
+		klog.Errorf("Error setting up controller: %v", err)
 		os.Exit(1)
 	}
 
-	log.Info("Starting the ndm-operator...")
+	klog.Info("Starting the ndm-operator...")
 
 	// Start the Cmd
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
-		log.Error(err, "manager exited non-zero")
+		klog.Errorf("Manager exited non-zero: %v", err)
 		os.Exit(1)
 	}
 }

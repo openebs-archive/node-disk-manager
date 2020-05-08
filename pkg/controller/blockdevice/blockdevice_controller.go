@@ -27,21 +27,14 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
-
-var log = logf.Log.WithName("controller_device")
-
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
 
 // Add creates a new BlockDevice Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -87,7 +80,6 @@ type ReconcileBlockDevice struct {
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	// Fetch the BlockDevice instance
 	instance := &openebsv1alpha1.BlockDevice{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
@@ -109,20 +101,22 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 
 	switch instance.Status.ClaimState {
 	case openebsv1alpha1.BlockDeviceReleased:
+		klog.V(2).Infof("%s is in Released state", instance.Name)
 		jobController := cleaner.NewJobController(r.client, request.Namespace)
 		cleanupTracker := &cleaner.CleanupStatusTracker{JobController: jobController}
 		bdCleaner := cleaner.NewCleaner(r.client, request.Namespace, cleanupTracker)
 		ok, err := bdCleaner.Clean(instance)
 		if err != nil {
-			reqLogger.Error(err, "error while cleaning")
+			klog.Errorf("Error while cleaning %s: %v", instance.Name, err)
 			break
 		}
 		if ok {
 			// remove the finalizer string from BlockDevice resource
 			instance.Finalizers = util.RemoveString(instance.Finalizers, controllerutil.BlockDeviceFinalizer)
+			klog.Infof("Cleanup completed for %s", instance.Name)
 			err := r.updateBDStatus(openebsv1alpha1.BlockDeviceUnclaimed, instance)
 			if err != nil {
-				reqLogger.Error(err, "marking blockdevice "+instance.Name+" as Unclaimed failed")
+				klog.Errorf("Failed to mark %s as Unclaimed: %v", instance.Name, err)
 			}
 		}
 	case openebsv1alpha1.BlockDeviceClaimed:
@@ -131,9 +125,9 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 			instance.Finalizers = append(instance.Finalizers, controllerutil.BlockDeviceFinalizer)
 			err := r.client.Update(context.TODO(), instance)
 			if err != nil {
-				reqLogger.Error(err, "error updating finalizer on "+instance.Name)
+				klog.Errorf("Error updating finalizer on %s: %v", instance.Name, err)
 			}
-			reqLogger.Info(instance.Name + " updated with " + controllerutil.BlockDeviceFinalizer + " finalizer")
+			klog.Infof("%s updated with %s finalizer", instance.Name, controllerutil.BlockDeviceFinalizer)
 		}
 		// if finalizer is already present. do nothing
 	}

@@ -28,21 +28,18 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
-
-var log = logf.Log.WithName("controller_deviceclaim")
 
 // Add creates a new BlockDeviceClaim Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -88,9 +85,8 @@ type ReconcileBlockDeviceClaim struct {
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-
 	// Fetch the BlockDeviceClaim instance
+
 	instance := &apis.BlockDeviceClaim{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
@@ -113,24 +109,25 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 	case apis.BlockDeviceClaimStatusPending:
 		fallthrough
 	case apis.BlockDeviceClaimStatusEmpty:
-		reqLogger.Info("BlockDeviceClaim State is:" + string(instance.Status.Phase))
+		klog.Infof("BDC %s claim phase is: %s", instance.Name, instance.Status.Phase)
 		// claim the BD only if deletion time stamp is not set.
 		// since BDC can now have multiple finalizers, we should not claim a
 		// BD if its deletiontime stamp is set.
 		if instance.DeletionTimestamp.IsZero() {
-			err := r.claimDeviceForBlockDeviceClaim(instance, reqLogger)
+			err := r.claimDeviceForBlockDeviceClaim(instance)
 			if err != nil {
-				reqLogger.Error(err, "BlockDeviceClaim "+instance.ObjectMeta.Name+" failed")
+				klog.Errorf("%s failed to claim: %v", instance.Name, err)
 				return reconcile.Result{}, err
 			}
 		}
+		// TODO @akhilerm this phase should be moved out from ClaimPhase and will be a reason for not claiming
 	case apis.BlockDeviceClaimStatusInvalidCapacity:
 		// currently for invalid capacity, the BDC will remain in that state
-		reqLogger.Info("BlockDeviceClaim State is:" + string(instance.Status.Phase))
+		klog.Infof("%s claim phase is: %s", instance.Name, instance.Status.Phase)
 	case apis.BlockDeviceClaimStatusDone:
-		err := r.FinalizerHandling(instance, reqLogger)
+		err := r.FinalizerHandling(instance)
 		if err != nil {
-			reqLogger.Error(err, "Finalizer handling failed", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
+			klog.Errorf("Finalizer handling failed for %s: %v", instance.Name, err)
 			return reconcile.Result{}, err
 		}
 	}
@@ -140,8 +137,7 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 
 // claimDeviceForBlockDeviceClaim is created, try to determine blockdevice which is
 // free and has size equal/greater than BlockDeviceClaim request.
-func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
-	instance *apis.BlockDeviceClaim, reqLogger logr.Logger) error {
+func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(instance *apis.BlockDeviceClaim) error {
 
 	config := blockdevice.NewConfig(&instance.Spec, r.client)
 
@@ -155,7 +151,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 			instance.Status.Phase = apis.BlockDeviceClaimStatusInvalidCapacity
 			err1 := r.updateClaimStatus(instance.Status.Phase, instance)
 			if err1 != nil {
-				reqLogger.Error(err1, "Invalid Capacity requested")
+				klog.Errorf("%s requested an invalid capacity: %v", instance.Name, err1)
 				return err1
 			}
 			return err
@@ -173,12 +169,12 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 
 	selectedDevice, err := config.Filter(bdList)
 	if err != nil {
-		reqLogger.Error(err, "Error selecting device")
+		klog.Errorf("Error selecting device for %s: %v", instance.Name, err)
 		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 	} else {
 		instance.Spec.BlockDeviceName = selectedDevice.Name
 		instance.Status.Phase = apis.BlockDeviceClaimStatusDone
-		err = r.claimBlockDevice(selectedDevice, instance, reqLogger)
+		err = r.claimBlockDevice(selectedDevice, instance)
 		if err != nil {
 			return err
 		}
@@ -192,8 +188,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(
 }
 
 // FinalizerHandling removes the finalizer from the claim resource
-func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
-	instance *apis.BlockDeviceClaim, reqLogger logr.Logger) error {
+func (r *ReconcileBlockDeviceClaim) FinalizerHandling(instance *apis.BlockDeviceClaim) error {
 
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
 		return nil
@@ -205,15 +200,16 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(
 	if len(instance.ObjectMeta.Finalizers) == 1 &&
 		util.Contains(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer) {
 		// Finalizer is set, lets handle external dependency
-		if err := r.releaseClaimedBlockDevice(instance, reqLogger); err != nil {
-			reqLogger.Error(err, "Could not delete external dependency", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
+		if err := r.releaseClaimedBlockDevice(instance); err != nil {
+			klog.Errorf("Error releasing claimed block device %s from %s: %v",
+				instance.Spec.BlockDeviceName, instance.Name, err)
 			return err
 		}
 
 		// Remove finalizer from list and update it.
 		instance.ObjectMeta.Finalizers = util.RemoveString(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer)
 		if err := r.client.Update(context.TODO(), instance); err != nil {
-			reqLogger.Error(err, "Could not remove finalizer", "BlockDeviceClaim-CR:", instance.ObjectMeta.Name)
+			klog.Errorf("Error removing finalizer from %s", instance.Name)
 			return err
 		}
 	}
@@ -238,11 +234,11 @@ func (r *ReconcileBlockDeviceClaim) updateClaimStatus(phase apis.DeviceClaimPhas
 
 // isDeviceRequestedByThisDeviceClaim checks whether a claimed block device belongs to the given BDC
 func (r *ReconcileBlockDeviceClaim) isDeviceRequestedByThisDeviceClaim(
-	instance *apis.BlockDeviceClaim, item apis.BlockDevice,
-	reqLogger logr.Logger) bool {
+	instance *apis.BlockDeviceClaim, item apis.BlockDevice) bool {
 
 	if item.Status.ClaimState != apis.BlockDeviceClaimed {
 		return false
+
 	}
 
 	if item.Spec.ClaimRef.Name != instance.ObjectMeta.Name {
@@ -261,9 +257,9 @@ func (r *ReconcileBlockDeviceClaim) isDeviceRequestedByThisDeviceClaim(
 
 // releaseClaimedBlockDevice releases the block device claimed by this BlockDeviceClaim
 func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
-	instance *apis.BlockDeviceClaim, reqLogger logr.Logger) error {
+	instance *apis.BlockDeviceClaim) error {
 
-	reqLogger.Info("Deleting external dependencies for CR:" + instance.Name)
+	klog.Infof("Releasing claimed block device %s from %s", instance.Spec.BlockDeviceName, instance.Name)
 
 	//Get BlockDevice list on all nodes
 	//empty selector is used to select everything.
@@ -275,7 +271,7 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 
 	// Check if same deviceclaim holding the ObjRef
 	for _, item := range bdList.Items {
-		if !r.isDeviceRequestedByThisDeviceClaim(instance, item, reqLogger) {
+		if !r.isDeviceRequestedByThisDeviceClaim(instance, item) {
 			continue
 		}
 
@@ -286,7 +282,7 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 		dvr.Status.ClaimState = apis.BlockDeviceReleased
 		err := r.client.Update(context.TODO(), dvr)
 		if err != nil {
-			reqLogger.Error(err, "Error while updating ObjRef", "BlockDevice-CR:", dvr.ObjectMeta.Name)
+			klog.Errorf("Error updating ClaimRef of %s: %v", dvr.Name, err)
 			return err
 		}
 	}
@@ -294,8 +290,7 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 }
 
 // claimBlockDevice is used to claim the passed on blockdevice
-func (r *ReconcileBlockDeviceClaim) claimBlockDevice(bd *apis.BlockDevice,
-	instance *apis.BlockDeviceClaim, reqLogger logr.Logger) error {
+func (r *ReconcileBlockDeviceClaim) claimBlockDevice(bd *apis.BlockDevice, instance *apis.BlockDeviceClaim) error {
 	claimRef, err := reference.GetReference(r.scheme, instance)
 	if err != nil {
 		return fmt.Errorf("error getting claim reference for BDC:%s, %v", instance.ObjectMeta.Name, err)
@@ -308,7 +303,7 @@ func (r *ReconcileBlockDeviceClaim) claimBlockDevice(bd *apis.BlockDevice,
 	if err != nil {
 		return fmt.Errorf("error while updating BD:%s, %v", bd.ObjectMeta.Name, err)
 	}
-	reqLogger.Info("Block Device " + bd.Name + " claimed")
+	klog.Infof("%s claimed by %s", bd.Name, instance.Name)
 	return nil
 }
 
