@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/openebs/node-disk-manager/pkg/env"
 	"github.com/openebs/node-disk-manager/pkg/setup"
 	"github.com/openebs/node-disk-manager/pkg/upgrade"
 	"github.com/openebs/node-disk-manager/pkg/upgrade/v040_041"
@@ -100,18 +101,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Info("Installing the components")
-	// get a new install setup
-	setupConfig, err := setup.NewInstallSetup(cfg)
-	if err != nil {
-		log.Error(err, "")
-		os.Exit(1)
-	}
+	// check if CRDs need to be installed.
+	// The OPENEBS_IO_INSTALL_CRD env is checked
+	if env.IsInstallCRDEnabled() {
+		log.Info("Installing the components")
+		// get a new install setup
+		setupConfig, err := setup.NewInstallSetup(cfg)
+		if err != nil {
+			log.Error(err, "")
+			os.Exit(1)
+		}
 
-	// install the components
-	if err = setupConfig.Install(); err != nil {
-		log.Error(err, "")
-		os.Exit(1)
+		// install the components
+		if err = setupConfig.Install(); err != nil {
+			log.Error(err, "")
+			os.Exit(1)
+		}
 	}
 
 	log.Info("Registering Components")
