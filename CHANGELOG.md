@@ -1,3 +1,8 @@
+v0.5.0-RC2 / 2020-05-13
+========================
+
+  * add env to enable/disable CRD installation ([#421](https://github.com/openebs/node-disk-manager/pull/421), [@akhilerm](https://github.com/akhilerm))
+  
 v0.5.0-RC1 / 2020-05-08
 ========================
 
