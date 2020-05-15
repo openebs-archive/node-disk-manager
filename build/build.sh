@@ -34,7 +34,7 @@ moveCompiled(){
     OLDIFS=$IFS
     IFS=: MAIN_GOPATH=("$GOPATH")
     IFS=$OLDIFS
-    
+
     # Create the gopath bin if not already available
     mkdir -p "${MAIN_GOPATH[*]}"/bin/
 
@@ -47,6 +47,35 @@ moveCompiled(){
     done
 
     echo "Moved all the compiled things successfully to :${MAIN_GOPATH[*]}/bin/"
+}
+
+moveCompiledBuildx(){
+    GOPATH=${GOPATH:-$(go env GOPATH)}
+    OLDIFS=$IFS
+    IFS=: MAIN_GOPATH=("$GOPATH")
+    IFS=$OLDIFS
+
+    # Create the gopath bin if not already available
+    mkdir -p "${MAIN_GOPATH[*]}"/bin/
+
+    # Copy our OS/Arch to ${MAIN_GOPATH}/bin/ directory
+    DEV_PLATFORM="./bin"
+    cp -r "${DEV_PLATFORM}" "${MAIN_GOPATH[*]}"/bin/
+
+    echo "Moved all the compiled things successfully to :${MAIN_GOPATH[*]}/bin/"
+}
+
+# Buildx
+buildx(){
+    output_name="bin/$CTLNAME"
+    echo "Building for: ${GOOS} ${GOARCH}"
+    gox -cgo -os="$GOOS" -arch="$GOARCH" -ldflags \
+        "-X github.com/openebs/node-disk-manager/pkg/version.GitCommit=${GIT_COMMIT} \
+        -X main.CtlName='${CTLNAME}' \
+        -X github.com/openebs/node-disk-manager/pkg/version.Version=${VERSION}" \
+        -output="$output_name" \
+        ./cmd/"$BUILDPATH"
+    echo "Buildx Successfully built: ${CTLNAME}"
 }
 
 # Build
@@ -63,11 +92,11 @@ build(){
             fi
             echo "Building for: ${GOOS} ${GOARCH}"
             gox -cgo -os="$GOOS" -arch="$GOARCH" -ldflags \
-               "-X github.com/openebs/node-disk-manager/pkg/version.GitCommit=${GIT_COMMIT} \
+                "-X github.com/openebs/node-disk-manager/pkg/version.GitCommit=${GIT_COMMIT} \
                 -X main.CtlName='${CTLNAME}' \
                 -X github.com/openebs/node-disk-manager/pkg/version.Version=${VERSION}" \
                 -output="$output_name" \
-               ./cmd/"$BUILDPATH"
+                ./cmd/"$BUILDPATH"
         done
     done
     echo "Successfully built: ${CTLNAME}"
@@ -93,9 +122,9 @@ VERSION="ci"
 
 if [ -n "${TRAVIS_TAG}" ] ;
 then
-  # When github is tagged with a release, then Travis will
-  # set the release tag in env TRAVIS_TAG
-  VERSION="${TRAVIS_TAG}"
+    # When github is tagged with a release, then Travis will
+    # set the release tag in env TRAVIS_TAG
+    VERSION="${TRAVIS_TAG}"
 fi;
 
 
@@ -117,9 +146,14 @@ fi
 
 # Build!
 echo "==> Building ${CTLNAME} ..."
-build
-
-# Move all the compiled things to the $GOPATH/bin
-moveCompiled
+if [[ ${BUILDX} ]]; then
+    buildx
+    # Move all the compiled things to the $GOPATH/bin
+    moveCompiledBuildx
+else
+    build
+    # Move all the compiled things to the $GOPATH/bin
+    moveCompiled
+fi
 
 ls -hl bin
