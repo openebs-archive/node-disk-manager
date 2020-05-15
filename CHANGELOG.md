@@ -1,3 +1,31 @@
+v0.5.0 / 2020-05-15
+========================
+
+  * add support for blockdevice metrics using seachest ([#349](https://github.com/openebs/node-disk-manager/pull/349), [@akhilerm](https://github.com/akhilerm))
+  * add ppc64le builds ([#374](https://github.com/openebs/node-disk-manager/pull/374), [@Pensu](https://github.com/Pensu))
+  * add support for partitions and enable the new UUID algorithm for blockdevice UUID generation ([#386](https://github.com/openebs/node-disk-manager/pull/386), [@akhilerm](https://github.com/akhilerm))
+  * add OpenEBS to the list of default excluded vendors ([#409](https://github.com/openebs/node-disk-manager/pull/409), [@akhilerm](https://github.com/akhilerm))
+  * add new filter to validate BlockDevices and remove invalid entries ([#410](https://github.com/openebs/node-disk-manager/pull/410), [@akhilerm](https://github.com/akhilerm))
+  * remove controller for cluster scoped disk resource ([#412](https://github.com/openebs/node-disk-manager/pull/412), [@akhilerm](https://github.com/akhilerm))
+  * add finalizer on claimed BlockDevice resource to prevent accidental deletion ([#416](https://github.com/openebs/node-disk-manager/pull/416), [@akhilerm](https://github.com/akhilerm))
+  * add env to enable/disable CRD installation ([#421](https://github.com/openebs/node-disk-manager/pull/421), [@akhilerm](https://github.com/akhilerm))
+
+v0.5.0-RC2 / 2020-05-13
+========================
+
+  * add env to enable/disable CRD installation ([#421](https://github.com/openebs/node-disk-manager/pull/421), [@akhilerm](https://github.com/akhilerm))
+  
+v0.5.0-RC1 / 2020-05-08
+========================
+
+  * add support for blockdevice metrics using seachest ([#349](https://github.com/openebs/node-disk-manager/pull/349), [@akhilerm](https://github.com/akhilerm))
+  * add ppc64le builds ([#374](https://github.com/openebs/node-disk-manager/pull/374), [@Pensu](https://github.com/Pensu))
+  * add support for partitions and enable the new UUID algorithm for blockdevice UUID generation ([#386](https://github.com/openebs/node-disk-manager/pull/386), [@akhilerm](https://github.com/akhilerm))
+  * add OpenEBS to the list of default excluded vendors ([#409](https://github.com/openebs/node-disk-manager/pull/409), [@akhilerm](https://github.com/akhilerm))
+  * add new filter to validate BlockDevices and remove invalid entries ([#410](https://github.com/openebs/node-disk-manager/pull/410), [@akhilerm](https://github.com/akhilerm))
+  * remove controller for cluster scoped disk resource ([#412](https://github.com/openebs/node-disk-manager/pull/412), [@akhilerm](https://github.com/akhilerm))
+  * add finalizer on claimed BlockDevice resource to prevent accidental deletion ([#416](https://github.com/openebs/node-disk-manager/pull/416), [@akhilerm](https://github.com/akhilerm))
+
 v0.4.9 / 2020-04-15
 ========================
 
