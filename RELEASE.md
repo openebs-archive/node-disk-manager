@@ -30,16 +30,16 @@ Once the release is triggered, Travis build process has to be monitored. Once Tr
 
 Images for the different components are published at the following location depending on the architecture (amd64, arm64, ppc64le):
 
-- Node Disk Manager Daemon  
-    https://quay.io/repository/openebs/node-disk-manager-{ARCH}?tab=tags  
+- Node Disk Manager Daemon
+    https://quay.io/repository/openebs/node-disk-manager-{ARCH}?tab=tags
     https://hub.docker.com/r/openebs/node-disk-manager-{ARCH}/tags
 
-- Node Disk Operator  
-    https://quay.io/repository/openebs/node-disk-operator-{ARCH}?tab=tags  
+- Node Disk Operator
+    https://quay.io/repository/openebs/node-disk-operator-{ARCH}?tab=tags
     https://hub.docker.com/r/openebs/node-disk-operator-{ARCH}/tags
 
-- Node Disk Exporter  
-    https://quay.io/repository/openebs/node-disk-exporter-{ARCH}?tab=tags  
+- Node Disk Exporter
+    https://quay.io/repository/openebs/node-disk-exporter-{ARCH}?tab=tags
     https://hub.docker.com/r/openebs/node-disk-exporter-{ARCH}/tags
 
 

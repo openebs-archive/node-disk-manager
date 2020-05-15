@@ -6,9 +6,9 @@ go:
 
 env:
   global:
-   - ARCH=$(go env GOARCH)
-   - TAG="ci"
-   - CODECOV_TOKEN="d1e39bea-f800-45de-8266-3e9b85e2594a"
+    - ARCH=$(go env GOARCH)
+    - TAG="ci"
+    - CODECOV_TOKEN="d1e39bea-f800-45de-8266-3e9b85e2594a"
 
 sudo: required
 

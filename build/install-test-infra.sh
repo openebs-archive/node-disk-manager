@@ -6,6 +6,7 @@
 # only on that platform
 
 ARCH=$1
+
 if [ -z "$ARCH" ]; then
   echo "Test Infra platform not specified. Exiting. "
   exit 1

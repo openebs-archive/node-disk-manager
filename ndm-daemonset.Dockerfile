@@ -14,11 +14,28 @@
 #
 # This Dockerfile builds node-disk-manager
 #
+FROM golang:1.14 as build
 
-#Set the base image
-FROM @BASEIMAGE@
+ARG TARGETPLATFORM
 
-ARG ARCH
+ENV GO111MODULE=on \
+  CGO_ENABLED=1 \
+  DEBIAN_FRONTEND=noninteractive \
+  PATH="/root/go/bin:${PATH}"
+
+WORKDIR /go/src/github.com/openebs/node-disk-manager/
+
+RUN apt-get update && apt-get install -y make git
+
+COPY . .
+
+RUN export GOOS=$(echo ${TARGETPLATFORM} | cut -d / -f1) && \
+  export GOARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2) && \
+  GOARM=$(echo ${TARGETPLATFORM} | cut -d / -f3 | cut -c2-) && \
+  make buildx.ndm
+
+FROM ubuntu
+
 ARG DBUILD_DATE
 ARG DBUILD_REPO_URL
 ARG DBUILD_SITE_URL
@@ -30,10 +47,7 @@ LABEL org.label-schema.build-date=$DBUILD_DATE
 LABEL org.label-schema.vcs-url=$DBUILD_REPO_URL
 LABEL org.label-schema.url=$DBUILD_SITE_URL
 
-#Copy binary to /usr/sbin/ndm
-COPY bin/${ARCH}/ndm /usr/sbin/ndm
-COPY build/ndm-daemonset/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --from=build /go/src/github.com/openebs/node-disk-manager/bin/ndm /usr/sbin/ndm
+COPY --from=build /go/src/github.com/openebs/node-disk-manager/build/ndm-daemonset/entrypoint.sh /usr/local/bin/entrypoint.sh
 
-
-#Set the default command
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

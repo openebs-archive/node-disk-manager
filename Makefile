@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Default behaviour is not to use BUILDX until the Travis workflow is deprecated.
+BUILDX:=false
+
 # ==============================================================================
 # Build Options
 
@@ -51,21 +54,21 @@ endif
 export BASEIMAGE
 
 # The images can be pushed to any docker/image registeries
-# like docker hub, quay. The registries are specified in 
+# like docker hub, quay. The registries are specified in
 # the `build/push` script.
 #
 # The images of a project or company can then be grouped
 # or hosted under a unique organization key like `openebs`
 #
-# Each component (container) will be pushed to a unique 
-# repository under an organization. 
-# Putting all this together, an unique uri for a given 
+# Each component (container) will be pushed to a unique
+# repository under an organization.
+# Putting all this together, an unique uri for a given
 # image comprises of:
 #   <registry url>/<image org>/<image repo>:<image-tag>
 #
-# IMAGE_ORG can be used to customize the organization 
-# under which images should be pushed. 
-# By default the organization name is `openebs`. 
+# IMAGE_ORG can be used to customize the organization
+# under which images should be pushed.
+# By default the organization name is `openebs`.
 
 ifeq (${IMAGE_ORG}, )
   IMAGE_ORG="openebs"
@@ -123,7 +126,7 @@ build.common: license-check-go version
 
 # Tools required for different make targets or for development purposes
 EXTERNAL_TOOLS=\
-	github.com/mitchellh/gox \
+	github.com/mitchellh/gox
 
 # Bootstrap the build by downloading additional tools
 .PHONY: bootstrap
@@ -136,7 +139,7 @@ bootstrap:
 .PHONY: install-dep
 install-dep:
 	@echo "--> Installing external dependencies for building node-disk-manager"
-	$(PWD)/build/install-dep.sh
+	@sudo $(PWD)/build/install-dep.sh
 
 .PHONY: install-test-infra
 install-test-infra:
@@ -159,8 +162,6 @@ vet:
 .PHONY: fmt
 fmt:
 	find . -type f -name "*.go" | grep -v "./vendor/*" | xargs gofmt -s -w -l
-
-
 
 # shellcheck target for checking shell scripts linting
 .PHONY: shellcheck
@@ -205,7 +206,7 @@ build.ndm:
 	@echo
 
 .PHONY: docker.ndm
-docker.ndm: build.ndm Dockerfile.ndm 
+docker.ndm: build.ndm Dockerfile.ndm
 	@echo "--> Building docker image for ndm-daemonset..."
 	@sudo docker build -t "$(DOCKER_IMAGE_NDM)" ${DBUILD_ARGS} -f Dockerfile.ndm .
 	@echo "--> Build docker image: $(DOCKER_IMAGE_NDM)"
@@ -220,7 +221,7 @@ build.ndo:
 	@echo
 
 .PHONY: docker.ndo
-docker.ndo: build.ndo Dockerfile.ndo 
+docker.ndo: build.ndo Dockerfile.ndo
 	@echo "--> Building docker image for ndm-operator..."
 	@sudo docker build -t "$(DOCKER_IMAGE_NDO)" ${DBUILD_ARGS} -f Dockerfile.ndo .
 	@echo "--> Build docker image: $(DOCKER_IMAGE_NDO)"
@@ -244,7 +245,7 @@ docker.exporter: build.exporter Dockerfile.exporter
 .PHONY: deps
 deps: header
 	@echo '--> Resolving dependencies...'
-	go mod tidy 
+	go mod tidy
 	go mod verify
 	go mod vendor
 	@echo '--> Depedencies resolved.'
@@ -277,7 +278,12 @@ license-check-go:
 	@echo
 
 .PHONY: push
-push: 
+push:
 	DIMAGE=${IMAGE_ORG}/node-disk-manager-${XC_ARCH} ./build/push;
 	DIMAGE=${IMAGE_ORG}/node-disk-operator-${XC_ARCH} ./build/push;
 	DIMAGE=${IMAGE_ORG}/node-disk-exporter-${XC_ARCH} ./build/push;
+
+#-----------------------------------------------------------------------------
+# Target: docker.buildx.ndm docker.buildx.ndo docker.buildx.exporter
+#-----------------------------------------------------------------------------
+include Makefile.buildx.mk
