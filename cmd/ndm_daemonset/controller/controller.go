@@ -43,8 +43,6 @@ const (
 	FalseString = "false"
 	// TrueString contains string value of true
 	TrueString = "true"
-	// NDMDiskKind is the Disk kind CR.
-	NDMDiskKind = "Disk"
 	// NDMBlockDeviceKind is the Device kind CR.
 	NDMBlockDeviceKind = "BlockDevice"
 	// kubernetesLabelPrefix is the prefix for k8s labels
