@@ -18,10 +18,12 @@ package command
 
 import (
 	goflag "flag"
+
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/pkg/features"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/openebs/node-disk-manager/pkg/version"
 
-	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/klog"
@@ -39,6 +41,12 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 		Short: "ndm controls the Node-Disk-Manager ",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			util.CheckErr(RunNodeDiskManager(cmd), util.Fatal)
+
+			// set the feature gates on NDM daemon
+			err := features.DefaultFeatureGates.SetFeatureGate(options.FeatureGate)
+			if err != nil {
+				klog.Fatalf("error setting feature gate: %v", err)
+			}
 		},
 	}
 
