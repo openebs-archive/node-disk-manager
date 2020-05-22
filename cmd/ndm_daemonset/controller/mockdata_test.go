@@ -22,101 +22,19 @@ import (
 
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ndmFakeClientset "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 const (
-	fakeDiskUID     = "fake-disk-uid"
-	newFakeDiskUID  = "new-fake-disk-uid"
-	fakeHostName    = "fake-host-name"
-	newFakeHostName = "new-fake-host-name"
+	fakeHostName = "fake-host-name"
 
 	fakeDeviceUID    = "fake-blockdevice-uid"
 	newFakeDeviceUID = "new-fake-blockdevice-uid"
 )
 
 var (
-	// mock data for new disk.
-	fakeCapacity = apis.DiskCapacity{
-		Storage: 100000,
-	}
-
-	fakeDetails = apis.DiskDetails{
-		Model:  "disk-fake-model",
-		Serial: "disk-fake-serial",
-		Vendor: "disk-fake-vendor",
-	}
-
-	fakeObj = apis.DiskSpec{
-		Path:     "dev/disk-fake-path",
-		Capacity: fakeCapacity,
-		Details:  fakeDetails,
-		DevLinks: make([]apis.DiskDevLink, 0),
-	}
-
-	fakeTypeMeta = metav1.TypeMeta{
-		Kind:       NDMDiskKind,
-		APIVersion: NDMVersion,
-	}
-
-	fakeObjectMeta = metav1.ObjectMeta{
-		Labels: make(map[string]string),
-		Name:   fakeDiskUID,
-	}
-
-	fakeDiskStatus = apis.DiskStatus{
-		State: NDMActive,
-	}
-
-	fakeDr = apis.Disk{
-		TypeMeta:   fakeTypeMeta,
-		ObjectMeta: fakeObjectMeta,
-		Spec:       fakeObj,
-		Status:     fakeDiskStatus,
-	}
-
-	// mock data for new disk.
-	newFakeCapacity = apis.DiskCapacity{
-		Storage: 200000,
-	}
-
-	newFakeDetails = apis.DiskDetails{
-		Model:  "disk-fake-model-new",
-		Serial: "disk-fake-serial-new",
-		Vendor: "disk-fake-vendor-new",
-	}
-
-	newFakeObj = apis.DiskSpec{
-		Path:     "dev/disk-fake-path-new",
-		Capacity: newFakeCapacity,
-		Details:  newFakeDetails,
-		DevLinks: make([]apis.DiskDevLink, 0),
-	}
-
-	newFakeTypeMeta = metav1.TypeMeta{
-		Kind:       NDMDiskKind,
-		APIVersion: NDMVersion,
-	}
-
-	newFakeObjectMeta = metav1.ObjectMeta{
-		Labels: make(map[string]string),
-		Name:   newFakeDiskUID,
-	}
-
-	newFakeDiskStatus = apis.DiskStatus{
-		State: NDMActive,
-	}
-
-	newFakeDr = apis.Disk{
-		TypeMeta:   newFakeTypeMeta,
-		ObjectMeta: newFakeObjectMeta,
-		Spec:       newFakeObj,
-		Status:     newFakeDiskStatus,
-	}
-
 	// mock data for blockdevice
 	fakeDeviceCapacity = apis.DeviceCapacity{
 		Storage: 100000,
@@ -200,19 +118,6 @@ var (
 )
 
 func CreateFakeClient(t *testing.T) client.Client {
-	diskR := &apis.Disk{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: make(map[string]string),
-			Name:   "dummy-disk",
-		},
-	}
-
-	diskList := &apis.DiskList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Disk",
-			APIVersion: "",
-		},
-	}
 
 	deviceR := &apis.BlockDevice{
 		ObjectMeta: metav1.ObjectMeta{
@@ -228,15 +133,12 @@ func CreateFakeClient(t *testing.T) client.Client {
 		},
 	}
 
-	objs := []runtime.Object{diskR}
 	s := scheme.Scheme
 
-	s.AddKnownTypes(apis.SchemeGroupVersion, diskR)
-	s.AddKnownTypes(apis.SchemeGroupVersion, diskList)
 	s.AddKnownTypes(apis.SchemeGroupVersion, deviceR)
 	s.AddKnownTypes(apis.SchemeGroupVersion, deviceList)
 
-	fakeNdmClient := ndmFakeClientset.NewFakeClient(objs...)
+	fakeNdmClient := ndmFakeClientset.NewFakeClient()
 	if fakeNdmClient == nil {
 		fmt.Println("NDMClient is not created")
 	}

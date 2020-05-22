@@ -125,50 +125,7 @@ func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {
 	return device
 }
 
-func GetFakeDiskObject() *openebsv1alpha1.Disk {
-
-	disk := &openebsv1alpha1.Disk{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       ndm.NDMDiskKind,
-			APIVersion: ndm.NDMVersion,
-		},
-
-		ObjectMeta: metav1.ObjectMeta{
-			Labels:    make(map[string]string),
-			Name:      diskName,
-			Namespace: namespace,
-		},
-
-		Spec: openebsv1alpha1.DiskSpec{
-			Path: "dev/disk-fake-path",
-			Capacity: openebsv1alpha1.DiskCapacity{
-				Storage: capacity, // Set disk size.
-			},
-			Details: openebsv1alpha1.DiskDetails{
-				Model:  "disk-fake-model",
-				Serial: "disk-fake-serial",
-				Vendor: "disk-fake-vendor",
-			},
-			DevLinks: make([]openebsv1alpha1.DiskDevLink, 0),
-		},
-		Status: openebsv1alpha1.DiskStatus{
-			State: ndm.NDMActive,
-		},
-	}
-	disk.ObjectMeta.Labels[ndm.KubernetesHostNameLabel] = fakeHostName
-	return disk
-}
-
 func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
-
-	diskR := GetFakeDiskObject()
-
-	diskList := &openebsv1alpha1.DiskList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Disk",
-			APIVersion: "",
-		},
-	}
 
 	deviceR := GetFakeDeviceObject()
 
@@ -179,15 +136,12 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 		},
 	}
 
-	diskObjs := []runtime.Object{diskR}
 	s := scheme.Scheme
 
-	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, diskR)
-	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, diskList)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceR)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceList)
 
-	fakeNdmClient := fake.NewFakeClient(diskObjs...)
+	fakeNdmClient := fake.NewFakeClient()
 	if fakeNdmClient == nil {
 		fmt.Println("NDMClient is not created")
 	}

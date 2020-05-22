@@ -22,6 +22,10 @@ import "fmt"
 func (sc Config) Install() error {
 
 	var err error
+	// delete disk CRD
+	if err = sc.deleteDiskCRD(); err != nil {
+		return fmt.Errorf("disk CRD deletion failed : %v", err)
+	}
 	// create CRDs
 	if err = sc.createBlockDeviceCRD(); err != nil {
 		return fmt.Errorf("block device CRD creation failed : %v", err)

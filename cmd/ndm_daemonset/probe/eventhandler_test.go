@@ -27,7 +27,6 @@ import (
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ndmFakeClientset "sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -44,24 +43,6 @@ var (
 	fakeDiskType   = "disk"
 	fakeBDType     = "blockdevice"
 )
-
-// mockEmptyDiskCr returns empty diskCr
-func mockEmptyDiskCr() apis.Disk {
-	fakeDr := apis.Disk{}
-	fakeObjectMeta := metav1.ObjectMeta{
-		Labels: make(map[string]string),
-		Name:   mockBDuid,
-	}
-	fakeTypeMeta := metav1.TypeMeta{
-		Kind:       controller.NDMDiskKind,
-		APIVersion: controller.NDMVersion,
-	}
-	fakeDr.ObjectMeta = fakeObjectMeta
-	fakeDr.TypeMeta = fakeTypeMeta
-	fakeDr.Status.State = controller.NDMActive
-	fakeDr.Spec.DevLinks = make([]apis.DiskDevLink, 0)
-	return fakeDr
-}
 
 func mockEmptyBlockDeviceCr() apis.BlockDevice {
 	fakeBDr := apis.BlockDevice{}
@@ -82,19 +63,6 @@ func mockEmptyBlockDeviceCr() apis.BlockDevice {
 }
 
 func CreateFakeClient(t *testing.T) client.Client {
-	diskR := &apis.Disk{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: make(map[string]string),
-			Name:   "dummy-disk",
-		},
-	}
-
-	diskList := &apis.DiskList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Disk",
-			APIVersion: "",
-		},
-	}
 
 	deviceR := &apis.BlockDevice{
 		ObjectMeta: metav1.ObjectMeta{
@@ -110,14 +78,11 @@ func CreateFakeClient(t *testing.T) client.Client {
 		},
 	}
 
-	objs := []runtime.Object{diskR}
 	s := scheme.Scheme
-	s.AddKnownTypes(apis.SchemeGroupVersion, diskR)
-	s.AddKnownTypes(apis.SchemeGroupVersion, diskList)
 	s.AddKnownTypes(apis.SchemeGroupVersion, deviceR)
 	s.AddKnownTypes(apis.SchemeGroupVersion, deviceList)
 
-	fakeNdmClient := ndmFakeClientset.NewFakeClient(objs...)
+	fakeNdmClient := ndmFakeClientset.NewFakeClient()
 	if fakeNdmClient == nil {
 		fmt.Println("NDMClient is not created")
 	}
