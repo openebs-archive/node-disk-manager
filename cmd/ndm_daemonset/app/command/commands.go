@@ -43,7 +43,7 @@ func NewNodeDiskManager() (*cobra.Command, error) {
 			util.CheckErr(RunNodeDiskManager(cmd), util.Fatal)
 
 			// set the feature gates on NDM daemon
-			err := features.DefaultFeatureGates.SetFeatureGate(options.FeatureGate)
+			err := features.FeatureGates.SetFeatureFlag(options.FeatureGate)
 			if err != nil {
 				klog.Fatalf("error setting feature gate: %v", err)
 			}

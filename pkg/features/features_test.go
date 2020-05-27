@@ -22,11 +22,11 @@ import (
 )
 
 func TestFeatureGateIsEnabled(t *testing.T) {
-	testFG := make(FeatureGate)
+	testFG := make(featureFlag)
 	testFG["feature1"] = false
 	testFG["feature2"] = true
 	tests := map[string]struct {
-		fg      FeatureGate
+		fg      featureFlag
 		feature Feature
 		want    bool
 	}{
@@ -60,7 +60,7 @@ func TestFeatureGateIsEnabled(t *testing.T) {
 	}
 }
 
-func TestSetFeatureGate(t *testing.T) {
+func TestSetFeatureFlag(t *testing.T) {
 	F1 := Feature("FeatureGate1")
 	F2 := Feature("FeatureGate2")
 	F3 := Feature("FeatureGate3")
@@ -72,14 +72,14 @@ func TestSetFeatureGate(t *testing.T) {
 	}
 	tests := map[string]struct {
 		args    args
-		want    FeatureGate
+		want    featureFlag
 		wantErr bool
 	}{
 		"empty feature gate slice": {
 			args: args{
 				features: nil,
 			},
-			want:    make(FeatureGate),
+			want:    make(featureFlag),
 			wantErr: false,
 		},
 		"a single feature is added": {
@@ -104,14 +104,14 @@ func TestSetFeatureGate(t *testing.T) {
 			args: args{
 				features: []string{"WrongFeatureGate"},
 			},
-			want:    make(FeatureGate),
+			want:    make(featureFlag),
 			wantErr: true,
 		},
 		"multiple non-default features in enabled and disabled state": {
 			args: args{
 				features: []string{"FeatureGate1", "FeatureGate2=false", "FeatureGate3=true"},
 			},
-			want: FeatureGate{
+			want: featureFlag{
 				F1: true,
 				F2: false,
 				F3: true,
@@ -122,7 +122,7 @@ func TestSetFeatureGate(t *testing.T) {
 			args: args{
 				features: []string{"FeatureGate1", "FeatureGate2=true=true"},
 			},
-			want: FeatureGate{
+			want: featureFlag{
 				F1: true,
 			},
 			wantErr: true,
@@ -130,14 +130,14 @@ func TestSetFeatureGate(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			fg := make(FeatureGate)
-			err := fg.SetFeatureGate(tt.args.features)
+			fg := make(featureFlag)
+			err := fg.SetFeatureFlag(tt.args.features)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("SetFeatureGate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SetFeatureFlag() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(fg, tt.want) && err == nil {
-				t.Errorf("SetFeatureGate() got = %v, want %v", fg, tt.want)
+				t.Errorf("SetFeatureFlag() got = %v, want %v", fg, tt.want)
 			}
 		})
 	}

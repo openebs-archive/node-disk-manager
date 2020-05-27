@@ -44,7 +44,7 @@ const (
 )
 
 // supportedFeatures is the list of supported features. This is used while parsing the
-// feature flag
+// feature flag given via command line
 var supportedFeatures = []Feature{
 	GPTBasedUUID,
 }
@@ -54,15 +54,16 @@ var defaultFeatureGates = map[Feature]bool{
 	GPTBasedUUID: false,
 }
 
-// featureGate is a type that implements the FeatureGate interface
-type FeatureGate map[Feature]bool
+// featureFlag is a map representing the flag and its state
+type featureFlag map[Feature]bool
 
-// DefaultFeatureGate is the global feature gate that can be used to check if a feature is enabled
+// FeatureGate is the global feature gate that can be used to check if a feature flag is enabled
 // or disabled
-var DefaultFeatureGates = NewFeatureGate()
+var FeatureGates = NewFeatureGate()
 
-func NewFeatureGate() FeatureGate {
-	fg := make(FeatureGate)
+// NewFeatureGate gets a new map with the default feature gates for the application
+func NewFeatureGate() featureFlag {
+	fg := make(featureFlag)
 
 	// set the default feature gates
 	for k, v := range defaultFeatureGates {
@@ -73,17 +74,17 @@ func NewFeatureGate() FeatureGate {
 }
 
 // IsEnabled returns true if the feature is enabled
-func (fg FeatureGate) IsEnabled(f Feature) bool {
+func (fg featureFlag) IsEnabled(f Feature) bool {
 	return fg[f]
 }
 
-// SetFeatureGate parses a slice of string and sets the feature gate.
-func (fg FeatureGate) SetFeatureGate(features []string) error {
+// SetFeatureFlag parses a slice of string and sets the feature flag.
+func (fg featureFlag) SetFeatureFlag(features []string) error {
 	if len(features) == 0 {
 		klog.V(4).Info("No feature gates are set")
 		return nil
 	}
-	// iterate through each feature and set its state onto the FeatureGate map
+	// iterate through each feature and set its state onto the featureFlag map
 	for _, feature := range features {
 		var f Feature
 		// by default if a feature gate is provided, it is enabled
