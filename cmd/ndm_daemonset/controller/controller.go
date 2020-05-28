@@ -20,17 +20,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/openebs/node-disk-manager/blockdevice"
 	"os"
 	"sync"
 	"time"
 
-	v1 "k8s.io/api/core/v1"
-
-	"k8s.io/client-go/rest"
-
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/apis"
-	"github.com/openebs/node-disk-manager/pkg/features"
+
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -114,8 +112,6 @@ type Controller struct {
 	// NodeAttribute is a map of various attributes of the node in which this daemon is running.
 	// The attributes can be hostname, nodename, zone, failure-domain etc
 	NodeAttributes map[string]string
-	// Feature gates for the NDM daemon
-	FeatureGates features.FeatureGate
 	// BDHierarchy stores the hierarchy of devices on this node
 	BDHierarchy blockdevice.Hierarchy
 }
@@ -160,12 +156,7 @@ func NewController() (*Controller, error) {
 func (c *Controller) SetControllerOptions(opts NDMOptions) error {
 	// set the config for running NDM daemon
 	c.SetNDMConfig(opts)
-	// set the feature gates on NDM daemon
-	fg, err := features.ParseFeatureGate(opts.FeatureGate, features.DefaultFeatureGates)
-	if err != nil {
-		return fmt.Errorf("error setting feature gate %v", err)
-	}
-	c.FeatureGates = fg
+
 	c.Filters = make([]*Filter, 0)
 	c.Probes = make([]*Probe, 0)
 	c.NodeAttributes = make(map[string]string, 0)

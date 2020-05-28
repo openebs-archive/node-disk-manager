@@ -54,7 +54,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 		return
 	}
 
-	isGPTBasedUUIDEnabled := pe.Controller.FeatureGates.IsEnabled(features.GPTBasedUUID)
+	isGPTBasedUUIDEnabled := features.FeatureGates.IsEnabled(features.GPTBasedUUID)
 
 	isErrorDuringUpdate := false
 	// iterate through each block device and perform the add/update operation
@@ -106,7 +106,7 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 	}
 
 	isDeactivated := true
-	isGPTBasedUUIDEnabled := pe.Controller.FeatureGates.IsEnabled(features.GPTBasedUUID)
+	isGPTBasedUUIDEnabled := features.FeatureGates.IsEnabled(features.GPTBasedUUID)
 
 	for _, device := range msg.Devices {
 		// create the new UUID for removing the device

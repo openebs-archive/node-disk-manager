@@ -148,7 +148,7 @@ func (up *udevProbe) scan() error {
 		}
 		if newUdevice.IsDisk() || newUdevice.IsParitition() {
 			deviceDetails := &blockdevice.BlockDevice{}
-			if up.controller.FeatureGates.IsEnabled(features.GPTBasedUUID) {
+			if features.FeatureGates.IsEnabled(features.GPTBasedUUID) {
 				// WWN, Serial, PartitionTableUUID/GPTLabel, PartitionUUID, FileSystemUUID and DeviceType
 				// are the fields we use to generate the UUID. These fields will be fetched
 				// from the udev event itself. This is to guarantee that we do not need to rely

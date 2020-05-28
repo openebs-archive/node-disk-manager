@@ -22,11 +22,11 @@ import (
 )
 
 func TestFeatureGateIsEnabled(t *testing.T) {
-	testFG := make(FeatureGate)
+	testFG := make(featureFlag)
 	testFG["feature1"] = false
 	testFG["feature2"] = true
 	tests := map[string]struct {
-		fg      FeatureGate
+		fg      featureFlag
 		feature Feature
 		want    bool
 	}{
@@ -60,60 +60,58 @@ func TestFeatureGateIsEnabled(t *testing.T) {
 	}
 }
 
-func TestParseFeatureGate(t *testing.T) {
+func TestSetFeatureFlag(t *testing.T) {
 	F1 := Feature("FeatureGate1")
 	F2 := Feature("FeatureGate2")
 	F3 := Feature("FeatureGate3")
+	supportedFeatures = []Feature{
+		F1, F2, F3,
+	}
 	type args struct {
-		features   []string
-		defaultFGs []Feature
+		features []string
 	}
 	tests := map[string]struct {
 		args    args
-		want    FeatureGate
+		want    featureFlag
 		wantErr bool
 	}{
 		"empty feature gate slice": {
 			args: args{
-				features:   nil,
-				defaultFGs: DefaultFeatureGates,
+				features: nil,
 			},
-			want:    make(map[Feature]bool),
+			want:    make(featureFlag),
 			wantErr: false,
 		},
 		"a single feature is added": {
 			args: args{
-				features:   []string{"GPTBasedUUID"},
-				defaultFGs: DefaultFeatureGates,
+				features: []string{"FeatureGate1"},
 			},
 			want: map[Feature]bool{
-				GPTBasedUUID: true,
-			},
-		},
-		"a single feature is set in disabled mode": {
-			args: args{
-				features:   []string{"GPTBasedUUID=false"},
-				defaultFGs: DefaultFeatureGates,
-			},
-			want: map[Feature]bool{
-				GPTBasedUUID: false,
+				F1: true,
 			},
 			wantErr: false,
 		},
-		"feature that is not present in the default feature": {
+		"a single feature is set in disabled mode": {
 			args: args{
-				features:   []string{"WrongFeatureGate"},
-				defaultFGs: DefaultFeatureGates,
+				features: []string{"FeatureGate1=false"},
 			},
-			want:    make(map[Feature]bool),
+			want: map[Feature]bool{
+				F1: false,
+			},
+			wantErr: false,
+		},
+		"feature that is not present in the supported feature": {
+			args: args{
+				features: []string{"WrongFeatureGate"},
+			},
+			want:    make(featureFlag),
 			wantErr: true,
 		},
-		"multiple features in enabled and disabled state": {
+		"multiple non-default features in enabled and disabled state": {
 			args: args{
-				features:   []string{"FeatureGate1", "FeatureGate2=false", "FeatureGate3=true"},
-				defaultFGs: []Feature{F1, F2, F3},
+				features: []string{"FeatureGate1", "FeatureGate2=false", "FeatureGate3=true"},
 			},
-			want: FeatureGate{
+			want: featureFlag{
 				F1: true,
 				F2: false,
 				F3: true,
@@ -122,10 +120,9 @@ func TestParseFeatureGate(t *testing.T) {
 		},
 		"wrong format in one feature gate": {
 			args: args{
-				features:   []string{"FeatureGate1", "FeatureGate2=true=true"},
-				defaultFGs: []Feature{F1, F2, F3},
+				features: []string{"FeatureGate1", "FeatureGate2=true=true"},
 			},
-			want: FeatureGate{
+			want: featureFlag{
 				F1: true,
 			},
 			wantErr: true,
@@ -133,13 +130,14 @@ func TestParseFeatureGate(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := ParseFeatureGate(tt.args.features, tt.args.defaultFGs)
+			fg := make(featureFlag)
+			err := fg.SetFeatureFlag(tt.args.features)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ParseFeatureGate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SetFeatureFlag() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ParseFeatureGate() got = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(fg, tt.want) && err == nil {
+				t.Errorf("SetFeatureFlag() got = %v, want %v", fg, tt.want)
 			}
 		})
 	}
