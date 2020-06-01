@@ -4,8 +4,9 @@
 # used for building NDM as well as checking
 
 set -e
-# udev is required for building NDM.
-sudo apt-get install --yes libudev-dev
+# udev and blkid is required for building NDM.
+sudo apt-get install --yes libudev-dev \
+  libblkid-dev
 pushd .
 cd ..
 # we need openSeaChest repo to build node-disk-manager
