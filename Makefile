@@ -123,7 +123,6 @@ build.common: license-check-go version
 
 # Tools required for different make targets or for development purposes
 EXTERNAL_TOOLS=\
-	github.com/golang/dep/cmd/dep \
 	github.com/mitchellh/gox \
 	gopkg.in/alecthomas/gometalinter.v1
 
@@ -251,7 +250,8 @@ docker.exporter: build.exporter Dockerfile.exporter
 .PHONY: deps
 deps: header
 	@echo '--> Resolving dependencies...'
-	dep ensure
+	go mod tidy 
+	go mod download
 	@echo '--> Depedencies resolved.'
 	@echo
 
