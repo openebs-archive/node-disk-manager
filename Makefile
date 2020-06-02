@@ -123,7 +123,6 @@ build.common: license-check-go version
 
 # Tools required for different make targets or for development purposes
 EXTERNAL_TOOLS=\
-	github.com/golang/dep/cmd/dep \
 	github.com/mitchellh/gox \
 	gopkg.in/alecthomas/gometalinter.v1
 
@@ -175,7 +174,7 @@ shellcheck: getshellcheck
 
 .PHONY: getshellcheck
 getshellcheck:
-	wget -c 'https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz' --no-check-certificate -O - | tar -xvJ -C /tmp/
+	wget -c 'https://storage.googleapis.com/shellcheck/shellcheck-stable.linux.x86_64.tar.xz' --no-check-certificate -O - | tar -xvJ -C /tmp/
 
 .PHONY: version
 version:
@@ -251,7 +250,8 @@ docker.exporter: build.exporter Dockerfile.exporter
 .PHONY: deps
 deps: header
 	@echo '--> Resolving dependencies...'
-	dep ensure
+	go mod tidy 
+	go mod download
 	@echo '--> Depedencies resolved.'
 	@echo
 
