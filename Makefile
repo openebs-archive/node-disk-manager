@@ -124,7 +124,6 @@ build.common: license-check-go version
 # Tools required for different make targets or for development purposes
 EXTERNAL_TOOLS=\
 	github.com/mitchellh/gox \
-	gopkg.in/alecthomas/gometalinter.v1
 
 # Bootstrap the build by downloading additional tools
 .PHONY: bootstrap
@@ -161,11 +160,7 @@ vet:
 fmt:
 	find . -type f -name "*.go" | grep -v "./vendor/*" | xargs gofmt -s -w -l
 
-# Run the bootstrap target once before trying gometalinter in Development environment
-.PHONY: golint
-golint:
-	@gometalinter.v1 --install
-	@gometalinter.v1 --vendor --deadline=600s ./...
+
 
 # shellcheck target for checking shell scripts linting
 .PHONY: shellcheck
@@ -174,8 +169,7 @@ shellcheck: getshellcheck
 
 .PHONY: getshellcheck
 getshellcheck:
-	wget -c 'https://storage.googleapis.com/shellcheck/shellcheck-stable.linux.x86_64.tar.xz' --no-check-certificate -O - | tar -xvJ -C /tmp/
-
+	wget -c 'https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz' --no-check-certificate -O - | tar -xvJ -C /tmp/
 .PHONY: version
 version:
 	@echo $(VERSION)
@@ -250,8 +244,8 @@ docker.exporter: build.exporter Dockerfile.exporter
 .PHONY: deps
 deps: header
 	@echo '--> Resolving dependencies...'
+	go mod vendor
 	go mod tidy 
-	go mod download
 	@echo '--> Depedencies resolved.'
 	@echo
 
