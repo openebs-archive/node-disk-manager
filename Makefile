@@ -175,7 +175,7 @@ shellcheck: getshellcheck
 
 .PHONY: getshellcheck
 getshellcheck:
-	wget -c 'https://storage.googleapis.com/shellcheck/shellcheck-stable.linux.x86_64.tar.xz' --no-check-certificate -O - | tar -xvJ -C /tmp/
+	wget -c 'https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz' --no-check-certificate -O - | tar -xvJ -C /tmp/
 
 .PHONY: version
 version:
