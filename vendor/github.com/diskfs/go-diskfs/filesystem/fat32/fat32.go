@@ -95,10 +95,10 @@ func Create(f util.File, size int64, start int64, blocksize int64, volumeLabel s
 		return nil, fmt.Errorf("blocksize for FAT32 must be either 512 bytes or 0, not %d", blocksize)
 	}
 	if size > Fat32MaxSize {
-		return nil, fmt.Errorf("requested size is larger than maximum allowed FAT32 size %d", Fat32MaxSize)
+		return nil, fmt.Errorf("requested size is larger than maximum allowed FAT32, requested %d, maximum %d", size, Fat32MaxSize)
 	}
 	if size < blocksize*4 {
-		return nil, fmt.Errorf("requested size is smaller than minimum allowed FAT32 size %d", blocksize*4)
+		return nil, fmt.Errorf("requested size is smaller than minimum allowed FAT32, requested %d minimum %d", size, blocksize*4)
 	}
 	// FAT filesystems use time-of-day of creation as a volume ID
 	now := time.Now()
@@ -538,6 +538,16 @@ func (fs *FileSystem) OpenFile(p string, flag int) (filesystem.File, error) {
 		filesystem:     fs,
 		parent:         parentDir,
 	}, nil
+}
+
+// Label get the label of the filesystem
+func (fs *FileSystem) Label() string {
+	// be sane about everything existing
+	bpb := fs.bootSector.biosParameterBlock
+	if bpb == nil {
+		return ""
+	}
+	return bpb.volumeLabel
 }
 
 // read directory entries for a given cluster
