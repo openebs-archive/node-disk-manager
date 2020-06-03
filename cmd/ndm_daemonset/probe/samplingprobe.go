@@ -18,16 +18,18 @@ package probe
 
 import (
 	"errors"
+	"os"
+	"strings"
+	"syscall"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/blkid"
 	"github.com/openebs/node-disk-manager/pkg/spdk"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
+
 	"k8s.io/klog"
-	"os"
-	"strings"
-	"syscall"
 )
 
 // TODO give some good name to this probe
@@ -37,8 +39,7 @@ type samplingProbe struct {
 }
 
 const (
-	samplingConfigKey = "sampling-probe"
-	// TODO change priority of seachest lesser
+	samplingConfigKey     = "sampling-probe"
 	samplingProbePriority = 4
 
 	k8sLocalVolumePath1 = "kubernetes.io/local-volume"
