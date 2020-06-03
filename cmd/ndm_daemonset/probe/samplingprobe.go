@@ -21,6 +21,7 @@ import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/blkid"
+	"github.com/openebs/node-disk-manager/pkg/spdk"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
@@ -146,13 +147,20 @@ func (sp *samplingProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDe
 		}
 	}
 
-	// TODO mayastor disk detection
-	// read spdk struct
-	// check if device has SPDK_BLOB_SIGNATURE
-	/*{
+	// create a device identifier for reading the spdk super block from the disk
+	spdkIdentifier := &spdk.DeviceIdentifier{
+		DevPath: blockDevice.DevPath,
+	}
+
+	signature, err := spdkIdentifier.GetSPDKSuperBlockSignature()
+	if err != nil {
+		klog.Errorf("error reading spdk signature from device: %s, %v", blockDevice.DevPath, err)
+	}
+	if spdk.IsSPDKSignatureExist(signature) {
 		blockDevice.DevUse.InUse = true
 		blockDevice.DevUse.UsedBy = blockdevice.Mayastor
-	}*/
+		return
+	}
 
 	// TODO jiva disk detection
 }
