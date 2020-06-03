@@ -170,6 +170,12 @@ func (sp *samplingProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDe
 // getBlockDeviceZFSPartition is used to get the zfs partition if it exist in a
 // given BD
 func getBlockDeviceZFSPartition(bd blockdevice.BlockDevice) (string, bool) {
+
+	// check for zfs partitions only if there are 2 partitions on the block device
+	if len(bd.DependentDevices.Partitions) != 2 {
+		return "", false
+	}
+
 	zfsDataPartitionNumber := "1"
 	zfsMetaPartitionNumber := "9"
 
