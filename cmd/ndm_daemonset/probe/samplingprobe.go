@@ -160,6 +160,7 @@ func (sp *samplingProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDe
 	if spdk.IsSPDKSignatureExist(signature) {
 		blockDevice.DevUse.InUse = true
 		blockDevice.DevUse.UsedBy = blockdevice.Mayastor
+		klog.V(4).Infof("device: %s Used by: %s filled by sampling probe", blockDevice.DevPath, blockDevice.DevUse.UsedBy)
 		return
 	}
 
