@@ -19,7 +19,6 @@ limitations under the License.
 package spdk
 
 /*
-#include "string.h"
 #include "stdlib.h"
 #include "stdint.h"
 
@@ -58,7 +57,6 @@ char *get_signature(struct spdk_bs_super_block *spdk)
 	return spdk->signature;
 }
 */
-
 import "C"
 import (
 	"encoding/binary"
@@ -76,8 +74,10 @@ type DeviceIdentifier struct {
 // IsSPDKSignatureExist check is the signature matches the spdk super block signature
 func IsSPDKSignatureExist(signature string) bool {
 	// need to compare only the first 8 characters of signature
-	s := signature[0:8]
-	return s == spdkSignature
+	if len(signature) > 8 {
+		signature = signature[0:8]
+	}
+	return signature == spdkSignature
 }
 
 // GetSPDKSuperBlockSignature tries to read spdk super block from a disk and returns the signature

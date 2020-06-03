@@ -1,1 +1,0 @@
-add new sampling probe to detect devices used by localPV, zfs-localPV, cstor etc.
