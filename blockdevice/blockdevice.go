@@ -111,6 +111,8 @@ type BlockDevice struct {
 	// information on the disk
 	DeviceAttributes DeviceAttribute
 
+	DevUse DeviceUsage
+
 	// PartitionInfo contains details if this blockdevice is a partition
 	PartitionInfo PartitionInformation
 
@@ -302,6 +304,32 @@ type DependentBlockDevices struct {
 	// eg: dm-0 is a slave to sda1. Then the list of dm-0 will contain sda1
 	Slaves []string
 }
+
+// DeviceUsage defines if the block device is used by any known storage engines
+type DeviceUsage struct {
+	InUse  bool
+	UsedBy StorageEngine
+}
+
+// StorageEngine is a typed string for the storage engine
+type StorageEngine string
+
+const (
+	// CStor
+	CStor StorageEngine = "cstor"
+
+	// ZFSLocalPV
+	ZFSLocalPV StorageEngine = "zfs-localpv"
+
+	// Mayastor
+	Mayastor StorageEngine = "mayastor"
+
+	// LocalPV
+	LocalPV StorageEngine = "localpv"
+
+	// Jiva
+	Jiva StorageEngine = "jiva"
+)
 
 // Status is used to represent the status of the blockdevice
 type Status struct {

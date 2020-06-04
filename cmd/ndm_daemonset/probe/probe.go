@@ -32,7 +32,9 @@ var RegisteredProbes = []func(){
 	smartProbeRegister,
 	mountProbeRegister,
 	udevProbeRegister,
-	sysfsProbeRegister}
+	sysfsProbeRegister,
+	usedbyProbeRegister,
+}
 
 type registerProbe struct {
 	priority   int

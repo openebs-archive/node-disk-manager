@@ -22,7 +22,6 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
-	"strings"
 )
 
 // mountProbe contains required variables for populating diskInfo
@@ -37,7 +36,6 @@ type mountProbe struct {
 const (
 	mountProbePriority = 5
 	mountConfigKey     = "mount-probe"
-	k8sLocalVolumePath = "kubernetes.io/local-volume"
 )
 
 var (
@@ -102,11 +100,7 @@ func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 		klog.Error(err)
 		return
 	}
-	// if mount point contains kubernetes.io/local-volume it means that the device is mounted
-	// by kubelet. In that case we ignore the mountpoint.
-	if strings.Contains(basicMountInfo.MountPoint, k8sLocalVolumePath) {
-		return
-	}
+
 	blockDevice.FSInfo.MountPoint = append(blockDevice.FSInfo.MountPoint, basicMountInfo.MountPoint)
 	if blockDevice.FSInfo.FileSystem == "" {
 		blockDevice.FSInfo.FileSystem = basicMountInfo.FileSystem
