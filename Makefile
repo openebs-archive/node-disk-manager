@@ -244,8 +244,9 @@ docker.exporter: build.exporter Dockerfile.exporter
 .PHONY: deps
 deps: header
 	@echo '--> Resolving dependencies...'
-	go mod vendor
 	go mod tidy 
+	go mod verify
+	go mod vendor
 	@echo '--> Depedencies resolved.'
 	@echo
 
