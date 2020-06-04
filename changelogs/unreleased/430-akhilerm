@@ -1,1 +1,1 @@
-add new sampling probe to detect devices used by localPV, zfs-localPV, mayastor and cstor.
+add new discovery probe (called used-by-probe) to detect if devices are used by K8s Local PV, ZFS-LocalPV, Mayastor and cStor

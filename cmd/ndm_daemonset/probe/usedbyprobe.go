@@ -32,15 +32,14 @@ import (
 	"k8s.io/klog"
 )
 
-// TODO give some good name to this probe
-type samplingProbe struct {
+type usedbyProbe struct {
 	Controller      *controller.Controller
 	BlkidIdentifier *blkid.DeviceIdentifier
 }
 
 const (
-	samplingConfigKey     = "sampling-probe"
-	samplingProbePriority = 4
+	usedbyProbeConfigKey = "used-by-probe"
+	usedbyProbePriority  = 4
 
 	k8sLocalVolumePath1 = "kubernetes.io/local-volume"
 	k8sLocalVolumePath2 = "kubernetes.io~local-volume"
@@ -48,51 +47,51 @@ const (
 )
 
 var (
-	samplingProbeName  = "sampling probe"
-	samplingProbeState = defaultEnabled
+	usedbyProbeName  = "used-by probe"
+	usedbyProbeState = defaultEnabled
 )
 
-var samplingProbeRegister = func() {
+var usedbyProbeRegister = func() {
 	// Get a controller object
 	ctrl := <-controller.ControllerBroadcastChannel
 	if ctrl == nil {
-		klog.Error("unable to configure", samplingProbeName)
+		klog.Error("unable to configure", usedbyProbeName)
 		return
 	}
 	if ctrl.NDMConfig != nil {
 		for _, probeConfig := range ctrl.NDMConfig.ProbeConfigs {
-			if probeConfig.Key == samplingConfigKey {
-				samplingProbeName = probeConfig.Name
-				samplingProbeState = util.CheckTruthy(probeConfig.State)
+			if probeConfig.Key == usedbyProbeConfigKey {
+				usedbyProbeName = probeConfig.Name
+				usedbyProbeState = util.CheckTruthy(probeConfig.State)
 				break
 			}
 		}
 	}
 	newRegisterProbe := &registerProbe{
-		priority:   samplingProbePriority,
-		name:       samplingProbeName,
-		state:      samplingProbeState,
-		pi:         &samplingProbe{Controller: ctrl},
+		priority:   usedbyProbePriority,
+		name:       usedbyProbeName,
+		state:      usedbyProbeState,
+		pi:         &usedbyProbe{Controller: ctrl},
 		controller: ctrl,
 	}
-	// Here we register the sampling probe
+	// Here we register the used-by probe
 	newRegisterProbe.register()
 }
 
-func newSamplingProbe(devPath string) *samplingProbe {
-	samplingProbe := &samplingProbe{
+func newUsedByProbe(devPath string) *usedbyProbe {
+	usedbyProbe := &usedbyProbe{
 		BlkidIdentifier: &blkid.DeviceIdentifier{
 			DevPath: devPath,
 		},
 	}
-	return samplingProbe
+	return usedbyProbe
 }
 
-func (sp *samplingProbe) Start() {}
+func (sp *usedbyProbe) Start() {}
 
-func (sp *samplingProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
+func (sp *usedbyProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
 	if blockDevice.DevPath == "" {
-		klog.Errorf("sampling identifier found empty, sampling probe will not fetch information")
+		klog.Errorf("device identifier found empty, used-by probe will not fetch information")
 		return
 	}
 
@@ -102,7 +101,7 @@ func (sp *samplingProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDe
 			strings.Contains(mountPoint, k8sLocalVolumePath2) {
 			blockDevice.DevUse.InUse = true
 			blockDevice.DevUse.UsedBy = blockdevice.LocalPV
-			klog.V(4).Infof("device: %s Used by: %s filled by sampling probe", blockDevice.DevPath, blockDevice.DevUse.UsedBy)
+			klog.V(4).Infof("device: %s Used by: %s filled by used-by probe", blockDevice.DevPath, blockDevice.DevUse.UsedBy)
 			return
 		}
 	}
@@ -124,16 +123,16 @@ func (sp *samplingProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDe
 	}
 
 	if hasZFS {
-		samplingProbe := newSamplingProbe(devPath)
+		usedByProbe := newUsedByProbe(devPath)
 
 		// check for ZFS file system
-		fstype := samplingProbe.BlkidIdentifier.GetOnDiskFileSystem()
+		fstype := usedByProbe.BlkidIdentifier.GetOnDiskFileSystem()
 
 		if fstype == zfsFileSystemLabel {
 			blockDevice.DevUse.InUse = true
 
 			// the disk can either be in use by cstor or zfs local PV
-			ok, err := isBlockDeviceInUse(blockDevice.DevPath)
+			ok, err := isBlockDeviceInUseByKernel(blockDevice.DevPath)
 
 			if err != nil {
 				klog.Errorf("error checking block device: %s: %v", blockDevice.DevPath, err)
@@ -197,9 +196,9 @@ func getBlockDeviceZFSPartition(bd blockdevice.BlockDevice) (string, bool) {
 	return "", false
 }
 
-// isBlockDeviceInUse tries to open the device exclusively to check if the device is
+// isBlockDeviceInUseByKernel tries to open the device exclusively to check if the device is
 // being held by some process. eg: If kernel zfs uses the disk, the open will fail
-func isBlockDeviceInUse(path string) (bool, error) {
+func isBlockDeviceInUseByKernel(path string) (bool, error) {
 	_, err := os.OpenFile(path, os.O_EXCL, 0444)
 
 	if errors.Is(err, syscall.EBUSY) {
