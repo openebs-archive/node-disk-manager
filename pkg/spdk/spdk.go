@@ -63,6 +63,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"unsafe"
 )
 
 const spdkSignature = "SPDKBLOB"
@@ -100,6 +101,7 @@ func (di *DeviceIdentifier) GetSPDKSuperBlockSignature() (string, error) {
 
 	// converting the read bytes to spdk super block struct
 	spdk = (*C.struct_spdk_bs_super_block)(C.CBytes(buf))
+	defer C.free(unsafe.Pointer(spdk))
 
 	var ptr *C.char
 	ptr = (*C.char)(C.get_signature(spdk))
