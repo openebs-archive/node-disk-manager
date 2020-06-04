@@ -108,7 +108,7 @@ func (sp *usedbyProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevi
 
 	// checking for cstor and zfs localPV
 	// we start with the assumption that device has a zfs file system
-	hasZFS := true
+	lookupZFS := true
 	devPath := blockDevice.DevPath
 
 	// if device is not a partition, check whether the zfs partitions are available on the disk
@@ -117,12 +117,13 @@ func (sp *usedbyProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevi
 		if ok {
 			devPath = path
 		} else {
-			hasZFS = false
+			lookupZFS = false
 			klog.V(4).Infof("device: %s is not having any zfs partitions", blockDevice.DevPath)
 		}
 	}
 
-	if hasZFS {
+	// only if lookupZFS is true, we need to check for the zfs filesystem on the disk.
+	if lookupZFS {
 		usedByProbe := newUsedByProbe(devPath)
 
 		// check for ZFS file system
