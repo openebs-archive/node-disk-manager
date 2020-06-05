@@ -182,7 +182,7 @@ test: 	vet fmt
 .PHONY: integration-test
 integration-test:
 	@echo "--> Running integration test"
-	sudo $(PWD)/build/integration-test.sh ${XC_ARCH}
+	$(PWD)/build/integration-test.sh ${XC_ARCH}
 
 .PHONY: Dockerfile.ndm
 Dockerfile.ndm: ./build/ndm-daemonset/Dockerfile.in
