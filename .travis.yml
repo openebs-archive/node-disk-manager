@@ -54,7 +54,7 @@ script:
   # which could be fetched for a SCSI device with sudo permissions only since to access
   # a particular scsi device, sudo or root permissions are required.
   - sudo -E env "PATH=$PATH" make test
-  - sudo -E env "PATH=$PATH" make integration-test $ARCH
+  - sudo -E env "PATH=$PATH" make integration-test
 
 after_success:
   - make push
