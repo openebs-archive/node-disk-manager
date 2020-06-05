@@ -2,7 +2,7 @@ dist: xenial
 language: go
 
 go:
-  - 1.13.1
+  - 1.14
 
 env:
   global:
@@ -54,7 +54,7 @@ script:
   # which could be fetched for a SCSI device with sudo permissions only since to access
   # a particular scsi device, sudo or root permissions are required.
   - sudo -E env "PATH=$PATH" make test
-  - make integration-test
+  - sudo -E env "PATH=$PATH" make integration-test
 
 after_success:
   - make push
