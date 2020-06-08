@@ -41,7 +41,7 @@ var _ = Describe("[upgrade] TEST PRE-UPGRADES IN NDM OPERATOR", func() {
 		BeforeEach(func() {
 			By("building BDC object")
 			blockDeviceClaim = k8s.NewBDC(bdcName1)
-			k8sClient, _ = k8s.GetClientSet()
+			_ = k8sClient.RegenerateClient()
 		})
 
 		AfterEach(func() {

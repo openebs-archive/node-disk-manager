@@ -17,6 +17,8 @@ limitations under the License.
 package kubernetes
 
 import (
+	"errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,48 +31,55 @@ func TestGenerateLabelFilter(t *testing.T) {
 	}
 	tests := map[string]struct {
 		args args
-		want string
+		want interface{}
+		err  error
 	}{
 		"when key is empty": {
 			args: args{
 				key:   "",
 				value: "machine1",
 			},
-			want: "",
+			want: nil,
+			err:  errors.New("key/value is empty for label filter"),
 		},
 		"when value is empty": {
 			args: args{
 				key:   "hostname",
 				value: "",
 			},
-			want: "",
+			want: nil,
+			err:  errors.New("key/value is empty for label filter"),
 		},
 		"when both key and value are empty": {
 			args: args{
 				key:   "",
 				value: "",
 			},
-			want: "",
+			want: nil,
+			err:  errors.New("key/value is empty for label filter"),
 		},
 		"when valid key and value is given": {
 			args: args{
 				key:   "ndm.io/managed",
 				value: "false",
 			},
-			want: "ndm.io/managed=false",
+			want: client.MatchingLabels{"ndm.io/managed": "false"},
+			err:  nil,
 		},
 		"when a valid hostname key is present": {
 			args: args{
 				key:   "hostname",
 				value: "machine1",
 			},
-			want: "kubernetes.io/hostname=machine1",
+			want: client.MatchingLabels{"kubernetes.io/hostname": "machine1"},
+			err:  nil,
 		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := GenerateLabelFilter(test.args.key, test.args.value)
+			got, err := GenerateLabelFilter(test.args.key, test.args.value)
 			assert.Equal(t, test.want, got)
+			assert.Equal(t, test.err, err)
 		})
 	}
 }

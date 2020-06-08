@@ -51,7 +51,7 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileBlockDeviceClaim{client: mgr.GetClient(), scheme: mgr.GetScheme(), recorder: mgr.GetRecorder("blockdeviceclaim-operator")}
+	return &ReconcileBlockDeviceClaim{client: mgr.GetClient(), scheme: mgr.GetScheme(), recorder: mgr.GetEventRecorderFor("blockdeviceclaim-operator")}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -366,7 +366,7 @@ func (r *ReconcileBlockDeviceClaim) getListofDevices(selector *v1.LabelSelector)
 	}
 
 	//Fetch deviceList with matching criteria
-	err := r.client.List(context.TODO(), opts, listBlockDevice)
+	err := r.client.List(context.TODO(), listBlockDevice, opts)
 	if err != nil {
 		return nil, err
 	}

@@ -34,7 +34,7 @@ func TestClientListBlockDevice(t *testing.T) {
 		namespace string
 	}
 	type args struct {
-		filters []string
+		filters []interface{}
 	}
 	tests := map[string]struct {
 		fields  fields

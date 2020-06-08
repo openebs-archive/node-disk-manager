@@ -19,11 +19,11 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
+	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"testing"
 	"time"
 
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	"github.com/openebs/node-disk-manager/db/kubernetes"
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 
 	"github.com/stretchr/testify/assert"
@@ -63,6 +63,8 @@ func TestBlockDeviceClaimController(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl, s := CreateFakeClient()
 	deviceR := GetFakeDeviceObject(deviceName, capacity)
+	deviceR.Labels[kubernetes.KubernetesHostNameLabel] = fakeHostName
+
 	deviceClaimR := GetFakeBlockDeviceClaimObject()
 	// Create a new blockdevice obj
 	err := cl.Create(context.TODO(), deviceR)
@@ -271,31 +273,15 @@ func TestBlockDeviceClaimsLabelSelector(t *testing.T) {
 			selector:           nil,
 			expectedClaimPhase: openebsv1alpha1.BlockDeviceClaimStatusDone,
 		},
-		"no label is present and no selector": {
-			bdLabels:           map[string]string{},
-			selector:           nil,
-			expectedClaimPhase: openebsv1alpha1.BlockDeviceClaimStatusDone,
-		},
 		"custom label and hostname present on bd and selector": {
 			bdLabels: map[string]string{
 				ndm.KubernetesHostNameLabel: fakeHostName,
-				"ndm.io.test":               "1234",
+				"ndm.io/test":               "1234",
 			},
 			selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					ndm.KubernetesHostNameLabel: fakeHostName,
 					"ndm.io/test":               "1234",
-				},
-			},
-			expectedClaimPhase: openebsv1alpha1.BlockDeviceClaimStatusDone,
-		},
-		"custom labels on bd": {
-			bdLabels: map[string]string{
-				"ndm.io/test": "1234",
-			},
-			selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"ndm.io/test": "1234",
 				},
 			},
 			expectedClaimPhase: openebsv1alpha1.BlockDeviceClaimStatusDone,
@@ -315,6 +301,10 @@ func TestBlockDeviceClaimsLabelSelector(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			// pinning the variables
+			bdLabels := test.bdLabels
+			selector := test.selector
+			expectedClaimPhase := test.expectedClaimPhase
 
 			// Create a fake client to mock API calls.
 			cl, s := CreateFakeClient()
@@ -338,7 +328,7 @@ func TestBlockDeviceClaimsLabelSelector(t *testing.T) {
 
 			bd := GetFakeDeviceObject("bd-1", capacity*10)
 
-			bd.Labels = test.bdLabels
+			bd.Labels = bdLabels
 			// mark the device as unclaimed
 			bd.Spec.ClaimRef = nil
 			bd.Status.ClaimState = openebsv1alpha1.BlockDeviceUnclaimed
@@ -349,7 +339,7 @@ func TestBlockDeviceClaimsLabelSelector(t *testing.T) {
 			}
 			bdc := GetFakeBlockDeviceClaimObject()
 			bdc.Spec.BlockDeviceName = ""
-			bdc.Spec.Selector = test.selector
+			bdc.Spec.Selector = selector
 			err = cl.Update(context.TODO(), bdc)
 			if err != nil {
 				t.Fatalf("error updating BDC. %v", err)
@@ -365,7 +355,7 @@ func TestBlockDeviceClaimsLabelSelector(t *testing.T) {
 			if err != nil {
 				t.Fatalf("error deleting BDC. %v", err)
 			}
-			assert.Equal(t, test.expectedClaimPhase, bdc.Status.Phase)
+			assert.Equal(t, expectedClaimPhase, bdc.Status.Phase)
 		})
 	}
 }
@@ -480,7 +470,7 @@ func CreateFakeClient() (client.Client, *runtime.Scheme) {
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceClaimR)
 	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceclaimList)
 
-	fakeNdmClient := fake.NewFakeClient()
+	fakeNdmClient := fake.NewFakeClientWithScheme(s)
 	if fakeNdmClient == nil {
 		fmt.Println("NDMClient is not created")
 	}
