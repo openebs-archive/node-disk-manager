@@ -1,3 +1,11 @@
+v0.6.0-RC1 / 2020-06-09
+========================
+* make feature gates independent of daemon controller ([#426](https://github.com/openebs/node-disk-manager/pull/426), [@akhilerm](https://github.com/akhilerm))
+* remove all disk resources and disk CRD as part of installation ([#427](https://github.com/openebs/node-disk-manager/pull/427), [@akhilerm](https://github.com/akhilerm))
+* add new discovery probe (called used-by-probe) to detect if devices are used by K8s Local PV, ZFS-LocalPV, Mayastor and cStor ([#430](https://github.com/openebs/node-disk-manager/pull/430), [@akhilerm](https://github.com/akhilerm))
+* migrate project to use go modules ([#434](https://github.com/openebs/node-disk-manager/pull/434), [@harshthakur9030](https://github.com/harshthakur9030))
+
+
 v0.5.0 / 2020-05-15
 ========================
 
