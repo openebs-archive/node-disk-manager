@@ -28,9 +28,11 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -49,7 +51,7 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileBlockDeviceClaim{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileBlockDeviceClaim{client: mgr.GetClient(), scheme: mgr.GetScheme(), recorder: mgr.GetRecorder("blockdeviceclaim-operator")}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -75,8 +77,9 @@ var _ reconcile.Reconciler = &ReconcileBlockDeviceClaim{}
 type ReconcileBlockDeviceClaim struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
+	client   client.Client
+	scheme   *runtime.Scheme
+	recorder record.EventRecorder
 }
 
 // Reconcile reads that state of the cluster for a BlockDeviceClaim object and makes changes based on the state read
@@ -147,6 +150,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(instance *api
 		// Get the capacity requested in the claim
 		_, err := verify.GetRequestedCapacity(instance.Spec.Resources.Requests)
 		if err != nil {
+			r.recorder.Eventf(instance, corev1.EventTypeWarning, "InvalidCapacity", err.Error())
 			//Update deviceClaim CR with error string
 			instance.Status.Phase = apis.BlockDeviceClaimStatusInvalidCapacity
 			err1 := r.updateClaimStatus(instance.Status.Phase, instance)
@@ -170,6 +174,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(instance *api
 	selectedDevice, err := config.Filter(bdList)
 	if err != nil {
 		klog.Errorf("Error selecting device for %s: %v", instance.Name, err)
+		r.recorder.Eventf(instance, corev1.EventTypeWarning, "SelectionFailed", err.Error())
 		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 	} else {
 		instance.Spec.BlockDeviceName = selectedDevice.Name
@@ -178,12 +183,15 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(instance *api
 		if err != nil {
 			return err
 		}
+		r.recorder.Eventf(selectedDevice, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice device by %v", instance.Name)
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice: %v", instance.Spec.BlockDeviceName)
 	}
 
 	err = r.updateClaimStatus(instance.Status.Phase, instance)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -205,11 +213,13 @@ func (r *ReconcileBlockDeviceClaim) FinalizerHandling(instance *apis.BlockDevice
 				instance.Spec.BlockDeviceName, instance.Name, err)
 			return err
 		}
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceReleased", "BlockDevice: %v is released", instance.Spec.BlockDeviceName)
 
 		// Remove finalizer from list and update it.
 		instance.ObjectMeta.Finalizers = util.RemoveString(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer)
 		if err := r.client.Update(context.TODO(), instance); err != nil {
 			klog.Errorf("Error removing finalizer from %s", instance.Name)
+			r.recorder.Eventf(instance, corev1.EventTypeWarning, "UpdateOperationFailed", "Unable to remove Finalizer, due to error: %v", err.Error())
 			return err
 		}
 	}
@@ -222,6 +232,8 @@ func (r *ReconcileBlockDeviceClaim) updateClaimStatus(phase apis.DeviceClaimPhas
 	switch phase {
 	case apis.BlockDeviceClaimStatusDone:
 		instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer)
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimedBound", "BlockDeviceClaim is bound")
+
 	}
 	// Update BlockDeviceClaim CR
 	err := r.client.Update(context.TODO(), instance)
@@ -270,21 +282,32 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 	}
 
 	// Check if same deviceclaim holding the ObjRef
+	var claimedBd *apis.BlockDevice
 	for _, item := range bdList.Items {
 		if !r.isDeviceRequestedByThisDeviceClaim(instance, item) {
 			continue
 		}
-
+		claimedBd = &item
 		// Found a blockdevice ObjRef with BlockDeviceClaim, Clear
 		// ObjRef and mark blockdevice released in etcd
-		dvr := item.DeepCopy()
-		dvr.Spec.ClaimRef = nil
-		dvr.Status.ClaimState = apis.BlockDeviceReleased
-		err := r.client.Update(context.TODO(), dvr)
-		if err != nil {
-			klog.Errorf("Error updating ClaimRef of %s: %v", dvr.Name, err)
-			return err
-		}
+		//dvr := item.DeepCopy()
+		//dvr.Spec.ClaimRef = nil
+		//dvr.Status.ClaimState = apis.BlockDeviceReleased
+		//err := r.client.Update(context.TODO(), dvr)
+		//if err != nil {
+		//	reqLogger.Error(err, "Error while updating ObjRef", "BlockDevice-CR:", dvr.ObjectMeta.Name)
+		//	return dvr,err
+		//}
+	}
+	dvr := claimedBd.DeepCopy()
+	dvr.Spec.ClaimRef = nil
+	dvr.Status.ClaimState = apis.BlockDeviceReleased
+
+	r.recorder.Eventf(dvr, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "Released")
+	err = r.client.Update(context.TODO(), dvr)
+	if err != nil {
+		klog.Errorf("Error updating ClaimRef of %s: %v", dvr.Name, err)
+		return err
 	}
 	return nil
 }
