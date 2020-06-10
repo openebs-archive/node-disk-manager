@@ -137,7 +137,7 @@ func (b *Builder) WithPrinterColumns(columnName, columnType, jsonPath string) *B
 }
 
 // WithPriorityPrinterColumns is used to add printercolumns field to the CRD with priority field
-func (b *Builder) WithPriorityPrinterColumns(columnName, columnType, jsonPath string, fsType string, priority int32) *Builder {
+func (b *Builder) WithPriorityPrinterColumns(columnName, columnType, jsonPath string, priority int32) *Builder {
 	if len(columnName) == 0 {
 		b.errs = append(b.errs,
 			errors.New("missing column name in additional printer columns"))
