@@ -183,8 +183,8 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(instance *api
 		if err != nil {
 			return err
 		}
-		r.recorder.Eventf(selectedDevice, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice device by %v", instance.Name)
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice: %v", instance.Spec.BlockDeviceName)
+		r.recorder.Eventf(selectedDevice, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice claimed by %v", instance.Name)
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice: %v claimed", instance.Spec.BlockDeviceName)
 	}
 
 	err = r.updateClaimStatus(instance.Status.Phase, instance)
@@ -232,7 +232,7 @@ func (r *ReconcileBlockDeviceClaim) updateClaimStatus(phase apis.DeviceClaimPhas
 	switch phase {
 	case apis.BlockDeviceClaimStatusDone:
 		instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer)
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimedBound", "BlockDeviceClaim is bound")
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimBound", "BlockDeviceClaim is bound to %v", instance.Spec.BlockDeviceName)
 
 	}
 	// Update BlockDeviceClaim CR
@@ -284,31 +284,25 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 	// Check if same deviceclaim holding the ObjRef
 	var claimedBd *apis.BlockDevice
 	for _, item := range bdList.Items {
-		if !r.isDeviceRequestedByThisDeviceClaim(instance, item) {
-			continue
-		}
-		claimedBd = &item
 		// Found a blockdevice ObjRef with BlockDeviceClaim, Clear
 		// ObjRef and mark blockdevice released in etcd
-		//dvr := item.DeepCopy()
-		//dvr.Spec.ClaimRef = nil
-		//dvr.Status.ClaimState = apis.BlockDeviceReleased
-		//err := r.client.Update(context.TODO(), dvr)
-		//if err != nil {
-		//	reqLogger.Error(err, "Error while updating ObjRef", "BlockDevice-CR:", dvr.ObjectMeta.Name)
-		//	return dvr,err
-		//}
+		if r.isDeviceRequestedByThisDeviceClaim(instance, item) {
+			claimedBd = &item
+			break
+		}
+		claimedBd = &item
 	}
 	dvr := claimedBd.DeepCopy()
 	dvr.Spec.ClaimRef = nil
 	dvr.Status.ClaimState = apis.BlockDeviceReleased
 
-	r.recorder.Eventf(dvr, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "Released")
 	err = r.client.Update(context.TODO(), dvr)
 	if err != nil {
 		klog.Errorf("Error updating ClaimRef of %s: %v", dvr.Name, err)
 		return err
 	}
+	r.recorder.Eventf(dvr, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "Released")
+
 	return nil
 }
 
