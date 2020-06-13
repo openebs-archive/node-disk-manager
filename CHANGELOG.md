@@ -1,3 +1,8 @@
+v0.6.0-RC2 / 2020-06-12
+========================
+* Adding filesystem info column in output of kubectl get bd -o wide ([#435](https://github.com/openebs/node-disk-manager/pull/435), [@harshthakur9030](https://github.com/harshthakur9030))
+
+
 v0.6.0-RC1 / 2020-06-09
 ========================
 * make feature gates independent of daemon controller ([#426](https://github.com/openebs/node-disk-manager/pull/426), [@akhilerm](https://github.com/akhilerm))
