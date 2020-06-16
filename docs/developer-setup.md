@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* You have Go 1.12 installed on your local host/development machine.
+* You have Go 1.13 or above installed on your local host/development machine.
 * You have Docker installed on your local host/development machine. Docker is required for building NDM container images and to push them into a Kubernetes cluster for testing. 
 * You have `kubectl` installed. For running integration tests, you will require an existing single node cluster. Don't worry if you don't have access to the Kubernetes cluster, raising a PR with the NDM repository will run integration tests for your changes against a Minikube cluster.
 
@@ -15,19 +15,16 @@
 
 ### Clone fork to local host
 
-Place openebs/node-disk-manager's code on your `GOPATH` using the following cloning procedure.
+Since Go modules are being used, you can clone the repo in any directory on your local system. 
 Create your clone:
 
 ```sh
-
-mkdir -p $GOPATH/src/github.com/openebs
-cd $GOPATH/src/github.com/openebs
 
 # Note: Here user= your github profile name
 git clone https://github.com/$user/node-disk-manager.git
 
 # Configure remote upstream
-cd $GOPATH/src/github.com/openebs/node-disk-manager
+cd node-disk-manager
 git remote add upstream https://github.com/openebs/node-disk-manager.git
 
 # Never push to upstream master
@@ -36,12 +33,11 @@ git remote set-url --push upstream no_push
 # Confirm that your remotes make sense:
 git remote -v
 ```
-> **Note:** If your `GOPATH` has more than one (`:` separated) paths in it, then you should use *one of your go path* instead of `$GOPATH` in the commands mentioned here. This statement holds throughout this document.
 
 Install the build dependencies.
   * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
   * Run `make bootstrap` to install the required Go tools
-  * node-disk-manager uses OpenSeaChest to fetch certain details of the disk like temperature and rotation rate. This requires cloning the `openSeaChest` repo to `openebs` directory and build it. 
+  * node-disk-manager uses OpenSeaChest to fetch certain details of the disk like temperature and rotation rate. This requires cloning the `openSeaChest` repo **outside the nod-disk-manager repo**
     ```sh
     git clone --recursive --branch Release-19.06.02 https://github.com/openebs/openSeaChest.git
     cd openSeaChest/Make/gcc
@@ -57,7 +53,7 @@ Install the build dependencies.
 
 ### Building and Testing your changes
 
-* run `make` in the top directory. It will:
+* run `make` in the node-disk-manager directory. It will:
   * Build the binary.
   * Build the docker image with the binary.
 
@@ -72,7 +68,7 @@ Install the build dependencies.
 Open a terminal on your local host. Change directory to the node-disk-manager fork root.
 
 ```sh
-$ cd $GOPATH/src/github.com/openebs/node-disk-manager
+$ cd node-disk-manager
 ```
 
  Checkout the master branch.
@@ -174,9 +170,10 @@ While you rebase your changes, you must resolve any conflicts that might arise a
 
 ### Create a pull request
 
-Before you raise the Pull Requests, ensure you have reviewed the checklist in the [CONTRIBUTING GUIDE](../CONTRIBUTING.md):
+Before you raise the Pull Requests, ensure you have reviewed the checklist in the [CONTRIBUTING GUIDE](https://github.com/openebs/openebs/blob/master/CONTRIBUTING.md):
 - Ensure that you have re-based your changes with the upstream using the steps above.
-- Ensure that you have added the required unit tests for the bug fixes or new feature that you have introduced. 
+- Ensure that you have added the required unit tests for the bug fixes or new feature that you have introduced.
+- Ensure that commits are signed (DCO) .  
 - Ensure your commits history is clean with proper header and descriptions.
 
 Go to the [openebs/node-disk-manager github](https://github.com/openebs/node-disk-manager) and follow the Open Pull Request link to raise your PR from your development branch.
