@@ -37,7 +37,7 @@ git remote -v
 Install the build dependencies.
   * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
   * Run `make bootstrap` to install the required Go tools
-  * node-disk-manager uses OpenSeaChest to fetch certain details of the disk like temperature and rotation rate. This requires cloning the `openSeaChest` repo **outside the nod-disk-manager repo**
+  * node-disk-manager uses OpenSeaChest to fetch certain details of the disk like temperature and rotation rate. This requires cloning the `openSeaChest` repo **outside the node-disk-manager repo**
     ```sh
     git clone --recursive --branch Release-19.06.02 https://github.com/openebs/openSeaChest.git
     cd openSeaChest/Make/gcc
@@ -177,6 +177,5 @@ Before you raise the Pull Requests, ensure you have reviewed the checklist in th
 - Ensure your commits history is clean with proper header and descriptions.
 
 Go to the [openebs/node-disk-manager github](https://github.com/openebs/node-disk-manager) and follow the Open Pull Request link to raise your PR from your development branch.
-
 
 
