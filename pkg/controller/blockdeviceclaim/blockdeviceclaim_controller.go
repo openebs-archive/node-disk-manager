@@ -300,7 +300,7 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 		klog.Errorf("Error updating ClaimRef of %s: %v", dvr.Name, err)
 		return err
 	}
-	r.recorder.Eventf(dvr, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "Released")
+	r.recorder.Eventf(dvr, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "Released from BDC: %v", instance.Name)
 
 	return nil
 }
