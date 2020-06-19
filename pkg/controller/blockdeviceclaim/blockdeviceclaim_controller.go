@@ -290,7 +290,6 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 			claimedBd = &item
 			break
 		}
-		claimedBd = &item
 	}
 	dvr := claimedBd.DeepCopy()
 	dvr.Spec.ClaimRef = nil
