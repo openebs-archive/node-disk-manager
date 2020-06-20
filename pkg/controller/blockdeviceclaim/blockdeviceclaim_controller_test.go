@@ -252,7 +252,7 @@ func (r *ReconcileBlockDeviceClaim) InvalidCapacityTest(t *testing.T,
 	if err != nil {
 		t.Errorf("Get devRequestInst: (%v)", err)
 	}
-	r.CheckBlockDeviceClaimStatus(t, req, openebsv1alpha1.BlockDeviceClaimStatusInvalidCapacity)
+	r.CheckBlockDeviceClaimStatus(t, req, openebsv1alpha1.BlockDeviceClaimStatusPending)
 }
 
 func TestBlockDeviceClaimsLabelSelector(t *testing.T) {
