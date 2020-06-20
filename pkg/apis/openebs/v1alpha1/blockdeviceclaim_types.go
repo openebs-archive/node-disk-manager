@@ -139,6 +139,7 @@ const (
 	BlockDeviceClaimStatusPending DeviceClaimPhase = "Pending"
 
 	// BlockDeviceClaimStatusInvalidCapacity represents BlockDeviceClaim has invalid capacity request i.e. 0/-1
+	// Deprecated
 	BlockDeviceClaimStatusInvalidCapacity DeviceClaimPhase = "Invalid Capacity Request"
 
 	// BlockDeviceClaimStatusDone represents BlockDeviceClaim has been assigned backing blockdevice and ready for use.

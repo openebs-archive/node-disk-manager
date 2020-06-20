@@ -123,9 +123,15 @@ func (r *ReconcileBlockDeviceClaim) Reconcile(request reconcile.Request) (reconc
 				return reconcile.Result{}, err
 			}
 		}
-		// TODO @akhilerm this phase should be moved out from ClaimPhase and will be a reason for not claiming
 	case apis.BlockDeviceClaimStatusInvalidCapacity:
-		// currently for invalid capacity, the BDC will remain in that state
+		// migrating state to Pending if in InvalidCapacity state.
+		// The InvalidCapacityState is deprecated and pending will be used.
+		// InvalidCapacity will be the reason for why the BDC is in Pending state.
+		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
+		err := r.updateClaimStatus(apis.BlockDeviceClaimStatusPending, instance)
+		if err != nil {
+			klog.Errorf("error in updating phase to pending from invalid capacity for %s: %v", instance.Name, err)
+		}
 		klog.Infof("%s claim phase is: %s", instance.Name, instance.Status.Phase)
 	case apis.BlockDeviceClaimStatusDone:
 		err := r.FinalizerHandling(instance)
@@ -150,14 +156,15 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(instance *api
 		// Get the capacity requested in the claim
 		_, err := verify.GetRequestedCapacity(instance.Spec.Resources.Requests)
 		if err != nil {
-			r.recorder.Eventf(instance, corev1.EventTypeWarning, "InvalidCapacity", err.Error())
-			//Update deviceClaim CR with error string
-			instance.Status.Phase = apis.BlockDeviceClaimStatusInvalidCapacity
+			r.recorder.Eventf(instance, corev1.EventTypeWarning, "InvalidCapacity", "Invalid Capacity requested")
+			//Update deviceClaim CR with pending status
+			instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 			err1 := r.updateClaimStatus(instance.Status.Phase, instance)
 			if err1 != nil {
 				klog.Errorf("%s requested an invalid capacity: %v", instance.Name, err1)
 				return err1
 			}
+			klog.Infof("%s set to Pending due to invalid capacity request", instance.Name)
 			return err
 		}
 	}
