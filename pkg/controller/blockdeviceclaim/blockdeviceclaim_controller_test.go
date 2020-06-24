@@ -34,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -49,6 +50,7 @@ var (
 	namespace                      = ""
 	capacity             uint64    = 1024000
 	claimCapacity                  = resource.MustParse("1024000")
+	fakeRecorder                   = record.NewFakeRecorder(50)
 )
 
 // TestBlockDeviceClaimController runs ReconcileBlockDeviceClaim.Reconcile() against a
@@ -60,7 +62,6 @@ func TestBlockDeviceClaimController(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	cl, s := CreateFakeClient()
-
 	deviceR := GetFakeDeviceObject(deviceName, capacity)
 	deviceClaimR := GetFakeBlockDeviceClaimObject()
 	// Create a new blockdevice obj
@@ -76,7 +77,7 @@ func TestBlockDeviceClaimController(t *testing.T) {
 	}
 
 	// Create a ReconcileDevice object with the scheme and fake client.
-	r := &ReconcileBlockDeviceClaim{client: cl, scheme: s}
+	r := &ReconcileBlockDeviceClaim{client: cl, scheme: s, recorder: fakeRecorder}
 
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .
@@ -319,7 +320,7 @@ func TestBlockDeviceClaimsLabelSelector(t *testing.T) {
 			cl, s := CreateFakeClient()
 
 			// Create a ReconcileDevice object with the scheme and fake client.
-			r := &ReconcileBlockDeviceClaim{client: cl, scheme: s}
+			r := &ReconcileBlockDeviceClaim{client: cl, scheme: s, recorder: fakeRecorder}
 
 			// Mock request to simulate Reconcile() being called on an event for a
 			// watched resource .

@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -41,6 +42,7 @@ var (
 	deviceName          = "blockdevice-example"
 	namespace           = ""
 	capacity     uint64 = 1024000
+	fakeRecorder        = record.NewFakeRecorder(50)
 )
 
 // TestDeviceController runs ReconcileDisk.Reconcile() against a
@@ -59,7 +61,7 @@ func TestDeviceController(t *testing.T) {
 	cl, s := CreateFakeClient(t)
 
 	// Create a ReconcileBlockDevice object with the scheme and fake client.
-	r := &ReconcileBlockDevice{client: cl, scheme: s}
+	r := &ReconcileBlockDevice{client: cl, scheme: s, recorder: fakeRecorder}
 
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .
