@@ -21,29 +21,14 @@ ifeq (${TAG}, )
   export TAG=ci
 endif
 
-# Initialize the NDM DaemonSet variables
-# Specify the NDM DaemonSet binary name
-NODE_DISK_MANAGER=ndm
-# Specify the sub path under ./cmd/ for NDM DaemonSet
-BUILD_PATH_NDM=ndm_daemonset
-# Name of the image for NDM DaemoneSet
-DOCKER_IMAGE_NDM:=${IMAGE_ORG}/node-disk-manager:${TAG}
+# Name of the multiarch image for NDM DaemoneSet
+DOCKERX_IMAGE_NDM:=${IMAGE_ORG}/node-disk-manager:${TAG}
 
-# Initialize the NDM Operator variables
-# Specify the NDM Operator binary name
-NODE_DISK_OPERATOR=ndo
-# Specify the sub path under ./cmd/ for NDM Operator
-BUILD_PATH_NDO=manager
-# Name of the image for ndm operator
-DOCKER_IMAGE_NDO:=${IMAGE_ORG}/node-disk-operator:${TAG}
+# Name of the multiarch image for ndm operator
+DOCKERX_IMAGE_NDO:=${IMAGE_ORG}/node-disk-operator:${TAG}
 
-# Initialize the NDM Exporter variables
-# Specfiy the NDM Exporter binary name
-NODE_DISK_EXPORTER=exporter
-# Specify the sub path under ./cmd/ for NDM Exporter
-BUILD_PATH_EXPORTER=ndm-exporter
-# Name of the image for ndm exporter
-DOCKER_IMAGE_EXPORTER:=${IMAGE_ORG}/node-disk-exporter:${TAG}
+# Name of the multiarch image for ndm exporter
+DOCKERX_IMAGE_EXPORTER:=${IMAGE_ORG}/node-disk-exporter:${TAG}
 
 .PHONY: buildx.ndm
 buildx.ndm: bootstrap install-dep-nonsudo clean build.common
@@ -63,9 +48,9 @@ docker.buildx.ndm:
 		docker buildx create --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" --name container-builder --use;\
 	fi
 	@docker buildx build --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" \
-		-t "$(DOCKER_IMAGE_NDM)" ${DBUILD_ARGS} -f ndm-daemonset.Dockerfile \
+		-t "$(DOCKERX_IMAGE_NDM)" ${DBUILD_ARGS} -f ndm-daemonset.Dockerfile \
 		. --push
-	@echo "--> Build docker image: $(DOCKER_IMAGE_NDM)"
+	@echo "--> Build docker image: $(DOCKERX_IMAGE_NDM)"
 	@echo
 
 .PHONY: buildx.ndo
@@ -83,9 +68,9 @@ docker.buildx.ndo:
 		docker buildx create --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" --name container-builder --use;\
 	fi
 	@docker buildx build --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" \
-		-t "$(DOCKER_IMAGE_NDO)" ${DBUILD_ARGS} -f ndm-operator.Dockerfile \
+		-t "$(DOCKERX_IMAGE_NDO)" ${DBUILD_ARGS} -f ndm-operator.Dockerfile \
 		. --push
-	@echo "--> Build docker image: $(DOCKER_IMAGE_NDO)"
+	@echo "--> Build docker image: $(DOCKERX_IMAGE_NDO)"
 	@echo
 
 .PHONY: buildx.exporter
@@ -103,9 +88,9 @@ docker.buildx.exporter:
 		docker buildx create --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" --name container-builder --use;\
 	fi
 	@docker buildx build --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" \
-		-t "$(DOCKER_IMAGE_EXPORTER)" ${DBUILD_ARGS} -f ndm-exporter.Dockerfile \
+		-t "$(DOCKERX_IMAGE_EXPORTER)" ${DBUILD_ARGS} -f ndm-exporter.Dockerfile \
 		. --push
-	@echo "--> Build docker image: $(DOCKER_IMAGE_EXPORTER)"
+	@echo "--> Build docker image: $(DOCKERX_IMAGE_EXPORTER)"
 	@echo
 
 .PHONY: install-dep-nonsudo
