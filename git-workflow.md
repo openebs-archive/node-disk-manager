@@ -1,10 +1,4 @@
-# Development Workflow
-
-## Prerequisites
-
-* You have Go 1.13 or above installed on your local host/development machine.
-* You have Docker installed on your local host/development machine. Docker is required for building NDM container images and to push them into a Kubernetes cluster for testing. 
-* You have `kubectl` installed. For running integration tests, you will require an existing single node cluster. Don't worry if you don't have access to the Kubernetes cluster, raising a PR with the NDM repository will run integration tests for your changes against a Minikube cluster.
+# Git Development Workflow
 
 ## Initial Setup
 
@@ -34,35 +28,6 @@ git remote set-url --push upstream no_push
 git remote -v
 ```
 
-Install the build dependencies.
-  * By default node-disk-manager enables fetching disk attributes using udev. This requires udev develop files. For Ubuntu, `libudev-dev` package should be installed.
-  * Run `make bootstrap` to install the required Go tools
-  * node-disk-manager uses OpenSeaChest to fetch certain details of the disk like temperature and rotation rate. This requires cloning the `openSeaChest` repo **outside the node-disk-manager repo**
-    ```sh
-    git clone --recursive --branch Release-19.06.02 https://github.com/openebs/openSeaChest.git
-    cd openSeaChest/Make/gcc
-    make release
-    ```
-  * Copy the generated static library files to `/usr/lib`
-    ```sh
-    cd ../../
-    sudo cp opensea-common/Make/gcc/lib/libopensea-common.a /usr/lib
-    sudo cp opensea-operations/Make/gcc/lib/libopensea-operations.a /usr/lib
-    sudo cp opensea-transport/Make/gcc/lib/libopensea-transport.a /usr/lib
-    ```
-
-### Building and Testing your changes
-
-* run `make` in the node-disk-manager directory. It will:
-  * Build the binary.
-  * Build the docker image with the binary.
-
-* Test your changes
-  * `sudo -E env "PATH=$PATH" make test` execute the unit tests
-  * Integration tests are written in ginkgo and run against a minikube cluster. Minikube cluster should be running so as to execute the tests. To install minikube follow the doc [here](https://kubernetes.io/docs/tasks/tools/install-minikube/). 
-  `make integration-test` will run the integration tests on the minikube cluster.
-
-## Git Development Workflow
 
 ### Always sync your local repository:
 Open a terminal on your local host. Change directory to the node-disk-manager fork root.
@@ -177,5 +142,4 @@ Before you raise the Pull Requests, ensure you have reviewed the checklist in th
 - Ensure your commits history is clean with proper header and descriptions.
 
 Go to the [openebs/node-disk-manager github](https://github.com/openebs/node-disk-manager) and follow the Open Pull Request link to raise your PR from your development branch.
-
 

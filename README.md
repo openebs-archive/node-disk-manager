@@ -41,7 +41,7 @@ A detailed usage documentation is maintained in the [wiki](https://github.com/op
 * `kubectl get blockdevices <blockdevice-cr-name> -o yaml` displays all the details of the disk captured by `ndm` for given disk resource.
 
 ## Building, Testing and Pushing Image
-Before building the image locally, you need to setup your development environment. The detailed instructions for setting up development environment, building and testing are available [here](./docs/developer-setup.md).
+Before building the image locally, you need to setup your development environment. The detailed instructions for setting up development environment, building and testing are available [here](./BUILD.md).
 
 #### Push Image
 By default travis pushes the docker image to `openebs/node-disk-manager-amd64`, with *ci* as well as commit tags. 

@@ -128,7 +128,7 @@ This project is implemented using Go and uses the standard golang tools for deve
 - are familiar with Docker containers
 - are familiar with Kubernetes and have access to a Kubernetes cluster or Minikube to test the changes.
 
-For setting up a Development environment on your local host, see the detailed instructions [here](./docs/developer-setup.md).
+For setting up a Development environment on your local host, see the detailed instructions [here](./BUILD.md).
 
 The NDM design document is available [here](./docs/design.md).
 
