@@ -22,6 +22,7 @@ package cleaner
 
 import (
 	"context"
+	"fmt"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
@@ -39,8 +40,6 @@ const (
 	JobNamePrefix = "cleanup-"
 	// BDLabel is the label set on the job for identification of the BD
 	BDLabel = "blockdevice"
-	// BlockCleanerCommand is the command used to clean raw block
-	BlockCleanerCommand = "wipefs"
 )
 
 // JobController defines the interface for the job controller.
@@ -75,10 +74,19 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, tolerations []v
 	mountName := "vol-mount"
 
 	if volMode == VolumeModeBlock {
+		jobContainer.Command = []string{"/bin/sh", "-c"}
+
+		// fdisk is used to get all the partitions of the device.
+		// first all the partitions are cleared off any filesystem signatures, then the actual partition table
+		// header is removed. partprobe is called so as to re-read partition table, and update system with
+		// the changes/
 		// wipefs erases the filesystem signature from the block
 		// -a    wipe all magic strings
 		// -f    force erasure
-		jobContainer.Command = getCommand(BlockCleanerCommand, "-af", bd.Spec.Path)
+		args := fmt.Sprintf("(fdisk -o Device -l %s | grep \"^%s\" | xargs -I '{}' wipefs -fa '{}') && wipefs -fa %s && partprobe %s",
+			bd.Spec.Path, bd.Spec.Path, bd.Spec.Path, bd.Spec.Path)
+
+		jobContainer.Args = []string{args}
 
 		// in case of sparse disk, need to mount the sparse file directory
 		// and clear the sparse file
@@ -197,15 +205,6 @@ func (c *jobController) CancelJob(bdName string) error {
 
 func generateCleaningJobName(bdName string) string {
 	return JobNamePrefix + bdName
-}
-
-func getCommand(cmd string, args ...string) []string {
-	var command []string
-	command = append(command, cmd)
-	for _, arg := range args {
-		command = append(command, arg)
-	}
-	return command
 }
 
 // GetNodeName gets the Node name from BlockDevice
