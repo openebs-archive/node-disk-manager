@@ -26,9 +26,10 @@ import (
 	"k8s.io/klog"
 )
 
-const internalUUIDAnotation = "internal.openebs.io/uuid-scheme"
-const legacyUUIDScheme = "legacy"
-const gptUUIDScheme = "gpt"
+const (
+	internalUUIDAnnotation = "internal.openebs.io/uuid-scheme"
+	legacyUUIDScheme       = "legacy"
+)
 
 func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice) error {
 
@@ -237,7 +238,7 @@ func (pe *ProbeEvent) upgradeBD(bd blockdevice.BlockDevice, bdAPIList *apis.Bloc
 	}
 
 	// device is in use by cstor or localpv
-	klog.V(4).Infof("device: %s in use by cstor / localPV. hence ignoring event")
+	klog.V(4).Infof("device: %s in use by cstor / localPV. hence ignoring event", bd.DevPath)
 
 	// try to generate old UUID for the device
 	legacyUUID, isVirt := generateLegacyUUID(bd)
@@ -254,10 +255,10 @@ func (pe *ProbeEvent) upgradeBD(bd blockdevice.BlockDevice, bdAPIList *apis.Bloc
 		if legacyBDResource.Annotations == nil {
 			legacyBDResource.Annotations = make(map[string]string)
 		}
-		legacyBDResource.Annotations[internalUUIDAnotation] = legacyUUIDScheme
+		legacyBDResource.Annotations[internalUUIDAnnotation] = legacyUUIDScheme
 		err := pe.Controller.PushBlockDeviceResource(legacyBDResource, deviceInfo)
 		if err != nil {
-			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnotation, legacyUUIDScheme, bd.UUID)
+			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnnotation, legacyUUIDScheme, bd.UUID)
 			return false, err
 		}
 
@@ -301,15 +302,13 @@ func (pe *ProbeEvent) upgradeBD(bd blockdevice.BlockDevice, bdAPIList *apis.Bloc
 		if legacyVirtBDResource.Annotations == nil {
 			legacyVirtBDResource.Annotations = make(map[string]string)
 		}
-		legacyVirtBDResource.Annotations[internalUUIDAnotation] = legacyUUIDScheme
+		legacyVirtBDResource.Annotations[internalUUIDAnnotation] = legacyUUIDScheme
 		err := pe.Controller.CreateBlockDevice(legacyVirtBDResource)
 		if err != nil {
-			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnotation, legacyUUIDScheme, bd.UUID)
+			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnnotation, legacyUUIDScheme, bd.UUID)
 			return false, err
 		}
 	}
-	// ideally should not reach this case.
-	klog.V(4).Infof("may be a manual blockdevice")
 	// log what is the case
 	return false, nil
 }
