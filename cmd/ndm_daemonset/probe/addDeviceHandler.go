@@ -258,7 +258,7 @@ func (pe *ProbeEvent) upgradeBD(bd blockdevice.BlockDevice, bdAPIList *apis.Bloc
 		legacyBDResource.Annotations[internalUUIDAnnotation] = legacyUUIDScheme
 		err := pe.Controller.PushBlockDeviceResource(legacyBDResource, deviceInfo)
 		if err != nil {
-			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnnotation, legacyUUIDScheme, bd.UUID)
+			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnnotation, legacyUUIDScheme, bd.UUID, err)
 			return false, err
 		}
 
@@ -305,7 +305,7 @@ func (pe *ProbeEvent) upgradeBD(bd blockdevice.BlockDevice, bdAPIList *apis.Bloc
 		legacyVirtBDResource.Annotations[internalUUIDAnnotation] = legacyUUIDScheme
 		err := pe.Controller.CreateBlockDevice(legacyVirtBDResource)
 		if err != nil {
-			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnnotation, legacyUUIDScheme, bd.UUID)
+			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnnotation, legacyUUIDScheme, bd.UUID, err)
 			return false, err
 		}
 	}
