@@ -21,7 +21,6 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/features"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"k8s.io/klog"
-	"os"
 )
 
 // EventAction action type for disk events like attach or detach events
@@ -115,7 +114,6 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 			}
 			pe.Controller.DeactivateBlockDevice(*existingBlockDeviceResource)
 		}
-
 	}
 
 	// rescan only if GPT based UUID is disabled.
