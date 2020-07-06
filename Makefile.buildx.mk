@@ -21,6 +21,23 @@ ifeq (${TAG}, )
   export TAG=ci
 endif
 
+# default list of platforms for which multiarch image is built
+ifeq (${PLATFORMS}, )
+	export PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le"
+endif
+
+# if IMG_RESULT is unspecified, by default the image will be pushed to registry
+ifeq (${IMG_RESULT}, load)
+	export PUSH_ARG="--load"
+    # if load is specified, image will be built only for the build machine architecture.
+    export PLATFORMS=${XC_OS}/${XC_ARCH}
+else ifeq (${IMG_RESULT}, cache)
+	# if cache is specified, image will only be available in the build cache, it won't be pushed or loaded
+	# therefore no PUSH_ARG will be specified
+else
+	export PUSH_ARG="--push"
+endif
+
 # Name of the multiarch image for NDM DaemoneSet
 DOCKERX_IMAGE_NDM:=${IMAGE_ORG}/node-disk-manager:${TAG}
 
@@ -45,11 +62,11 @@ buildx.ndm: bootstrap install-dep-nonsudo clean build.common
 docker.buildx.ndm:
 	export DOCKER_CLI_EXPERIMENTAL=enabled
 	@if ! docker buildx ls | grep -q container-builder; then\
-		docker buildx create --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" --name container-builder --use;\
+		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
 	fi
-	@docker buildx build --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" \
+	@docker buildx build --platform ${PLATFORMS} \
 		-t "$(DOCKERX_IMAGE_NDM)" ${DBUILD_ARGS} -f ndm-daemonset.Dockerfile \
-		. --push
+		. ${PUSH_ARG}
 	@echo "--> Build docker image: $(DOCKERX_IMAGE_NDM)"
 	@echo
 
@@ -65,11 +82,11 @@ buildx.ndo: bootstrap install-dep-nonsudo clean build.common
 docker.buildx.ndo:
 	export DOCKER_CLI_EXPERIMENTAL=enabled
 	@if ! docker buildx ls | grep -q container-builder; then\
-		docker buildx create --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" --name container-builder --use;\
+		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
 	fi
-	@docker buildx build --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" \
+	@docker buildx build --platform ${PLATFORMS} \
 		-t "$(DOCKERX_IMAGE_NDO)" ${DBUILD_ARGS} -f ndm-operator.Dockerfile \
-		. --push
+		. ${PUSH_ARG}
 	@echo "--> Build docker image: $(DOCKERX_IMAGE_NDO)"
 	@echo
 
@@ -85,11 +102,11 @@ buildx.exporter: bootstrap install-dep-nonsudo clean build.common
 docker.buildx.exporter:
 	export DOCKER_CLI_EXPERIMENTAL=enabled
 	@if ! docker buildx ls | grep -q container-builder; then\
-		docker buildx create --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" --name container-builder --use;\
+		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
 	fi
-	@docker buildx build --platform "linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le" \
+	@docker buildx build --platform ${PLATFORMS} \
 		-t "$(DOCKERX_IMAGE_EXPORTER)" ${DBUILD_ARGS} -f ndm-exporter.Dockerfile \
-		. --push
+		. ${PUSH_ARG}
 	@echo "--> Build docker image: $(DOCKERX_IMAGE_EXPORTER)"
 	@echo
 
