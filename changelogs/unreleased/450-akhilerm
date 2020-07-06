@@ -1,0 +1,1 @@
+fix bug of having an open file descriptor in NDM causing applications to receive resource busy error.
