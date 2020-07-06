@@ -19,7 +19,7 @@ on:
     branches:
       # on pull requests to master and release branches
       - master
-      - v*
+      - 'v*'
 
 jobs:
   lint:
