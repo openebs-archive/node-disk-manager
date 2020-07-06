@@ -30,7 +30,7 @@ endif
 ifeq (${IMG_RESULT}, load)
 	export PUSH_ARG="--load"
     # if load is specified, image will be built only for the build machine architecture.
-    export PLATFORMS=${XC_OS}/${XC_ARCH}
+    export PLATFORMS="local"
 else ifeq (${IMG_RESULT}, cache)
 	# if cache is specified, image will only be available in the build cache, it won't be pushed or loaded
 	# therefore no PUSH_ARG will be specified
