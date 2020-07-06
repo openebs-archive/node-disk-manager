@@ -25,7 +25,8 @@ import (
 func (pe *ProbeEvent) deleteBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) error {
 	pe.deleteDeviceFromCache(bd)
 
-	legacyUUID, _ := generateLegacyUUID(bd)
+	// legacy UUID will be generated at event processing and filled into blockdevice UUID field, no need to regerate here.
+	klog.V(4).Infof("device: %s disconnected, generated legacy UUID: %s.", bd.DevPath, bd.UUID)
 
 	uuid, ok := generateUUID(bd)
 	// this can happen if the device didn't have any unique identifiers
@@ -34,9 +35,8 @@ func (pe *ProbeEvent) deleteBlockDevice(bd blockdevice.BlockDevice, bdAPIList *a
 	}
 
 	// try to deactivate resource with both UUIDs. This is required in the following case
-	// 1. Unused device
 
-	existingLegacyBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, legacyUUID)
+	existingLegacyBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, bd.UUID)
 	if existingLegacyBlockDeviceResource != nil {
 		pe.Controller.DeactivateBlockDevice(*existingLegacyBlockDeviceResource)
 		klog.V(4).Infof("deactivated device: %s, using legacy UUID", bd.DevPath)
