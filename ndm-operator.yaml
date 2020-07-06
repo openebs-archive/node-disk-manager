@@ -144,6 +144,8 @@ spec:
         - name: procmount
           mountPath: /host/proc
           readOnly: true
+        - name: devmount
+          mountPath: /dev
         - name: basepath
           mountPath: /var/openebs/ndm
         - name: sparsepath
@@ -186,6 +188,10 @@ spec:
       # to read which partition is mounted on / path
         hostPath:
           path: /proc
+          type: Directory
+      - name: devmount
+        hostPath:
+          path: /dev
           type: Directory
       - name: basepath
         hostPath:
