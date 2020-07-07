@@ -51,8 +51,9 @@ jobs:
           buildx-version: latest
 
       - name: Build Image
-        run: |
-          make docker.buildx.ndm IMG_RESULT=cache
+        env:
+          IMG_RESULT: cache
+        run: make docker.buildx.ndm
 
   ndm-exporter:
     runs-on: ubuntu-latest
@@ -68,8 +69,9 @@ jobs:
           buildx-version: latest
 
       - name: Build Image
-        run: |
-          make docker.buildx.exporter IMG_RESULT=cache
+        env:
+          IMG_RESULT: cache
+        run: make docker.buildx.exporter
 
   ndm-operator:
     runs-on: ubuntu-latest
@@ -85,5 +87,6 @@ jobs:
           buildx-version: latest
 
       - name: Build Image
-        run: |
-          make docker.buildx.ndo IMG_RESULT=cache
+        env:
+          IMG_RESULT: cache
+        run: make docker.buildx.ndo
