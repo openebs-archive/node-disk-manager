@@ -48,6 +48,7 @@ type MockOsDiskDetails struct {
 	Mountpoint     string
 	PartTableType  string
 	PartTableUUID  string
+	IdType         string
 	ByIdDevLinks   []string
 	ByPathDevLinks []string
 	Dependents     bd.DependentBlockDevices
@@ -91,6 +92,7 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.FileSystem = osFilesystem
 	diskDetails.PartTableType = device.GetPropertyValue(UDEV_PARTITION_TABLE_TYPE)
 	diskDetails.PartTableUUID = device.GetPropertyValue(UDEV_PARTITION_TABLE_UUID)
+	diskDetails.IdType = device.GetPropertyValue(UDEV_TYPE)
 	dev := hierarchy.Device{Path: diskDetails.DevNode}
 	diskDetails.Dependents, err = dev.GetDependents()
 	if err != nil {

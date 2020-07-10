@@ -86,6 +86,7 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 		ByIdDevLinks:       diskDetails.ByIdDevLinks,
 		ByPathDevLinks:     diskDetails.ByPathDevLinks,
 		PartitionTableType: diskDetails.PartTableType,
+		IDType:             diskDetails.IdType,
 	}
 	tests := map[string]struct {
 		actualDetails   UdevDiskDetails
