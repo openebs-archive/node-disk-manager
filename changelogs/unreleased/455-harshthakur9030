@@ -1,0 +1,1 @@
+Make udev scan operation thread safe.
