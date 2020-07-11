@@ -18,6 +18,7 @@ package probe
 
 import (
 	"fmt"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
@@ -50,7 +51,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 	bdAPIList, err := pe.Controller.ListBlockDeviceResource(true)
 	if err != nil {
 		klog.Error(err)
-		go pe.initOrErrorEvent()
+		go Rescan(pe.Controller)
 		return
 	}
 
@@ -94,7 +95,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 	}
 
 	if isErrorDuringUpdate {
-		go pe.initOrErrorEvent()
+		go Rescan(pe.Controller)
 	}
 }
 
@@ -141,18 +142,7 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 
 	// rescan only if GPT based UUID is disabled.
 	if !isDeactivated && !isGPTBasedUUIDEnabled {
-		go pe.initOrErrorEvent()
-	}
-}
-
-// initOrErrorEvent rescan system and update disk resource this is
-// used for initial setup and when any uid mismatch or error occurred.
-func (pe *ProbeEvent) initOrErrorEvent() {
-	udevProbe := newUdevProbe(pe.Controller)
-	defer udevProbe.free()
-	err := udevProbe.scan()
-	if err != nil {
-		klog.Error(err)
+		go Rescan(pe.Controller)
 	}
 }
 

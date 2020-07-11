@@ -26,6 +26,7 @@ import (
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"golang.org/x/sync/semaphore"
 
 	"k8s.io/klog"
 )
@@ -122,8 +123,29 @@ func (up *udevProbe) Start() {
 	probeEvent.scan()
 }
 
-// scan scans system for disks and send add event via channel
+// Rescan syncs etcd and NDM
+func Rescan(c *controller.Controller) error {
+	udevProbe := newUdevProbe(c)
+	defer udevProbe.free()
+	err := udevProbe.scan()
+	if err != nil {
+		klog.Error(err)
+		return err
+	}
+	return nil
+}
+
+var sem = semaphore.NewWeighted(1)
+
+// scan scans system for block devices and send add event via channel
 func (up *udevProbe) scan() error {
+
+	// By using a semaphore, we ensure thread safety.
+	if !sem.TryAcquire(1) {
+		return errors.New("Scan is in progress")
+	}
+	defer sem.Release(1)
+
 	if (up.udev == nil) || (up.udevEnumerate == nil) {
 		return errors.New("unable to scan udev and udev enumerate is nil")
 	}
