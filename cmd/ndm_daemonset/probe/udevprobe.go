@@ -232,6 +232,7 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice
 	blockDevice.DeviceAttributes.WWN = udevDiskDetails.WWN
 	blockDevice.DeviceAttributes.Serial = udevDiskDetails.Serial
 	blockDevice.DeviceAttributes.Vendor = udevDiskDetails.Vendor
+	blockDevice.DeviceAttributes.IDType = udevDiskDetails.IDType
 	if len(udevDiskDetails.ByIdDevLinks) != 0 {
 		blockDevice.DevLinks = append(blockDevice.DevLinks, blockdevice.DevLink{
 			Kind:  libudevwrapper.BY_ID_LINK,

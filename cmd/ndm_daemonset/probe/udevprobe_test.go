@@ -114,6 +114,7 @@ func TestFillDiskDetails(t *testing.T) {
 	expectedDiskInfo.DeviceAttributes.Vendor = mockOsDiskDetails.Vendor
 	expectedDiskInfo.DeviceAttributes.WWN = mockOsDiskDetails.Wwn
 	expectedDiskInfo.PartitionInfo.PartitionTableType = mockOsDiskDetails.PartTableType
+	expectedDiskInfo.DeviceAttributes.IDType = mockOsDiskDetails.IdType
 	expectedDiskInfo.DevLinks = append(expectedDiskInfo.DevLinks, blockdevice.DevLink{
 		Kind:  libudevwrapper.BY_ID_LINK,
 		Links: mockOsDiskDetails.ByIdDevLinks,

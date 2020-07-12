@@ -79,7 +79,9 @@ type UdevDiskDetails struct {
 	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
 	DiskType       string   // DeviceType can be disk, partition
-	FileSystem     string   // FileSystem on the disk
+	// IDType is used for uuid generation using the legacy algorithm
+	IDType     string
+	FileSystem string // FileSystem on the disk
 	// Partitiontype on the disk/device
 	PartitionType string
 	// PartitionNumber is the partition number, for /dev/sdb1, partition number is 1
@@ -105,6 +107,7 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 		ByIdDevLinks:       devLinks[BY_ID_LINK],
 		ByPathDevLinks:     devLinks[BY_PATH_LINK],
 		DiskType:           device.GetDevtype(),
+		IDType:             device.GetPropertyValue(UDEV_TYPE),
 		FileSystem:         device.GetFileSystemInfo(),
 		PartitionType:      device.GetPartitionType(),
 		PartitionNumber:    device.GetPartitionNumber(),

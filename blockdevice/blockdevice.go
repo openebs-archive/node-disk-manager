@@ -167,6 +167,19 @@ const (
 	SparseBlockDeviceType = "sparse"
 	// BlockDeviceType is the type for blockdevice.
 	BlockDeviceType = "blockdevice"
+
+	// BlockDevicePrefix is the prefix used in UUIDs
+	BlockDevicePrefix = BlockDeviceType + "-"
+
+	// The following blockdevice types correspond to the types as seen by the host system
+	// BlockDeviceTypeDisk represents a disk type
+	BlockDeviceTypeDisk = "disk"
+
+	// BlockDeviceTypePartition represents a partition
+	BlockDeviceTypePartition = "partition"
+
+	// BlockDeviceTypeLoop represents a loop device
+	BlockDeviceTypeLoop = "loop"
 )
 
 // FileSystemInformation contains the filesystem and mount information of blockdevice, if present
@@ -198,6 +211,10 @@ type DeviceAttribute struct {
 
 	// DriveType is the type of backing drive for this blockdevice. HDD/SSD
 	DriveType string
+
+	// IDType is the udev ID_TYPE field. This is solely used for purpose of UUID generation
+	// using the old algorithm
+	IDType string
 
 	// PhysicalBlockSize is the physical block size in bytes
 	// reported by /sys/class/block/sda/queue/physical_block_size
