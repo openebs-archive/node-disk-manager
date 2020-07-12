@@ -19,6 +19,7 @@ package probe
 import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"os"
 
 	"k8s.io/klog"
 )
@@ -78,4 +79,24 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 	}
 
 	return uuid, ok
+}
+
+// generate old UUID, returns true if the UUID has used path or hostname for generation.
+func generateLegacyUUID(bd blockdevice.BlockDevice) (string, bool) {
+	localDiskModels := []string{
+		"EphemeralDisk",
+		"Virtual_disk",
+		"QEMU_HARDDISK",
+	}
+	uid := bd.DeviceAttributes.WWN +
+		bd.DeviceAttributes.Model +
+		bd.DeviceAttributes.Serial +
+		bd.DeviceAttributes.Vendor
+	uuidUsesPath := false
+	if len(bd.DeviceAttributes.IDType) == 0 || util.Contains(localDiskModels, bd.DeviceAttributes.Model) {
+		host, _ := os.Hostname()
+		uid += host + bd.DevPath
+		uuidUsesPath = true
+	}
+	return blockdevice.BlockDevicePrefix + util.Hash(uid), uuidUsesPath
 }

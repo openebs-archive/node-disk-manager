@@ -18,6 +18,9 @@ package probe
 
 import (
 	"fmt"
+	"github.com/openebs/node-disk-manager/db/kubernetes"
+	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
@@ -25,6 +28,11 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/klog"
+)
+
+const (
+	internalUUIDAnnotation = "internal.openebs.io/uuid-scheme"
+	legacyUUIDScheme       = "legacy"
 )
 
 // addBlockDeviceToHierarchyCache adds the given block device to the hierarchy of devices.
@@ -53,6 +61,23 @@ func (pe *ProbeEvent) addBlockDeviceToHierarchyCache(bd blockdevice.BlockDevice)
 func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) error {
 
 	pe.addBlockDeviceToHierarchyCache(bd)
+
+	if ok, err := pe.deviceInUse(bd, bdAPIList); err != nil {
+		klog.Errorf("error checking device: %s in use by zfs-localPV or mayastor. Error: %v", bd.DevPath, err)
+		return err
+	} else if !ok {
+		// device in use by zfs local pv or mayastor
+		klog.V(4).Infof("processed device: %s being used by zfs-localPV / mayastor", bd.DevPath)
+		return nil
+	}
+
+	if ok, err := pe.upgradeBD(bd, bdAPIList); err != nil {
+		klog.Errorf("upgrade of device: %s failed. Error: %v", bd.DevPath, err)
+		return err
+	} else if !ok {
+		klog.V(4).Infof("device: %s upgraded", bd.DevPath)
+		return nil
+	}
 
 	/*
 		Cases when an add event is generated
@@ -215,4 +240,155 @@ func (pe *ProbeEvent) createBlockDeviceResourceIfNoHolders(bd blockdevice.BlockD
 		return err
 	}
 	return nil
+}
+
+func (pe *ProbeEvent) upgradeBD(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
+	// if the device is a partition and parent is in use, then the event
+	// is skipped and no further processing is required.
+	if bd.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION {
+		parentBD := pe.Controller.BDHierarchy[bd.DevPath]
+		if parentBD.DevUse.InUse {
+			klog.V(4).Infof("parent device: %s of %s is in use, hence ignoring event", parentBD.DevPath, bd.DevPath)
+			return false, nil
+		}
+	}
+
+	// if not in use, there is no need of upgrade.
+	if !bd.DevUse.InUse {
+		return true, nil
+	}
+
+	// device is in use by cstor or localpv
+	klog.V(4).Infof("device: %s in use by cstor / localPV. hence ignoring event", bd.DevPath)
+
+	// try to generate old UUID for the device
+	legacyUUID, isVirt := generateLegacyUUID(bd)
+	klog.V(4).Infof("tried generating legacy UUID: %s for device: %s", legacyUUID, bd.DevPath)
+
+	legacyBDResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, legacyUUID)
+
+	// blockdevice with old uuid exists and is in use. The internal annotation will be added.
+	if legacyBDResource != nil {
+		bd.UUID = legacyUUID
+		klog.V(4).Infof("blockdevice resource with legacy UUID exists, adding internal annotaion")
+		// we used old algorithm for this BD, update the details, with old annotation
+		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+		if legacyBDResource.Annotations == nil {
+			legacyBDResource.Annotations = make(map[string]string)
+		}
+		legacyBDResource.Annotations[internalUUIDAnnotation] = legacyUUIDScheme
+		err := pe.Controller.PushBlockDeviceResource(legacyBDResource, deviceInfo)
+		if err != nil {
+			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnnotation, legacyUUIDScheme, bd.UUID, err)
+			return false, err
+		}
+
+	}
+	// If the resource does not exist, it can happen in 2 cases:
+	// 1. This device do not use the old legacyUUID scheme,
+	// 2. The device uses old scheme, but is a virtual drive and hostname or path has changed
+	//
+	// There can also be cases of manually created blockdevices, but those should be excluded by the filter.
+	klog.V(4).Infof("device: %s may be virtual / device uses new uuid scheme", bd.DevPath)
+
+	// try generating new UUID and if it exists, uses new scheme
+	// return and further processing required
+	uuid, ok := generateUUID(bd)
+	klog.V(4).Infof("tried generating new UUID: %s, for device: %s", uuid, bd.DevPath)
+	if ok {
+		// check if bd with new uuid exists
+		// uses the new algorithm,
+		if pe.Controller.GetExistingBlockDeviceResource(bdAPIList, uuid) != nil {
+			klog.V(4).Infof("device: %s uses GPT based uuid algorithm", bd.DevPath)
+			return true, nil
+		} else {
+			// should never reach this case.
+			// only reaches if manually created blockdevices are present.
+			// this should have been filtered out in filter configs, no firther processing required.
+			return false, nil
+		}
+	}
+
+	klog.V(4).Infof("device: %s uses legacy uuid scheme with path/hostname", bd.DevPath)
+	// which means path is used and path or hostname has changed, or is not an NDM managed device that has path/ it should be filtered
+	// here we have to always create a new resource
+	if isVirt {
+		// creating new bd resource with legacy uuid
+		klog.V(4).Infof("creating BD resource: %s for virtual device: %s", legacyUUID, bd.DevPath)
+		bd.UUID = legacyUUID
+		// we used old algorithm for this BD, update the details, with old annotation
+		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+
+		legacyVirtBDResource := deviceInfo.ToDevice()
+		if legacyVirtBDResource.Annotations == nil {
+			legacyVirtBDResource.Annotations = make(map[string]string)
+		}
+		legacyVirtBDResource.Annotations[internalUUIDAnnotation] = legacyUUIDScheme
+		err := pe.Controller.CreateBlockDevice(legacyVirtBDResource)
+		if err != nil {
+			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDAnnotation, legacyUUIDScheme, bd.UUID, err)
+			return false, err
+		}
+	}
+	// log what is the case
+	return false, nil
+}
+
+// returns true if further processing of this event is required
+func (pe *ProbeEvent) deviceInUse(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
+	if bd.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION {
+		// check if the parent disk is being used by anyone
+
+		parentDevice, ok := pe.Controller.BDHierarchy[bd.DependentDevices.Parent]
+		if !ok {
+			klog.Errorf("unable to find parent device for %s", bd.DevPath)
+			return false, fmt.Errorf("error in getting parent device from device hierarchy")
+		}
+
+		if parentDevice.DevUse.InUse {
+			// parent device is being used by mayastor or zfs localPV
+			// ignore the event
+			// because this event is about a partition on a device that is being used by zfs or mayastor
+			klog.V(4).Infof("parent device: %s of %s is in use, hence ignoring event", parentDevice.DevPath, bd.DevPath)
+			return false, nil
+		}
+
+	}
+
+	if !bd.DevUse.InUse {
+		return true, nil
+	}
+
+	if bd.DevUse.UsedBy != blockdevice.ZFSLocalPV &&
+		bd.DevUse.UsedBy != blockdevice.Mayastor {
+		// device is in use by cstor / localPV.
+		// it will be processed separately
+		klog.V(4).Infof("%s not in use by zfs-localPV / mayastor.", bd.DevPath)
+		return true, nil
+	}
+
+	// if code reaches here, it means the given device is the one used by zfs or mayastor.
+	// Update the details of the device by using partition table ID as UUID
+	klog.V(4).Infof("%s in use by zfs-localPV / mayastor", bd.DevPath)
+
+	// TODO mayastor disks should be processed once a unique ID can be generated
+	if bd.DevUse.UsedBy == blockdevice.Mayastor {
+		klog.V(4).Infof("%s in use by mayastor. ignoring device", bd.DevPath)
+		return false, nil
+	}
+
+	klog.V(4).Infof("Using PartitionTable UUID: %s of %s for uuid generation", bd.PartitionInfo.PartitionTableUUID, bd.DevPath)
+	bd.UUID = libudevwrapper.NDMBlockDevicePrefix + util.Hash(bd.PartitionInfo.PartitionTableUUID)
+	klog.Infof("generated uuid: %s for device: %s", bd.UUID, bd.DevPath)
+
+	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+	deviceAPI := deviceInfo.ToDevice()
+	klog.V(4).Infof("adding %s:%s label on %s (%s)", kubernetes.BlockDeviceTagLabel, bd.DevUse.UsedBy, bd.DevPath, bd.UUID)
+	deviceAPI.Labels[kubernetes.BlockDeviceTagLabel] = string(bd.DevUse.UsedBy)
+	err := pe.Controller.CreateBlockDevice(deviceAPI)
+	if err != nil {
+		klog.Errorf("error pushing %s to etcd. Error: %v", bd.UUID, err)
+		return false, err
+	}
+	return false, nil
 }

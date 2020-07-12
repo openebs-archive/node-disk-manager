@@ -47,15 +47,22 @@ func (pe *ProbeEvent) deleteBlockDevice(bd blockdevice.BlockDevice, bdAPIList *a
 	uuid, ok := generateUUID(bd)
 	// this can happen if the device didn't have any unique identifiers
 	if !ok {
-		klog.Info("could not recreate UUID while removing device")
-		return nil
+		klog.Info("could not recreate GPT-UUID while removing device")
+	}
+
+	// try to deactivate resource with both UUIDs. This is required in the following case
+
+	existingLegacyBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, bd.UUID)
+	if existingLegacyBlockDeviceResource != nil {
+		pe.Controller.DeactivateBlockDevice(*existingLegacyBlockDeviceResource)
+		klog.V(4).Infof("deactivated device: %s, using legacy UUID", bd.DevPath)
 	}
 
 	existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, uuid)
-	if existingBlockDeviceResource == nil {
-		return nil
+	if existingBlockDeviceResource != nil {
+		pe.Controller.DeactivateBlockDevice(*existingBlockDeviceResource)
+		klog.V(4).Infof("deactivated device: %s", bd.DevPath)
 	}
-	pe.Controller.DeactivateBlockDevice(*existingBlockDeviceResource)
 
 	return nil
 }

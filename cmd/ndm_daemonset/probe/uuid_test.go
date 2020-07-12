@@ -110,3 +110,18 @@ func TestGenerateUUID(t *testing.T) {
 		})
 	}
 }
+
+func Test_generateLegacyUUID(t *testing.T) {
+	tests := map[string]struct {
+		bd       blockdevice.BlockDevice
+		wantUUID string
+		wantOk   bool
+	}{}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			gotUUID, gotOk := generateLegacyUUID(tt.bd)
+			assert.Equal(t, tt.wantUUID, gotUUID)
+			assert.Equal(t, tt.wantOk, gotOk)
+		})
+	}
+}
