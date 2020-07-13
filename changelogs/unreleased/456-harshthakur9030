@@ -1,0 +1,1 @@
+Remove dependency on gox and instead use native go build.

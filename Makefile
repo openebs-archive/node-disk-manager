@@ -124,10 +124,7 @@ build: clean build.common docker.ndm docker.ndo docker.exporter
 .PHONY: build.common
 build.common: license-check-go version
 
-# Tools required for different make targets or for development purposes
-EXTERNAL_TOOLS=\
-	github.com/mitchellh/gox
-
+# If there are any external tools need to be used, they can be added by defining a EXTERNAL_TOOLS variable 
 # Bootstrap the build by downloading additional tools
 .PHONY: bootstrap
 bootstrap:
