@@ -69,12 +69,12 @@ moveCompiledBuildx(){
 buildx(){
     output_name="bin/$CTLNAME"
     echo "Building for: ${GOOS} ${GOARCH}"
-    gox -cgo -os="$GOOS" -arch="$GOARCH" -ldflags \
-        "-X github.com/openebs/node-disk-manager/pkg/version.GitCommit=${GIT_COMMIT} \
+    go build \
+        -ldflags="-X github.com/openebs/node-disk-manager/pkg/version.GitCommit=${GIT_COMMIT} \
         -X main.CtlName='${CTLNAME}' \
         -X github.com/openebs/node-disk-manager/pkg/version.Version=${VERSION}" \
-        -output="$output_name" \
-        ./cmd/"$BUILDPATH"
+        -o "$output_name" ./cmd/"$BUILDPATH"
+
     echo "Buildx Successfully built: ${CTLNAME}"
 }
 
@@ -91,12 +91,11 @@ build(){
                 output_name+='.exe'
             fi
             echo "Building for: ${GOOS} ${GOARCH}"
-            gox -cgo -os="$GOOS" -arch="$GOARCH" -ldflags \
-                "-X github.com/openebs/node-disk-manager/pkg/version.GitCommit=${GIT_COMMIT} \
+            go build \
+                -ldflags="-X github.com/openebs/node-disk-manager/pkg/version.GitCommit=${GIT_COMMIT} \
                 -X main.CtlName='${CTLNAME}' \
                 -X github.com/openebs/node-disk-manager/pkg/version.Version=${VERSION}" \
-                -output="$output_name" \
-                ./cmd/"$BUILDPATH"
+                -o "$output_name" ./cmd/"$BUILDPATH"
         done
     done
     echo "Successfully built: ${CTLNAME}"
