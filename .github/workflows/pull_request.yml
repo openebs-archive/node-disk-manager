@@ -37,9 +37,28 @@ jobs:
           pattern: '*.sh'
           exclude: './vendor/*'
 
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: make install-dep
+
+      - name: Unit test
+        # Here sudo permissions are required for running tests, since we are making use
+        # of scsi device mockdata in smartprobe_test.
+        # To access a particular scsi device to fetch this information, sudo or root
+        # permissions are required.
+        run: sudo -E env "PATH=$PATH" make test
+
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v1
+
   ndm-daemonset:
     runs-on: ubuntu-latest
-    needs: lint
+    needs: ['lint', 'unit-test']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -57,7 +76,7 @@ jobs:
 
   ndm-exporter:
     runs-on: ubuntu-latest
-    needs: lint
+    needs: ['lint', 'unit-test']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -75,7 +94,7 @@ jobs:
 
   ndm-operator:
     runs-on: ubuntu-latest
-    needs: lint
+    needs: ['lint', 'unit-test']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
