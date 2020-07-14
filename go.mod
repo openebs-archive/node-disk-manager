@@ -1,6 +1,6 @@
 module github.com/openebs/node-disk-manager
 
-go 1.13
+go 1.14
 
 require (
 	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30 // indirect
