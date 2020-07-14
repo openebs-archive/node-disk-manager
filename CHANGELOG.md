@@ -1,3 +1,11 @@
+v0.7.0 / 2020-07-14
+========================
+* fix wiping released blockdevices with partitions ([#445](https://github.com/openebs/node-disk-manager/pull/445), [@akhilerm](https://github.com/akhilerm))
+* fix bug of having an open file descriptor in NDM causing applications to receive resource busy error. ([#450](https://github.com/openebs/node-disk-manager/pull/450), [@akhilerm](https://github.com/akhilerm))
+* Adding support to build multi-arch docker images. ([#428](https://github.com/openebs/node-disk-manager/pull/428), [@xunholy](https://github.com/xunholy))
+* deprecate invalid capacity request phase from block device claim ([#443](https://github.com/openebs/node-disk-manager/pull/443), [@akhilerm](https://github.com/akhilerm))
+
+
 v0.7.0-RC1 / 2020-07-09
 ========================
 * fix wiping released blockdevices with partitions ([#445](https://github.com/openebs/node-disk-manager/pull/445), [@akhilerm](https://github.com/akhilerm))
