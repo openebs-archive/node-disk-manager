@@ -20,14 +20,19 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/openebs/node-disk-manager/pkg/features"
+	"k8s.io/klog"
+
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/filter"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/grpc"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/probe"
 	"github.com/spf13/cobra"
 )
 
 //NewCmdStart starts the ndm controller
 func NewCmdStart() *cobra.Command {
+
 	//var target string
 	getCmd := &cobra.Command{
 		Use:   "start",
@@ -40,6 +45,12 @@ func NewCmdStart() *cobra.Command {
 				os.Exit(1)
 			}
 
+			isGRPCEnabled := features.FeatureGates.IsEnabled(features.GRPCServer)
+			klog.Infof("Grpc flag is %v", isGRPCEnabled)
+			if isGRPCEnabled {
+				go grpc.Start()
+
+			}
 			// set the NDM config from the options
 			err = ctrl.SetControllerOptions(options)
 			if err != nil {
@@ -54,6 +65,7 @@ func NewCmdStart() *cobra.Command {
 			// Start starts registering of probes present in RegisteredProbes
 			probe.Start(probe.RegisteredProbes)
 			ctrl.Start()
+
 		},
 	}
 

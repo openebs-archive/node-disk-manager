@@ -41,23 +41,27 @@ const (
 	// blockdevice UUID algorithm mentioned in
 	// https://github.com/openebs/openebs/pull/2666
 	GPTBasedUUID Feature = "GPTBasedUUID"
+	// GRPC feature flag starts the GRPC server which provides functionality to manage block devices
+	GRPCServer Feature = "GRPCServer"
 )
 
 // supportedFeatures is the list of supported features. This is used while parsing the
 // feature flag given via command line
 var supportedFeatures = []Feature{
 	GPTBasedUUID,
+	GRPCServer,
 }
 
 // defaultFeatureGates is the default features that will be applied to the application
 var defaultFeatureGates = map[Feature]bool{
 	GPTBasedUUID: false,
+	GRPCServer:   false,
 }
 
 // featureFlag is a map representing the flag and its state
 type featureFlag map[Feature]bool
 
-// FeatureGate is the global feature gate that can be used to check if a feature flag is enabled
+// FeatureGates is the global feature gate that can be used to check if a feature flag is enabled
 // or disabled
 var FeatureGates = NewFeatureGate()
 

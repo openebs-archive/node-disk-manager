@@ -239,6 +239,10 @@ docker.exporter: build.exporter Dockerfile.exporter
 	@echo "--> Build docker image: $(DOCKER_IMAGE_EXPORTER)"
 	@echo
 
+.PHONY: protos
+protos:
+	protoc -I pkg/ndm-grpc/protos/ pkg/ndm-grpc/protos/ndm.proto --go_out=plugins=grpc:pkg/ndm-grpc/protos/ndm
+
 .PHONY: deps
 deps: header
 	@echo '--> Resolving dependencies...'

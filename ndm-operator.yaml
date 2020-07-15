@@ -121,6 +121,7 @@ spec:
       # Use host network as container network to monitor udev source using netlink
       # to detect disk attach and detach events using fd.
       hostNetwork: true
+      hostPID: true 
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
@@ -128,6 +129,7 @@ spec:
         args:
           - -v=4
           - --feature-gates="GPTBasedUUID"
+          - --feature-gates="GRPCServer"
         imagePullPolicy: Always
         securityContext:
           privileged: true
