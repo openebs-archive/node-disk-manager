@@ -35,7 +35,7 @@ jobs:
           reporter: github-pr-review
           path: '.'
           pattern: '*.sh'
-          exclude: './.git/*,./vendor/*'
+          exclude: './vendor/*'
 
   ndm-daemonset:
     runs-on: ubuntu-latest
