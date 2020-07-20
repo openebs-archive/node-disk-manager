@@ -14,7 +14,8 @@ limitations under the License.
 package services
 
 import (
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
+
 	"github.com/openebs/node-disk-manager/pkg/smart"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

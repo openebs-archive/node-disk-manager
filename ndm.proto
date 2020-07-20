@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ndm;
 
-// Might need add github.com/openebs/node-disk-manager and change the path of this file to avoid depreciation
+// Might need to add github.com/openebs/node-disk-manager to avoid depreciation
 option go_package="ndm";
 
 

@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"k8s.io/klog"
 
 	"context"
@@ -27,9 +26,10 @@ import (
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 
+	server "github.com/openebs/node-disk-manager/api-service/node"
 	"github.com/openebs/node-disk-manager/pkg/hierarchy"
-	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
 )
 
 // Node helps in using types defined in Server

@@ -17,7 +17,8 @@ import (
 	"context"
 	"testing"
 
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
+
 	"k8s.io/klog"
 )
 

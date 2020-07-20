@@ -26,7 +26,8 @@ import (
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	"k8s.io/klog"
 
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
+
 	"google.golang.org/grpc"
 )
 

@@ -18,7 +18,8 @@ import (
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/probe"
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog"

@@ -15,7 +15,6 @@ package services
 
 import (
 	ps "github.com/mitchellh/go-ps"
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog"
@@ -23,7 +22,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
+
+	server "github.com/openebs/node-disk-manager/api-service/node"
 )
 
 // Service helps in using types defined in Server

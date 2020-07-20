@@ -16,25 +16,19 @@ package services
 import (
 	"context"
 	"os"
-	"testing"
 
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
+	"k8s.io/klog"
 )
 
-// TestFindNodeName tests FindNodeName service
-func TestFindNodeName(t *testing.T) {
-	os.Setenv("NODE_NAME", "TEST_NODE")
+// Name is used to find the name of the worker node NDM is deployed on
+func (n *Node) Name(ctx context.Context, null *protos.Null) (*protos.NodeName, error) {
 
-	var ctx context.Context
-	var null *protos.Null
+	// Fetch the environment variable
+	nodeName := os.Getenv("NODE_NAME")
 
-	n := NewNode()
-	res, err := n.Name(ctx, null)
-	if err != nil {
-		t.Error("Error in finding node name")
-	}
-	if res.NodeName != "TEST_NODE" {
-		t.Errorf("Expected node name was %v and got %v", "TEST_NODE", res.NodeName)
-	}
+	klog.Infof("Node name is : %v", nodeName)
+
+	return &protos.NodeName{NodeName: nodeName}, nil
 
 }

@@ -45,9 +45,9 @@ func NewCmdStart() *cobra.Command {
 				os.Exit(1)
 			}
 
-			isGRPCEnabled := features.FeatureGates.IsEnabled(features.GRPCServer)
-			klog.Infof("Grpc flag is %v", isGRPCEnabled)
-			if isGRPCEnabled {
+			isAPIServiceEnabled := features.FeatureGates.IsEnabled(features.APIService)
+			klog.Infof("Grpc flag is %v", isAPIServiceEnabled)
+			if isAPIServiceEnabled {
 				go grpc.Start()
 
 			}

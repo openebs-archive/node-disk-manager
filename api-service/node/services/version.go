@@ -14,9 +14,9 @@ limitations under the License.
 package services
 
 import (
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
-	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server"
+	server "github.com/openebs/node-disk-manager/api-service/node"
 	"github.com/openebs/node-disk-manager/pkg/version"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
 	"k8s.io/klog"
 
 	"context"

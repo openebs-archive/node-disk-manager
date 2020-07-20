@@ -20,8 +20,9 @@ import (
 	"net"
 	"os"
 
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
-	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server/services"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
+
+	"github.com/openebs/node-disk-manager/api-service/node/services"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"k8s.io/klog"

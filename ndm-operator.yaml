@@ -129,7 +129,7 @@ spec:
         args:
           - -v=4
           - --feature-gates="GPTBasedUUID"
-          - --feature-gates="GRPCServer"
+          - --feature-gates="APIService"
         imagePullPolicy: Always
         securityContext:
           privileged: true

@@ -30,7 +30,7 @@ spec:
         image: openebs/node-disk-manager-amd64:ci
         args:
           - -v=2
-          - --feature-gates="GRPCServer"
+          - --feature-gates="APIService"
 #          - --feature-gates="GPTBasedUUID"
         imagePullPolicy: IfNotPresent
         securityContext:
