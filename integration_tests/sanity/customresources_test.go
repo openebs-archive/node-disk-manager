@@ -32,10 +32,10 @@ var _ = Describe("Device Discovery Tests", func() {
 		k8sClient k8s.K8sClient
 	)
 
+	k8sClient, _ = k8s.GetClientSet()
 	BeforeEach(func() {
 		By("getting a new client set")
-		k8sClient, _ = k8s.GetClientSet()
-
+		_ = k8sClient.RegenerateClient()
 		By("creating the NDM Daemonset")
 		err = k8sClient.CreateNDMDaemonSet()
 		Expect(err).NotTo(HaveOccurred())
@@ -59,7 +59,7 @@ var _ = Describe("Device Discovery Tests", func() {
 
 		It("should have one sparse block device", func() {
 			By("regenerating the client set")
-			k8sClient, _ = k8s.GetClientSet()
+			_ = k8sClient.RegenerateClient()
 
 			By("listing all blockdevices")
 			bdList, err := k8sClient.ListBlockDevices()
@@ -86,7 +86,7 @@ var _ = Describe("Device Discovery Tests", func() {
 
 		It("should have 2 BlockDeviceCR", func() {
 			By("regenerating the client set")
-			k8sClient, _ = k8s.GetClientSet()
+			_ = k8sClient.RegenerateClient()
 
 			// should have 2 block device CR, one for sparse disk and one for the
 			// external disk
@@ -113,7 +113,7 @@ var _ = Describe("Device Discovery Tests", func() {
 		})
 		It("should have blockdeviceCR inactive when disk is detached", func() {
 			By("regenerating the client set")
-			k8sClient, _ = k8s.GetClientSet()
+			_ = k8sClient.RegenerateClient()
 
 			By("detaching the disk")
 			err = physicalDisk.DetachDisk()
@@ -143,7 +143,7 @@ var _ = Describe("Device Discovery Tests", func() {
 
 		It("should have one additional BlockDevice CR after we attach a disk", func() {
 			By("regenerating the client set")
-			k8sClient, _ = k8s.GetClientSet()
+			_ = k8sClient.RegenerateClient()
 
 			By("listing all the blockdevices")
 			bdList, err := k8sClient.ListBlockDevices()

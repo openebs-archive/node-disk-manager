@@ -1,0 +1,1 @@
+update the project dependencies (k8s: 1.17.4, controller-runtime: 0.5.2, operator-sdk: 0.17.0)

@@ -18,6 +18,8 @@ package controller
 
 import (
 	"context"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -175,14 +177,26 @@ func (c *Controller) ListBlockDeviceResource(listAll bool) (*apis.BlockDeviceLis
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
-	filter := NDMManagedKey + "!=" + FalseString
-	// whether to list all devices in the cluster, or the devices that belong to this node
-	if !listAll {
-		filter = filter + "," + KubernetesHostNameLabel + "=" + c.NodeAttributes[HostNameKey]
+	// create the list options
+	var opts []client.ListOption
+
+	// create a new selector
+	sel := labels.NewSelector()
+	// create a requirement for NDM managed label
+	managedRequirement, err := labels.NewRequirement(NDMManagedKey, selection.NotEquals, []string{FalseString})
+	if err != nil {
+		return nil, err
 	}
-	opts := &client.ListOptions{}
-	_ = opts.SetLabelSelector(filter)
-	err := c.Clientset.List(context.TODO(), opts, blockDeviceList)
+	// add the requirements to the selector
+	sel.Add(*managedRequirement)
+
+	opts = append(opts, client.MatchingLabelsSelector{Selector: sel})
+
+	if !listAll {
+		opts = append(opts, client.MatchingLabels{KubernetesHostNameLabel: c.NodeAttributes[HostNameKey]})
+	}
+
+	err = c.Clientset.List(context.TODO(), blockDeviceList, opts...)
 	if err != nil {
 		return blockDeviceList, err
 	}

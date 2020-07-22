@@ -48,7 +48,8 @@ var _ = Describe("BlockDevice Claim tests", func() {
 
 	BeforeEach(func() {
 		By("getting a new client set")
-		k8sClient, _ = k8s.GetClientSet()
+		k8sClient, err = k8s.GetClientSet()
+		Expect(err).NotTo(HaveOccurred())
 
 		By("creating the NDM Daemonset")
 		err = k8sClient.CreateNDMDaemonSet()

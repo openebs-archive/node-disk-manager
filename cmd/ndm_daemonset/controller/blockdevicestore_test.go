@@ -101,7 +101,7 @@ func TestCreateDevice(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDevice, test.actualDevice)
+			compareBlockDevice(t, test.expectedDevice, test.actualDevice)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
@@ -161,7 +161,7 @@ func TestUpdateDevice(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDevice, test.actualDevice)
+			compareBlockDevice(t, test.expectedDevice, test.actualDevice)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
@@ -225,7 +225,7 @@ func TestDeactivateDevice(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			test.expectedDevice.Status.State = NDMInactive
-			assert.Equal(t, test.expectedDevice, test.actualDevice)
+			compareBlockDevice(t, test.expectedDevice, test.actualDevice)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
@@ -276,7 +276,12 @@ func TestDeleteDevice(t *testing.T) {
 			if test.expectedError == nil {
 				t.Error("error should not be nil as the resource was deleted")
 			}
-			assert.Equal(t, test.expectedDevice, test.actualDevice)
+			if test.expectedDevice == nil {
+				assert.Equal(t, test.expectedDevice, test.actualDevice)
+			} else {
+				// compare only if not nil
+				compareBlockDevice(t, *test.expectedDevice, *test.actualDevice)
+			}
 		})
 	}
 }
@@ -325,7 +330,8 @@ func TestListDeviceResource(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDeviceList, test.actualDeviceList)
+
+			compareBlockDeviceList(t, *test.expectedDeviceList, *test.actualDeviceList)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
@@ -369,7 +375,12 @@ func TestGetExistingDeviceResource(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDevice, test.actualDevice)
+			if test.expectedDevice == nil {
+				assert.Equal(t, test.expectedDevice, test.actualDevice)
+			} else {
+				// compare only if not nil
+				compareBlockDevice(t, *test.expectedDevice, *test.actualDevice)
+			}
 		})
 	}
 }
@@ -422,7 +433,7 @@ func TestPushDeviceResource(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDevice, test.actualDevice)
+			compareBlockDevice(t, test.expectedDevice, test.actualDevice)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
@@ -472,7 +483,7 @@ func TestDeactivateStaleDeviceResource(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDevice, test.actualDevice)
+			compareBlockDevice(t, test.expectedDevice, test.actualDevice)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
@@ -508,8 +519,26 @@ func TestMarkDeviceStatusToUnknown(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.expectedDevice, test.actualDevice)
+			compareBlockDevice(t, test.expectedDevice, test.actualDevice)
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
+	}
+}
+
+// compareBlockDevice is the custom blockdevice comparison function. Only those values that need to be checked
+// for equality will be checked here. Resource version field will not be checked as it
+// will be updated on every write. Refer https://github.com/kubernetes-sigs/controller-runtime/pull/620
+func compareBlockDevice(t *testing.T, bd1, bd2 apis.BlockDevice) {
+	assert.Equal(t, bd1.Name, bd2.Name)
+	assert.Equal(t, bd1.Labels, bd2.Labels)
+	assert.Equal(t, bd1.Spec, bd2.Spec)
+	assert.Equal(t, bd1.Status, bd2.Status)
+}
+
+// compareBlockDeviceList is the custom comparison function for blockdevice list
+func compareBlockDeviceList(t *testing.T, bdList1, bdList2 apis.BlockDeviceList) {
+	assert.Equal(t, len(bdList1.Items), len(bdList2.Items))
+	for i := 0; i < len(bdList2.Items); i++ {
+		compareBlockDevice(t, bdList1.Items[i], bdList2.Items[i])
 	}
 }

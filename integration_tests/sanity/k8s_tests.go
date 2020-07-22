@@ -73,7 +73,8 @@ var _ = Describe("NDM Setup Tests", func() {
 // in running state
 func WaitForPodToBeRunningEventually(podPrefix string) bool {
 	return Eventually(func() string {
-		c, _ := k8s.GetClientSet()
+		c, err := k8s.GetClientSet()
+		Expect(err).NotTo(HaveOccurred())
 		pods, err := c.ListPodStatus()
 		Expect(err).NotTo(HaveOccurred())
 		for pod, state := range pods {
@@ -89,7 +90,8 @@ func WaitForPodToBeRunningEventually(podPrefix string) bool {
 // get deleted
 func WaitForPodToBeDeletedEventually(podPrefix string) bool {
 	return Eventually(func() int {
-		c, _ := k8s.GetClientSet()
+		c, err := k8s.GetClientSet()
+		Expect(err).NotTo(HaveOccurred())
 		pods, err := c.ListPodStatus()
 		Expect(err).NotTo(HaveOccurred())
 

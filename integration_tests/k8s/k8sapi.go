@@ -79,7 +79,7 @@ func (c K8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
 	}
 
 	var err error
-	err = c.RunTimeClient.List(context.TODO(), &client.ListOptions{}, bdList)
+	err = c.RunTimeClient.List(context.TODO(), bdList)
 	if err != nil {
 		return nil, fmt.Errorf("cannot list blockdevices. Error :%v", err)
 	}
@@ -107,7 +107,7 @@ func (c K8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
 			APIVersion: "openebs.io/v1alpha1",
 		},
 	}
-	err := c.RunTimeClient.List(context.TODO(), &client.ListOptions{}, bdcList)
+	err := c.RunTimeClient.List(context.TODO(), bdcList)
 	if err != nil {
 		return nil, fmt.Errorf("cannot list block device claims. Error :%v", err)
 	}

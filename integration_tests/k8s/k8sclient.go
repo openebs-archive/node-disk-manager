@@ -20,6 +20,7 @@ import (
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	"github.com/openebs/node-disk-manager/pkg/apis"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"time"
 
@@ -40,6 +41,7 @@ const (
 
 // K8sClient is the client used for etcd operations
 type K8sClient struct {
+	config        *rest.Config
 	ClientSet     *kubernetes.Clientset
 	APIextClient  *apiextensionsclient.Clientset
 	RunTimeClient client.Client
@@ -63,6 +65,7 @@ func GetClientSet() (K8sClient, error) {
 	if err != nil {
 		return clientSet, err
 	}
+	clientSet.config = config
 	// client-go clientSet
 	clientSet.ClientSet, err = kubernetes.NewForConfig(config)
 	if err != nil {
@@ -76,7 +79,7 @@ func GetClientSet() (K8sClient, error) {
 	}
 
 	// controller-runtime client
-	mgr, err := manager.New(config, manager.Options{Namespace: Namespace})
+	mgr, err := manager.New(config, manager.Options{Namespace: Namespace, MetricsBindAddress: "0"})
 	if err != nil {
 		return clientSet, err
 	}
@@ -92,4 +95,24 @@ func GetClientSet() (K8sClient, error) {
 		return clientSet, err
 	}
 	return clientSet, nil
+}
+
+func (k *K8sClient) RegenerateClient() error {
+	// controller-runtime client
+	mgr, err := manager.New(k.config, manager.Options{Namespace: Namespace, MetricsBindAddress: "0"})
+	if err != nil {
+		return err
+	}
+
+	// add to scheme
+	scheme := mgr.GetScheme()
+	if err = apis.AddToScheme(scheme); err != nil {
+		return err
+	}
+
+	k.RunTimeClient, err = client.New(k.config, client.Options{Scheme: scheme})
+	if err != nil {
+		return err
+	}
+	return nil
 }

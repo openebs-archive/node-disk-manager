@@ -41,8 +41,7 @@ func NewUpgradeTask(from, to string, c client.Client) *UpgradeTask {
 func (p *UpgradeTask) PreUpgrade() bool {
 	var err error
 	bdcList := &apis.BlockDeviceClaimList{}
-	opts := &client.ListOptions{}
-	err = p.client.List(context.TODO(), opts, bdcList)
+	err = p.client.List(context.TODO(), bdcList)
 	if err != nil {
 		p.err = err
 		return false
