@@ -77,14 +77,37 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, tolerations []v
 		jobContainer.Command = []string{"/bin/sh", "-c"}
 
 		// fdisk is used to get all the partitions of the device.
+		// Example
+		// $ fdisk -o Device -l /dev/sda
+		// 	Disk /dev/sda: 465.8 GiB, 500107862016 bytes, 976773168 sectors
+		// 	Units: sectors of 1 * 512 = 512 bytes
+		// 	Sector size (logical/physical): 512 bytes / 4096 bytes
+		// 	I/O size (minimum/optimal): 4096 bytes / 4096 bytes
+		// 	Disklabel type: dos
+		// 	Disk identifier: 0x065e2357
+		//
+		// 	Device
+		// 	/dev/sda1
+		// 	/dev/sda2
+		// 	/dev/sda5
+		// 	/dev/sda6
+		// 	/dev/sda7
+		//
+		// From the above output the partitions are filtered using grep,
+		//
 		// first all the partitions are cleared off any filesystem signatures, then the actual partition table
 		// header is removed. partprobe is called so as to re-read partition table, and update system with
-		// the changes/
+		// the changes.  Partprobe will be called only if the device is a block file; else if its sparse file, wipefs
+		// will be done.
 		// wipefs erases the filesystem signature from the block
 		// -a    wipe all magic strings
 		// -f    force erasure
-		args := fmt.Sprintf("(fdisk -o Device -l %s | grep \"^%s\" | xargs -I '{}' wipefs -fa '{}') && wipefs -fa %s && partprobe %s",
-			bd.Spec.Path, bd.Spec.Path, bd.Spec.Path, bd.Spec.Path)
+		args := fmt.Sprintf("(fdisk -o Device -l %[1]s "+
+			"| grep \"^%[1]s\" "+
+			"| xargs -I '{}' wipefs -fa '{}') "+
+			"&& wipefs -fa %[1]s "+
+			"&& if [ -b %[1]s ]; then partprobe %[1]s; fi;",
+			bd.Spec.Path)
 
 		jobContainer.Args = []string{args}
 
