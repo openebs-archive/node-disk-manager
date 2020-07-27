@@ -199,6 +199,9 @@ type CapacityInformation struct {
 	// Storage is the storage capacity of this blockdevice
 	// in bytes
 	Storage uint64
+
+	// Storage of the blockdevice in gigabytes
+	StorageinGB float64
 }
 
 // DeviceAttribute represents the hardcoded information on the device.

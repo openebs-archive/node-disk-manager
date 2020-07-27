@@ -36,7 +36,7 @@ func buildBlockDeviceCRD() (*apiext.CustomResourceDefinition, error) {
 		WithPrinterColumns("NodeName", "string", ".spec.nodeAttributes.nodeName").
 		WithPriorityPrinterColumns("Path", "string", ".spec.path", 1).
 		WithPriorityPrinterColumns("FSType", "string", ".spec.filesystem.fsType", 1).
-		WithPrinterColumns("Size", "string", ".spec.capacity.storage").
+		WithPrinterColumns("Size", "string", ".spec.capacity.storageInGB").
 		WithPrinterColumns("ClaimState", "string", ".status.claimState").
 		WithPrinterColumns("Status", "string", ".status.state").
 		WithPrinterColumns("Age", "date", ".metadata.creationTimestamp")

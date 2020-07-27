@@ -106,6 +106,8 @@ func (sp *smartProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 
 	if blockDevice.Capacity.Storage == 0 && deviceBasicSCSIInfo.Capacity != 0 {
 		blockDevice.Capacity.Storage = deviceBasicSCSIInfo.Capacity
+		blockDevice.Capacity.StorageinGB = util.ConvBytesToGigabytes(blockDevice.Capacity.Storage)
+		klog.Infof("Size is %v", blockDevice.Capacity.StorageinGB)
 	}
 
 	if blockDevice.DeviceAttributes.LogicalBlockSize == 0 && deviceBasicSCSIInfo.LBSize != 0 {

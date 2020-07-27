@@ -120,3 +120,16 @@ func StateStatus(state bool) string {
 	}
 	return status[state]
 }
+
+// ConvBytesToGigabytes converts bytes to megabytes
+func ConvBytesToGigabytes(size uint64) float64 {
+	// Reference: https://yourbasic.org/golang/formatting-byte-size-to-human-readable-format/
+	const unit = 1024 * 1024 * 1024
+	div, exp := int64(unit), 0
+	for n := size / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	sizeinGB := float64(size) / float64(div)
+	return float64(sizeinGB)
+}

@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -113,6 +113,9 @@ type NodeAttribute struct {
 type DeviceCapacity struct {
 	// Storage is the blockdevice capacity in bytes
 	Storage uint64 `json:"storage"`
+
+	// StorageInGigaBytes is the blockdevice capacity in Gigabytes
+	StorageInGigaBytes float64 `json:"storageInGB"`
 
 	// PhysicalSectorSize is blockdevice physical-Sector size in bytes
 	PhysicalSectorSize uint32 `json:"physicalSectorSize"`

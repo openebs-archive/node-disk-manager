@@ -31,7 +31,8 @@ type DeviceInfo struct {
 	// like hostname, nodename
 	NodeAttributes     bd.NodeAttribute
 	UUID               string   // UUID of backing disk
-	Capacity           uint64   // Capacity of blockdevice
+	Capacity           uint64   // Capacity of blockdevice in bytes
+	CapacityinGB       float64  // Capacity of blockdevice in gigabytes
 	Model              string   // Do blockdevice have model ??
 	Serial             string   // Do blockdevice have serial no ??
 	Vendor             string   // Vendor of blockdevice
@@ -160,6 +161,7 @@ func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
 func (di *DeviceInfo) getDeviceCapacity() apis.DeviceCapacity {
 	capacity := apis.DeviceCapacity{}
 	capacity.Storage = di.Capacity
+	capacity.StorageInGigaBytes = di.CapacityinGB
 	capacity.LogicalSectorSize = di.LogicalBlockSize
 	capacity.PhysicalSectorSize = di.PhysicalBlockSize
 	return capacity

@@ -17,14 +17,16 @@ limitations under the License.
 package probe
 
 import (
-	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
+
+	"github.com/openebs/node-disk-manager/blockdevice"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/smart"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -99,6 +101,7 @@ func TestFillDiskDetailsBySmart(t *testing.T) {
 	expectedDiskInfo := &blockdevice.BlockDevice{}
 	expectedDiskInfo.DevPath = mockOsDiskDetails.DevPath
 	expectedDiskInfo.Capacity.Storage = mockOsDiskDetails.Capacity
+	expectedDiskInfo.Capacity.StorageinGB = util.ConvBytesToGigabytes(expectedDiskInfo.Capacity.Storage)
 	expectedDiskInfo.DeviceAttributes.LogicalBlockSize = mockOsDiskDetails.LBSize
 	expectedDiskInfo.DeviceAttributes.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
 	expectedDiskInfo.DeviceAttributes.Compliance = mockOsDiskDetails.Compliance

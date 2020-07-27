@@ -148,3 +148,43 @@ func TestStateStatus(t *testing.T) {
 		})
 	}
 }
+
+func TestConvBytesToGigabytes(t *testing.T) {
+
+	var oneGBinBytes uint64 = 1073741824
+	var threeDotFiveinBytes = float64(oneGBinBytes) * 3.5
+	var testCases = []struct {
+		testName    string
+		sizeinBytes uint64
+		exp         float64
+	}{
+		{
+			testName:    "Converting bytes to 1GB",
+			sizeinBytes: oneGBinBytes,
+			exp:         1,
+		},
+		{
+			testName:    "Converting bytes to 2GB",
+			sizeinBytes: 2 * oneGBinBytes,
+			exp:         2,
+		},
+		{
+			testName:    "Converting bytes to 3.5GB to check decimal values",
+			sizeinBytes: uint64(threeDotFiveinBytes),
+			exp:         3.5,
+		},
+		{
+			testName:    "Converting bytes to 1PetaBytes",
+			sizeinBytes: 1024 * 1024 * oneGBinBytes,
+			exp:         1024 * 1024,
+		},
+	}
+
+	for _, tc := range testCases {
+		res := ConvBytesToGigabytes(tc.sizeinBytes)
+		if !assert.Equal(t, res, tc.exp) {
+			t.Errorf(" Test failed : %v , expected : %v  , got : %v", tc.testName, tc.exp, res)
+		}
+
+	}
+}

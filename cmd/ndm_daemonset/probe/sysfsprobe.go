@@ -156,8 +156,9 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			return
 		} else if numberOfBlocks != 0 {
 			blockDevice.Capacity.Storage = uint64(numberOfBlocks * sectorSize)
-			klog.V(4).Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
-				blockDevice.DevPath, blockDevice.Capacity.Storage)
+			blockDevice.Capacity.StorageinGB = util.ConvBytesToGigabytes(blockDevice.Capacity.Storage)
+			klog.V(4).Infof("blockdevice path: %s capacity :%v filled by sysfs probe.",
+				blockDevice.DevPath, blockDevice.Capacity.StorageinGB)
 		}
 	}
 }

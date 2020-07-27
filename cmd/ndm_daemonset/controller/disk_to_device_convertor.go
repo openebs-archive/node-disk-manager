@@ -36,6 +36,7 @@ func (c *Controller) NewDeviceInfoFromBlockDevice(blockDevice *bd.BlockDevice) *
 
 	deviceDetails.UUID = blockDevice.UUID
 	deviceDetails.Capacity = blockDevice.Capacity.Storage
+	deviceDetails.CapacityinGB = blockDevice.Capacity.StorageinGB
 	deviceDetails.Model = blockDevice.DeviceAttributes.Model
 	deviceDetails.Serial = blockDevice.DeviceAttributes.Serial
 	deviceDetails.Vendor = blockDevice.DeviceAttributes.Vendor
