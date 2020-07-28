@@ -17,10 +17,12 @@ limitations under the License.
 package probe
 
 import (
+	"os"
+	"testing"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestGenerateUUID(t *testing.T) {
@@ -111,12 +113,48 @@ func TestGenerateUUID(t *testing.T) {
 	}
 }
 
-func Test_generateLegacyUUID(t *testing.T) {
+func TestGenerateLegacyUUID(t *testing.T) {
+	fakePath := "/dev/sda"
+	fakeWWN := "50E5495131BBB060892FBC8E"
+	fakeSerial := "CT500MX500SSD1"
+	fakeModel := "DataTraveler_3.0"
+	fakeVendor := "Kingston"
+	hostname, _ := os.Hostname()
 	tests := map[string]struct {
 		bd       blockdevice.BlockDevice
 		wantUUID string
 		wantOk   bool
-	}{}
+	}{
+		"NonLocal Disk Model with wwn/vendor/model/serial": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: fakePath,
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					IDType: "disk",
+					WWN:    fakeWWN,
+					Vendor: fakeVendor,
+					Model:  fakeModel,
+					Serial: fakeSerial,
+				},
+			},
+			wantUUID: blockdevice.BlockDevicePrefix + util.Hash(fakeWWN+fakeModel+fakeSerial+fakeVendor),
+			wantOk:   false,
+		},
+		"local disk model with wwn": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: fakePath,
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					WWN:   fakeWWN,
+					Model: "Virtual_disk",
+				},
+			},
+			wantUUID: blockdevice.BlockDevicePrefix + util.Hash(fakeWWN+"Virtual_disk"+hostname+fakePath),
+			wantOk:   true,
+		},
+	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			gotUUID, gotOk := generateLegacyUUID(tt.bd)
