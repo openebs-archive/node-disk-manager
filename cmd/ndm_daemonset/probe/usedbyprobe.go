@@ -39,7 +39,7 @@ type usedbyProbe struct {
 
 const (
 	usedbyProbeConfigKey = "used-by-probe"
-	usedbyProbePriority  = 4
+	usedbyProbePriority  = 5
 
 	k8sLocalVolumePath1 = "kubernetes.io/local-volume"
 	k8sLocalVolumePath2 = "kubernetes.io~local-volume"

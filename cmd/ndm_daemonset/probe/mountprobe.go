@@ -34,7 +34,7 @@ type mountProbe struct {
 }
 
 const (
-	mountProbePriority = 5
+	mountProbePriority = 4
 	mountConfigKey     = "mount-probe"
 )
 
