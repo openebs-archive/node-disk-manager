@@ -251,99 +251,8 @@ func (pe *ProbeEvent) createBlockDeviceResourceIfNoHolders(bd blockdevice.BlockD
 	return nil
 }
 
-/*func (pe *ProbeEvent) upgradeBD(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
-	// if the device is a partition and parent is in use, then the event
-	// is skipped and no further processing is required.
-	if bd.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION {
-		parentBD := pe.Controller.BDHierarchy[bd.DevPath]
-		if parentBD.DevUse.InUse {
-			klog.V(4).Infof("parent device: %s of %s is in use, hence ignoring event", parentBD.DevPath, bd.DevPath)
-			return false, nil
-		}
-	}
-
-	// if not in use, there is no need of upgrade.
-	if !bd.DevUse.InUse {
-		return true, nil
-	}
-
-	// device is in use by cstor or localpv
-	klog.V(4).Infof("device: %s in use by cstor / localPV. hence ignoring event", bd.DevPath)
-
-	// try to generate old UUID for the device
-	legacyUUID, isVirt := generateLegacyUUID(bd)
-	klog.V(4).Infof("tried generating legacy UUID: %s for device: %s", legacyUUID, bd.DevPath)
-
-	legacyBDResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, legacyUUID)
-
-	// blockdevice with old uuid exists and is in use. The internal annotation will be added.
-	if legacyBDResource != nil {
-		bd.UUID = legacyUUID
-		klog.V(4).Infof("blockdevice resource with legacy UUID exists, adding internal annotaion")
-		// we used old algorithm for this BD, update the details, with old annotation
-		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-		if legacyBDResource.Annotations == nil {
-			legacyBDResource.Annotations = make(map[string]string)
-		}
-		legacyBDResource.Annotations[internalUUIDSchemeAnnotation] = legacyUUIDScheme
-		err := pe.Controller.PushBlockDeviceResource(legacyBDResource, deviceInfo)
-		if err != nil {
-			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDSchemeAnnotation, legacyUUIDScheme, bd.UUID, err)
-			return false, err
-		}
-
-	}
-	// If the resource does not exist, it can happen in 2 cases:
-	// 1. This device do not use the old legacyUUID scheme,
-	// 2. The device uses old scheme, but is a virtual drive and hostname or path has changed
-	//
-	// There can also be cases of manually created blockdevices, but those should be excluded by the filter.
-	klog.V(4).Infof("device: %s may be virtual / device uses new uuid scheme", bd.DevPath)
-
-	// try generating new UUID and if it exists, uses new scheme
-	// return and further processing required
-	uuid, ok := generateUUID(bd)
-	klog.V(4).Infof("tried generating new UUID: %s, for device: %s", uuid, bd.DevPath)
-	if ok {
-		// check if bd with new uuid exists
-		// uses the new algorithm,
-		if pe.Controller.GetExistingBlockDeviceResource(bdAPIList, uuid) != nil {
-			klog.V(4).Infof("device: %s uses GPT based uuid algorithm", bd.DevPath)
-			return true, nil
-		} else {
-			// should never reach this case.
-			// only reaches if manually created blockdevices are present.
-			// this should have been filtered out in filter configs, no firther processing required.
-			return false, nil
-		}
-	}
-
-	klog.V(4).Infof("device: %s uses legacy uuid scheme with path/hostname", bd.DevPath)
-	// which means path is used and path or hostname has changed, or is not an NDM managed device that has path/ it should be filtered
-	// here we have to always create a new resource
-	if isVirt {
-		// creating new bd resource with legacy uuid
-		klog.V(4).Infof("creating BD resource: %s for virtual device: %s", legacyUUID, bd.DevPath)
-		bd.UUID = legacyUUID
-		// we used old algorithm for this BD, update the details, with old annotation
-		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-
-		legacyVirtBDResource := deviceInfo.ToDevice()
-		if legacyVirtBDResource.Annotations == nil {
-			legacyVirtBDResource.Annotations = make(map[string]string)
-		}
-		legacyVirtBDResource.Annotations[internalUUIDSchemeAnnotation] = legacyUUIDScheme
-		err := pe.Controller.CreateBlockDevice(legacyVirtBDResource)
-		if err != nil {
-			klog.Errorf("adding %s:%s annotation on %s failed. Error: %v", internalUUIDSchemeAnnotation, legacyUUIDScheme, bd.UUID, err)
-			return false, err
-		}
-	}
-	// log what is the case
-	return false, nil
-}*/
-
-// upgradeBD returns true if further processing required
+// upgradeBD returns true if further processing required after upgrade
+// NOTE: only cstor and localPV will be upgraded. upgrade of local PV raw block is not supported
 func (pe *ProbeEvent) upgradeBD(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
 	if !bd.DevUse.InUse {
 		// device not in use
@@ -390,6 +299,8 @@ func (pe *ProbeEvent) handleUnmanagedDevices(bd blockdevice.BlockDevice, bdAPILi
 	return true, nil
 }
 
+// deviceInUseByMayastor checks if the device is in use by mayastor and returns true if further processing of the event
+// is required
 func (pe *ProbeEvent) deviceInUseByMayastor(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
 	if !bd.DevUse.InUse {
 		return true, nil
@@ -404,6 +315,9 @@ func (pe *ProbeEvent) deviceInUseByMayastor(bd blockdevice.BlockDevice, bdAPILis
 	return true, nil
 }
 
+// deviceInUseByZFSLocalPV check if the device is in use by zfs localPV and returns true if further processing of
+// event is required. If the device has ZFS pv on it, then a blockdevice resource will be created and zfs PV tag
+// will be added on to the resource
 func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
 	if bd.DeviceAttributes.DeviceType == blockdevice.BlockDeviceTypePartition {
 		parentBD, ok := pe.Controller.BDHierarchy[bd.DevPath]
@@ -449,6 +363,8 @@ func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIL
 	return false, nil
 }
 
+// upgradeDeviceInUseByCStor handles the upgrade if the device is used by cstor. returns truw if further processing
+// is required
 func (pe *ProbeEvent) upgradeDeviceInUseByCStor(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
 	uuid, ok := generateUUID(bd)
 	if ok {
@@ -500,7 +416,8 @@ func (pe *ProbeEvent) upgradeDeviceInUseByCStor(bd blockdevice.BlockDevice, bdAP
 	}
 }
 
-// true if further processing required
+// upgradeDeviceInUseByLocalPV handles upgrade for devices in use by localPV. returns true if further processing required.
+// NOTE: localPV raw block upgrade is not supported
 func (pe *ProbeEvent) upgradeDeviceInUseByLocalPV(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
 	uuid, ok := generateUUID(bd)
 	if ok {
@@ -552,6 +469,8 @@ func (pe *ProbeEvent) upgradeDeviceInUseByLocalPV(bd blockdevice.BlockDevice, bd
 	return false, nil
 }
 
+// isParentDeviceInUse checks if the parent device of a given device is in use.
+// The check is made only if the device is a partition
 func (pe *ProbeEvent) isParentDeviceInUse(bd blockdevice.BlockDevice) (bool, error) {
 	if bd.DeviceAttributes.DeviceType != blockdevice.BlockDeviceTypePartition {
 		return false, nil
@@ -565,6 +484,7 @@ func (pe *ProbeEvent) isParentDeviceInUse(bd blockdevice.BlockDevice) (bool, err
 	return parentBD.DevUse.InUse, nil
 }
 
+// getExistingBDWithFsUuid returns the blockdevice with matching FSUUID annotation from etcd
 func getExistingBDWithFsUuid(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) *apis.BlockDevice {
 	for _, bdAPI := range bdAPIList.Items {
 		if len(bd.FSInfo.FileSystemUUID) == 0 {
@@ -581,6 +501,7 @@ func getExistingBDWithFsUuid(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDe
 	return nil
 }
 
+// getExistingBDWithPartitionUUID returns the blockdevice with matching partition uuid annotation from etcd
 func getExistingBDWithPartitionUUID(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) *apis.BlockDevice {
 	for _, bdAPI := range bdAPIList.Items {
 		if len(bd.PartitionInfo.PartitionTableUUID) == 0 {
@@ -597,6 +518,8 @@ func getExistingBDWithPartitionUUID(bd blockdevice.BlockDevice, bdAPIList *apis.
 	return nil
 }
 
+// createOrUpdateWithFSUUID creates/updates a resource in etcd. It additionally adds an annotation with the
+// fs uuid of the blockdevice
 func (pe *ProbeEvent) createOrUpdateWithFSUUID(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) error {
 	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
 	bdAPI := deviceInfo.ToDevice()
@@ -614,6 +537,8 @@ func (pe *ProbeEvent) createOrUpdateWithFSUUID(bd blockdevice.BlockDevice, bdAPI
 	return nil
 }
 
+// createOrUpdateWithPartitionUUID create/update a resource in etcd. It additionally adds an annotation with the
+// partition table uuid of the blockdevice
 func (pe *ProbeEvent) createOrUpdateWithPartitionUUID(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) error {
 	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
 	bdAPI := deviceInfo.ToDevice()
