@@ -17,10 +17,12 @@ limitations under the License.
 package probe
 
 import (
+	"testing"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestRemoveBlockDeviceFromHierarchyCache(t *testing.T) {
