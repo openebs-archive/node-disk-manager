@@ -308,11 +308,11 @@ func (pe *ProbeEvent) deviceInUseByMayastor(bd blockdevice.BlockDevice, bdAPILis
 
 	// not in use by mayastor
 	if bd.DevUse.UsedBy != blockdevice.Mayastor {
-		return false, nil
+		return true, nil
 	}
 
 	klog.V(4).Infof("Device: %s in use by mayastor. ignoring the event", bd.DevPath)
-	return true, nil
+	return false, nil
 }
 
 // deviceInUseByZFSLocalPV check if the device is in use by zfs localPV and returns true if further processing of
