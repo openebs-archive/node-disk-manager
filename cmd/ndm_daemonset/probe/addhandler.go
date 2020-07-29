@@ -320,7 +320,7 @@ func (pe *ProbeEvent) deviceInUseByMayastor(bd blockdevice.BlockDevice, bdAPILis
 // will be added on to the resource
 func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
 	if bd.DeviceAttributes.DeviceType == blockdevice.BlockDeviceTypePartition {
-		parentBD, ok := pe.Controller.BDHierarchy[bd.DevPath]
+		parentBD, ok := pe.Controller.BDHierarchy[bd.DependentDevices.Parent]
 		if !ok {
 			klog.Errorf("unable to find parent device for %s", bd.DevPath)
 			return false, fmt.Errorf("error in getting parent device for %s from device hierarchy", bd.DevPath)
@@ -340,7 +340,7 @@ func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIL
 		return true, nil
 	}
 
-	klog.Infof("device: %s in use by zfs-localPV")
+	klog.Infof("device: %s in use by zfs-localPV", bd.DevPath)
 
 	uuid, ok := generateUUIDFromPartitionTable(bd)
 	if !ok {
@@ -359,7 +359,7 @@ func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIL
 		klog.Errorf("unable to push %s (%s) to etcd", bd.UUID, bd.DevPath)
 		return false, err
 	}
-	klog.Info("Pushed zfs-localPV device: %s (%s) to etcd", bd.UUID, bd.DevPath)
+	klog.Infof("Pushed zfs-localPV device: %s (%s) to etcd", bd.UUID, bd.DevPath)
 	return false, nil
 }
 
