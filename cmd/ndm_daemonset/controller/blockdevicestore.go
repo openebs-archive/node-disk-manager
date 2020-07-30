@@ -327,6 +327,9 @@ func mergeMetadata(newMetadata, oldMetadata metav1.ObjectMeta) metav1.ObjectMeta
 
 	// Patch older annotations with new annotations. If there is a new key then it will be added
 	// if it is an existing key then value will be overwritten with value from new annotations
+	if oldMetadata.Annotations == nil {
+		oldMetadata.Annotations = make(map[string]string)
+	}
 	for key, value := range newMetadata.Annotations {
 		oldMetadata.Annotations[key] = value
 	}
