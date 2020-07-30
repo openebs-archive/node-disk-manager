@@ -476,7 +476,7 @@ func (pe *ProbeEvent) isParentDeviceInUse(bd blockdevice.BlockDevice) (bool, err
 		return false, nil
 	}
 
-	parentBD, ok := pe.Controller.BDHierarchy[bd.DevPath]
+	parentBD, ok := pe.Controller.BDHierarchy[bd.DependentDevices.Parent]
 	if !ok {
 		return false, fmt.Errorf("cannot find parent device of %s", bd.DevPath)
 	}
@@ -566,6 +566,6 @@ func (pe *ProbeEvent) createOrUpdateWithPartitionUUID(bd blockdevice.BlockDevice
 		klog.Errorf("unable to push %s (%s) to etcd", bd.UUID, bd.DevPath)
 		return err
 	}
-	klog.Info("Pushed localPV device: %s (%s) to etcd", bd.UUID, bd.DevPath)
+	klog.Infof("Pushed cstor device: %s (%s) to etcd", bd.UUID, bd.DevPath)
 	return nil
 }
