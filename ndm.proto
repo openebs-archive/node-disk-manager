@@ -1,0 +1,114 @@
+/*
+Copyright 2020 The OpenEBS Authors
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// After editing this file, run make protos. Minimum version should be 3.12
+
+syntax = "proto3";
+
+package ndm;
+
+option go_package="spec/ndm";
+
+
+// This service can return generic information 
+service Info {
+  // FindVersion Method gets the version information of the NDM components installed
+  rpc FindVersion (Null) returns (VersionInfo);
+}
+
+service Node {
+      
+  // Name method is used find the name of the node on which NDM is running on 
+  rpc Name(Null) returns (NodeName);
+  
+  // ListBlockDevices method is used to return all the block devices found in hierarchy by NDM
+  rpc ListBlockDevices(Null) returns (BlockDevices);
+  
+  // ISCSIStatus method returns status of ISCSI
+  rpc ISCSIStatus(Null) returns (Status);
+
+  // ListBlockDeviceDetails method is used to find SMART info about a block device.
+  // Only the name field is required for input 
+  rpc ListBlockDeviceDetails(BlockDevice) returns (BlockDeviceDetails); 
+
+  // SetHugepages sets 2MB hugePages on this node.  
+  // Note: Calling this method doesn't guarantee that the said number of pages will be set.
+  // This is because OS might not have the demanded memory. It would be best to check if this is satisfied with GetHugePages
+  rpc SetHugepages(Hugepages) returns (HugepagesResult);
+
+  // GetHugepages gets the number of huge pages set on the node
+  rpc GetHugepages(Null) returns (Hugepages); 
+  
+  // Rescan syncs etcd and NDM's local state
+  rpc Rescan(Null) returns (Message);
+}
+
+message Message {
+  string msg = 1;
+}
+
+message Hugepages {
+  int32 pages = 1;
+}
+
+message HugepagesResult {
+  bool result = 1; 
+}
+
+
+message BlockDeviceDetails {
+  string Compliance = 1;
+  string Vendor = 2;           
+  string Model = 3;      
+  string SerialNumber = 4;     
+  string FirmwareRevision =  5; 
+  string WWN = 6;              
+  uint64 Capacity = 7;         
+  uint32 LBSize = 8 ;           
+  uint32 PBSize = 9 ;           
+  uint32 RotationRate = 10;    
+  string ATAMajorVersion = 11; 
+  string ATAMinorVersion = 12; 
+  string AtaTransport = 13;     
+}
+
+message BlockDevice {
+  string name = 1;
+  // Type can be Disk, Loop, LVM, etc
+  string type = 2; 
+  repeated string partitions = 3;
+  // Other fields about disk can be added here
+}
+
+message  BlockDevices {
+  repeated BlockDevice blockdevices = 1;
+}
+
+message Status {
+  bool Status = 1 ;
+}
+
+
+message VersionInfo {
+  string Version = 1;
+  string GitCommit = 2;
+}
+
+
+message NodeName {
+  string NodeName = 1; 
+}
+
+message Null {
+ // Intentionally empty 
+}
