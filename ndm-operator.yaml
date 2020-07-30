@@ -190,6 +190,8 @@ spec:
           path: /proc
           type: Directory
       - name: devmount
+      # the /dev directory is mounted so that we have access to the devices that
+      # are connected at runtime of the pod.
         hostPath:
           path: /dev
           type: Directory
