@@ -383,21 +383,24 @@ func (pe *ProbeEvent) upgradeDeviceInUseByCStor(bd blockdevice.BlockDevice, bdAP
 
 	legacyUUID, isVirt := generateLegacyUUID(bd)
 	existingLegacyBD := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, legacyUUID)
+
+	// check if any blockdevice exist with the annotation, if yes, that will be used.
+	// This is to handle the case where device comes at the same path of an earlier device
+	if r := getExistingBDWithPartitionUUID(bd, bdAPIList); r != nil {
+		existingLegacyBD = r
+	}
+
 	if existingLegacyBD == nil {
-		if r := getExistingBDWithPartitionUUID(bd, bdAPIList); r != nil {
-			existingLegacyBD = r
-		} else {
-			// create device with fs annotation and legacy annotation
-			// the custom create / update method should be called here
-			// no furhter processing is required
-			bd.UUID = legacyUUID
-			err := pe.createOrUpdateWithPartitionUUID(bd, existingLegacyBD)
-			return false, err
-		}
+		// create device with fs annotation and legacy annotation
+		// the custom create / update method should be called here
+		// no further processing is required
+		bd.UUID = legacyUUID
+		err := pe.createOrUpdateWithPartitionUUID(bd, existingLegacyBD)
+		return false, err
 	}
 
 	if existingLegacyBD.Status.ClaimState != apis.BlockDeviceUnclaimed {
-		// update resource with legacy and fsuuid annotation
+		// update resource with legacy and partitoion table uuid annotation
 		// further processing is not required
 		bd.UUID = legacyUUID
 		err := pe.createOrUpdateWithPartitionUUID(bd, existingLegacyBD)
@@ -405,7 +408,7 @@ func (pe *ProbeEvent) upgradeDeviceInUseByCStor(bd blockdevice.BlockDevice, bdAP
 	}
 
 	if isVirt {
-		// update the resource with fs and legacy annotation
+		// update the resource with partition and legacy annotation
 		bd.UUID = legacyUUID
 		err := pe.createOrUpdateWithPartitionUUID(bd, existingLegacyBD)
 		return false, err
@@ -436,17 +439,20 @@ func (pe *ProbeEvent) upgradeDeviceInUseByLocalPV(bd blockdevice.BlockDevice, bd
 
 	legacyUUID, isVirt := generateLegacyUUID(bd)
 	existingLegacyBD := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, legacyUUID)
+
+	// check if any blockdevice exist with the annotation, if yes, that will be used.
+	// This is to handle the case where device comes at the same path of an earlier device
+	if r := getExistingBDWithFsUuid(bd, bdAPIList); r != nil {
+		existingLegacyBD = r
+	}
+
 	if existingLegacyBD == nil {
-		if r := getExistingBDWithFsUuid(bd, bdAPIList); r != nil {
-			existingLegacyBD = r
-		} else {
-			// create device with fs annotation and legacy annotation
-			// the custom create / update method should be called here
-			// no furhter processing is required
-			bd.UUID = legacyUUID
-			pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
-			return false, nil
-		}
+		// create device with fs annotation and legacy annotation
+		// the custom create / update method should be called here
+		// no furhter processing is required
+		bd.UUID = legacyUUID
+		pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
+		return false, nil
 	}
 
 	if existingLegacyBD.Status.ClaimState != apis.BlockDeviceUnclaimed {
