@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -22,7 +22,7 @@ import (
 	"k8s.io/klog"
 )
 
-// TestGetParentDisks tests the GetParentDisks function
+// TestListBlockDeviceDetails tests ListBlockDeviceDetails
 func TestListBlockDeviceDetails(t *testing.T) {
 
 	n := NewNode()

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -21,8 +21,8 @@ import (
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
 )
 
-// TestFindNodeName tests FindNodeName service
-func TestFindNodeName(t *testing.T) {
+// TestName tests Name service
+func TestName(t *testing.T) {
 	os.Setenv("NODE_NAME", "TEST_NODE")
 
 	var ctx context.Context

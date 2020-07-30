@@ -20,49 +20,49 @@ import (
 	"net"
 	"os"
 
+	"github.com/openebs/node-disk-manager/api-service/node/services"
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
 
-	"github.com/openebs/node-disk-manager/api-service/node/services"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"k8s.io/klog"
 )
 
-//Start starts the grpc server
+const (
+	ip      = "0.0.0.0"
+	port    = "9090"
+	address = ip + ":" + port
+)
+
+// Start starts the grpc server
 func Start() {
 	{
-
 		// Creating a grpc server, use WithInsecure to allow http connections
-		gs := grpc.NewServer()
+		grpcServer := grpc.NewServer()
 
 		// Creates an instance of Info
-		is := services.NewInfo()
-
-		// Creates an instance of Service
-		ss := services.NewService()
+		infoService := services.NewInfo()
 
 		// Creates an instance of Node
-		ns := services.NewNode()
+		nodeService := services.NewNode()
 
 		// This helps clients determine which services are available to call
-		reflection.Register(gs)
+		reflection.Register(grpcServer)
 
 		// Similar to registring handlers for http
-		protos.RegisterInfoServer(gs, is)
+		protos.RegisterInfoServer(grpcServer, infoService)
 
-		protos.RegisterISCSIServer(gs, ss)
+		protos.RegisterNodeServer(grpcServer, nodeService)
 
-		protos.RegisterNodeServer(gs, ns)
-
-		l, err := net.Listen("tcp", "0.0.0.0:9090")
+		l, err := net.Listen("tcp", address)
 		if err != nil {
 			klog.Errorf("Unable to listen %f", err)
 			os.Exit(1)
 		}
 
 		// Listen for requests
-		klog.Info("Starting server at 9090")
-		gs.Serve(l)
+		klog.Infof("Starting server at : %v ", address)
+		grpcServer.Serve(l)
 
 	}
 

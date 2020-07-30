@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -25,7 +25,7 @@ import (
 	"k8s.io/klog"
 )
 
-// Rescan sync etcd with ndm
+// Rescan syncs etcd with ndm
 func (n *Node) Rescan(ctx context.Context, null *protos.Null) (*protos.Message, error) {
 
 	klog.Info("Rescan initiated")
@@ -36,7 +36,7 @@ func (n *Node) Rescan(ctx context.Context, null *protos.Null) (*protos.Message, 
 		return nil, status.Errorf(codes.NotFound, "Namespace not found")
 	}
 
-	err = ctrl.SetControllerOptions(controller.NDMOptions{ConfigFilePath: "/host/node-disk-manager.config"})
+	err = ctrl.SetControllerOptions(controller.NDMOptions{ConfigFilePath: ConfigFilePath})
 	if err != nil {
 		klog.Errorf("Error setting config to controller %v", err)
 		return nil, status.Errorf(codes.Internal, "Error setting config to controller")
@@ -48,5 +48,5 @@ func (n *Node) Rescan(ctx context.Context, null *protos.Null) (*protos.Message, 
 		return nil, status.Errorf(codes.AlreadyExists, "Rescan failed")
 	}
 
-	return &protos.Message{Msg: "Rescan initiated, check the logs for more info"}, nil
+	return &protos.Message{Msg: "Rescan initiated"}, nil
 }

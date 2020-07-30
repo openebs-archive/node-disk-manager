@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -14,31 +14,21 @@ limitations under the License.
 package services
 
 import (
-	ps "github.com/mitchellh/go-ps"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"k8s.io/klog"
-
 	"context"
 	"strings"
 
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
 
-	server "github.com/openebs/node-disk-manager/api-service/node"
+	ps "github.com/mitchellh/go-ps"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"k8s.io/klog"
 )
 
-// Service helps in using types defined in Server
-type Service struct {
-	server.Service
-}
+const iscsiServiceName = "iscsid"
 
-// NewService is a constructor
-func NewService() *Service {
-	return &Service{}
-}
-
-// Status gives the status of iSCSI service
-func (s *Service) Status(ctx context.Context, null *protos.Null) (*protos.ISCSIStatus, error) {
+// ISCSIStatus gives the status of iSCSI service
+func (n *Node) ISCSIStatus(ctx context.Context, null *protos.Null) (*protos.Status, error) {
 
 	klog.Info("Finding ISCSI status")
 
@@ -53,7 +43,7 @@ func (s *Service) Status(ctx context.Context, null *protos.Null) (*protos.ISCSIS
 
 	for _, p := range processList {
 
-		if strings.Contains(p.Executable(), "iscsid") {
+		if strings.Contains(p.Executable(), iscsiServiceName) {
 			klog.Infof("%v is running with process id %v", p.Executable(), p.Pid())
 			found = true
 		}
@@ -62,9 +52,9 @@ func (s *Service) Status(ctx context.Context, null *protos.Null) (*protos.ISCSIS
 	if !found {
 		// Note: When using clients like grpcurl, they might return empty output as response when converting to json
 		// Set the appropriate flags to avoid that. In case of grpcurl, it is -emit-defaults
-		return &protos.ISCSIStatus{Status: false}, nil
+		return &protos.Status{Status: false}, nil
 	}
 
-	return &protos.ISCSIStatus{Status: true}, nil
+	return &protos.Status{Status: true}, nil
 
 }

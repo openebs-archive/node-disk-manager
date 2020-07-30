@@ -18,7 +18,6 @@ package util
 
 import (
 	"errors"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -148,42 +147,4 @@ func TestStateStatus(t *testing.T) {
 			assert.Equal(t, test.status, StateStatus(test.state))
 		})
 	}
-}
-
-// TestAddUniqueStringstoSlice get the method which adds only unique devices
-func TestUniqueAddStringstoSlice(t *testing.T) {
-	var testCases = []struct {
-		testName string
-		name     string
-		names    []string
-		exp      []string
-	}{
-		{
-			name:     "sdb1",
-			names:    nil,
-			testName: "Handling partitions of first disk",
-			exp:      []string{"sdb1"},
-		},
-		{
-			name:     "sdb1",
-			names:    []string{"sdc1", "sdc2"},
-			testName: "Handling partitions of two disks",
-			exp:      []string{"sdc1", "sdc2", "sdb1"},
-		},
-		{
-			name:     "sdd1",
-			names:    []string{"sdb1", "sdc1", "sdc2"},
-			testName: "Handling partitions of three disks",
-			exp:      []string{"sdb1", "sdc1", "sdc2", "sdd1"},
-		},
-	}
-
-	for _, e := range testCases {
-		res := AddUniqueStringtoSlice(e.names, e.name)
-		if !reflect.DeepEqual(res, e.exp) {
-			t.Errorf(" Test failed : %v , expected : %v  , got : %v", e.testName, e.exp, res)
-		}
-
-	}
-
 }

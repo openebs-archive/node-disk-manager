@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -14,28 +14,29 @@ limitations under the License.
 package services
 
 import (
-	server "github.com/openebs/node-disk-manager/api-service/node"
+	"context"
+
+	"github.com/openebs/node-disk-manager/api-service/node"
 	"github.com/openebs/node-disk-manager/pkg/version"
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
-	"k8s.io/klog"
 
-	"context"
+	"k8s.io/klog"
 )
 
-// Info lets types defined in Server used
+// Info helps in using types defined in package Node
 type Info struct {
-	server.Info
+	node.Info
 }
 
-// NewInfo is a constructor
+// NewInfo returns an instance of type Node
 func NewInfo() *Info {
-	return &Info{server.Info{}}
+	return &Info{node.Info{}}
 }
 
 // FindVersion detects the version and gitCommit of NDM
 func (i *Info) FindVersion(ctx context.Context, null *protos.Null) (*protos.VersionInfo, error) {
 
-	klog.Infof("Print Version : %v , commit hash : %v", version.GetVersion(), version.GetGitCommit())
+	klog.V(4).Infof(" Version : %v , commit hash : %v", version.GetVersion(), version.GetGitCommit())
 
 	return &protos.VersionInfo{Version: version.GetVersion(), GitCommit: version.GetGitCommit()}, nil
 

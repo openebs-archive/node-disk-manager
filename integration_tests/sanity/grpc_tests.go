@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,16 +19,15 @@ package sanity
 import (
 	"context"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
-	"k8s.io/klog"
-
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"google.golang.org/grpc"
+	"k8s.io/klog"
 )
 
 var _ = Describe("gRPC tests", func() {
@@ -67,11 +66,11 @@ var _ = Describe("gRPC tests", func() {
 	Context("gRPC services", func() {
 
 		It("iSCSI test", func() {
-			conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
+			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
 			Expect(err).NotTo(HaveOccurred())
 			defer conn.Close()
 
-			isc := protos.NewISCSIClient(conn)
+			isc := protos.NewNodeClient(conn)
 			ctx := context.Background()
 			null := &protos.Null{}
 
@@ -79,7 +78,7 @@ var _ = Describe("gRPC tests", func() {
 			// This needs to be done to be sure that iscsi is not running.
 			err = utils.RunCommandWithSudo("sudo systemctl stop iscsid")
 			Expect(err).NotTo(HaveOccurred())
-			res, err := isc.Status(ctx, null)
+			res, err := isc.ISCSIStatus(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res.GetStatus()).To(BeFalse())
 
@@ -88,7 +87,7 @@ var _ = Describe("gRPC tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			err = utils.RunCommandWithSudo("sudo systemctl start iscsid")
 			Expect(err).NotTo(HaveOccurred())
-			res, err = isc.Status(ctx, null)
+			res, err = isc.ISCSIStatus(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res.GetStatus()).To(BeTrue())
 
@@ -106,7 +105,7 @@ var _ = Describe("gRPC tests", func() {
 
 			res, err := ns.ListBlockDevices(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
-			klog.Info(res)
+			Expect(res).NotTo(BeNil())
 
 			bd := &protos.BlockDevice{
 				Name: physicalDisk.Name,
@@ -156,9 +155,7 @@ var _ = Describe("gRPC tests", func() {
 
 			res, err := ns.Rescan(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
-			klog.Info(res)
-
-			Expect(res.GetMsg()).To(Equal("Rescan initiated, check the logs for more info"))
+			Expect(res.GetMsg()).To(Equal("Rescan initiated"))
 
 		})
 

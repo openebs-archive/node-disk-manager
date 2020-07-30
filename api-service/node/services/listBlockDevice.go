@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -14,37 +14,34 @@ limitations under the License.
 package services
 
 import (
+	"context"
 	"strings"
 
-	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	"k8s.io/klog"
-
-	"context"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
+	"github.com/openebs/node-disk-manager/api-service/node"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-
-	server "github.com/openebs/node-disk-manager/api-service/node"
+	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"k8s.io/klog"
 )
 
-// Node helps in using types defined in Server
+// Node helps in using types defined in package Node
 type Node struct {
-	server.Node
+	node.Node
 }
 
-// NewNode is a constructor
+// NewNode returns an instance of type Node
 func NewNode() *Node {
-	return &Node{server.Node{}}
+	return &Node{}
 }
 
 type disks []protos.BlockDevice
 
-//AllBlockDevices contains all the relationships and device types
+// AllBlockDevices contains all the relationships and device types
 type AllBlockDevices struct {
 	Parents    []string
 	Partitions []string
@@ -58,6 +55,9 @@ type AllBlockDevices struct {
 
 var all AllBlockDevices // This variable would contain all devices found in the node and their relationships
 
+// ConfigFilePath refers to the config file for ndm
+const ConfigFilePath = "/host/node-disk-manager.config"
+
 // ListBlockDevices returns the block devices and their relationships
 func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos.BlockDevices, error) {
 	klog.Info("Listing block devices")
@@ -68,7 +68,7 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 		return nil, status.Errorf(codes.NotFound, "Namespace not found")
 	}
 
-	err = ctrl.SetControllerOptions(controller.NDMOptions{ConfigFilePath: "/host/node-disk-manager.config"})
+	err = ctrl.SetControllerOptions(controller.NDMOptions{ConfigFilePath: ConfigFilePath})
 	if err != nil {
 		klog.Errorf("Error setting config to controller %v", err)
 		return nil, status.Errorf(codes.Internal, "Error setting config to controller")
@@ -81,7 +81,7 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 	}
 
 	if len(blockDeviceList.Items) == 0 {
-		klog.Info("No items found")
+		klog.V(4).Info("No items found")
 	}
 
 	blockDevices := make([]*protos.BlockDevice, 0)
@@ -96,7 +96,7 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 		blockDevices = append(blockDevices, &protos.BlockDevice{
 			Name:       name,
 			Type:       "Disk",
-			Partitions: FilterParitions(name, all.Partitions),
+			Partitions: FilterPartitions(name, all.Partitions),
 		})
 	}
 
@@ -121,7 +121,7 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 		blockDevices = append(blockDevices, &protos.BlockDevice{
 			Name:       name,
 			Type:       "Loop",
-			Partitions: FilterParitions(name, all.Partitions),
+			Partitions: FilterPartitions(name, all.Partitions),
 		})
 	}
 
@@ -150,7 +150,7 @@ func GetAllTypes(BL *v1alpha1.BlockDeviceList) error {
 	RAIDNames := make([]string, 0)
 
 	for _, bd := range BL.Items {
-		klog.Infof("Device %v of type %v ", bd.Spec.Path, bd.Spec.Details.DeviceType)
+		klog.V(4).Infof("Device %v of type %v ", bd.Spec.Path, bd.Spec.Details.DeviceType)
 
 		if bd.Spec.Details.DeviceType == "sparse" {
 			SparseNames = append(SparseNames, bd.Spec.Path)
@@ -215,17 +215,17 @@ func GetAllTypes(BL *v1alpha1.BlockDeviceList) error {
 		}
 
 	}
-	klog.Infof("Parent Devices found are: %v", ParentDeviceNames)
-	klog.Infof("Partitions  found are: %v", PartitionNames)
+	klog.V(4).Infof("Parent Devices found are: %v", ParentDeviceNames)
+	klog.V(4).Infof("Partitions  found are: %v", PartitionNames)
 
-	klog.Infof("LVM found are: %v", LVMNames)
-	klog.Infof("RAID disks found are: %v", RAIDNames)
+	klog.V(4).Infof("LVM found are: %v", LVMNames)
+	klog.V(4).Infof("RAID disks found are: %v", RAIDNames)
 
-	klog.Infof("Holder Devices found are: %v", HolderDeviceNames)
-	klog.Infof(" Slaves found are: %v", SlaveDeviceNames)
+	klog.V(4).Infof("Holder Devices found are: %v", HolderDeviceNames)
+	klog.V(4).Infof("Slaves found are: %v", SlaveDeviceNames)
 
-	klog.Infof("Loop Devices found are: %v", LoopNames)
-	klog.Infof("Sparse disks found are: %v", SparseNames)
+	klog.V(4).Infof("Loop Devices found are: %v", LoopNames)
+	klog.V(4).Infof("Sparse disks found are: %v", SparseNames)
 
 	all.Parents = ParentDeviceNames
 	all.Partitions = PartitionNames
@@ -239,10 +239,10 @@ func GetAllTypes(BL *v1alpha1.BlockDeviceList) error {
 
 }
 
-// FilterParitions gets the name of the paritions given a block device.
+// FilterPartitions gets the name of the partitions given a block device.
 // Given a disk name /dev/sdb and slice of partition names : ["/dev/sdb1", "/dev/sdb2", "/dev/sdc1"],
 //it should return ["/dev/sdb1", "/dev/sdb2"]
-func FilterParitions(name string, pns []string) []string {
+func FilterPartitions(name string, pns []string) []string {
 	fpns := make([]string, 0)
 
 	if len(pns) == 0 {

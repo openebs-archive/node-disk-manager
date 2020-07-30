@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -14,14 +14,14 @@ limitations under the License.
 package services
 
 import (
-	protos "github.com/openebs/node-disk-manager/spec/ndm"
+	"context"
 
 	"github.com/openebs/node-disk-manager/pkg/smart"
+	protos "github.com/openebs/node-disk-manager/spec/ndm"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog"
-
-	"context"
 )
 
 // ListBlockDeviceDetails gives the details about the disk from SMART
@@ -37,13 +37,13 @@ func (n *Node) ListBlockDeviceDetails(ctx context.Context, bd *protos.BlockDevic
 		klog.Errorf("Error fetching block device details %v", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching disk details")
 	}
-	klog.Info(info.BasicDiskAttr)
-	klog.Info(info.ATADiskAttr)
+	klog.V(4).Info(info.BasicDiskAttr)
+	klog.V(4).Info(info.ATADiskAttr)
 
 	return &protos.BlockDeviceDetails{
 		Compliance:       info.BasicDiskAttr.Compliance,
 		Vendor:           info.BasicDiskAttr.Vendor,
-		ModelNumber:      info.BasicDiskAttr.ModelNumber,
+		Model:            info.BasicDiskAttr.ModelNumber,
 		SerialNumber:     info.BasicDiskAttr.SerialNumber,
 		FirmwareRevision: info.BasicDiskAttr.FirmwareRevision,
 		WWN:              info.BasicDiskAttr.WWN,

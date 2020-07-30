@@ -20,13 +20,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openebs/node-disk-manager/pkg/features"
-	"k8s.io/klog"
-
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/filter"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/grpc"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/probe"
+	"github.com/openebs/node-disk-manager/pkg/features"
+
 	"github.com/spf13/cobra"
 )
 
@@ -46,10 +45,8 @@ func NewCmdStart() *cobra.Command {
 			}
 
 			isAPIServiceEnabled := features.FeatureGates.IsEnabled(features.APIService)
-			klog.Infof("Grpc flag is %v", isAPIServiceEnabled)
 			if isAPIServiceEnabled {
 				go grpc.Start()
-
 			}
 			// set the NDM config from the options
 			err = ctrl.SetControllerOptions(options)

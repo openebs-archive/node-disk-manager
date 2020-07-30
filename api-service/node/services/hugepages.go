@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -26,10 +26,12 @@ import (
 	"k8s.io/klog"
 )
 
+const hugepagesPath = "/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages"
+
 // SetHugepages service can set 2MB hugepages on a node
 func (n *Node) SetHugepages(ctx context.Context, h *protos.Hugepages) (*protos.HugepagesResult, error) {
 
-	//Note: Calling this method doesn't gurantee that the said number of pages will be set.
+	// Note: Calling this method doesn't guarantee that the said number of pages will be set.
 	// This is because OS might not have the demanded memory. It would be best to check if this is satisfied with GetHugePages()
 
 	klog.Info("Setting Hugepages")
@@ -39,7 +41,7 @@ func (n *Node) SetHugepages(ctx context.Context, h *protos.Hugepages) (*protos.H
 	}
 
 	msg := []byte(strconv.Itoa(int(hugepages.Pages)))
-	err := ioutil.WriteFile("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages", msg, 0644)
+	err := ioutil.WriteFile(hugepagesPath, msg, 0644)
 	if err != nil {
 		klog.Errorf("Error setting huge pages: %v", err)
 		return nil, status.Errorf(codes.Internal, "Error setting hugepages")
@@ -53,7 +55,7 @@ func (n *Node) GetHugepages(ctx context.Context, null *protos.Null) (*protos.Hug
 
 	klog.Info("Getting the number of hugepages")
 
-	hugepages, err := ioutil.ReadFile("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages")
+	hugepages, err := ioutil.ReadFile(hugepagesPath)
 	if err != nil {
 		klog.Errorf("Error fetching number of hugepages %v", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching the number of hugepages set on the node")

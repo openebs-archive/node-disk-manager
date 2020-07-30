@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The OpenEBS Authors
+Copyright 2020 The OpenEBS Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -41,9 +41,9 @@ func TestFilterPartitions(t *testing.T) {
 	}
 
 	for _, e := range testCases {
-		res := FilterParitions(e.name, e.names)
+		res := FilterPartitions(e.name, e.names)
 		if !reflect.DeepEqual(res, e.exp) {
-			t.Errorf(" Test failed : %v , expected : %v  , got : %v", e.testName, e.exp, res)
+			t.Errorf("Test failed : %v , expected : %v  , got : %v", e.testName, e.exp, res)
 		}
 
 	}

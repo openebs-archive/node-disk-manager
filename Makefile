@@ -239,9 +239,10 @@ docker.exporter: build.exporter Dockerfile.exporter
 	@echo "--> Build docker image: $(DOCKER_IMAGE_EXPORTER)"
 	@echo
 
+# Minimum version of protoc should be 3.12
 .PHONY: protos
 protos:
-	protoc -I . ndm.proto --go_out=plugins=grpc:spec/ndm
+	protoc -I . ndm.proto --go_out=plugins=grpc:.
 
 .PHONY: deps
 deps: header

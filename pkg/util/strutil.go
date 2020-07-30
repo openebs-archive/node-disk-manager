@@ -71,3 +71,25 @@ func IsMatchRegex(regex, s string) bool {
 	r := regexp.MustCompile(regex)
 	return r.MatchString(s)
 }
+
+// AddUniqueStringtoSlice ensures there are no repeated devices added to a slice
+func AddUniqueStringtoSlice(names []string, name string) []string {
+
+	if len(names) == 0 {
+		names = append(names, name)
+		return names
+	}
+	shouldAppend := false
+	for _, n := range names {
+		if strings.Compare(n, name) == 0 {
+			shouldAppend = false
+			break
+		} else {
+			shouldAppend = true
+		}
+	}
+	if shouldAppend {
+		names = append(names, name)
+	}
+	return names
+}
