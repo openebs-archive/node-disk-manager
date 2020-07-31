@@ -60,7 +60,7 @@ jobs:
       - name: Set tag
         run: |
           BRANCH="${GITHUB_REF##*/}"
-          CI_TAG=${BRANCH}-ci
+          CI_TAG=${BRANCH#v}-ci
           if [ ${BRANCH} = "master" ]; then
             CI_TAG="ci"
           fi
@@ -96,7 +96,7 @@ jobs:
       - name: Set tag
         run: |
           BRANCH="${GITHUB_REF##*/}"
-          CI_TAG=${BRANCH}-ci
+          CI_TAG=${BRANCH#v}-ci
           if [ ${BRANCH} = "master" ]; then
             CI_TAG="ci"
           fi
@@ -132,7 +132,7 @@ jobs:
       - name: Set tag
         run: |
           BRANCH="${GITHUB_REF##*/}"
-          CI_TAG=${BRANCH}-ci
+          CI_TAG=${BRANCH#v}-ci
           if [ ${BRANCH} = "master" ]; then
             CI_TAG="ci"
           fi
