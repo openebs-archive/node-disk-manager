@@ -402,14 +402,14 @@ func (pe *ProbeEvent) upgradeDeviceInUseByCStor(bd blockdevice.BlockDevice, bdAP
 	if existingLegacyBD.Status.ClaimState != apis.BlockDeviceUnclaimed {
 		// update resource with legacy and partitoion table uuid annotation
 		// further processing is not required
-		bd.UUID = legacyUUID
+		bd.UUID = existingLegacyBD.Name
 		err := pe.createOrUpdateWithPartitionUUID(bd, existingLegacyBD)
 		return false, err
 	}
 
 	if isVirt {
 		// update the resource with partition and legacy annotation
-		bd.UUID = legacyUUID
+		bd.UUID = existingLegacyBD.Name
 		err := pe.createOrUpdateWithPartitionUUID(bd, existingLegacyBD)
 		return false, err
 	} else {
@@ -446,6 +446,8 @@ func (pe *ProbeEvent) upgradeDeviceInUseByLocalPV(bd blockdevice.BlockDevice, bd
 		existingLegacyBD = r
 	}
 
+	// if existingBD is nil. i.e no blockdevice exist with the uuid or fsuuid annotation, then we create
+	// the resource.
 	if existingLegacyBD == nil {
 		// create device with fs annotation and legacy annotation
 		// the custom create / update method should be called here
@@ -458,14 +460,14 @@ func (pe *ProbeEvent) upgradeDeviceInUseByLocalPV(bd blockdevice.BlockDevice, bd
 	if existingLegacyBD.Status.ClaimState != apis.BlockDeviceUnclaimed {
 		// update resource with legacy and fsuuid annotation
 		// further processing is not required
-		bd.UUID = legacyUUID
+		bd.UUID = existingLegacyBD.Name
 		pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
 		return false, nil
 	}
 
 	if isVirt {
 		// update the resource with fs and legacy annotation
-		bd.UUID = legacyUUID
+		bd.UUID = existingLegacyBD.Name
 		pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
 	} else {
 		// should never reach this case.
