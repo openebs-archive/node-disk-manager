@@ -400,7 +400,7 @@ func (pe *ProbeEvent) upgradeDeviceInUseByCStor(bd blockdevice.BlockDevice, bdAP
 	}
 
 	if existingLegacyBD.Status.ClaimState != apis.BlockDeviceUnclaimed {
-		// update resource with legacy and partitoion table uuid annotation
+		// update resource with legacy and partition table uuid annotation
 		// further processing is not required
 		bd.UUID = existingLegacyBD.Name
 		err := pe.createOrUpdateWithPartitionUUID(bd, existingLegacyBD)

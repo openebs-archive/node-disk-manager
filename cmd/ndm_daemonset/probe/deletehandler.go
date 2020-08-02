@@ -82,14 +82,14 @@ func (pe *ProbeEvent) deleteBlockDevice(bd blockdevice.BlockDevice, bdAPIList *a
 	// try with FSUUID annotation
 	if existingBD := getExistingBDWithFsUuid(bd, bdAPIList); existingBD != nil {
 		pe.Controller.DeactivateBlockDevice(*existingBD)
-		klog.V(4).Infof("deactivated device: %s, using FS UUID", bd.DevPath)
+		klog.V(4).Infof("deactivated device: %s, using FS UUID annotation", bd.DevPath)
 		return nil
 	}
 
 	// try with partition uuid annotation
 	if existingBD := getExistingBDWithPartitionUUID(bd, bdAPIList); existingBD != nil {
 		pe.Controller.DeactivateBlockDevice(*existingBD)
-		klog.V(4).Infof("deactivated device: %s, using FS UUID", bd.DevPath)
+		klog.V(4).Infof("deactivated device: %s, using Partition UUID annotation", bd.DevPath)
 		return nil
 	}
 
