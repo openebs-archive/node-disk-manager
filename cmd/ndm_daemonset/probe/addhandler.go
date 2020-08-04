@@ -548,7 +548,7 @@ func (pe *ProbeEvent) createOrUpdateWithFSUUID(bd blockdevice.BlockDevice, exist
 		klog.Errorf("unable to push %s (%s) to etcd", bd.UUID, bd.DevPath)
 		return err
 	}
-	klog.Info("Pushed localPV device: %s (%s) to etcd", bd.UUID, bd.DevPath)
+	klog.Infof("Pushed localPV device: %s (%s) to etcd", bd.UUID, bd.DevPath)
 	return nil
 }
 
