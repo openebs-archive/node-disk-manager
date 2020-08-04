@@ -105,9 +105,13 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, tolerations []v
 		args := fmt.Sprintf("(fdisk -o Device -l %[1]s "+
 			"| grep \"^%[1]s\" "+
 			"| xargs -I '{}' wipefs -fa '{}') "+
-			"&& wipefs -fa %[1]s "+
-			"&& if [ -b %[1]s ]; then partprobe %[1]s; fi;",
+			"&& wipefs -fa %[1]s ",
 			bd.Spec.Path)
+
+		// partprobe need to be executed only if the device is of type disk.
+		if bd.Spec.Details.DeviceType == blockdevice.BlockDeviceTypeDisk {
+			args += fmt.Sprintf("&& partprobe %s ", bd.Spec.Path)
+		}
 
 		jobContainer.Args = []string{args}
 
