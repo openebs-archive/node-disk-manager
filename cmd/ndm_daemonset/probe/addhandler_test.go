@@ -116,7 +116,7 @@ func TestAddBlockDeviceToHierarchyCache(t *testing.T) {
 	}
 }
 
-func TestProbeEvent_deviceInUseByMayastor(t *testing.T) {
+func TestDeviceInUseByMayastor(t *testing.T) {
 	type fields struct {
 		Controller *controller.Controller
 	}
@@ -150,7 +150,7 @@ func TestProbeEvent_deviceInUseByMayastor(t *testing.T) {
 	}
 }
 
-func TestProbeEvent_deviceInUseByZFSLocalPV(t *testing.T) {
+func TestDeviceInUseByZFSLocalPV(t *testing.T) {
 	type fields struct {
 		Controller *controller.Controller
 	}
@@ -184,7 +184,7 @@ func TestProbeEvent_deviceInUseByZFSLocalPV(t *testing.T) {
 	}
 }
 
-func TestProbeEvent_handleUnmanagedDevices(t *testing.T) {
+func TestHandleUnmanagedDevices(t *testing.T) {
 	type fields struct {
 		Controller *controller.Controller
 	}
@@ -219,24 +219,138 @@ func TestProbeEvent_handleUnmanagedDevices(t *testing.T) {
 }
 
 func TestIsParentDeviceInUse(t *testing.T) {
+	cache := map[string]blockdevice.BlockDevice{
+		"/dev/sda": {
+			Identifier: blockdevice.Identifier{
+				DevPath: "/dev/sda",
+			},
+			DependentDevices: blockdevice.DependentBlockDevices{
+				Parent:     "",
+				Partitions: []string{"/dev/sda1", "/dev/sda2"},
+			},
+			DeviceAttributes: blockdevice.DeviceAttribute{
+				DeviceType: blockdevice.BlockDeviceTypeDisk,
+			},
+			DevUse: blockdevice.DeviceUsage{
+				InUse: false,
+			},
+		},
+		"/dev/sda1": {
+			Identifier: blockdevice.Identifier{
+				DevPath: "/dev/sda1",
+			},
+			DependentDevices: blockdevice.DependentBlockDevices{
+				Parent: "/dev/sda",
+			},
+			DeviceAttributes: blockdevice.DeviceAttribute{
+				DeviceType: blockdevice.BlockDeviceTypePartition,
+			},
+			DevUse: blockdevice.DeviceUsage{
+				InUse: true,
+			},
+		},
+		"/dev/sda2": {
+			Identifier: blockdevice.Identifier{
+				DevPath: "/dev/sda2",
+			},
+			DependentDevices: blockdevice.DependentBlockDevices{
+				Parent: "/dev/sda",
+			},
+			DeviceAttributes: blockdevice.DeviceAttribute{
+				DeviceType: blockdevice.BlockDeviceTypePartition,
+			},
+			DevUse: blockdevice.DeviceUsage{
+				InUse: false,
+			},
+		},
+		"/dev/sdb": {
+			Identifier: blockdevice.Identifier{
+				DevPath: "/dev/sdb",
+			},
+			DependentDevices: blockdevice.DependentBlockDevices{
+				Parent: "",
+			},
+			DeviceAttributes: blockdevice.DeviceAttribute{
+				DeviceType: blockdevice.BlockDeviceTypeDisk,
+			},
+			DevUse: blockdevice.DeviceUsage{
+				InUse: true,
+			},
+		},
+	}
+	pe := &ProbeEvent{
+		Controller: &controller.Controller{
+			BDHierarchy: cache,
+		},
+	}
 	tests := map[string]struct {
 		bd      blockdevice.BlockDevice
-		cache   blockdevice.Hierarchy
 		want    bool
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		"check for existing parent device": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeDisk,
+				},
+			},
+			want:    false,
+			wantErr: false,
+		},
+		"check for partition that is in use": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda1",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypePartition,
+				},
+				DependentDevices: blockdevice.DependentBlockDevices{
+					Parent: "/dev/sda",
+				},
+			},
+			want:    false,
+			wantErr: false,
+		},
+		"check for parent device in use": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sdb1",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypePartition,
+				},
+				DependentDevices: blockdevice.DependentBlockDevices{
+					Parent: "/dev/sdb",
+				},
+			},
+			want:    true,
+			wantErr: false,
+		},
+		"non existent parent device": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sdc1",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypePartition,
+				},
+				DependentDevices: blockdevice.DependentBlockDevices{
+					Parent: "/dev/sdc",
+				},
+			},
+			want:    false,
+			wantErr: true,
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			pe := &ProbeEvent{
-				Controller: &controller.Controller{
-					BDHierarchy: tt.cache,
-				},
-			}
 			got, gotErr := pe.isParentDeviceInUse(tt.bd)
 			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.wantErr, gotErr)
+			assert.Equal(t, tt.wantErr, gotErr != nil)
 		})
 	}
 }
