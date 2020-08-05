@@ -54,7 +54,7 @@ var supportedFeatures = []Feature{
 
 // defaultFeatureGates is the default features that will be applied to the application
 var defaultFeatureGates = map[Feature]bool{
-	GPTBasedUUID: false,
+	GPTBasedUUID: true,
 	APIService:   false,
 }
 
