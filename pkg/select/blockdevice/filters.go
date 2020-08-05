@@ -48,6 +48,13 @@ const (
 	// FilterBlockDeviceTag is used to filter out blockdevices having
 	// openebs.io/blockdevice-tag label
 	FilterBlockDeviceTag = "filterBlockDeviceTag"
+	// FilterOutLegacyAnnotation is used to filter out devices with legacy annotation
+	FilterOutLegacyAnnotation = "filterOutLegacyAnnotation"
+)
+
+const (
+	internalUUIDSchemeAnnotation = "internal.openebs.io/uuid-scheme"
+	legacyUUIDScheme             = "legacy"
 )
 
 // filterFunc is the func type for the filter functions
@@ -63,6 +70,7 @@ var filterFuncMap = map[string]filterFunc{
 	FilterOutSparseBlockDevices: filterOutSparseBlockDevice,
 	FilterNodeName:              filterNodeName,
 	FilterBlockDeviceTag:        filterBlockDeviceTag,
+	FilterOutLegacyAnnotation:   filterOutLegacyAnnotation,
 }
 
 // ApplyFilters apply the filter specified in the filterkeys on the given BD List,
@@ -293,6 +301,29 @@ func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceCla
 			filteredBDList.Items = append(filteredBDList.Items, bd)
 		}
 	}
+	return filteredBDList
+}
+
+// filterOutLegacyAnnotation removes all blockdevices which has the legacy annotation
+// TODO @akhilerm add test cases for this function.
+func filterOutLegacyAnnotation(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
+	filteredBDList := &apis.BlockDeviceList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "BlockDevice",
+			APIVersion: "openebs.io/v1alpha1",
+		},
+	}
+
+	for _, bd := range originalBD.Items {
+		if bd.Annotations != nil {
+			if uuidScheme, ok := bd.Annotations[internalUUIDSchemeAnnotation]; ok &&
+				uuidScheme == legacyUUIDScheme {
+				continue
+			}
+		}
+		filteredBDList.Items = append(filteredBDList.Items, bd)
+	}
+
 	return filteredBDList
 }
 
