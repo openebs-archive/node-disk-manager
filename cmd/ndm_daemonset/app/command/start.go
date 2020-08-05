@@ -17,6 +17,7 @@ limitations under the License.
 package command
 
 import (
+	goflag "flag"
 	"fmt"
 	"os"
 
@@ -27,6 +28,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/features"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 //NewCmdStart starts the ndm controller
@@ -65,6 +67,10 @@ func NewCmdStart() *cobra.Command {
 
 		},
 	}
+	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
+	getCmd.PersistentFlags().StringVar(&grpc.Address, "api-service-address",
+		grpc.DefaultAddress,
+		"Address(ip:port) for api service")
 
 	return getCmd
 }

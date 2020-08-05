@@ -29,10 +29,16 @@ import (
 )
 
 const (
-	ip      = "0.0.0.0"
-	port    = "9090"
-	address = ip + ":" + port
+	// IP represents the IP address of the api service
+	IP = "0.0.0.0"
+	// Port represents the port of the API service
+	Port = "9115"
+	// DefaultAddress represents the DefaultAddress at which api service can be called on which is 0.0.0.0:9115
+	DefaultAddress = IP + ":" + Port
 )
+
+// Address represents the address given by user
+var Address = ""
 
 // Start starts the grpc server
 func Start() {
@@ -49,21 +55,20 @@ func Start() {
 		// This helps clients determine which services are available to call
 		reflection.Register(grpcServer)
 
-		// Similar to registring handlers for http
+		// Similar to registering handlers for http
 		protos.RegisterInfoServer(grpcServer, infoService)
 
 		protos.RegisterNodeServer(grpcServer, nodeService)
 
-		l, err := net.Listen("tcp", address)
+		l, err := net.Listen("tcp", Address)
 		if err != nil {
-			klog.Errorf("Unable to listen %f", err)
+			klog.Errorf("Unable to listen %v", err)
 			os.Exit(1)
 		}
 
 		// Listen for requests
-		klog.Infof("Starting server at : %v ", address)
+		klog.Infof("Starting server at : %v ", Address)
 		grpcServer.Serve(l)
 
 	}
-
 }

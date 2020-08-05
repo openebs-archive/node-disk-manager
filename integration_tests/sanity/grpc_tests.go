@@ -19,6 +19,7 @@ package sanity
 import (
 	"context"
 
+	apiservice "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/grpc"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
@@ -29,6 +30,8 @@ import (
 	"google.golang.org/grpc"
 	"k8s.io/klog"
 )
+
+var address = apiservice.DefaultAddress
 
 var _ = Describe("gRPC tests", func() {
 
@@ -66,7 +69,7 @@ var _ = Describe("gRPC tests", func() {
 	Context("gRPC services", func() {
 
 		It("iSCSI test", func() {
-			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+			conn, err := grpc.Dial(address, grpc.WithInsecure())
 			Expect(err).NotTo(HaveOccurred())
 			defer conn.Close()
 
@@ -94,7 +97,7 @@ var _ = Describe("gRPC tests", func() {
 		})
 
 		It("List Block Devices test", func() {
-			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+			conn, err := grpc.Dial(address, grpc.WithInsecure())
 			Expect(err).NotTo(HaveOccurred())
 			defer conn.Close()
 
@@ -125,7 +128,7 @@ var _ = Describe("gRPC tests", func() {
 		})
 
 		It("Huge pages test", func() {
-			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+			conn, err := grpc.Dial(address, grpc.WithInsecure())
 			Expect(err).NotTo(HaveOccurred())
 			defer conn.Close()
 
@@ -144,7 +147,7 @@ var _ = Describe("gRPC tests", func() {
 
 		})
 		It("Rescan test", func() {
-			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+			conn, err := grpc.Dial(address, grpc.WithInsecure())
 			Expect(err).NotTo(HaveOccurred())
 			defer conn.Close()
 
