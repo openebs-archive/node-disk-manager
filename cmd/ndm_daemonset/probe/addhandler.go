@@ -181,9 +181,12 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 					// 2. create resource for partition
 
 					pe.Controller.DeactivateBlockDevice(*parentBDAPI)
-					deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-					existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
-					err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+					existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, bd.UUID)
+					annotations := map[string]string{
+						internalUUIDSchemeAnnotation: gptUUIDScheme,
+					}
+
+					err = pe.createOrUpdateWithAnnotation(annotations, bd, existingBlockDeviceResource)
 					if err != nil {
 						klog.Error(err)
 						return err
@@ -209,8 +212,12 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 
 		if bdAPI.Status.ClaimState != apis.BlockDeviceUnclaimed {
 			klog.V(4).Infof("device: %s is in use. update the details of the blockdevice", bd.DevPath)
-			deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-			err = pe.Controller.PushBlockDeviceResource(bdAPI, deviceInfo)
+
+			annotation := map[string]string{
+				internalUUIDSchemeAnnotation: gptUUIDScheme,
+			}
+
+			err = pe.createOrUpdateWithAnnotation(annotation, bd, bdAPI)
 			if err != nil {
 				klog.Errorf("updating block device resource failed: %+v", err)
 				return err
@@ -219,9 +226,12 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 		}
 
 		klog.V(4).Infof("creating resource for device: %s with uuid: %s", bd.DevPath, bd.UUID)
-		deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-		existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
-		err = pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+		existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, bd.UUID)
+		annotations := map[string]string{
+			internalUUIDSchemeAnnotation: gptUUIDScheme,
+		}
+
+		err = pe.createOrUpdateWithAnnotation(annotations, bd, existingBlockDeviceResource)
 		if err != nil {
 			klog.Errorf("creation of resource failed: %+v", err)
 			return err
@@ -241,9 +251,14 @@ func (pe *ProbeEvent) createBlockDeviceResourceIfNoHolders(bd blockdevice.BlockD
 	}
 
 	klog.V(4).Infof("creating block device resource for device: %s with uuid: %s", bd.DevPath, bd.UUID)
-	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-	existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
-	err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
+
+	existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, bd.UUID)
+
+	annotations := map[string]string{
+		internalUUIDSchemeAnnotation: gptUUIDScheme,
+	}
+
+	err := pe.createOrUpdateWithAnnotation(annotations, bd, existingBlockDeviceResource)
 	if err != nil {
 		klog.Error(err)
 		return err
@@ -453,28 +468,28 @@ func (pe *ProbeEvent) upgradeDeviceInUseByLocalPV(bd blockdevice.BlockDevice, bd
 		// the custom create / update method should be called here
 		// no furhter processing is required
 		bd.UUID = legacyUUID
-		pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
-		return false, nil
+		err := pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
+		return false, err
 	}
 
 	if existingLegacyBD.Status.ClaimState != apis.BlockDeviceUnclaimed {
 		// update resource with legacy and fsuuid annotation
 		// further processing is not required
 		bd.UUID = existingLegacyBD.Name
-		pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
-		return false, nil
+		err := pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
+		return false, err
 	}
 
 	if isVirt {
 		// update the resource with fs and legacy annotation
 		bd.UUID = existingLegacyBD.Name
-		pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
+		err := pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
+		return false, err
 	} else {
 		// should never reach this case.
 		klog.Error("unreachable state")
+		return false, fmt.Errorf("unreachable state")
 	}
-	// donot process further
-	return false, nil
 }
 
 // isParentDeviceInUse checks if the parent device of a given device is in use.
@@ -515,11 +530,11 @@ func getExistingBDWithPartitionUUID(bd blockdevice.BlockDevice, bdAPIList *apis.
 		if len(bd.PartitionInfo.PartitionTableUUID) == 0 {
 			continue
 		}
-		fsUUID, ok := bdAPI.Annotations[internalPartitionUUIDAnnotation]
+		partitionUUID, ok := bdAPI.Annotations[internalPartitionUUIDAnnotation]
 		if !ok {
 			continue
 		}
-		if fsUUID == bd.PartitionInfo.PartitionTableUUID {
+		if partitionUUID == bd.PartitionInfo.PartitionTableUUID {
 			return &bdAPI
 		}
 	}
@@ -529,23 +544,13 @@ func getExistingBDWithPartitionUUID(bd blockdevice.BlockDevice, bdAPIList *apis.
 // createOrUpdateWithFSUUID creates/updates a resource in etcd. It additionally adds an annotation with the
 // fs uuid of the blockdevice
 func (pe *ProbeEvent) createOrUpdateWithFSUUID(bd blockdevice.BlockDevice, existingBD *apis.BlockDevice) error {
-	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-	bdAPI := deviceInfo.ToDevice()
-	if bdAPI.Annotations == nil {
-		bdAPI.Annotations = make(map[string]string)
+	annotation := map[string]string{
+		internalUUIDSchemeAnnotation: legacyUUIDScheme,
+		internalFSUUIDAnnotation:     bd.FSInfo.FileSystemUUID,
 	}
-	bdAPI.Annotations[internalUUIDSchemeAnnotation] = legacyUUIDScheme
-	bdAPI.Annotations[internalFSUUIDAnnotation] = bd.FSInfo.FileSystemUUID
-
-	var err error
-	if existingBD != nil {
-		err = pe.Controller.UpdateBlockDevice(bdAPI, existingBD)
-	} else {
-		err = pe.Controller.CreateBlockDevice(bdAPI)
-	}
-
+	err := pe.createOrUpdateWithAnnotation(annotation, bd, existingBD)
 	if err != nil {
-		klog.Errorf("unable to push %s (%s) to etcd", bd.UUID, bd.DevPath)
+		klog.Errorf("could not push localPV device: %s (%s) to etcd", bd.UUID, bd.DevPath)
 		return err
 	}
 	klog.Infof("Pushed localPV device: %s (%s) to etcd", bd.UUID, bd.DevPath)
@@ -555,13 +560,25 @@ func (pe *ProbeEvent) createOrUpdateWithFSUUID(bd blockdevice.BlockDevice, exist
 // createOrUpdateWithPartitionUUID create/update a resource in etcd. It additionally adds an annotation with the
 // partition table uuid of the blockdevice
 func (pe *ProbeEvent) createOrUpdateWithPartitionUUID(bd blockdevice.BlockDevice, existingBD *apis.BlockDevice) error {
+	annotation := map[string]string{
+		internalUUIDSchemeAnnotation:    legacyUUIDScheme,
+		internalPartitionUUIDAnnotation: bd.PartitionInfo.PartitionTableUUID,
+	}
+	err := pe.createOrUpdateWithAnnotation(annotation, bd, existingBD)
+	if err != nil {
+		klog.Errorf("could not push cstor device: %s (%s) to etcd", bd.UUID, bd.DevPath)
+		return err
+	}
+	klog.Infof("Pushed cstor device: %s (%s) to etcd", bd.UUID, bd.DevPath)
+	return nil
+}
+
+// createOrUpdateWithAnnotation creates or updates a resource in etcd with given annotation.
+func (pe *ProbeEvent) createOrUpdateWithAnnotation(annotation map[string]string, bd blockdevice.BlockDevice, existingBD *apis.BlockDevice) error {
 	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
 	bdAPI := deviceInfo.ToDevice()
-	if bdAPI.Annotations == nil {
-		bdAPI.Annotations = make(map[string]string)
-	}
-	bdAPI.Annotations[internalUUIDSchemeAnnotation] = legacyUUIDScheme
-	bdAPI.Annotations[internalPartitionUUIDAnnotation] = bd.PartitionInfo.PartitionTableUUID
+
+	bdAPI.Annotations = annotation
 
 	var err error
 	if existingBD != nil {
@@ -569,11 +586,9 @@ func (pe *ProbeEvent) createOrUpdateWithPartitionUUID(bd blockdevice.BlockDevice
 	} else {
 		err = pe.Controller.CreateBlockDevice(bdAPI)
 	}
-
 	if err != nil {
 		klog.Errorf("unable to push %s (%s) to etcd", bd.UUID, bd.DevPath)
 		return err
 	}
-	klog.Infof("Pushed cstor device: %s (%s) to etcd", bd.UUID, bd.DevPath)
 	return nil
 }
