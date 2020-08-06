@@ -39,7 +39,7 @@ type usedbyProbe struct {
 
 const (
 	usedbyProbeConfigKey = "used-by-probe"
-	usedbyProbePriority  = 4
+	usedbyProbePriority  = 5
 
 	k8sLocalVolumePath1 = "kubernetes.io/local-volume"
 	k8sLocalVolumePath2 = "kubernetes.io~local-volume"
@@ -143,7 +143,7 @@ func (sp *usedbyProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevi
 			} else {
 				blockDevice.DevUse.UsedBy = blockdevice.CStor
 			}
-			klog.V(4).Infof("device: %s Used by: %s filled by sampling probe", blockDevice.DevPath, blockDevice.DevUse.UsedBy)
+			klog.V(4).Infof("device: %s Used by: %s filled by used-by probe", blockDevice.DevPath, blockDevice.DevUse.UsedBy)
 			return
 		}
 	}
@@ -160,7 +160,7 @@ func (sp *usedbyProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevi
 	if spdk.IsSPDKSignatureExist(signature) {
 		blockDevice.DevUse.InUse = true
 		blockDevice.DevUse.UsedBy = blockdevice.Mayastor
-		klog.V(4).Infof("device: %s Used by: %s filled by sampling probe", blockDevice.DevPath, blockDevice.DevUse.UsedBy)
+		klog.V(4).Infof("device: %s Used by: %s filled by used-by probe", blockDevice.DevPath, blockDevice.DevUse.UsedBy)
 		return
 	}
 

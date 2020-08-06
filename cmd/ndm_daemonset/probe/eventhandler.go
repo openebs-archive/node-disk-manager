@@ -114,7 +114,6 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 			}
 			pe.Controller.DeactivateBlockDevice(*existingBlockDeviceResource)
 		}
-
 	}
 
 	// rescan only if GPT based UUID is disabled.

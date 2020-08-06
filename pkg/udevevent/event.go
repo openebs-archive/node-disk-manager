@@ -55,6 +55,13 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 	deviceDetails.DeviceAttributes.DeviceType = device.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
 	deviceDetails.DeviceAttributes.WWN = device.GetPropertyValue(libudevwrapper.UDEV_WWN)
 	deviceDetails.DeviceAttributes.Serial = device.GetPropertyValue(libudevwrapper.UDEV_SERIAL)
+
+	// The below 3 fields are used only for legacy uuid generation. But they are filled in here,
+	// so as to handle upgrade cases from legacy to gpt
+	deviceDetails.DeviceAttributes.Model = device.GetPropertyValue(libudevwrapper.UDEV_MODEL)
+	deviceDetails.DeviceAttributes.Vendor = device.GetPropertyValue(libudevwrapper.UDEV_VENDOR)
+	deviceDetails.DeviceAttributes.IDType = device.GetPropertyValue(libudevwrapper.UDEV_TYPE)
+
 	deviceDetails.PartitionInfo.PartitionTableUUID = device.GetPropertyValue(libudevwrapper.UDEV_PARTITION_TABLE_UUID)
 	deviceDetails.PartitionInfo.PartitionEntryUUID = device.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
 	deviceDetails.FSInfo.FileSystemUUID = device.GetPropertyValue(libudevwrapper.UDEV_FS_UUID)

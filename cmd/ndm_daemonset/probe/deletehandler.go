@@ -38,24 +38,63 @@ func (pe *ProbeEvent) removeBlockDeviceFromHierarchyCache(bd blockdevice.BlockDe
 }
 
 // deleteBlockDevice marks the block device resource as inactive
+// The following cases are handled
+//	1. Device using legacy UUID
+//	2. Device using GPT UUID
+//	3. Device using partition table UUID (zfs localPV)
+//  4. Device using the partition table / fs uuid annotation
 func (pe *ProbeEvent) deleteBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) error {
 
 	if !pe.removeBlockDeviceFromHierarchyCache(bd) {
 		return nil
 	}
 
-	uuid, ok := generateUUID(bd)
-	// this can happen if the device didn't have any unique identifiers
-	if !ok {
-		klog.Info("could not recreate UUID while removing device")
+	// try with gpt uuid
+	if uuid, ok := generateUUID(bd); ok {
+		existingBD := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, uuid)
+		if existingBD != nil {
+			pe.Controller.DeactivateBlockDevice(*existingBD)
+			klog.V(4).Infof("deactivated device: %s, using GPT UUID", bd.DevPath)
+			return nil
+		}
+		// uuid could be generated, but the disk may be using the legacy scheme
+	}
+
+	// try with partition table uuid - for zfs local pV
+	if partUUID, ok := generateUUIDFromPartitionTable(bd); ok {
+		existingBD := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, partUUID)
+		if existingBD != nil {
+			pe.Controller.DeactivateBlockDevice(*existingBD)
+			klog.V(4).Infof("deactivated device: %s, using partition table UUID", bd.DevPath)
+			return nil
+		}
+	}
+
+	// try with FSUUID annotation
+	if existingBD := getExistingBDWithFsUuid(bd, bdAPIList); existingBD != nil {
+		pe.Controller.DeactivateBlockDevice(*existingBD)
+		klog.V(4).Infof("deactivated device: %s, using FS UUID annotation", bd.DevPath)
 		return nil
 	}
 
-	existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, uuid)
-	if existingBlockDeviceResource == nil {
+	// try with partition uuid annotation
+	// if the device is a partition, the parent can get deactivated because of search by partition UUID.
+	// Therefore the search result is used only if the device is not a partition.
+	if existingBD := getExistingBDWithPartitionUUID(bd, bdAPIList); bd.DeviceAttributes.DeviceType != blockdevice.BlockDeviceTypePartition &&
+		existingBD != nil {
+		pe.Controller.DeactivateBlockDevice(*existingBD)
+		klog.V(4).Infof("deactivated device: %s, using Partition UUID annotation", bd.DevPath)
 		return nil
 	}
-	pe.Controller.DeactivateBlockDevice(*existingBlockDeviceResource)
+
+	// try with legacy uuid
+	legacyUUID, _ := generateLegacyUUID(bd)
+	existingBD := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, legacyUUID)
+	if existingBD != nil {
+		pe.Controller.DeactivateBlockDevice(*existingBD)
+		klog.V(4).Infof("deactivated device: %s, using legacy UUID", bd.DevPath)
+		return nil
+	}
 
 	return nil
 }

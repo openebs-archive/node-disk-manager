@@ -17,6 +17,8 @@ limitations under the License.
 package probe
 
 import (
+	"os"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
@@ -78,4 +80,36 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 	}
 
 	return uuid, ok
+}
+
+// generate old UUID, returns true if the UUID has used path or hostname for generation.
+func generateLegacyUUID(bd blockdevice.BlockDevice) (string, bool) {
+	localDiskModels := []string{
+		"EphemeralDisk",
+		"Virtual_disk",
+		"QEMU_HARDDISK",
+	}
+	uid := bd.DeviceAttributes.WWN +
+		bd.DeviceAttributes.Model +
+		bd.DeviceAttributes.Serial +
+		bd.DeviceAttributes.Vendor
+	uuidUsesPath := false
+	if len(bd.DeviceAttributes.IDType) == 0 || util.Contains(localDiskModels, bd.DeviceAttributes.Model) {
+		host, _ := os.Hostname()
+		uid += host + bd.DevPath
+		uuidUsesPath = true
+	}
+	uuid := blockdevice.BlockDevicePrefix + util.Hash(uid)
+
+	return uuid, uuidUsesPath
+}
+
+// generateUUIDFromPartitionTable generates a blockdevice uuid from the partition table uuid.
+// currently this is only used by zfs localPV
+func generateUUIDFromPartitionTable(bd blockdevice.BlockDevice) (string, bool) {
+	uuidField := bd.PartitionInfo.PartitionTableUUID
+	if len(uuidField) > 0 {
+		return blockdevice.BlockDevicePrefix + util.Hash(uuidField), true
+	}
+	return "", false
 }

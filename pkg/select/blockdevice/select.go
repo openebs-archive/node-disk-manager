@@ -43,7 +43,11 @@ func (c *Config) Filter(bdList *apis.BlockDeviceList) (*apis.BlockDevice, error)
 func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockDeviceList, error) {
 
 	// filterKeys to be used for filtering, by default active and unclaimed filter is present
-	filterKeys := []string{FilterActive, FilterUnclaimed}
+	filterKeys := []string{FilterActive,
+		FilterUnclaimed,
+		// do not consider any devices with legacy annotation for claiming
+		FilterOutLegacyAnnotation,
+	}
 
 	if c.ManualSelection {
 		filterKeys = append(filterKeys, FilterBlockDeviceName)
