@@ -514,10 +514,10 @@ func (pe *ProbeEvent) isParentDeviceInUse(bd blockdevice.BlockDevice) (bool, err
 
 // getExistingBDWithFsUuid returns the blockdevice with matching FSUUID annotation from etcd
 func getExistingBDWithFsUuid(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) *apis.BlockDevice {
+	if len(bd.FSInfo.FileSystemUUID) == 0 {
+		return nil
+	}
 	for _, bdAPI := range bdAPIList.Items {
-		if len(bd.FSInfo.FileSystemUUID) == 0 {
-			continue
-		}
 		fsUUID, ok := bdAPI.Annotations[internalFSUUIDAnnotation]
 		if !ok {
 			continue
@@ -531,10 +531,10 @@ func getExistingBDWithFsUuid(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDe
 
 // getExistingBDWithPartitionUUID returns the blockdevice with matching partition uuid annotation from etcd
 func getExistingBDWithPartitionUUID(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) *apis.BlockDevice {
+	if len(bd.PartitionInfo.PartitionTableUUID) == 0 {
+		return nil
+	}
 	for _, bdAPI := range bdAPIList.Items {
-		if len(bd.PartitionInfo.PartitionTableUUID) == 0 {
-			continue
-		}
 		partitionUUID, ok := bdAPI.Annotations[internalPartitionUUIDAnnotation]
 		if !ok {
 			continue
