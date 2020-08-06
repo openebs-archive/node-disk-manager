@@ -63,6 +63,9 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 
 	pe.addBlockDeviceToHierarchyCache(bd)
 
+	// handle devices that are not managed by NDM
+	// eg:devices in use by mayastor, zfs PV and jiva
+	// TODO jiva handling is still to be added.
 	if ok, err := pe.handleUnmanagedDevices(bd, bdAPIList); err != nil {
 		klog.Errorf("error handling unmanaged device %s. error: %v", bd.DevPath, err)
 		return err
@@ -80,6 +83,8 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 		return nil
 	}
 
+	// upgrades the devices that are in use and used the legacy method
+	// for uuid generation.
 	if ok, err := pe.upgradeBD(bd, bdAPIList); err != nil {
 		klog.Errorf("upgrade of device: %s failed. Error: %v", bd.DevPath, err)
 		return err
@@ -378,7 +383,7 @@ func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIL
 	return false, nil
 }
 
-// upgradeDeviceInUseByCStor handles the upgrade if the device is used by cstor. returns truw if further processing
+// upgradeDeviceInUseByCStor handles the upgrade if the device is used by cstor. returns true if further processing
 // is required
 func (pe *ProbeEvent) upgradeDeviceInUseByCStor(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
 	uuid, ok := generateUUID(bd)
@@ -466,7 +471,7 @@ func (pe *ProbeEvent) upgradeDeviceInUseByLocalPV(bd blockdevice.BlockDevice, bd
 	if existingLegacyBD == nil {
 		// create device with fs annotation and legacy annotation
 		// the custom create / update method should be called here
-		// no furhter processing is required
+		// no further processing is required
 		bd.UUID = legacyUUID
 		err := pe.createOrUpdateWithFSUUID(bd, existingLegacyBD)
 		return false, err

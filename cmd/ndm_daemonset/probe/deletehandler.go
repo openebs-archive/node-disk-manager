@@ -60,15 +60,6 @@ func (pe *ProbeEvent) deleteBlockDevice(bd blockdevice.BlockDevice, bdAPIList *a
 		// uuid could be generated, but the disk may be using the legacy scheme
 	}
 
-	// try with legacy uuid
-	legacyUUID, _ := generateLegacyUUID(bd)
-	existingBD := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, legacyUUID)
-	if existingBD != nil {
-		pe.Controller.DeactivateBlockDevice(*existingBD)
-		klog.V(4).Infof("deactivated device: %s, using legacy UUID", bd.DevPath)
-		return nil
-	}
-
 	// try with partition table uuid - for zfs local pV
 	if partUUID, ok := generateUUIDFromPartitionTable(bd); ok {
 		existingBD := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, partUUID)
@@ -93,6 +84,15 @@ func (pe *ProbeEvent) deleteBlockDevice(bd blockdevice.BlockDevice, bdAPIList *a
 		bd.DeviceAttributes.DeviceType != blockdevice.BlockDeviceTypePartition {
 		pe.Controller.DeactivateBlockDevice(*existingBD)
 		klog.V(4).Infof("deactivated device: %s, using Partition UUID annotation", bd.DevPath)
+		return nil
+	}
+
+	// try with legacy uuid
+	legacyUUID, _ := generateLegacyUUID(bd)
+	existingBD := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, legacyUUID)
+	if existingBD != nil {
+		pe.Controller.DeactivateBlockDevice(*existingBD)
+		klog.V(4).Infof("deactivated device: %s, using legacy UUID", bd.DevPath)
 		return nil
 	}
 
