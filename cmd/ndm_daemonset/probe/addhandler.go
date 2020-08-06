@@ -452,7 +452,7 @@ func (pe *ProbeEvent) upgradeDeviceInUseByLocalPV(bd blockdevice.BlockDevice, bd
 			} else {
 				// should never reach this case
 				klog.Error("unreachable state")
-				return false, nil
+				return false, fmt.Errorf("unreachable state")
 			}
 		}
 	}

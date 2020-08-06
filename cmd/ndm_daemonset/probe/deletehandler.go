@@ -78,10 +78,10 @@ func (pe *ProbeEvent) deleteBlockDevice(bd blockdevice.BlockDevice, bdAPIList *a
 	}
 
 	// try with partition uuid annotation
-	if existingBD := getExistingBDWithPartitionUUID(bd, bdAPIList); existingBD != nil &&
-		// if the device is a partition, the parent can get deactivated because of search by partition UUID.
-		// Therefore the search result is used only if the device is not a partition.
-		bd.DeviceAttributes.DeviceType != blockdevice.BlockDeviceTypePartition {
+	// if the device is a partition, the parent can get deactivated because of search by partition UUID.
+	// Therefore the search result is used only if the device is not a partition.
+	if existingBD := getExistingBDWithPartitionUUID(bd, bdAPIList); bd.DeviceAttributes.DeviceType != blockdevice.BlockDeviceTypePartition &&
+		existingBD != nil {
 		pe.Controller.DeactivateBlockDevice(*existingBD)
 		klog.V(4).Infof("deactivated device: %s, using Partition UUID annotation", bd.DevPath)
 		return nil
