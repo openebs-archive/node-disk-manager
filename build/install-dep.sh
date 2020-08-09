@@ -4,6 +4,10 @@
 # used for building NDM as well as checking
 
 set -e
+
+# update the packages
+apt-get update -y
+
 # udev and blkid is required for building NDM.
 apt-get install --yes libudev-dev libblkid-dev
 pushd .
