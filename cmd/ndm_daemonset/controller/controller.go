@@ -132,7 +132,7 @@ func NewController() (*Controller, error) {
 	}
 	controller.Namespace = ns
 
-	mgr, err := manager.New(controller.config, manager.Options{Namespace: controller.Namespace})
+	mgr, err := manager.New(controller.config, manager.Options{Namespace: controller.Namespace, MetricsBindAddress: "0"})
 	if err != nil {
 		return controller, err
 	}
