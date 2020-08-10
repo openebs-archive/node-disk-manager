@@ -100,7 +100,7 @@ func main() {
 	reconInterval := ReconciliationInterval
 
 	// Create a new Cmd to provide shared dependencies and start components
-	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &reconInterval})
+	mgr, err := manager.New(cfg, manager.Options{Namespace: namespace, SyncPeriod: &reconInterval, MetricsBindAddress: "0"})
 	if err != nil {
 		klog.Errorf("Failed to create a new manager: %v", err)
 		os.Exit(1)
