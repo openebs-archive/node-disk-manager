@@ -29,7 +29,9 @@ import (
 type DeviceInfo struct {
 	// NodeAttributes is the attributes of the node to which this block device is attached,
 	// like hostname, nodename
-	NodeAttributes     bd.NodeAttribute
+	NodeAttributes bd.NodeAttribute
+	// Optional labels that can be added to the blockdevice resource
+	Labels             map[string]string
 	UUID               string   // UUID of backing disk
 	Capacity           uint64   // Capacity of blockdevice
 	Model              string   // Do blockdevice have model ??
@@ -86,6 +88,10 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 	objectMeta.Labels[KubernetesHostNameLabel] = di.NodeAttributes[HostNameKey]
 	objectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	objectMeta.Labels[NDMManagedKey] = TrueString
+	// adding custom labels
+	for k, v := range di.Labels {
+		objectMeta.Labels[k] = v
+	}
 	return objectMeta
 }
 
