@@ -1,3 +1,9 @@
+v0.8.0-RC2 / 2020-08-12
+========================
+* disable metrics server of controller runtime by default. ([#473](https://github.com/openebs/node-disk-manager/pull/473),[@akhilerm](https://github.com/akhilerm))
+
+
+
 v0.8.0-RC1 / 2020-08-10
 ========================
 * Upgrade go version to 1.14 ([#459](https://github.com/openebs/node-disk-manager/pull/459),[@harshthakur9030](https://github.com/harshthakur9030))
