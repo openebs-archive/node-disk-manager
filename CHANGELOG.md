@@ -1,7 +1,19 @@
+v0.8.0-RC2 / 2020-08-14
+========================
+* Upgrade go version to 1.14 ([#459](https://github.com/openebs/node-disk-manager/pull/459),[@harshthakur9030](https://github.com/harshthakur9030))
+* Remove dependency on gox and instead use native go build. ([#456](https://github.com/openebs/node-disk-manager/pull/456),[@harshthakur9030](https://github.com/harshthakur9030))
+* Make udev scan operation thread safe. ([#455](https://github.com/openebs/node-disk-manager/pull/455),[@harshthakur9030](https://github.com/harshthakur9030))
+* remove v prefix from all image tags ([#467](https://github.com/openebs/node-disk-manager/pull/467),[@akhilerm](https://github.com/akhilerm))
+* automate migration of blockdevices from legacy UUID to GPT Based UUID ([#442](https://github.com/openebs/node-disk-manager/pull/442),[@akhilerm](https://github.com/akhilerm))
+* API Service to provide additional functionality ([#433](https://github.com/openebs/node-disk-manager/pull/433),[@harshthakur9030](https://github.com/harshthakur9030))
+* fix running cleanup job for sparse blockdevices. ([#463](https://github.com/openebs/node-disk-manager/pull/463),[@akhilerm](https://github.com/akhilerm))
+* update the project dependencies (k8s: 1.17.4, controller-runtime: 0.5.2, operator-sdk: 0.17.0) ([#365](https://github.com/openebs/node-disk-manager/pull/365),[@akhilerm](https://github.com/akhilerm))
+* disable metrics server of controller runtime by default. ([#473](https://github.com/openebs/node-disk-manager/pull/473),[@akhilerm](https://github.com/akhilerm))
+
+
 v0.8.0-RC2 / 2020-08-12
 ========================
 * disable metrics server of controller runtime by default. ([#473](https://github.com/openebs/node-disk-manager/pull/473),[@akhilerm](https://github.com/akhilerm))
-
 
 
 v0.8.0-RC1 / 2020-08-10
