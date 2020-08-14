@@ -130,5 +130,9 @@ This project is implemented using Go and uses the standard golang tools for deve
 
 For setting up a Development environment on your local host, see the detailed instructions [here](./BUILD.md).
 
-The NDM design document is available [here](./docs/design.md).
-
+## Design documents
+The following are the design documents and flow diagrams of major components in NDM:
+- [NDM design doc](./docs/design.md).
+- [Disk cleanup design doc](./docs/cleanup-design.md).
+- [NDM Exporter design doc](./docs/exporter.md).
+- [API service design doc](./docs/api-service-dev.md).
