@@ -65,7 +65,7 @@ docker.buildx.ndm:
 		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
 	fi
 	@docker buildx build --platform ${PLATFORMS} \
-		-t "$(DOCKERX_IMAGE_NDM)" ${DBUILD_ARGS} -f ndm-daemonset.Dockerfile \
+		-t "$(DOCKERX_IMAGE_NDM)" ${DBUILD_ARGS} -f "build/ndm-daemonset/Dockerfile" \
 		. ${PUSH_ARG}
 	@echo "--> Build docker image: $(DOCKERX_IMAGE_NDM)"
 	@echo
@@ -85,7 +85,7 @@ docker.buildx.ndo:
 		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
 	fi
 	@docker buildx build --platform ${PLATFORMS} \
-		-t "$(DOCKERX_IMAGE_NDO)" ${DBUILD_ARGS} -f ndm-operator.Dockerfile \
+		-t "$(DOCKERX_IMAGE_NDO)" ${DBUILD_ARGS} -f "build/ndm-operator/Dockerfile" \
 		. ${PUSH_ARG}
 	@echo "--> Build docker image: $(DOCKERX_IMAGE_NDO)"
 	@echo
@@ -105,7 +105,7 @@ docker.buildx.exporter:
 		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
 	fi
 	@docker buildx build --platform ${PLATFORMS} \
-		-t "$(DOCKERX_IMAGE_EXPORTER)" ${DBUILD_ARGS} -f ndm-exporter.Dockerfile \
+		-t "$(DOCKERX_IMAGE_EXPORTER)" ${DBUILD_ARGS} -f "build/ndm-exporter/Dockerfile" \
 		. ${PUSH_ARG}
 	@echo "--> Build docker image: $(DOCKERX_IMAGE_EXPORTER)"
 	@echo
