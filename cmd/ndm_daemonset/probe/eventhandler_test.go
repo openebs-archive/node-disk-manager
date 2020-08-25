@@ -18,13 +18,14 @@ package probe
 
 import (
 	"fmt"
-	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
 
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -33,14 +34,13 @@ import (
 )
 
 var (
-	//mockDiskuid    = "disk-fake-uid"
 	mockBDuid      = "blockdevice-fake-uid"
 	ignoreDiskUuid = "ignore-disk-uuid"
 	fakeHostName   = "node-name"
 	fakeModel      = "fake-disk-model"
 	fakeSerial     = "fake-disk-serial"
 	fakeVendor     = "fake-disk-vendor"
-	fakeDiskType   = "disk"
+	fakeWWN        = "fake-WWN"
 	fakeBDType     = "blockdevice"
 )
 
