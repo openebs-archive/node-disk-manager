@@ -106,6 +106,10 @@ func generateLegacyUUID(bd blockdevice.BlockDevice) (string, bool) {
 
 // generateUUIDFromPartitionTable generates a blockdevice uuid from the partition table uuid.
 // currently this is only used by zfs localPV
+//
+//TODO, this currently supports cases where a complete disk is used for ZFS localPV. If multiple
+// partitions on the same disk are used for pools, each one should be shown as a separate BD.
+// For achieving that partition uuid can be used, same as used in the generic UUID generation algorithm
 func generateUUIDFromPartitionTable(bd blockdevice.BlockDevice) (string, bool) {
 	uuidField := bd.PartitionInfo.PartitionTableUUID
 	if len(uuidField) > 0 {

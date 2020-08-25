@@ -411,7 +411,7 @@ func (pe *ProbeEvent) upgradeDeviceInUseByCStor(bd blockdevice.BlockDevice, bdAP
 	}
 
 	if existingLegacyBD == nil {
-		// create device with fs annotation and legacy annotation
+		// create device with partition annotation and legacy annotation
 		// the custom create / update method should be called here
 		// no further processing is required
 		bd.UUID = legacyUUID
