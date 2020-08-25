@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This Dockerfile builds node-disk-manager
+# This Dockerfile builds ndm operator
 #
-FROM golang:1.14 as build
+FROM golang:1.14.7 as build
 
 ARG TARGETPLATFORM
 
@@ -32,7 +32,7 @@ COPY . .
 RUN export GOOS=$(echo ${TARGETPLATFORM} | cut -d / -f1) && \
   export GOARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2) && \
   GOARM=$(echo ${TARGETPLATFORM} | cut -d / -f3 | cut -c2-) && \
-  make buildx.ndm
+  make buildx.ndo
 
 FROM ubuntu
 
@@ -41,13 +41,12 @@ ARG DBUILD_REPO_URL
 ARG DBUILD_SITE_URL
 
 LABEL org.label-schema.schema-version="1.0"
-LABEL org.label-schema.name="node-disk-manager"
-LABEL org.label-schema.description="OpenEBS Node Disk Manager"
+LABEL org.label-schema.name="node-disk-operator"
+LABEL org.label-schema.description="OpenEBS NDM Operator"
 LABEL org.label-schema.build-date=$DBUILD_DATE
 LABEL org.label-schema.vcs-url=$DBUILD_REPO_URL
 LABEL org.label-schema.url=$DBUILD_SITE_URL
 
-COPY --from=build /go/src/github.com/openebs/node-disk-manager/bin/ndm /usr/sbin/ndm
-COPY --from=build /go/src/github.com/openebs/node-disk-manager/build/ndm-daemonset/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --from=build /go/src/github.com/openebs/node-disk-manager/bin/ndo /usr/local/bin/ndo
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/ndo"]
