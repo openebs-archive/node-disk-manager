@@ -34,6 +34,8 @@ const (
 type NodeDiskManagerConfig struct {
 	ProbeConfigs  []ProbeConfig  `json:"probeconfigs"`  // ProbeConfigs contains configs of Probes
 	FilterConfigs []FilterConfig `json:"filterconfigs"` // FilterConfigs contains configs of Filters
+	// TagConfigs contains configs for tags
+	TagConfigs []TagConfig `json:"tagconfigs"`
 }
 
 // ProbeConfig contains configs of Probe
@@ -50,6 +52,13 @@ type FilterConfig struct {
 	State   string `json:"state"`   // State is state of Filter
 	Include string `json:"include"` // Include contains , separated values which we want to include for filter
 	Exclude string `json:"exclude"` // Exclude contains , separated values which we want to exclude for filter
+}
+
+type TagConfig struct {
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Pattern string `json:"pattern"`
+	TagName string `json:"tag"`
 }
 
 // SetNDMConfig sets config for probes and filters which user provides via configmap. If

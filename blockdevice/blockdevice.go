@@ -97,6 +97,10 @@ type BlockDevice struct {
 	// the BlockDevice is attached
 	NodeAttributes NodeAttribute
 
+	// Labels for this blockdevice. These labels will be used on the k8s resource that is created
+	// optional
+	Labels map[string]string
+
 	// FSInfo contains the file system related information of this
 	// BlockDevice if it exists
 	FSInfo FileSystemInformation
