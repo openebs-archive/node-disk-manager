@@ -67,7 +67,7 @@ var mountProbeRegister = func() {
 		pi:         &mountProbe{Controller: ctrl},
 		controller: ctrl,
 	}
-	// Here we register the probe (smart probe in this case)
+	// Here we register the probe (mount probe in this case)
 	newRegisterProbe.register()
 }
 
