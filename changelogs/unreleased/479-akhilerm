@@ -1,0 +1,1 @@
+fix a bug where NDM operator crashes if a claimed BD is manually deleted

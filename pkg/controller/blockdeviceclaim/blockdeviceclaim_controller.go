@@ -298,6 +298,15 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 			break
 		}
 	}
+	// This case occurs when a claimed BD is manually deleted by removing the finalizer.
+	// If this check is not performed, the NDM operator will continuously crash, because it
+	// will try to release a non existent BD.
+	if claimedBd == nil {
+		r.recorder.Eventf(instance, corev1.EventTypeWarning, "BlockDeviceNotFound", "BlockDevice %s not found for releasing", instance.Spec.BlockDeviceName)
+		klog.Errorf("could not find blockdevice for claim: %s", instance.Name)
+		return fmt.Errorf("blockdevice: %s not found for releasing from bdc: %s", instance.Spec.BlockDeviceName, instance.Name)
+	}
+
 	dvr := claimedBd.DeepCopy()
 	dvr.Spec.ClaimRef = nil
 	dvr.Status.ClaimState = apis.BlockDeviceReleased
