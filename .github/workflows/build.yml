@@ -31,6 +31,9 @@ jobs:
           pattern: '*.sh'
           exclude: './.git/*,./vendor/*'
 
+      - name: License Check
+        run: make license-check-go
+
   unit-test:
     runs-on: ubuntu-latest
     steps:
