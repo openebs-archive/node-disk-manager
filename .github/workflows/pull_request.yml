@@ -37,6 +37,9 @@ jobs:
           pattern: '*.sh'
           exclude: './vendor/*'
 
+      - name: License Check
+        run: make license-check-go
+
   unit-test:
     runs-on: ubuntu-latest
     steps:
