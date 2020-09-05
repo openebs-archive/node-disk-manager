@@ -122,7 +122,7 @@ DOCKER_IMAGE_EXPORTER:=${IMAGE_ORG}/node-disk-exporter-${XC_ARCH}:ci
 build: clean build.common docker.ndm docker.ndo docker.exporter
 
 .PHONY: build.common
-build.common: license-check-go version
+build.common: license-check version
 
 # If there are any external tools need to be used, they can be added by defining a EXTERNAL_TOOLS variable 
 # Bootstrap the build by downloading additional tools
@@ -266,11 +266,11 @@ clean: header
 	@echo '--> Done cleaning.'
 	@echo
 
-.PHONY: license-check-go
-license-check-go:
+.PHONY: license-check
+license-check:
 	@echo "--> Checking license header..."
-	@licRes=$$(for file in $$(find . -type f -iname '*.go' ! -path './vendor/*' ) ; do \
-               awk 'NR<=3' $$file | grep -Eq "(Copyright|generated|GENERATED)" || echo $$file; \
+	@licRes=$$(for file in $$(find . -type f -regex '.*\.sh\|.*\.go\|.*Docker.*\|.*\Makefile*' ! -path './vendor/*' ) ; do \
+               awk 'NR<=5' $$file | grep -Eq "(Copyright|generated|GENERATED)" || echo $$file; \
        done); \
        if [ -n "$${licRes}" ]; then \
                echo "license header checking failed:"; echo "$${licRes}"; \
