@@ -17,8 +17,9 @@ limitations under the License.
 package filter
 
 import (
-	"k8s.io/klog"
 	"strings"
+
+	"k8s.io/klog"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -67,7 +68,7 @@ var oSDiskExcludeFilterRegister = func() {
 // oSDiskExcludeFilter controller and path of os disk
 type oSDiskExcludeFilter struct {
 	controller     *controller.Controller
-	excludeDevPath string
+	excludeDevPath []string
 }
 
 // newOsDiskFilter returns new pointer osDiskFilter
@@ -90,7 +91,7 @@ func (odf *oSDiskExcludeFilter) Start() {
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
 			klog.Error(err)
 		} else {
-			odf.excludeDevPath = devPath
+			odf.excludeDevPath = append(odf.excludeDevPath, devPath)
 			return
 		}
 	}
@@ -103,7 +104,7 @@ func (odf *oSDiskExcludeFilter) Start() {
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
 			klog.Error(err)
 		} else {
-			odf.excludeDevPath = devPath
+			odf.excludeDevPath = append(odf.excludeDevPath, devPath)
 			return
 		}
 	}
@@ -120,14 +121,19 @@ func (odf *oSDiskExcludeFilter) Exclude(blockDevice *blockdevice.BlockDevice) bo
 	// The partitionRegex is chosen depending on whether the device uses
 	// the p[0-9] partition naming structure or not.
 	var partitionRegex string
-	if util.IsMatchRegex(".+[0-9]+$", odf.excludeDevPath) {
-		// matches loop0, loop0p1, nvme3n0p1
-		partitionRegex = "(p[0-9]+)?$"
-	} else {
-		// matches sda, sda1
-		partitionRegex = "[0-9]*$"
+	for i := range odf.excludeDevPath {
+		if util.IsMatchRegex(".+[0-9]+$", odf.excludeDevPath[i]) {
+			// matches loop0, loop0p1, nvme3n0p1
+			partitionRegex = "(p[0-9]+)?$"
+		} else {
+			// matches sda, sda1
+			partitionRegex = "[0-9]*$"
+		}
+		regex := "^" + odf.excludeDevPath[i] + partitionRegex
+		klog.Infof("applying os-filter regex %s on %s", regex, blockDevice.DevPath)
+		if util.IsMatchRegex(regex, blockDevice.DevPath) {
+			return false
+		}
 	}
-	regex := "^" + odf.excludeDevPath + partitionRegex
-	klog.Infof("applying os-filter regex %s on %s", regex, blockDevice.DevPath)
-	return !util.IsMatchRegex(regex, blockDevice.DevPath)
+	return true
 }

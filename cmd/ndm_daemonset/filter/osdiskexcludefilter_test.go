@@ -17,9 +17,10 @@ limitations under the License.
 package filter
 
 import (
-	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
+
+	"github.com/openebs/node-disk-manager/blockdevice"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
@@ -42,7 +43,7 @@ func TestOsDiskFilterRegister(t *testing.T) {
 	oSDiskExcludeFilterRegister()
 	var fi controller.FilterInterface = &oSDiskExcludeFilter{
 		controller:     fakeController,
-		excludeDevPath: diskDetails.DevNode,
+		excludeDevPath: []string{diskDetails.DevNode},
 	}
 	filter := &controller.Filter{
 		Name:      oSDiskExcludeFilterName,
@@ -70,7 +71,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 		expected bool
 	}{
 		"exclude path is /dev/sda and device path is /dev/sda": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/sda"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sda",
@@ -78,8 +79,17 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			},
 			expected: false,
 		},
-		"exclude path is /dev/sda and  device path is /dev/sda1": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+		"exclude path is /dev/sda and device path is /dev/sda1": {
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/sda"}},
+			disk: &blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda1",
+				},
+			},
+			expected: false,
+		},
+		"exclude path are /dev/sda, /dev/sdb and device path is /dev/sdb1": {
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/sda", "/dev/sdb"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sda1",
@@ -88,7 +98,16 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			expected: false,
 		},
 		"exclude path is /dev/sda and device path is /dev/sdaa": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/sda"}},
+			disk: &blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sdaa",
+				},
+			},
+			expected: true,
+		},
+		"exclude path are /dev/sda, /dev/sdb and device path is /dev/sdba": {
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/sda", "/dev/sdb"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sdaa",
@@ -97,7 +116,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			expected: true,
 		},
 		"exclude path is /dev/sda and device path is /dev/sdap1": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/sda"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sdap1",
@@ -106,7 +125,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			expected: true,
 		},
 		"exclude path is /dev/sda and device path is /dev/sda1p1": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/sda"},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/sda"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sda1p1",
@@ -115,7 +134,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			expected: true,
 		},
 		"exclude path is /dev/loop0 and device path is /dev/loop0p1": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/loop0"},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/loop0"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/loop0p1",
@@ -124,7 +143,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			expected: false,
 		},
 		"exclude path is /dev/loop0 and device path is /dev/loop0": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/loop0"},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/loop0"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/loop0",
@@ -133,7 +152,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			expected: false,
 		},
 		"exclude path is /dev/nvme0n1 and device path is /dev/nvme0n12": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/nvme0n1"},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/nvme0n1"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/nvme0n12",
@@ -142,7 +161,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			expected: true,
 		},
 		"exclude path is /dev/nvme0n1 and device path is /dev/nvme0n1p0": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/nvme0n1"},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/nvme0n1"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/nvme0n1p0",
@@ -151,7 +170,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			expected: false,
 		},
 		"exclude path is /dev/vg0-lv0 and device path is /dev/vg0-lv0": {
-			filter: oSDiskExcludeFilter{excludeDevPath: "/dev/vg0-lv0"},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/vg0-lv0"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/vg0-lv0",
@@ -160,7 +179,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			expected: false,
 		},
 		"exclude path is empty and device path is /dev/sda": {
-			filter: oSDiskExcludeFilter{excludeDevPath: ""},
+			filter: oSDiskExcludeFilter{excludeDevPath: []string{""}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sda",
@@ -179,7 +198,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 func TestOsDiskExcludeFilterInclude(t *testing.T) {
 	fakeDiskPath := "fake-disk-path"
 	ignoreDiskPath := "ignore-disk-path"
-	fakeOsDiskFilter := oSDiskExcludeFilter{excludeDevPath: ignoreDiskPath}
+	fakeOsDiskFilter := oSDiskExcludeFilter{excludeDevPath: []string{ignoreDiskPath}}
 	disk1 := &blockdevice.BlockDevice{}
 	disk1.DevPath = fakeDiskPath
 	disk2 := &blockdevice.BlockDevice{}
