@@ -106,7 +106,7 @@ func TestOsDiskExcludeFilterExclude(t *testing.T) {
 			},
 			expected: true,
 		},
-		"exclude path are /dev/sda, /dev/sdb and device path is /dev/sdba": {
+		"exclude path are /dev/sda, /dev/sdb and device path is /dev/sdaa": {
 			filter: oSDiskExcludeFilter{excludeDevPath: []string{"/dev/sda", "/dev/sdb"}},
 			disk: &blockdevice.BlockDevice{
 				Identifier: blockdevice.Identifier{

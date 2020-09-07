@@ -92,7 +92,6 @@ func (odf *oSDiskExcludeFilter) Start() {
 			klog.Error(err)
 		} else {
 			odf.excludeDevPath = append(odf.excludeDevPath, devPath)
-			return
 		}
 	}
 	/*
@@ -105,7 +104,6 @@ func (odf *oSDiskExcludeFilter) Start() {
 			klog.Error(err)
 		} else {
 			odf.excludeDevPath = append(odf.excludeDevPath, devPath)
-			return
 		}
 	}
 	klog.Error("unable to apply os disk filter")
