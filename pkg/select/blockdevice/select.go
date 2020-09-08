@@ -47,17 +47,21 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 		FilterUnclaimed,
 		// do not consider any devices with legacy annotation for claiming
 		FilterOutLegacyAnnotation,
+		// remove block devices which do not have the blockdevice tag
+		// if selector is present on the BDC, select only those devices
+		// this applies to both manual and auto claiming.
+		FilterBlockDeviceTag,
 	}
 
 	if c.ManualSelection {
-		filterKeys = append(filterKeys, FilterBlockDeviceName)
+		filterKeys = append(filterKeys,
+			FilterBlockDeviceName,
+		)
 	} else {
 		filterKeys = append(filterKeys,
 			// Sparse BDs can be claimed only by manual selection. Therefore, all
 			// sparse BDs will be filtered out in auto mode
 			FilterOutSparseBlockDevices,
-			// remove block devices which do not have the blockdevice tag
-			FilterBlockDeviceTag,
 			FilterDeviceType,
 			FilterVolumeMode,
 			FilterNodeName,
