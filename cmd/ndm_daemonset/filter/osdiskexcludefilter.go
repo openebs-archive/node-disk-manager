@@ -19,12 +19,12 @@ package filter
 import (
 	"strings"
 
-	"k8s.io/klog"
-
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/util"
+
+	"k8s.io/klog"
 )
 
 const (
@@ -67,8 +67,8 @@ var oSDiskExcludeFilterRegister = func() {
 
 // oSDiskExcludeFilter controller and path of os disk
 type oSDiskExcludeFilter struct {
-	controller     *controller.Controller
-	excludeDevPath []string
+	controller      *controller.Controller
+	excludeDevPaths []string
 }
 
 // newOsDiskFilter returns new pointer osDiskFilter
@@ -91,7 +91,7 @@ func (odf *oSDiskExcludeFilter) Start() {
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
 			klog.Error(err)
 		} else {
-			odf.excludeDevPath = append(odf.excludeDevPath, devPath)
+			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
 		}
 	}
 	/*
@@ -103,7 +103,7 @@ func (odf *oSDiskExcludeFilter) Start() {
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
 			klog.Error(err)
 		} else {
-			odf.excludeDevPath = append(odf.excludeDevPath, devPath)
+			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
 		}
 	}
 	klog.Error("unable to apply os disk filter")
@@ -114,20 +114,20 @@ func (odf *oSDiskExcludeFilter) Include(blockDevice *blockdevice.BlockDevice) bo
 	return true
 }
 
-// Exclude returns true if disk devpath does not match with excludeDevPath
+// Exclude returns true if disk devpath does not match with excludeDevPaths
 func (odf *oSDiskExcludeFilter) Exclude(blockDevice *blockdevice.BlockDevice) bool {
 	// The partitionRegex is chosen depending on whether the device uses
 	// the p[0-9] partition naming structure or not.
 	var partitionRegex string
-	for i := range odf.excludeDevPath {
-		if util.IsMatchRegex(".+[0-9]+$", odf.excludeDevPath[i]) {
+	for i := range odf.excludeDevPaths {
+		if util.IsMatchRegex(".+[0-9]+$", odf.excludeDevPaths[i]) {
 			// matches loop0, loop0p1, nvme3n0p1
 			partitionRegex = "(p[0-9]+)?$"
 		} else {
 			// matches sda, sda1
 			partitionRegex = "[0-9]*$"
 		}
-		regex := "^" + odf.excludeDevPath[i] + partitionRegex
+		regex := "^" + odf.excludeDevPaths[i] + partitionRegex
 		klog.Infof("applying os-filter regex %s on %s", regex, blockDevice.DevPath)
 		if util.IsMatchRegex(regex, blockDevice.DevPath) {
 			return false
