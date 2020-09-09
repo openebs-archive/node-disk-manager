@@ -119,15 +119,15 @@ func (odf *oSDiskExcludeFilter) Exclude(blockDevice *blockdevice.BlockDevice) bo
 	// The partitionRegex is chosen depending on whether the device uses
 	// the p[0-9] partition naming structure or not.
 	var partitionRegex string
-	for i := range odf.excludeDevPaths {
-		if util.IsMatchRegex(".+[0-9]+$", odf.excludeDevPaths[i]) {
+	for _, excludeDevPath := range odf.excludeDevPaths {
+		if util.IsMatchRegex(".+[0-9]+$", excludeDevPath) {
 			// matches loop0, loop0p1, nvme3n0p1
 			partitionRegex = "(p[0-9]+)?$"
 		} else {
 			// matches sda, sda1
 			partitionRegex = "[0-9]*$"
 		}
-		regex := "^" + odf.excludeDevPaths[i] + partitionRegex
+		regex := "^" + excludeDevPath + partitionRegex
 		klog.Infof("applying os-filter regex %s on %s", regex, blockDevice.DevPath)
 		if util.IsMatchRegex(regex, blockDevice.DevPath) {
 			return false
