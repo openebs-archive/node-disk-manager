@@ -1,4 +1,13 @@
-v0.8.0-RC2 / 2020-08-14
+v0.8.1-RC1 / 2020-09-10
+========================
+* add support to add custom tag to blockdevices based on config ([#475](https://github.com/openebs/node-disk-manager/pull/475),[@akhilerm](https://github.com/akhilerm))
+* fix a bug where NDM operator crashes if a claimed BD is manually deleted ([#479](https://github.com/openebs/node-disk-manager/pull/479),[@akhilerm](https://github.com/akhilerm))
+* update go version to 1.14.7 ([#476](https://github.com/openebs/node-disk-manager/pull/476),[@akhilerm](https://github.com/akhilerm))
+* add additional check to exclude blockdevices with tag while manual claiming ([#404](https://github.com/openebs/node-disk-manager/pull/404),[@akhilerm](https://github.com/akhilerm))
+
+
+
+v0.8.0 / 2020-08-14
 ========================
 * Upgrade go version to 1.14 ([#459](https://github.com/openebs/node-disk-manager/pull/459),[@harshthakur9030](https://github.com/harshthakur9030))
 * Remove dependency on gox and instead use native go build. ([#456](https://github.com/openebs/node-disk-manager/pull/456),[@harshthakur9030](https://github.com/harshthakur9030))
