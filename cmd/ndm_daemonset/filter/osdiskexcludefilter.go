@@ -17,13 +17,14 @@ limitations under the License.
 package filter
 
 import (
-	"k8s.io/klog"
 	"strings"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/util"
+
+	"k8s.io/klog"
 )
 
 const (
@@ -66,8 +67,8 @@ var oSDiskExcludeFilterRegister = func() {
 
 // oSDiskExcludeFilter controller and path of os disk
 type oSDiskExcludeFilter struct {
-	controller     *controller.Controller
-	excludeDevPath string
+	controller      *controller.Controller
+	excludeDevPaths []string
 }
 
 // newOsDiskFilter returns new pointer osDiskFilter
@@ -88,10 +89,10 @@ func (odf *oSDiskExcludeFilter) Start() {
 	for _, mountPoint := range mountPoints {
 		mountPointUtil := mount.NewMountUtil(hostMountFilePath, "", mountPoint)
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
+			klog.Errorf("unable to configure os disk filter for mountpoint: %s, error: %v", mountPoint, err)
 			klog.Error(err)
 		} else {
-			odf.excludeDevPath = devPath
-			return
+			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
 		}
 	}
 	/*
@@ -101,13 +102,13 @@ func (odf *oSDiskExcludeFilter) Start() {
 	for _, mountPoint := range mountPoints {
 		mountPointUtil := mount.NewMountUtil(defaultMountFilePath, "", mountPoint)
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
+			klog.Errorf("unable to configure os disk filter for mountpoint: %s, error: %v", mountPoint, err)
 			klog.Error(err)
 		} else {
-			odf.excludeDevPath = devPath
-			return
+			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
 		}
 	}
-	klog.Error("unable to apply os disk filter")
+
 }
 
 // Include contains nothing by default it returns false
@@ -115,19 +116,24 @@ func (odf *oSDiskExcludeFilter) Include(blockDevice *blockdevice.BlockDevice) bo
 	return true
 }
 
-// Exclude returns true if disk devpath does not match with excludeDevPath
+// Exclude returns true if disk devpath does not match with excludeDevPaths
 func (odf *oSDiskExcludeFilter) Exclude(blockDevice *blockdevice.BlockDevice) bool {
 	// The partitionRegex is chosen depending on whether the device uses
 	// the p[0-9] partition naming structure or not.
 	var partitionRegex string
-	if util.IsMatchRegex(".+[0-9]+$", odf.excludeDevPath) {
-		// matches loop0, loop0p1, nvme3n0p1
-		partitionRegex = "(p[0-9]+)?$"
-	} else {
-		// matches sda, sda1
-		partitionRegex = "[0-9]*$"
+	for _, excludeDevPath := range odf.excludeDevPaths {
+		if util.IsMatchRegex(".+[0-9]+$", excludeDevPath) {
+			// matches loop0, loop0p1, nvme3n0p1
+			partitionRegex = "(p[0-9]+)?$"
+		} else {
+			// matches sda, sda1
+			partitionRegex = "[0-9]*$"
+		}
+		regex := "^" + excludeDevPath + partitionRegex
+		klog.Infof("applying os-filter regex %s on %s", regex, blockDevice.DevPath)
+		if util.IsMatchRegex(regex, blockDevice.DevPath) {
+			return false
+		}
 	}
-	regex := "^" + odf.excludeDevPath + partitionRegex
-	klog.Infof("applying os-filter regex %s on %s", regex, blockDevice.DevPath)
-	return !util.IsMatchRegex(regex, blockDevice.DevPath)
+	return true
 }
