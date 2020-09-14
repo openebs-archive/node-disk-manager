@@ -1,0 +1,39 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: blockdevices.openebs.io
+spec:
+  additionalPrinterColumns:
+    - JSONPath: .spec.nodeAttributes.nodeName
+      name: NodeName
+      type: string
+    - JSONPath: .spec.path
+      name: Path
+      priority: 1
+      type: string
+    - JSONPath: .spec.filesystem.fsType
+      name: FSType
+      priority: 1
+      type: string
+    - JSONPath: .spec.capacity.storage
+      name: Size
+      type: string
+    - JSONPath: .status.claimState
+      name: ClaimState
+      type: string
+    - JSONPath: .status.state
+      name: Status
+      type: string
+    - JSONPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+  group: openebs.io
+  version: v1alpha1
+  scope: Namespaced
+  names:
+    kind: BlockDevice
+    listKind: BlockDeviceList
+    plural: blockdevices
+    singular: blockdevice
+    shortNames:
+      - bd
