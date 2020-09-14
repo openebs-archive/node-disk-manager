@@ -89,6 +89,7 @@ func (odf *oSDiskExcludeFilter) Start() {
 	for _, mountPoint := range mountPoints {
 		mountPointUtil := mount.NewMountUtil(hostMountFilePath, "", mountPoint)
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
+			klog.Error("unable to apply os disk filter")
 			klog.Error(err)
 		} else {
 			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
@@ -101,12 +102,13 @@ func (odf *oSDiskExcludeFilter) Start() {
 	for _, mountPoint := range mountPoints {
 		mountPointUtil := mount.NewMountUtil(defaultMountFilePath, "", mountPoint)
 		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
+			klog.Error("unable to apply os disk filter")
 			klog.Error(err)
 		} else {
 			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
 		}
 	}
-	klog.Error("unable to apply os disk filter")
+
 }
 
 // Include contains nothing by default it returns false
