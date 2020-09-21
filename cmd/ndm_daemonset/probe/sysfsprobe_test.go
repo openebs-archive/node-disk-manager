@@ -15,29 +15,3 @@ limitations under the License.
 */
 
 package probe
-
-import (
-	"os"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func TestReadSysFSFileAsInt64(t *testing.T) {
-	tempSysPath := "/tmp"
-	os.MkdirAll(tempSysPath+"/queue", 0700)
-	file, err := os.Create(tempSysPath + "/queue/hw_sector_size")
-	if err != nil {
-		t.Fatalf("unable to write file to %s %v", tempSysPath, err)
-		return
-	}
-	file.Write([]byte("10"))
-	file.Close()
-
-	value, err := readSysFSFileAsInt64(tempSysPath + "/queue/hw_sector_size")
-	if err != nil {
-		t.Fatalf("unable to read file to %s %v", tempSysPath, err)
-		return
-	}
-	assert.Equal(t, value, int64(10))
-}

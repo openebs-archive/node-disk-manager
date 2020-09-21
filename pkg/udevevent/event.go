@@ -19,7 +19,7 @@ package udevevent
 import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	"github.com/openebs/node-disk-manager/pkg/hierarchy"
+	"github.com/openebs/node-disk-manager/pkg/sysfs"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"k8s.io/klog"
 )
@@ -69,16 +69,18 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 	// fields used for dependents. dependents cannot be obtained while
 	// removing the device since sysfs entry will be absent
 	if action != libudevwrapper.UDEV_ACTION_REMOVE {
-		devicePath := hierarchy.Device{
-			Path: deviceDetails.DevPath,
-		}
-		dependents, err := devicePath.GetDependents()
-		// TODO if error occurs need to do a scan from the beginning
+		sysfsDevice, err := sysfs.NewSysFsDeviceFromDevPath(deviceDetails.DevPath)
 		if err != nil {
-			klog.Errorf("could not get dependents for %s, %v", devicePath, err)
+			klog.Errorf("could not get sysfs device for %s", deviceDetails.DevPath)
+		} else {
+			dependents, err := sysfsDevice.GetDependents()
+			// TODO if error occurs need to do a scan from the beginning
+			if err != nil {
+				klog.Errorf("could not get dependents for %s, %v", deviceDetails.DevPath, err)
+			}
+			deviceDetails.DependentDevices = dependents
+			klog.V(4).Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 		}
-		deviceDetails.DependentDevices = dependents
-		klog.V(4).Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 	}
 
 	diskInfo = append(diskInfo, deviceDetails)

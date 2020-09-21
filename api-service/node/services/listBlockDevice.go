@@ -20,7 +20,7 @@ import (
 	"github.com/openebs/node-disk-manager/api-service/node"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-	"github.com/openebs/node-disk-manager/pkg/hierarchy"
+	"github.com/openebs/node-disk-manager/pkg/sysfs"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
 
@@ -158,8 +158,12 @@ func GetAllTypes(BL *v1alpha1.BlockDeviceList) error {
 		}
 
 		// GetDependents should not be called on sparse devices, hence this block comes later.
-		device := hierarchy.Device{Path: bd.Spec.Path}
-		depDevices, err := device.GetDependents()
+		sysfsDevice, err := sysfs.NewSysFsDeviceFromDevPath(bd.Spec.Path)
+		if err != nil {
+			klog.Errorf("could not get sysfs device for %s", bd.Spec.Path)
+			continue
+		}
+		depDevices, err := sysfsDevice.GetDependents()
 		if err != nil {
 			klog.Errorf("Error fetching dependents of the disk name: %v, err: %v", bd.Spec.Path, err)
 			continue

@@ -24,12 +24,9 @@ https://www.kernel.org/doc/Documentation/block/queue-sysfs.txt
 package probe
 
 import (
-	"io/ioutil"
-	"strconv"
-	"strings"
-
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/pkg/sysfs"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
 )
@@ -37,10 +34,6 @@ import (
 const (
 	sysfsProbePriority = 2
 	sysfsConfigKey     = "sysfs-probe"
-	// sectorSize is the sector size as understood by the unix systems.
-	// It is kept as 512 bytes. all entries in /sys/class/block/sda/size
-	// are in 512 byte blocks
-	sectorSize int64 = 512
 )
 
 var (
@@ -90,84 +83,65 @@ func (cp *sysfsProbe) Start() {}
 // physical sector size, drive type(ssd or hdd) of the disk
 // if those are not populated.
 func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
-	sysPath := blockDevice.SysPath
+
+	sysFsDevice, err := sysfs.NewSysFsDeviceFromDevPath(blockDevice.DevPath)
+	if err != nil {
+		klog.Errorf("unable to get sysfs device for device: %s, err: %v", blockDevice.DevPath, err)
+	}
 
 	if blockDevice.DeviceAttributes.LogicalBlockSize == 0 {
-		logicalBlockSize, err := readSysFSFileAsInt64(sysPath + "/queue/logical_block_size")
+		logicalBlockSize, err := sysFsDevice.GetLogicalBlockSize()
 		if err != nil {
-			klog.Warning("unable to read logical block size", err)
-		} else if logicalBlockSize != 0 {
-			blockDevice.DeviceAttributes.LogicalBlockSize = uint32(logicalBlockSize)
-			klog.V(4).Infof("blockdevice path: %s logical block size :%d filled by sysfs probe.",
-				blockDevice.DevPath, blockDevice.DeviceAttributes.LogicalBlockSize)
+			klog.Warningf("unable to get logical block size for device: %s, err: %v", blockDevice.DevPath, err)
+		} else if logicalBlockSize == 0 {
+			klog.Warningf("logical block size for device: %s reported as 0", blockDevice.DevPath)
 		}
+		blockDevice.DeviceAttributes.LogicalBlockSize = uint32(logicalBlockSize)
+		klog.V(4).Infof("blockdevice path: %s logical block size :%d filled by sysfs probe.",
+			blockDevice.DevPath, blockDevice.DeviceAttributes.LogicalBlockSize)
 	}
 
 	if blockDevice.DeviceAttributes.PhysicalBlockSize == 0 {
-		physicalBlockSize, err := readSysFSFileAsInt64(sysPath + "/queue/physical_block_size")
+		physicalBlockSize, err := sysFsDevice.GetPhysicalBlockSize()
 		if err != nil {
-			klog.Warning("unable to read physical block size", err)
-		} else if physicalBlockSize != 0 {
-			blockDevice.DeviceAttributes.PhysicalBlockSize = uint32(physicalBlockSize)
-			klog.V(4).Infof("blockdevice path: %s physical block size :%d filled by sysfs probe.",
-				blockDevice.DevPath, blockDevice.DeviceAttributes.PhysicalBlockSize)
+			klog.Warningf("unable to get physical block size for device: %s, err: %v", blockDevice.DevPath, err)
+		} else if physicalBlockSize == 0 {
+			klog.Warningf("physical block size for device: %s reported as 0", blockDevice.DevPath)
 		}
+		blockDevice.DeviceAttributes.PhysicalBlockSize = uint32(physicalBlockSize)
+		klog.V(4).Infof("blockdevice path: %s physical block size :%d filled by sysfs probe.",
+			blockDevice.DevPath, blockDevice.DeviceAttributes.PhysicalBlockSize)
 	}
 
 	if blockDevice.DeviceAttributes.HardwareSectorSize == 0 {
-		hwSectorSize, err := readSysFSFileAsInt64(sysPath + "/queue/hw_sector_size")
+		hwSectorSize, err := sysFsDevice.GetPhysicalBlockSize()
 		if err != nil {
-			klog.Warning("unable to read hardware sector size", err)
-		} else if hwSectorSize != 0 {
-			blockDevice.DeviceAttributes.HardwareSectorSize = uint32(hwSectorSize)
-			klog.V(4).Infof("blockdevice path: %s hardware sector size :%d filled by sysfs probe.",
-				blockDevice.DevPath, blockDevice.DeviceAttributes.PhysicalBlockSize)
+			klog.Warningf("unable to get hardware sector size for device: %s, err: %v", blockDevice.DevPath, err)
+		} else if hwSectorSize == 0 {
+			klog.Warningf("hardware sector size for device: %s reported as 0", blockDevice.DevPath)
 		}
+		blockDevice.DeviceAttributes.HardwareSectorSize = uint32(hwSectorSize)
+		klog.V(4).Infof("blockdevice path: %s hardware sector size :%d filled by sysfs probe.",
+			blockDevice.DevPath, blockDevice.DeviceAttributes.HardwareSectorSize)
 	}
 
 	if blockDevice.DeviceAttributes.DriveType == "" {
-		rotational, err := readSysFSFileAsInt64(sysPath + "/queue/rotational")
+		driveType, err := sysFsDevice.GetDriveType()
 		if err != nil {
-			klog.Warning("unable to read rotational value", err)
-		} else {
-			if rotational == 1 {
-				blockDevice.DeviceAttributes.DriveType = "HDD"
-
-			} else if rotational == 0 {
-				blockDevice.DeviceAttributes.DriveType = "SSD"
-			}
-			klog.V(4).Infof("blockdevice path: %s drive type :%s filled by sysfs probe.",
-				blockDevice.DevPath, blockDevice.DeviceAttributes.DriveType)
+			klog.Warningf("unable to get drive type for device: %s, err: %v", blockDevice.DevPath, err)
 		}
+		blockDevice.DeviceAttributes.DriveType = driveType
+		klog.V(4).Infof("blockdevice path: %s drive type :%s filled by sysfs probe.",
+			blockDevice.DevPath, blockDevice.DeviceAttributes.DriveType)
 	}
 
 	if blockDevice.Capacity.Storage == 0 {
-		// The size (/size) entry returns the `nr_sects` field of the block device structure.
-		// Ref: https://elixir.bootlin.com/linux/v4.4/source/fs/block_dev.c#L1267
-		//
-		// Traditionally, in Unix disk size contexts, “sector” or “block” means 512 bytes,
-		// regardless of what the manufacturer of the underlying hardware might call a “sector” or “block”
-		// Ref: https://elixir.bootlin.com/linux/v4.4/source/fs/block_dev.c#L487
-		//
-		// Therefore, to get the capacity of the device it needs to always multiplied with 512
-		numberOfBlocks, err := readSysFSFileAsInt64(sysPath + "/size")
+		capacity, err := sysFsDevice.GetCapacityInBytes()
 		if err != nil {
-			klog.Warning("unable to block count", err)
-			return
-		} else if numberOfBlocks != 0 {
-			blockDevice.Capacity.Storage = uint64(numberOfBlocks * sectorSize)
-			klog.V(4).Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
-				blockDevice.DevPath, blockDevice.Capacity.Storage)
+			klog.Warning("unable to get capacity for device: %s, err: %v", blockDevice.DevPath, err)
 		}
+		blockDevice.Capacity.Storage = uint64(capacity)
+		klog.V(4).Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
+			blockDevice.DevPath, blockDevice.Capacity.Storage)
 	}
-}
-
-// readSysFSFileAsInt64 reads a file and
-// converts that content into int64
-func readSysFSFileAsInt64(sysPath string) (int64, error) {
-	b, err := ioutil.ReadFile(sysPath)
-	if err != nil {
-		return 0, err
-	}
-	return strconv.ParseInt(strings.TrimSuffix(string(b), "\n"), 10, 64)
 }
