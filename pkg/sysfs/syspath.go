@@ -104,7 +104,7 @@ func (s Device) getPartitions() ([]string, bool) {
 
 	// if partition file has value 0, or the file doesn't exist,
 	// can return from there itself
-	// partitionPath := s.SysPath + "/partition"
+	// partitionPath := s.SysPath + "partition"
 	// if _, err := os.Stat(partitionPath); os.IsNotExist(err) {
 	// }
 
@@ -125,7 +125,7 @@ func (s Device) getPartitions() ([]string, bool) {
 
 // getHolders gets the devices that are held by this device
 func (s Device) getHolders() ([]string, bool) {
-	holderPath := s.sysPath + "/holders"
+	holderPath := s.sysPath + "holders/"
 	holders := make([]string, 0)
 
 	// check if holders are available for this device
@@ -147,7 +147,7 @@ func (s Device) getHolders() ([]string, bool) {
 // getSlaves gets the devices to which this device is a slave. Or, the devices
 // which holds this device
 func (s Device) getSlaves() ([]string, bool) {
-	slavePath := s.sysPath + "/slaves"
+	slavePath := s.sysPath + "slaves/"
 	slaves := make([]string, 0)
 
 	// check if slaves are available for this device
@@ -273,6 +273,8 @@ func (s Device) GetDeviceType(devType string) (string, error) {
 		return blockdevice.BlockDeviceTypePartition, nil
 	}
 
+	// TODO may need to distinguish between normal partitions and partitions on DM devices. The original
+	//  lsblk implementation does not have this distinction.
 	if isDM(s.deviceName) {
 		dmUuid, err := readSysFSFileAsString(s.sysPath + "dm/uuid")
 		if err != nil {
@@ -282,7 +284,7 @@ func (s Device) GetDeviceType(devType string) (string, error) {
 			dmUuidPrefix := strings.Split(dmUuid, "-")[0]
 			if len(dmUuidPrefix) != 0 {
 				if len(dmUuidPrefix) > 4 && dmUuidPrefix[0:4] == "part" {
-					result = dmUuidPrefix[0:4]
+					result = blockdevice.BlockDeviceTypePartition
 				} else {
 					result = dmUuidPrefix
 				}
@@ -307,11 +309,11 @@ func (s Device) GetDeviceType(devType string) (string, error) {
 		// TODO Ideally should read device/type file and find the device type using blkdev_scsi_type_to_name()
 		result = "disk"
 	}
-	return result, nil
+	return strings.ToLower(result), nil
 }
 
 func isDM(devName string) bool {
-	if devName[0:2] == "dm-" {
+	if devName[0:3] == "dm-" {
 		return true
 	}
 	return false

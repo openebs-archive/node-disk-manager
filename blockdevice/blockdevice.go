@@ -189,8 +189,6 @@ const (
 
 	BlockDeviceTypeLVM = "lvm"
 
-	BlockDeviceTypeLVMPartitions = "lvm partition"
-
 	BlockDeviceTypeCrypt = "crypt"
 )
 
