@@ -138,7 +138,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 	if blockDevice.Capacity.Storage == 0 {
 		capacity, err := sysFsDevice.GetCapacityInBytes()
 		if err != nil {
-			klog.Warning("unable to get capacity for device: %s, err: %v", blockDevice.DevPath, err)
+			klog.Warningf("unable to get capacity for device: %s, err: %v", blockDevice.DevPath, err)
 		}
 		blockDevice.Capacity.Storage = uint64(capacity)
 		klog.V(4).Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
