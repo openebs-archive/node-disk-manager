@@ -34,8 +34,9 @@ package seachest
 import "C"
 import (
 	"fmt"
-	"k8s.io/klog"
 	"unsafe"
+
+	"k8s.io/klog"
 )
 
 // Seachest errors are converted to string using this function
@@ -161,6 +162,18 @@ func (I *Identifier) GetPhysicalSectorSize(driveInfo *C.driveInformationSAS_SATA
 func (I *Identifier) GetRotationRate(driveInfo *C.driveInformationSAS_SATA) uint16 {
 	if driveInfo.rotationRate > 1 {
 		return ((uint16)(driveInfo.rotationRate))
+	}
+	return 0
+}
+
+func (I *Identifier) GetRotationalLatency(driveInfo *C.driveInformationSAS_SATA) float64 {
+	if driveInfo.rotationRate > 1 {
+		// latency = 1/rpm/60
+		// Formula reference: https://sciencing.com/calculate-rotational-latency-8559684.html
+		rpm := (uint16)(driveInfo.rotationRate)
+		rps := float64(rpm / 60)
+		latency := float64(1 / rps)
+		return latency
 	}
 	return 0
 }
