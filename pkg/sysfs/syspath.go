@@ -212,6 +212,7 @@ func (s Device) GetLogicalBlockSize() (int64, error) {
 	return logicalBlockSize, nil
 }
 
+// GetPhysicalBlockSize gets the physical block size of the device
 func (s Device) GetPhysicalBlockSize() (int64, error) {
 	physicalBlockSize, err := readSysFSFileAsInt64(s.sysPath + "/queue/physical_block_size")
 	if err != nil {
@@ -220,6 +221,7 @@ func (s Device) GetPhysicalBlockSize() (int64, error) {
 	return physicalBlockSize, nil
 }
 
+// GetHardwareSectorSize gets the hardware sector size of the device
 func (s Device) GetHardwareSectorSize() (int64, error) {
 	hardwareSectorSize, err := readSysFSFileAsInt64(s.sysPath + "/queue/hw_sector_size")
 	if err != nil {
@@ -228,6 +230,7 @@ func (s Device) GetHardwareSectorSize() (int64, error) {
 	return hardwareSectorSize, nil
 }
 
+// GetDriveType gets the drive type of the device based on the rotational value. Can be HDD or SSD
 func (s Device) GetDriveType() (string, error) {
 	rotational, err := readSysFSFileAsInt64(s.sysPath + "/queue/rotational")
 	if err != nil {
@@ -242,6 +245,7 @@ func (s Device) GetDriveType() (string, error) {
 	return "", fmt.Errorf("undefined rotational value %d", rotational)
 }
 
+// GetCapacityInBytes gets the capacity of the device in bytes
 func (s Device) GetCapacityInBytes() (int64, error) {
 	// The size (/size) entry returns the `nr_sects` field of the block device structure.
 	// Ref: https://elixir.bootlin.com/linux/v4.4/source/fs/block_dev.c#L1267
@@ -262,7 +266,7 @@ func (s Device) GetCapacityInBytes() (int64, error) {
 }
 
 // GetDeviceType gets the device type, as shown in lsblk
-// devicetype should be prefilled by udev probe (DEVTYPE) as disk/part for this to work
+// devtype should be prefilled by udev probe (DEVTYPE) as disk/part for this to work
 //
 // Ported from https://github.com/karelzak/util-linux/blob/master/misc-utils/lsblk.c
 func (s Device) GetDeviceType(devType string) (string, error) {

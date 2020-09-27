@@ -33,6 +33,8 @@ type Device struct {
 	sysPath string
 }
 
+// NewSysFsDeviceFromDevPath is used to get sysfs device struct from the device devpath
+// The sysfs device struct contains the device name along with the syspath
 func NewSysFsDeviceFromDevPath(devPath string) (*Device, error) {
 	devName := strings.Replace(devPath, "/dev/", "", 1)
 	sysPath, err := getDeviceSysPath(devPath)
@@ -48,12 +50,3 @@ func NewSysFsDeviceFromDevPath(devPath string) (*Device, error) {
 	}
 	return dev, nil
 }
-
-/*func NewSysFsDeviceFromSysPath(sysPath string) (*Device, error) {
-
-	dev := &Device{
-
-	}
-	return dev, nil
-}
-*/
