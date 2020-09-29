@@ -151,6 +151,7 @@ func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockD
 
 	blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperatureDataValid = seachestProbe.
 		SeachestIdentifier.GetTemperatureDataValidStatus(driveInfo)
+
 	klog.V(4).Infof("Disk: %s TemperatureDataValid:%t filled by seachest.",
 		blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperatureDataValid)
 
@@ -161,24 +162,29 @@ func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockD
 		klog.V(4).Infof("Disk: %s CurrentTemperature:%d filled by seachest.",
 			blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperature)
 
-		blockDevice.SMARTInfo.TemperatureInfo.HighestTemperatureDataValid = seachestProbe.
-			SeachestIdentifier.GetHighestValid(driveInfo)
+	}
 
-		klog.V(4).Infof("Disk: %s HighestTemperatureDataValid:%t filled by seachest.",
-			blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.HighestTemperatureDataValid)
+	blockDevice.SMARTInfo.TemperatureInfo.HighestTemperatureDataValid = seachestProbe.
+		SeachestIdentifier.GetHighestValid(driveInfo)
+
+	klog.V(4).Infof("Disk: %s HighestTemperatureDataValid:%t filled by seachest.",
+		blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.HighestTemperatureDataValid)
+
+	if blockDevice.SMARTInfo.TemperatureInfo.HighestTemperatureDataValid == true {
 
 		blockDevice.SMARTInfo.TemperatureInfo.HighestTemperature = seachestProbe.
 			SeachestIdentifier.GetHighestTemperature(driveInfo)
 
 		klog.V(4).Infof("Disk: %s HighestTemperature:%d filled by seachest.",
 			blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.HighestTemperature)
+	}
+	blockDevice.SMARTInfo.TemperatureInfo.LowestTemperatureDataValid = seachestProbe.
+		SeachestIdentifier.GetLowestValid(driveInfo)
 
-		blockDevice.SMARTInfo.TemperatureInfo.LowestTemperatureDataValid = seachestProbe.
-			SeachestIdentifier.GetLowestValid(driveInfo)
+	klog.V(4).Infof("Disk: %s LowestValid:%t filled by seachest.",
+		blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.LowestTemperatureDataValid)
 
-		klog.V(4).Infof("Disk: %s LowestValid:%t filled by seachest.",
-			blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.LowestTemperatureDataValid)
-
+	if blockDevice.SMARTInfo.TemperatureInfo.LowestTemperatureDataValid == true {
 		blockDevice.SMARTInfo.TemperatureInfo.LowestTemperature = seachestProbe.
 			SeachestIdentifier.GetLowestTemperature(driveInfo)
 
