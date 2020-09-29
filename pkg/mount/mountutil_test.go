@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -232,4 +233,80 @@ func TestGetParentBlockDevice(t *testing.T) {
 			assert.Equal(t, test.expectedOk, ok)
 		})
 	}
+}
+
+func TestParseRootDeviceLink(t *testing.T) {
+	tests := map[string]struct {
+		content       string
+		expectedPath  string
+		expectedError error
+	}{
+		"empty content": {
+			"",
+			"",
+			ErrCouldNotFindRootDevice,
+		},
+		"single line with root only": {
+			"root=UUID=d41162ba-25e4-4c44-8793-2abef96d27e9",
+			"/dev/disk/by-uuid/d41162ba-25e4-4c44-8793-2abef96d27e9",
+			nil,
+		},
+		"single line with multiple attributes": {
+			"BOOT_IMAGE=/boot/vmlinuz-5.4.0-48-generic root=UUID=d41162ba-25e4-4c44-8793-2abef96d27e9 ro intel_iommu=on quiet splash vt.handoff=7",
+			"/dev/disk/by-uuid/d41162ba-25e4-4c44-8793-2abef96d27e9",
+			nil,
+		},
+		"single line without root attribute": {
+			"BOOT_IMAGE=/boot/vmlinuz-5.4.0-48-generic ro intel_iommu=on quiet splash vt.handoff=7",
+			"",
+			ErrCouldNotFindRootDevice,
+		},
+		"multi line with multiple attributes": {
+			"\n\nBOOT_IMAGE=/boot/vmlinuz-5.4.0-48-generic root=PARTUUID=325c5bfa-08a8-433c-bc62-2dd5255213fd ro\n",
+			"/dev/disk/by-partuuid/325c5bfa-08a8-433c-bc62-2dd5255213fd",
+			nil,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+
+			actualPath, actualError := parseRootDeviceLink(strings.NewReader(test.content))
+
+			assert.Equal(t, test.expectedError, actualError)
+
+			if actualError == nil {
+				assert.Equal(t, test.expectedPath, actualPath)
+			}
+		})
+	}
+}
+
+func TestGetSoftLinkForPartition(t *testing.T) {
+	tests := map[string]string{
+		"sda1":    "/sys/class/block/sda1",
+		"nvme0n1": "/sys/class/block/nvme0n1",
+	}
+
+	for partition, expectedSoftlink := range tests {
+		t.Run(partition, func(t *testing.T) {
+			actualSoftLink, actualError := getSoftLinkForPartition(partition)
+			assert.NoError(t, actualError)
+			assert.Equal(t, expectedSoftlink, actualSoftLink)
+		})
+	}
+
+	t.Run("root", func(t *testing.T) {
+		actualSoftLink, actualError := getSoftLinkForPartition("root")
+		assert.NoError(t, actualError)
+		assert.NotEqual(t, "/sys/class/block/root", actualSoftLink)
+		assert.True(t, strings.HasPrefix(actualSoftLink, "/sys/class/block/"))
+	})
+}
+
+func TestGetDiskDevPath_WithRoot(t *testing.T) {
+	path, err := getDiskDevPath("root")
+
+	assert.NoError(t, err)
+	assert.True(t, strings.HasPrefix(path, "/dev/"))
 }

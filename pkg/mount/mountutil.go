@@ -19,10 +19,13 @@ package mount
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 )
+
+var ErrCouldNotFindRootDevice = fmt.Errorf("could not find root device")
 
 // DiskMountUtil contains the mountfile path, devpath/mountpoint which can be used to
 // detect partition of a mountpoint or mountpoint of a partition.
@@ -121,7 +124,7 @@ func getDiskDevPath(partition string) (string, error) {
 func getSoftLinkForPartition(partition string) (string, error) {
 	softlink := getLinkForPartition(partition)
 
-	if _, err := os.Stat(softlink); os.IsNotExist(err) && partition == "root" {
+	if !fileExists(softlink) && partition == "root" {
 		partition, err := getRootPartition()
 		if err != nil {
 			return "", err
@@ -139,12 +142,26 @@ func getLinkForPartition(partition string) string {
 
 //	getRootPartition resolves link /dev/root using /proc/cmdline
 func getRootPartition() (string, error) {
-	file, err := os.Open("/proc/cmdline")
+	file, err := os.Open(getCmdlineFile())
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
 
+	path, err := parseRootDeviceLink(file)
+	if err != nil {
+		return "", err
+	}
+
+	link, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return "", err
+	}
+
+	return getDeviceName(link), nil
+}
+
+func parseRootDeviceLink(file io.Reader) (string, error) {
 	scanner := bufio.NewScanner(file)
 	if err := scanner.Err(); err != nil {
 		return "", err
@@ -172,18 +189,11 @@ func getRootPartition() (string, error) {
 			identifierType := strings.ToLower(rootSpec[0])
 			identifier := rootSpec[1]
 
-			path := fmt.Sprintf("/dev/disk/by-%s/%s", identifierType, identifier)
-
-			link, err := filepath.EvalSymlinks(path)
-			if err != nil {
-				return "", err
-			}
-
-			return getDeviceName(link), nil
+			return fmt.Sprintf("/dev/disk/by-%s/%s", identifierType, identifier), nil
 		}
 	}
 
-	return "", fmt.Errorf("could not find root device")
+	return "", ErrCouldNotFindRootDevice
 }
 
 // getParentBlockDevice returns the parent blockdevice of a given blockdevice by parsing the syspath
@@ -260,6 +270,22 @@ func (m *DiskMountUtil) getMountName(mountLine string) (DeviceMountAttr, bool) {
 	return mountAttr, isValid
 }
 
+func getCmdlineFile() string {
+	cmdlineFile := "/host/proc/cmdline"
+	if !fileExists(cmdlineFile) {
+		cmdlineFile = "/proc/cmdline"
+	}
+	return cmdlineFile
+}
+
 func getDeviceName(devPath string) string {
 	return strings.Replace(devPath, "/dev/", "", 1)
+}
+
+func fileExists(file string) bool {
+	_, err := os.Stat(file)
+	if err != nil && os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
