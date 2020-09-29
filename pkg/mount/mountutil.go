@@ -98,8 +98,11 @@ func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, err
 //	getDiskSysPath takes disk/partition name as input (sda, sda1, sdb, sdb2 ...) and
 //	returns syspath of that disk from which we can generate ndm given uuid of that disk.
 func getDiskDevPath(partition string) (string, error) {
-	// dev path be like /dev/sda4 we need to remove /dev/ from this string to get sys block path.
-	softlink := "/sys/class/block/" + partition
+	softlink, err := getSoftLinkForPartition(partition)
+	if err != nil {
+		return "", err
+	}
+
 	link, err := filepath.EvalSymlinks(softlink)
 	if err != nil {
 		return "", err
@@ -110,6 +113,77 @@ func getDiskDevPath(partition string) (string, error) {
 		return "", fmt.Errorf("could not find parent device for %s", link)
 	}
 	return "/dev/" + parentDisk, nil
+}
+
+//	getSoftLinkForPartition returns path to /sys/class/block/$partition
+//	if the path does not exist and the partition is "root"
+//	then the root partition is detected from /proc/cmdline
+func getSoftLinkForPartition(partition string) (string, error) {
+	softlink := getLinkForPartition(partition)
+
+	if _, err := os.Stat(softlink); os.IsNotExist(err) && partition == "root" {
+		partition, err := getRootPartition()
+		if err != nil {
+			return "", err
+		}
+		softlink = getLinkForPartition(partition)
+	}
+	return softlink, nil
+}
+
+//	getLinkForPartition returns path to sys block path
+func getLinkForPartition(partition string) string {
+	// dev path be like /dev/sda4 we need to remove /dev/ from this string to get sys block path.
+	return "/sys/class/block/" + partition
+}
+
+//	getRootPartition resolves link /dev/root using /proc/cmdline
+func getRootPartition() (string, error) {
+	file, err := os.Open("/proc/cmdline")
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+
+	rootPrefix := "root="
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		if line == "" {
+			continue
+		}
+
+		args := strings.Split(line, " ")
+
+		// looking for root device identification
+		// ... root=UUID=d41162ba-25e4-4c44-8793-2abef96d27e9 ...
+		for _, arg := range args {
+			if !strings.HasPrefix(arg, rootPrefix) {
+				continue
+			}
+
+			rootSpec := strings.Split(arg[len(rootPrefix):], "=")
+
+			identifierType := strings.ToLower(rootSpec[0])
+			identifier := rootSpec[1]
+
+			path := fmt.Sprintf("/dev/disk/by-%s/%s", identifierType, identifier)
+
+			link, err := filepath.EvalSymlinks(path)
+			if err != nil {
+				return "", err
+			}
+
+			return getDeviceName(link), nil
+		}
+	}
+
+	return "", fmt.Errorf("could not find root device")
 }
 
 // getParentBlockDevice returns the parent blockdevice of a given blockdevice by parsing the syspath
@@ -160,7 +234,7 @@ func (m *DiskMountUtil) getPartitionName(mountLine string) (DeviceMountAttr, boo
 	}
 	// mountoptions are ignored. device-path and mountpoint is used
 	if parts := strings.Split(mountLine, " "); parts[1] == m.mountPoint {
-		mountAttr.DevPath = strings.Replace(parts[0], "/dev/", "", 1)
+		mountAttr.DevPath = getDeviceName(parts[0])
 		isValid = true
 	}
 	return mountAttr, isValid
@@ -184,4 +258,8 @@ func (m *DiskMountUtil) getMountName(mountLine string) (DeviceMountAttr, bool) {
 		isValid = true
 	}
 	return mountAttr, isValid
+}
+
+func getDeviceName(devPath string) string {
+	return strings.Replace(devPath, "/dev/", "", 1)
 }
