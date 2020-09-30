@@ -26,7 +26,7 @@ import "C"
 import (
 	"bufio"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/pkg/hierarchy"
+	"github.com/openebs/node-disk-manager/pkg/sysfs"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -93,7 +93,10 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.PartTableType = device.GetPropertyValue(UDEV_PARTITION_TABLE_TYPE)
 	diskDetails.PartTableUUID = device.GetPropertyValue(UDEV_PARTITION_TABLE_UUID)
 	diskDetails.IdType = device.GetPropertyValue(UDEV_TYPE)
-	dev := hierarchy.Device{Path: diskDetails.DevNode}
+	dev, err := sysfs.NewSysFsDeviceFromDevPath(diskDetails.DevNode)
+	if err != nil {
+		return diskDetails, err
+	}
 	diskDetails.Dependents, err = dev.GetDependents()
 	if err != nil {
 		return diskDetails, err

@@ -184,6 +184,20 @@ const (
 
 	// BlockDeviceTypeLoop represents a loop device
 	BlockDeviceTypeLoop = "loop"
+
+	BlockDeviceTypeDMDevice = "dm"
+
+	BlockDeviceTypeLVM = "lvm"
+
+	BlockDeviceTypeCrypt = "crypt"
+)
+
+const (
+	// DriveTypeHDD represents a rotating hard disk drive
+	DriveTypeHDD = "HDD"
+
+	// DriveTypeSSD represents a solid state drive
+	DriveTypeSSD = "SSD"
 )
 
 // FileSystemInformation contains the filesystem and mount information of blockdevice, if present

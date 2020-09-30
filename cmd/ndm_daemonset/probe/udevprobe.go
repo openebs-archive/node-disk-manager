@@ -22,7 +22,7 @@ import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/features"
-	"github.com/openebs/node-disk-manager/pkg/hierarchy"
+	"github.com/openebs/node-disk-manager/pkg/sysfs"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -192,16 +192,19 @@ func (up *udevProbe) scan() error {
 
 			// get the dependents of the block device
 			// this is done by scanning sysfs
-			devicePath := hierarchy.Device{
-				Path: deviceDetails.DevPath,
-			}
-			dependents, err := devicePath.GetDependents()
-			// TODO if error occurs need to do a scan from the beginning
+			sysfsDevice, err := sysfs.NewSysFsDeviceFromDevPath(deviceDetails.DevPath)
+			// TODO if error occurs a rescan may be required
 			if err != nil {
-				klog.Error("error getting dependent devices for ", deviceDetails.DevPath)
+				klog.Errorf("could not get sysfs device for %s", deviceDetails.DevPath)
 			} else {
-				deviceDetails.DependentDevices = dependents
-				klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
+				dependents, err := sysfsDevice.GetDependents()
+				// TODO if error occurs need to do a scan from the beginning
+				if err != nil {
+					klog.Error("error getting dependent devices for ", deviceDetails.DevPath)
+				} else {
+					deviceDetails.DependentDevices = dependents
+					klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
+				}
 			}
 		}
 		newUdevice.UdevDeviceUnref()
