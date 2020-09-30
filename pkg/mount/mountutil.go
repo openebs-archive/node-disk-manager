@@ -27,6 +27,9 @@ import (
 
 var ErrCouldNotFindRootDevice = fmt.Errorf("could not find root device")
 
+const ProcCmdLine = "/proc/cmdline"
+const HostProcCmdLine = "/host/" + ProcCmdLine
+
 // DiskMountUtil contains the mountfile path, devpath/mountpoint which can be used to
 // detect partition of a mountpoint or mountpoint of a partition.
 type DiskMountUtil struct {
@@ -271,11 +274,10 @@ func (m *DiskMountUtil) getMountName(mountLine string) (DeviceMountAttr, bool) {
 }
 
 func getCmdlineFile() string {
-	cmdlineFile := "/host/proc/cmdline"
-	if !fileExists(cmdlineFile) {
-		cmdlineFile = "/proc/cmdline"
+	if fileExists(HostProcCmdLine) {
+		return HostProcCmdLine
 	}
-	return cmdlineFile
+	return ProcCmdLine
 }
 
 func getDeviceName(devPath string) string {
