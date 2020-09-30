@@ -124,65 +124,71 @@ func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockD
 
 	// All the below mentioned fields will be filled in only after BlockDevice struct
 	// starts supporting them.
-	/*if d.RotationRate == 0 {
-		d.RotationRate = seachestProbe.SeachestIdentifier.GetRotationRate(driveInfo)
-		klog.V(4).Infof("Disk: %s RotationRate:%d filled by seachest.", d.Path, d.RotationRate)
-	}*/
-
-	/*if d.TotalBytesRead == 0 {
-		d.TotalBytesRead = seachestProbe.SeachestIdentifier.GetTotalBytesRead(driveInfo)
-		klog.V(4).Infof("Disk: %s TotalBytesRead:%d filled by seachest.", d.Path, d.TotalBytesRead)
+	if blockDevice.SMARTInfo.RotationRate == 0 {
+		blockDevice.SMARTInfo.RotationRate = seachestProbe.SeachestIdentifier.GetRotationRate(driveInfo)
+		klog.V(4).Infof("Disk: %s RotationRate:%d filled by seachest.", blockDevice.DevPath, blockDevice.SMARTInfo.RotationRate)
 	}
 
-	if d.TotalBytesWritten == 0 {
-		d.TotalBytesWritten = seachestProbe.SeachestIdentifier.GetTotalBytesWritten(driveInfo)
-		klog.V(4).Infof("Disk: %s TotalBytesWritten:%d filled by seachest.", d.Path, d.TotalBytesWritten)
+	if blockDevice.SMARTInfo.TotalBytesRead == 0 {
+		blockDevice.SMARTInfo.TotalBytesRead = seachestProbe.SeachestIdentifier.GetTotalBytesRead(driveInfo)
+		klog.V(4).Infof("Disk: %s TotalBytesRead:%d filled by seachest.", blockDevice.DevPath, blockDevice.SMARTInfo.TotalBytesRead)
 	}
 
-	if d.DeviceUtilizationRate == 0 {
-		d.DeviceUtilizationRate = seachestProbe.SeachestIdentifier.GetDeviceUtilizationRate(driveInfo)
-		klog.V(4).Infof("Disk: %s DeviceUtilizationRate:%f filled by seachest.", d.Path, d.DeviceUtilizationRate)
+	if blockDevice.SMARTInfo.TotalBytesWritten == 0 {
+		blockDevice.SMARTInfo.TotalBytesWritten = seachestProbe.SeachestIdentifier.GetTotalBytesWritten(driveInfo)
+		klog.V(4).Infof("Disk: %s TotalBytesWritten:%d filled by seachest.", blockDevice.DevPath, blockDevice.SMARTInfo.TotalBytesWritten)
 	}
 
-	if d.PercentEnduranceUsed == 0 {
-		d.PercentEnduranceUsed = seachestProbe.SeachestIdentifier.GetPercentEnduranceUsed(driveInfo)
-		klog.V(4).Infof("Disk: %s PercentEnduranceUsed:%f filled by seachest.", d.Path, d.PercentEnduranceUsed)
-	}*/
+	if blockDevice.SMARTInfo.UtilizationRate == 0 {
+		blockDevice.SMARTInfo.UtilizationRate = seachestProbe.SeachestIdentifier.GetDeviceUtilizationRate(driveInfo)
+		klog.V(4).Infof("Disk: %s UtilizationRate:%f filled by seachest.", blockDevice.DevPath, blockDevice.SMARTInfo.UtilizationRate)
+	}
 
-	blockDevice.TemperatureInfo.TemperatureDataValid = seachestProbe.
+	if blockDevice.SMARTInfo.PercentEnduranceUsed == 0 {
+		blockDevice.SMARTInfo.PercentEnduranceUsed = seachestProbe.SeachestIdentifier.GetPercentEnduranceUsed(driveInfo)
+		klog.V(4).Infof("Disk: %s PercentEnduranceUsed:%f filled by seachest.", blockDevice.DevPath, blockDevice.SMARTInfo.PercentEnduranceUsed)
+	}
+
+	blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperatureDataValid = seachestProbe.
 		SeachestIdentifier.GetTemperatureDataValidStatus(driveInfo)
-	klog.V(4).Infof("Disk: %s TemperatureDataValid:%t filled by seachest.",
-		blockDevice.DevPath, blockDevice.TemperatureInfo.TemperatureDataValid)
 
-	if blockDevice.TemperatureInfo.TemperatureDataValid == true {
-		blockDevice.TemperatureInfo.CurrentTemperature = seachestProbe.
+	klog.V(4).Infof("Disk: %s TemperatureDataValid:%t filled by seachest.",
+		blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperatureDataValid)
+
+	if blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperatureDataValid == true {
+		blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperature = seachestProbe.
 			SeachestIdentifier.GetCurrentTemperature(driveInfo)
 
 		klog.V(4).Infof("Disk: %s CurrentTemperature:%d filled by seachest.",
-			blockDevice.DevPath, blockDevice.TemperatureInfo.CurrentTemperature)
+			blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperature)
 
-		/*d.TemperatureInfo.HighestValid = seachestProbe.
-			SeachestIdentifier.GetHighestValid(driveInfo)
+	}
 
-		klog.V(4).Infof("Disk: %s HighestValid:%t filled by seachest.",
-			d.Path, d.TemperatureInfo.HighestValid)
+	blockDevice.SMARTInfo.TemperatureInfo.HighestTemperatureDataValid = seachestProbe.
+		SeachestIdentifier.GetHighestValid(driveInfo)
 
-		d.TemperatureInfo.HighestTemperature = seachestProbe.
+	klog.V(4).Infof("Disk: %s HighestTemperatureDataValid:%t filled by seachest.",
+		blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.HighestTemperatureDataValid)
+
+	if blockDevice.SMARTInfo.TemperatureInfo.HighestTemperatureDataValid == true {
+
+		blockDevice.SMARTInfo.TemperatureInfo.HighestTemperature = seachestProbe.
 			SeachestIdentifier.GetHighestTemperature(driveInfo)
 
 		klog.V(4).Infof("Disk: %s HighestTemperature:%d filled by seachest.",
-			d.Path, d.TemperatureInfo.HighestTemperature)
+			blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.HighestTemperature)
+	}
+	blockDevice.SMARTInfo.TemperatureInfo.LowestTemperatureDataValid = seachestProbe.
+		SeachestIdentifier.GetLowestValid(driveInfo)
 
-		d.TemperatureInfo.LowestValid = seachestProbe.
-			SeachestIdentifier.GetLowestValid(driveInfo)
+	klog.V(4).Infof("Disk: %s LowestValid:%t filled by seachest.",
+		blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.LowestTemperatureDataValid)
 
-		klog.V(4).Infof("Disk: %s LowestValid:%t filled by seachest.",
-			d.Path, d.TemperatureInfo.LowestValid)
-
-		d.TemperatureInfo.LowestTemperature = seachestProbe.
+	if blockDevice.SMARTInfo.TemperatureInfo.LowestTemperatureDataValid == true {
+		blockDevice.SMARTInfo.TemperatureInfo.LowestTemperature = seachestProbe.
 			SeachestIdentifier.GetLowestTemperature(driveInfo)
 
 		klog.V(4).Infof("Disk: %s LowestTemperature:%d filled by seachest.",
-			d.Path, d.TemperatureInfo.LowestTemperature)*/
+			blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.LowestTemperature)
 	}
 }

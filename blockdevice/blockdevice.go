@@ -123,11 +123,35 @@ type BlockDevice struct {
 	// DependentDevices stores the dependent devices
 	DependentDevices DependentBlockDevices
 
-	// TemperatureInfo stores the temperature information of the drive
-	TemperatureInfo TemperatureInformation
+	SMARTInfo SMARTStats
 
 	// Status contains the state of the blockdevice
 	Status Status
+}
+
+// SMARTStats represents stats from SMART spec and data fetched/calculated by data from seachest
+type SMARTStats struct {
+
+	// RotationRate stores the rotation rate of a block device, only applicable for HDD
+	RotationRate uint16
+
+	// RotationalLatency stores the latency of the drive, only applicable for HDD
+	RotationalLatency float64
+
+	// TemperatureInfo stores the temperature information of the drive
+	TemperatureInfo TemperatureInformation
+
+	// TotalBytesRead stores the total amount of bytes read by a block device
+	TotalBytesRead uint64
+
+	// TotalBytesWritten stores the total amount of bytes written by a block device
+	TotalBytesWritten uint64
+
+	// UtilizationRate stores the rate of utilization of a block device
+	UtilizationRate float64
+
+	// PercentEnduranceUsed stores the endurance used in percent
+	PercentEnduranceUsed float64
 }
 
 // Identifier represents the various identifiers that can be used to
@@ -294,12 +318,26 @@ type DevLink struct {
 
 // TemperatureInformation stores the temperature information of the blockdevice
 type TemperatureInformation struct {
-	// TemperatureDataValid specifies whether the current temperature
+	// CurrentTemperatureDataValid specifies whether the current temperature
 	// data reported is valid or not
-	TemperatureDataValid bool
+	CurrentTemperatureDataValid bool
+
+	// LowestTemperatureDataValid specifies whether the lowest temperature
+	// data reported is valid or not
+	LowestTemperatureDataValid bool
+
+	// HighestTemperatureDataValid specifies whether the highest temperature
+	// data reported is valid or not
+	HighestTemperatureDataValid bool
 
 	// CurrentTemperature is the temperature of the drive in celsius
 	CurrentTemperature int16
+
+	// LowestTemperature is the lowest temperature of the drive recorded in celsius
+	LowestTemperature int16
+
+	// HighestTemperature is the highest temperature of the drive recorded in celsius
+	HighestTemperature int16
 }
 
 // PartitionInformation contains information related to the partition, if this
