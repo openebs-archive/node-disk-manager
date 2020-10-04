@@ -18,6 +18,7 @@ package probe
 
 import (
 	"os"
+	"strings"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -53,6 +54,14 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 	// the partition and the unique data will be stored in sectors where consumers do not have access.
 
 	switch {
+	/*case bd.DeviceAttributes.DeviceType == blockdevice.BlockDeviceTypeLoop:
+	klog.Infof("device(%s) is a loop device, using path and node name")*/
+	case isDM(bd.DevPath):
+		// is a DM device, use the DM uuid
+		klog.Infof("device(%s) is a dm device, using DM UUID: %s", bd.DevPath, bd.DMInfo.DMUUID)
+		// TODO add a check if DM uuid is present, else what to do???
+		uuidField = bd.DMInfo.DMUUID
+		ok = true
 	case bd.DeviceAttributes.DeviceType == blockdevice.BlockDeviceTypePartition:
 		// The partition entry UUID is used when a partition (/dev/sda1) is processed. The partition UUID should be used
 		// if available, other than the partition table UUID, because multiple partitions can have the same partition table
@@ -116,4 +125,13 @@ func generateUUIDFromPartitionTable(bd blockdevice.BlockDevice) (string, bool) {
 		return blockdevice.BlockDevicePrefix + util.Hash(uuidField), true
 	}
 	return "", false
+}
+
+// TODO move it to some other place
+func isDM(devPath string) bool {
+	devName := strings.Replace(devPath, "/dev/", "", 1)
+	if devName[0:3] == "dm-" {
+		return true
+	}
+	return false
 }
