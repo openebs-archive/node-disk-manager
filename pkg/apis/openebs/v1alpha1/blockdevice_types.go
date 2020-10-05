@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -39,20 +39,23 @@ type BlockDevice struct {
 
 // DeviceSpec defines the properties and runtime status of a BlockDevice
 type DeviceSpec struct {
-	// NodeAttributes has the details of the node on which BD is attached
-	NodeAttributes NodeAttribute `json:"nodeAttributes"`
 
-	// Path contain devpath (e.g. /dev/sdb)
-	Path string `json:"path"`
+	// AggregateDevice was intended to store the hierachical
+	// information in cases of LVM. However this is currently
+	// not implemented and may need to be re-looked into for
+	// better design. To be deprecated
+	// +optional
+	AggregateDevice string `json:"aggregateDevice,omitempty"`
 
 	// Capacity
 	Capacity DeviceCapacity `json:"capacity"`
 
+	// ClaimRef is the reference to the BDC which has claimed this BD
+	// +optional
+	ClaimRef *v1.ObjectReference `json:"claimRef,omitempty"`
+
 	// Details contain static attributes of BD like model,serial, and so forth
 	Details DeviceDetails `json:"details"`
-
-	// ClaimRef is the reference to the BDC which has claimed this BD
-	ClaimRef *v1.ObjectReference `json:"claimRef,omitempty"`
 
 	// DevLinks contains soft links of a block device like
 	// /dev/by-id/...
@@ -62,25 +65,29 @@ type DeviceSpec struct {
 	// FileSystem contains mountpoint and filesystem type
 	FileSystem FileSystemInfo `json:"filesystem,omitempty"`
 
-	// Partitioned represents if BlockDevice has partitions or not (Yes/No)
-	// Currently always default to No.
-	// TODO @kmova to be implemented/deprecated
-	Partitioned string `json:"partitioned"`
+	// NodeAttributes has the details of the node on which BD is attached
+	NodeAttributes NodeAttribute `json:"nodeAttributes"`
 
 	// ParentDevice was intended to store the UUID of the parent
 	// Block Device as is the case for partitioned block devices.
 	//
 	// For example:
-	// /dev/sda is the parent for /dev/sdap1
-	// TODO @kmova to be implemented/deprecated
+	// /dev/sda is the parent for /dev/sda1
+	// To be deprecated
+	// +kubebuilder:validation:Pattern:`^/dev/[a-z]{3,4}$`
+	// +optional
 	ParentDevice string `json:"parentDevice,omitempty"`
 
-	// AggregateDevice was intended to store the hierachical
-	// information in cases of LVM. However this is currently
-	// not implemented and may need to be re-looked into for
-	// better design.
-	// TODO @kmova to be implemented/deprecated
-	AggregateDevice string `json:"aggregateDevice,omitempty"`
+	// Partitioned represents if BlockDevice has partitions or not (Yes/No)
+	// Currently always default to No.
+	// To be deprecated
+	// +kubebuilder:validation:Enum:=Yes;No
+	Partitioned string `json:"partitioned"`
+
+	// Path contain devpath (e.g. /dev/sdb)
+	// +kubebuilder:printcolumn:name="Path",type=string,JSONPath=`.spec.path`,priority=7
+	// +kubebuilder:validation:Pattern:`^/dev/[a-z]{3,4}$`
+	Path string `json:"path"`
 }
 
 // NodeAttribute defines the attributes of a node where
@@ -101,17 +108,18 @@ type DeviceSpec struct {
 // based on node attributes.  Also, adding this in the spec allows for
 // displaying in node name in the `kubectl get bd`
 //
-// TODO  @kmova @akhilerm
 // Capture and add nodeUUID to BD, that can help in determining
 // if the node was recreated with same node name.
 type NodeAttribute struct {
 	// NodeName is the name of the Kubernetes node resource on which the device is attached
+	// +kubebuilder:printcolumn:name="NodeName",type="string",JSONPath=`.spec.nodeAttributes.nodeName`
 	NodeName string `json:"nodeName"`
 }
 
 // DeviceCapacity defines the physical and logical size of the block device
 type DeviceCapacity struct {
 	// Storage is the blockdevice capacity in bytes
+	// +kubebuilder:printcolumn:name="Size",type="string",JSONPath=`.spec.capacity.storage`
 	Storage uint64 `json:"storage"`
 
 	// PhysicalSectorSize is blockdevice physical-Sector size in bytes
@@ -125,9 +133,11 @@ type DeviceCapacity struct {
 type DeviceDetails struct {
 	// DeviceType represents the type of device like
 	// sparse, disk, partition, lvm, raid
+	// +kubebuilder:validation:Enum:=disk;partition;sparse;loop;lvm;raid
 	DeviceType string `json:"deviceType"`
 
 	// DriveType is the type of backing drive, HDD/SSD
+	// +kubebuilder:validation:Enum:=HDD;SDD;Unknown
 	DriveType string `json:"driveType"`
 
 	// LogicalBlockSize is the logical block size in bytes
@@ -142,34 +152,43 @@ type DeviceDetails struct {
 	HardwareSectorSize uint32 `json:"hardwareSectorSize"`
 
 	// Model is model of disk
+	// +optional
 	Model string `json:"model"`
 
 	// Compliance is standards/specifications version implemented by device firmware
 	//  such as SPC-1, SPC-2, etc
+	// +optional
 	Compliance string `json:"compliance"`
 
 	// Serial is serial number of disk
+	// +optional
 	Serial string `json:"serial"`
 
 	// Vendor is vendor of disk
+	// +optional
 	Vendor string `json:"vendor"`
 
 	// FirmwareRevision is the disk firmware revision
+	// +optional
 	FirmwareRevision string `json:"firmwareRevision"`
 }
 
 // FileSystemInfo defines the filesystem type and mountpoint of the device if it exists
 type FileSystemInfo struct {
 	//Type represents the FileSystem type of the block device
+	// +kubebuilder:printcolumn:name="FSType",type=string,JSONPath=`.spec.filesystem.fsType`,priority=8
+	// +optional
 	Type string `json:"fsType,omitempty"`
 
 	//MountPoint represents the mountpoint of the block device.
+	// +optional
 	Mountpoint string `json:"mountPoint,omitempty"`
 }
 
 // DeviceDevLink holds the mapping between type and links like by-id type or by-path type link
 type DeviceDevLink struct {
 	// Kind is the type of link like by-id or by-path.
+	// +kubebuilder:validation:Enum:=by-id;by-path
 	Kind string `json:"kind,omitempty"`
 
 	// Links are the soft links
@@ -179,9 +198,13 @@ type DeviceDevLink struct {
 // DeviceStatus defines the observed state of BlockDevice
 type DeviceStatus struct {
 	// ClaimState represents the claim state of the block device
+	// +kubebuilder:printcolumn:name="ClaimState",type=string,JSONPath=`.status.claimState`
+	// +kubebuilder:validation:Enum:=Claimed;Unclaimed;Released
 	ClaimState DeviceClaimState `json:"claimState"`
 
 	// State is the current state of the blockdevice (Active/Inactive)
+	// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.state`
+	// +kubebuilder:validation:Enum:=Active;Inactive
 	State BlockDeviceState `json:"state"`
 }
 

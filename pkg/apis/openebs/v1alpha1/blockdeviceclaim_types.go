@@ -50,7 +50,7 @@ type DeviceClaimSpec struct {
 	DeviceType string `json:"deviceType"`
 
 	// Node name from where blockdevice has to be claimed.
-	// TODO @akhilerm to be deprecated. Use NodeAttributes.HostName instead
+	// To be deprecated. Use NodeAttributes.HostName instead
 	HostName string `json:"hostName"`
 
 	// Details of the device to be claimed
