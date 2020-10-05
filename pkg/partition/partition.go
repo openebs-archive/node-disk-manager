@@ -22,6 +22,8 @@ import (
 	"github.com/diskfs/go-diskfs"
 	"github.com/diskfs/go-diskfs/disk"
 	"github.com/diskfs/go-diskfs/partition/gpt"
+	"github.com/openebs/node-disk-manager/pkg/blkid"
+
 	"k8s.io/klog"
 )
 
@@ -123,10 +125,19 @@ func (d *Disk) CreateSinglePartition() error {
 	}
 	d.disk = fd
 
+	// check for any existing partition table on the disk
 	if _, err := d.disk.GetPartitionTable(); err == nil {
-		klog.Errorf("disk %s already contains a known partition table", d.DevPath)
-		klog.Error("partitioning will be aborted")
+		klog.Errorf("aborting partition creation, disk %s already contains a known partition table", d.DevPath)
 		return fmt.Errorf("disk %s contains a partition table, cannot create a single partition", d.DevPath)
+	}
+
+	// check for any existing filesystem on the disk
+	deviceIdentifier := blkid.DeviceIdentifier{
+		DevPath: d.DevPath,
+	}
+	if fs := deviceIdentifier.GetOnDiskFileSystem(); len(fs) != 0 {
+		klog.Errorf("aborting partition creation, disk %s contains a known filesystem: %s", d.DevPath, fs)
+		return fmt.Errorf("disk %s contains a known filesyste: %s, cannot create a single partition", d.DevPath, fs)
 	}
 
 	err = d.createPartitionTable()
