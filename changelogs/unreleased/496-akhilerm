@@ -1,0 +1,1 @@
+fix a bug where partition table was written on disk with filesystem, resulting in data loss
