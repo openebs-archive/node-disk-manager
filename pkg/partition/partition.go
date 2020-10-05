@@ -42,6 +42,9 @@ const (
 
 	// NoOfLogicalBlocksForGPTHeader is the no. of logical blocks for the GPT header.
 	NoOfLogicalBlocksForGPTHeader = 1
+	
+	// OpenEBSNDMPartitionName is the name meta info for openEBS created partitions.
+	OpenEBSNDMPartitionName = "OpenEBS_NDM"
 )
 
 // Disk struct represents a disk which needs to be partitioned
@@ -92,7 +95,7 @@ func (d *Disk) createPartitionTable() error {
 }
 
 // addPartition is used to add a partition to the partition table.
-// Currently only a single partition can be created. i.e The method can be called only once for a disk
+// Currently only a single partition can be created i.e, The method can be called only once for a disk.
 // TODO: @akhilerm, add method to create partition with given size
 func (d *Disk) addPartition() error {
 	var startSector, endSector uint64
@@ -111,6 +114,7 @@ func (d *Disk) addPartition() error {
 		Start: startSector,
 		End:   endSector,
 		Type:  gpt.LinuxFilesystem,
+		Name:  OpenEBSNDMPartitionName,
 	}
 	d.table.Partitions = append(d.table.Partitions, partition)
 	return nil
