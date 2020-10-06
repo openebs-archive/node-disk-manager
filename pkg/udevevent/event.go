@@ -71,7 +71,7 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 	if action != libudevwrapper.UDEV_ACTION_REMOVE {
 		sysfsDevice, err := sysfs.NewSysFsDeviceFromDevPath(deviceDetails.DevPath)
 		if err != nil {
-			klog.Errorf("could not get sysfs device for %s", deviceDetails.DevPath)
+			klog.Errorf("could not get sysfs device for %s, err: %v", deviceDetails.DevPath, err)
 		} else {
 			dependents, err := sysfsDevice.GetDependents()
 			// TODO if error occurs need to do a scan from the beginning

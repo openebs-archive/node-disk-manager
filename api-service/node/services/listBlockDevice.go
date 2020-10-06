@@ -160,7 +160,7 @@ func GetAllTypes(BL *v1alpha1.BlockDeviceList) error {
 		// GetDependents should not be called on sparse devices, hence this block comes later.
 		sysfsDevice, err := sysfs.NewSysFsDeviceFromDevPath(bd.Spec.Path)
 		if err != nil {
-			klog.Errorf("could not get sysfs device for %s", bd.Spec.Path)
+			klog.Errorf("could not get sysfs device for %s, err: %v", bd.Spec.Path, err)
 			continue
 		}
 		depDevices, err := sysfsDevice.GetDependents()

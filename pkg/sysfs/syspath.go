@@ -205,7 +205,7 @@ func (s Device) GetDependents() (blockdevice.DependentBlockDevices, error) {
 
 // GetLogicalBlockSize gets the logical block size, the caller should handle if 0 LB size is returned
 func (s Device) GetLogicalBlockSize() (int64, error) {
-	logicalBlockSize, err := readSysFSFileAsInt64(s.sysPath + "/queue/logical_block_size")
+	logicalBlockSize, err := readSysFSFileAsInt64(s.sysPath + "queue/logical_block_size")
 	if err != nil {
 		return 0, err
 	}
@@ -214,7 +214,7 @@ func (s Device) GetLogicalBlockSize() (int64, error) {
 
 // GetPhysicalBlockSize gets the physical block size of the device
 func (s Device) GetPhysicalBlockSize() (int64, error) {
-	physicalBlockSize, err := readSysFSFileAsInt64(s.sysPath + "/queue/physical_block_size")
+	physicalBlockSize, err := readSysFSFileAsInt64(s.sysPath + "queue/physical_block_size")
 	if err != nil {
 		return 0, err
 	}
@@ -223,7 +223,7 @@ func (s Device) GetPhysicalBlockSize() (int64, error) {
 
 // GetHardwareSectorSize gets the hardware sector size of the device
 func (s Device) GetHardwareSectorSize() (int64, error) {
-	hardwareSectorSize, err := readSysFSFileAsInt64(s.sysPath + "/queue/hw_sector_size")
+	hardwareSectorSize, err := readSysFSFileAsInt64(s.sysPath + "queue/hw_sector_size")
 	if err != nil {
 		return 0, err
 	}
@@ -232,7 +232,7 @@ func (s Device) GetHardwareSectorSize() (int64, error) {
 
 // GetDriveType gets the drive type of the device based on the rotational value. Can be HDD or SSD
 func (s Device) GetDriveType() (string, error) {
-	rotational, err := readSysFSFileAsInt64(s.sysPath + "/queue/rotational")
+	rotational, err := readSysFSFileAsInt64(s.sysPath + "queue/rotational")
 	if err != nil {
 		return "", err
 	}
@@ -255,7 +255,7 @@ func (s Device) GetCapacityInBytes() (int64, error) {
 	// Ref: https://elixir.bootlin.com/linux/v4.4/source/fs/block_dev.c#L487
 	//
 	// Therefore, to get the capacity of the device it needs to always multiplied with 512
-	numberOfBlocks, err := readSysFSFileAsInt64(s.sysPath + "/size")
+	numberOfBlocks, err := readSysFSFileAsInt64(s.sysPath + "size")
 	if err != nil {
 		return 0, err
 	} else if numberOfBlocks == 0 {
