@@ -188,6 +188,29 @@ func (up *udevProbe) scan() error {
 			deviceDetails.DeviceAttributes.DeviceType = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
 			deviceDetails.SysPath = newUdevice.GetSyspath()
 			deviceDetails.DevPath = newUdevice.GetPath()
+
+			// log the details only if present, to avoid log flooding
+			if deviceDetails.DeviceAttributes.WWN != "" {
+				klog.V(4).Infof("device: %s, WWN: %s filled during udev scan",
+					deviceDetails.DevPath, deviceDetails.DeviceAttributes.WWN)
+			}
+			if deviceDetails.DeviceAttributes.Serial != "" {
+				klog.V(4).Infof("device: %s, Serial: %s filled during udev scan",
+					deviceDetails.DevPath, deviceDetails.DeviceAttributes.Serial)
+			}
+			if deviceDetails.PartitionInfo.PartitionTableUUID != "" {
+				klog.V(4).Infof("device: %s, PartitionTableUUID: %s filled during udev scan",
+					deviceDetails.DevPath, deviceDetails.PartitionInfo.PartitionTableUUID)
+			}
+			if deviceDetails.PartitionInfo.PartitionEntryUUID != "" {
+				klog.V(4).Infof("device: %s, PartitionEntryUUID: %s filled during udev scan",
+					deviceDetails.DevPath, deviceDetails.PartitionInfo.PartitionEntryUUID)
+			}
+			if deviceDetails.FSInfo.FileSystemUUID != "" {
+				klog.V(4).Infof("device: %s, FileSystemUUID: %s filled during udev scan",
+					deviceDetails.DevPath, deviceDetails.FSInfo.FileSystemUUID)
+			}
+
 			diskInfo = append(diskInfo, deviceDetails)
 
 			// get the dependents of the block device
@@ -195,12 +218,12 @@ func (up *udevProbe) scan() error {
 			sysfsDevice, err := sysfs.NewSysFsDeviceFromDevPath(deviceDetails.DevPath)
 			// TODO if error occurs a rescan may be required
 			if err != nil {
-				klog.Errorf("could not get sysfs device for %s", deviceDetails.DevPath)
+				klog.Errorf("could not get sysfs device for %s, err: %v", deviceDetails.DevPath, err)
 			} else {
 				dependents, err := sysfsDevice.GetDependents()
 				// TODO if error occurs need to do a scan from the beginning
 				if err != nil {
-					klog.Error("error getting dependent devices for ", deviceDetails.DevPath)
+					klog.Errorf("error getting dependent devices for %s, err: %v", deviceDetails.DevPath, err)
 				} else {
 					deviceDetails.DependentDevices = dependents
 					klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
@@ -236,6 +259,29 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice
 	blockDevice.DeviceAttributes.Serial = udevDiskDetails.Serial
 	blockDevice.DeviceAttributes.Vendor = udevDiskDetails.Vendor
 	blockDevice.DeviceAttributes.IDType = udevDiskDetails.IDType
+
+	// log only if details are present to prevent log flooding
+	if blockDevice.DeviceAttributes.Model != "" {
+		klog.V(4).Infof("device: %s, Model: %s filled by udev probe",
+			blockDevice.DevPath, blockDevice.DeviceAttributes.Model)
+	}
+	if blockDevice.DeviceAttributes.WWN != "" {
+		klog.V(4).Infof("device: %s, WWN: %s filled by udev probe",
+			blockDevice.DevPath, blockDevice.DeviceAttributes.WWN)
+	}
+	if blockDevice.DeviceAttributes.Serial != "" {
+		klog.V(4).Infof("device: %s, Serial: %s filled by udev probe",
+			blockDevice.DevPath, blockDevice.DeviceAttributes.Serial)
+	}
+	if blockDevice.DeviceAttributes.Vendor != "" {
+		klog.V(4).Infof("device: %s, Vendor: %s filled by udev probe",
+			blockDevice.DevPath, blockDevice.DeviceAttributes.Vendor)
+	}
+	if blockDevice.DeviceAttributes.IDType != "" {
+		klog.V(4).Infof("device: %s, IDType: %s filled by udev probe",
+			blockDevice.DevPath, blockDevice.DeviceAttributes.IDType)
+	}
+
 	if len(udevDiskDetails.ByIdDevLinks) != 0 {
 		blockDevice.DevLinks = append(blockDevice.DevLinks, blockdevice.DevLink{
 			Kind:  libudevwrapper.BY_ID_LINK,
