@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/klog"
+	"strings"
 )
 
 const (
@@ -296,6 +297,12 @@ func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceCla
 	}
 
 	for _, bd := range originalBD.Items {
+		// if the tag label value is empty then the BD should not be selected
+		if val,ok:=bd.Labels[kubernetes.BlockDeviceTagLabel];ok{
+			if strings.TrimSpace(val)==""{
+				continue
+			}
+		}
 		// if the tag label is not present, the BD will be included in the list
 		if blockDeviceTagDoesNotExistSelector.Matches(labels.Set(bd.Labels)) {
 			filteredBDList.Items = append(filteredBDList.Items, bd)
