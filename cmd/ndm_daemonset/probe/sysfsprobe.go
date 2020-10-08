@@ -87,6 +87,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 	sysFsDevice, err := sysfs.NewSysFsDeviceFromDevPath(blockDevice.DevPath)
 	if err != nil {
 		klog.Errorf("unable to get sysfs device for device: %s, err: %v", blockDevice.DevPath, err)
+		return
 	}
 
 	if blockDevice.DeviceAttributes.LogicalBlockSize == 0 {
