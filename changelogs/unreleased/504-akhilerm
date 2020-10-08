@@ -1,0 +1,1 @@
+add controller options to device list command, fixed sysfs probe processing empty devices
