@@ -41,6 +41,8 @@ before_script:
       sudo chown -R $USER $HOME/.kube;
       make shellcheck;
     fi
+  - export RELEASE_TAG="$TRAVIS_TAG"
+  - export BRANCH="$TRAVIS_BRANCH"
 
 script:
   - make

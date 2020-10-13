@@ -68,15 +68,20 @@ jobs:
             CI_TAG="ci"
           fi
           echo "::set-env name=TAG::${CI_TAG}"
-          echo "::set-env name=BRANCH::{BRANCH}"
+          echo "::set-env name=BRANCH::${BRANCH}"
           echo "BRANCH: ${BRANCH}"
           echo "TAG: ${CI_TAG}"
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+
       - name: Set up Docker Buildx
         id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
+        uses: docker/setup-buildx-action@v1
         with:
-          buildx-version: latest
+          version: latest
 
       - name: Login to GitHub Docker Registry
         run: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
@@ -85,6 +90,8 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build & Push Image
+        env:
+          IMAGE_ORG: ${{ secrets.IMAGE_ORG}}
         run: |
           make docker.buildx.ndm
           make buildx.push.ndm
@@ -104,15 +111,20 @@ jobs:
             CI_TAG="ci"
           fi
           echo "::set-env name=TAG::${CI_TAG}"
-          echo "::set-env name=BRANCH::{BRANCH}"
+          echo "::set-env name=BRANCH::${BRANCH}"
           echo "BRANCH: ${BRANCH}"
           echo "TAG: ${CI_TAG}"
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+
       - name: Set up Docker Buildx
         id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
+        uses: docker/setup-buildx-action@v1
         with:
-          buildx-version: latest
+          version: latest
 
       - name: Login to GitHub Docker Registry
         run: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
@@ -121,6 +133,8 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build & Push Image
+        env:
+          IMAGE_ORG: ${{ secrets.IMAGE_ORG}}
         run: |
           make docker.buildx.exporter
           make buildx.push.exporter
@@ -140,15 +154,20 @@ jobs:
             CI_TAG="ci"
           fi
           echo "::set-env name=TAG::${CI_TAG}"
-          echo "::set-env name=BRANCH::{BRANCH}"
+          echo "::set-env name=BRANCH::${BRANCH}"
           echo "BRANCH: ${BRANCH}"
           echo "TAG: ${CI_TAG}"
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+
       - name: Set up Docker Buildx
         id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
+        uses: docker/setup-buildx-action@v1
         with:
-          buildx-version: latest
+          version: latest
 
       - name: Login to GitHub Docker Registry
         run: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
@@ -157,6 +176,8 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build & Push Image
+        env:
+          IMAGE_ORG: ${{ secrets.IMAGE_ORG}}
         run: |
           make docker.buildx.ndo
           make buildx.push.ndo
