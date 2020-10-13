@@ -47,6 +47,22 @@ DOCKERX_IMAGE_NDO:=${IMAGE_ORG}/node-disk-operator:${TAG}
 # Name of the multiarch image for ndm exporter
 DOCKERX_IMAGE_EXPORTER:=${IMAGE_ORG}/node-disk-exporter:${TAG}
 
+# Build ndm docker image with buildx
+# Experimental docker feature to build cross platform multi-architecture docker images
+# https://docs.docker.com/buildx/working-with-buildx/
+
+.PHONY: docker.buildx
+docker.buildx:
+	export DOCKER_CLI_EXPERIMENTAL=enabled
+	@if ! docker buildx ls | grep -q container-builder; then\
+		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
+	fi
+	@docker buildx build --platform ${PLATFORMS} \
+		-t "$(DOCKERX_IMAGE_NAME)" ${DBUILD_ARGS} -f $(PWD)/build/$(COMPONENT)/Dockerfile \
+		. ${PUSH_ARG}
+	@echo "--> Build docker image: $(DOCKERX_IMAGE_NAME)"
+	@echo
+
 .PHONY: buildx.ndm
 buildx.ndm: bootstrap install-dep-nonsudo clean build.common
 	@echo '--> Building node-disk-manager binary...'
@@ -55,20 +71,10 @@ buildx.ndm: bootstrap install-dep-nonsudo clean build.common
 	@echo '--> Built binary.'
 	@echo
 
-# Build ndm docker image with buildx
-# Experimental docker feature to build cross platform multi-architecture docker images
-# https://docs.docker.com/buildx/working-with-buildx/
 .PHONY: docker.buildx.ndm
-docker.buildx.ndm:
-	export DOCKER_CLI_EXPERIMENTAL=enabled
-	@if ! docker buildx ls | grep -q container-builder; then\
-		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
-	fi
-	@docker buildx build --platform ${PLATFORMS} \
-		-t "$(DOCKERX_IMAGE_NDM)" ${DBUILD_ARGS} -f "build/ndm-daemonset/Dockerfile" \
-		. ${PUSH_ARG}
-	@echo "--> Build docker image: $(DOCKERX_IMAGE_NDM)"
-	@echo
+docker.buildx.ndm: DOCKERX_IMAGE_NAME=$(DOCKERX_IMAGE_NDM)
+docker.buildx.ndm: COMPONENT=ndm-daemonset
+docker.buildx.ndm: docker.buildx
 
 .PHONY: buildx.ndo
 buildx.ndo: bootstrap install-dep-nonsudo clean build.common
@@ -79,16 +85,9 @@ buildx.ndo: bootstrap install-dep-nonsudo clean build.common
 	@echo
 
 .PHONY: docker.buildx.ndo
-docker.buildx.ndo:
-	export DOCKER_CLI_EXPERIMENTAL=enabled
-	@if ! docker buildx ls | grep -q container-builder; then\
-		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
-	fi
-	@docker buildx build --platform ${PLATFORMS} \
-		-t "$(DOCKERX_IMAGE_NDO)" ${DBUILD_ARGS} -f "build/ndm-operator/Dockerfile" \
-		. ${PUSH_ARG}
-	@echo "--> Build docker image: $(DOCKERX_IMAGE_NDO)"
-	@echo
+docker.buildx.ndo: DOCKERX_IMAGE_NAME=$(DOCKERX_IMAGE_NDO)
+docker.buildx.ndo: COMPONENT=ndm-operator
+docker.buildx.ndo: docker.buildx
 
 .PHONY: buildx.exporter
 buildx.exporter: bootstrap install-dep-nonsudo clean build.common
@@ -99,16 +98,9 @@ buildx.exporter: bootstrap install-dep-nonsudo clean build.common
 	@echo
 
 .PHONY: docker.buildx.exporter
-docker.buildx.exporter:
-	export DOCKER_CLI_EXPERIMENTAL=enabled
-	@if ! docker buildx ls | grep -q container-builder; then\
-		docker buildx create --platform ${PLATFORMS} --name container-builder --use;\
-	fi
-	@docker buildx build --platform ${PLATFORMS} \
-		-t "$(DOCKERX_IMAGE_EXPORTER)" ${DBUILD_ARGS} -f "build/ndm-exporter/Dockerfile" \
-		. ${PUSH_ARG}
-	@echo "--> Build docker image: $(DOCKERX_IMAGE_EXPORTER)"
-	@echo
+docker.buildx.exporter: DOCKERX_IMAGE_NAME=$(DOCKERX_IMAGE_EXPORTER)
+docker.buildx.exporter: COMPONENT=ndm-exporter
+docker.buildx.exporter: docker.buildx
 
 .PHONY: install-dep-nonsudo
 install-dep-nonsudo:
