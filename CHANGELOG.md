@@ -1,3 +1,11 @@
+v0.9.0 / 2020-10-14
+========================
+* (fix) Support excluding multiple OS disk paths ([#481](https://github.com/openebs/node-disk-manager/pull/481),[@rahulchheda](https://github.com/rahulchheda))
+* fix a bug where partition table was written on disk with filesystem, resulting in data loss ([#496](https://github.com/openebs/node-disk-manager/pull/496),[@akhilerm](https://github.com/akhilerm))
+* add partition name into NDM created partitions ([#494](https://github.com/openebs/node-disk-manager/pull/494),[@avats-dev](https://github.com/avats-dev))
+* fix(mount): detect real device when using /dev/root ([#492](https://github.com/openebs/node-disk-manager/pull/492),[@zlymeda](https://github.com/zlymeda))
+
+
 v0.9.0-RC1 / 2020-10-08
 ========================
 * (fix) Support excluding multiple OS disk paths ([#481](https://github.com/openebs/node-disk-manager/pull/481),[@rahulchheda](https://github.com/rahulchheda))
