@@ -42,7 +42,7 @@ data:
         name: path filter
         state: true
         include: ""
-        exclude: loop
+        exclude: "loop,/dev/fd0,/dev/sr0,/dev/ram,/dev/md,/dev/rbd"
 
 ---
 # Create NDM Service Account

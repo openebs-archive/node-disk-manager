@@ -130,8 +130,18 @@ func (odf *oSDiskExcludeFilter) Exclude(blockDevice *blockdevice.BlockDevice) bo
 			partitionRegex = "[0-9]*$"
 		}
 		regex := "^" + excludeDevPath + partitionRegex
-		klog.Infof("applying os-filter regex %s on %s", regex, blockDevice.DevPath)
-		if util.IsMatchRegex(regex, blockDevice.DevPath) {
+
+		// if the device is a dm device, need to check the /dev/mapper instead of /dev/dm-* because the
+		// mounts file will always have entry to the mapper path
+		var deviceMountPath string
+		if util.Contains(blockdevice.DeviceMapperDeviceTypes, blockDevice.DeviceAttributes.DeviceType) {
+			deviceMountPath = blockDevice.DMInfo.DevMapperPath
+		} else {
+			deviceMountPath = blockDevice.DevPath
+		}
+
+		klog.Infof("applying os-filter regex %s on %s", regex, deviceMountPath)
+		if util.IsMatchRegex(regex, deviceMountPath) {
 			return false
 		}
 	}

@@ -212,12 +212,18 @@ const (
 	// BlockDeviceTypeLoop represents a loop device
 	BlockDeviceTypeLoop = "loop"
 
+	// BlockDeviceTypeDMDevice is a dm device
 	BlockDeviceTypeDMDevice = "dm"
 
+	// BlockDeviceTypeLVM is an lvm device type
 	BlockDeviceTypeLVM = "lvm"
 
+	// BlockDeviceTypeCrypt is a LUKS volume
 	BlockDeviceTypeCrypt = "crypt"
 )
+
+// DeviceMapperDeviceTypes is the slice of device types that uses a device mapper
+var DeviceMapperDeviceTypes = []string{BlockDeviceTypeDMDevice, BlockDeviceTypeLVM, BlockDeviceTypeCrypt}
 
 const (
 	// DriveTypeHDD represents a rotating hard disk drive

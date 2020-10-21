@@ -67,6 +67,7 @@ const (
 	UDEV_PARTITION_NUMBER     = "ID_PART_ENTRY_NUMBER" // udev attribute to get partition number
 	UDEV_PARTITION_UUID       = "ID_PART_ENTRY_UUID"   // udev attribute to get partition uuid
 	UDEV_PARTITION_TYPE       = "ID_PART_ENTRY_TYPE"   // udev attribute to get partition type
+	UDEV_DM_UUID              = "DM_UUID"              // udev attribute to get the device mapper uuid
 )
 
 // UdevDiskDetails struct contain different attribute of disk.
