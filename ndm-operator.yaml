@@ -125,7 +125,7 @@ spec:
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
-        image: openebs/node-disk-manager-amd64:ci
+        image: openebs/node-disk-manager:ci
         args:
           - -v=4
           - --feature-gates="GPTBasedUUID"
@@ -224,7 +224,7 @@ spec:
       serviceAccountName: openebs-ndm-operator
       containers:
         - name: node-disk-operator
-          image: openebs/node-disk-operator-amd64:ci
+          image: openebs/node-disk-operator:ci
           ports:
           - containerPort: 8080
             name: liveness
