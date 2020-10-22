@@ -13,9 +13,9 @@ $ helm repo add ndm https://openebs.github.io/node-disk-manager
 
 You can then run `helm search repo ndm` to see the charts.
 
-#### Update OpenEBS Repo
+#### Update OpenEBS NDM Repo
 
-Once OpenEBS repository has been successfully fetched into the local system, it has to be updated to get the latest version. The OpenEBS repo can be updated using the following command.
+Once OpenEBS NDM repository has been successfully fetched into the local system, it has to be updated to get the latest version. The OpenEBS NDM repo can be updated using the following command.
 
 ```bash
 helm repo update
