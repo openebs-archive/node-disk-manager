@@ -1,0 +1,7 @@
+# See https://github.com/helm/chart-testing#configuration
+remote: origin
+chart-dirs:
+  - charts
+chart-repos:
+  - openebs-ndm=https://openebs.github.io/node-disk-manager
+helm-extra-args: --timeout=500s
