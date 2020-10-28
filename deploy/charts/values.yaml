@@ -11,9 +11,9 @@ ndm:
     # For example : quay.io/ is a correct value here and quay.io is incorrect
     registry:
     repository: openebs/node-disk-manager
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.0
+    tag: 0.8.1
   sparse:
     path: "/var/openebs/sparse"
     size: "10737418240"
@@ -43,14 +43,14 @@ ndm:
     periodSeconds: 60
 
 ndmOperator:
-  name: openebs-ndm-operator
+  name: operator
   enabled: true
   image:
     registry:
     repository: openebs/node-disk-operator
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.0
+    tag: 0.8.1
   annotations: {}
   podAnnotations: {}
   nodeSelector: {}

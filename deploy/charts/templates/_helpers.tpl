@@ -1,6 +1,7 @@
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
+This name is used for ndm daemonset
 */}}
 {{- define "openebs-ndm.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
@@ -23,8 +24,8 @@ If release name contains chart name it will be used as a full name.
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
 {{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- if contains .Release.Name $name }}
+{{- $name | trunc 63 | trimSuffix "-" }}
 {{- else }}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
 {{- end }}
@@ -32,7 +33,9 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{- define "openebs-ndm.operator.name" -}}
-{{- default .Values.ndmOperator.name .Values.ndmOperator.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- $ndmName := default .Chart.Name .Values.ndmOperator.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- $componentName := .Values.ndmOperator.name | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" $ndmName $componentName | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -44,9 +47,11 @@ If release name contains chart name it will be used as a full name.
 {{- if .Values.ndmOperator.fullnameOverride }}
 {{- .Values.ndmOperator.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Values.ndmOperator.name .Values.ndmOperator.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- $ndmOperatorName := include "openebs-ndm.operator.name" .}}
+
+{{- $name := default $ndmOperatorName .Values.ndmOperator.nameOverride }}
+{{- if contains .Release.Name $name }}
+{{- $name | trunc 63 | trimSuffix "-" }}
 {{- else }}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
 {{- end }}
@@ -106,14 +111,14 @@ Create match labels for ndm operator deployment
 {{- define "openebs-ndm.operator.matchLabels" -}}
 app: {{ template "openebs-ndm.operator.name" . }}
 release: {{ .Release.Name }}
-component: {{ .Values.ndmOperator.name | quote }}
+component: {{ default (include "openebs-ndm.operator.name" .) .Values.ndmOperator.componentName }}
 {{- end -}}
 
 {{/*
 Create component labels for ndm operator component
 */}}
 {{- define "openebs-ndm.operator.componentLabels" -}}
-openebs.io/component-name: {{ .Values.ndmOperator.name | quote }}
+openbes.io/component-name: {{ default (include "openebs-ndm.operator.name" .) .Values.ndmOperator.componentName }}
 {{- end -}}
 
 

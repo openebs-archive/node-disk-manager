@@ -1,8 +1,8 @@
 apiVersion: v2
 name: openebs-ndm
 description: Kubernetes Storage Device Management. Also used to maintain the inventory of block devices.
-version: 0.8.0
-appVersion: 0.8.0
+version: 0.8.1
+appVersion: 0.8.1
 icon: https://raw.githubusercontent.com/cncf/artwork/master/projects/openebs/icon/color/openebs-icon-color.png
 home: http://www.openebs.io/
 keywords:
