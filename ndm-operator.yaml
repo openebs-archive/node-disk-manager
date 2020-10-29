@@ -125,11 +125,11 @@ spec:
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
-        image: openebs/node-disk-manager:ci
+        image: akhilerm/node-disk-manager:ci
         args:
           - -v=4
           - --feature-gates="GPTBasedUUID"
-          - --feature-gates="APIService"
+ #         - --feature-gates="APIService"
           # Default address is 0.0.0.0:9115, do not use quotes around the address
           # - --api-service-address=0.0.0.0:9115
         imagePullPolicy: Always
