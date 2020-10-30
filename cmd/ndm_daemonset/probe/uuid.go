@@ -60,8 +60,8 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 		klog.Infof("device(%s) is a loop device, using node name: %s and path: %s", bd.DevPath, hostName, bd.DevPath)
 		uuidField = hostName + bd.DevPath
 		ok = true
-	case isDM(bd.DevPath):
-		// is a DM device, use the DM uuid
+	case util.Contains(blockdevice.DeviceMapperDeviceTypes, bd.DeviceAttributes.DeviceType):
+		// if a DM device, use the DM uuid
 		klog.Infof("device(%s) is a dm device, using DM UUID: %s", bd.DevPath, bd.DMInfo.DMUUID)
 		// TODO add a check if DM uuid is present, else may need to add mitigation steps
 		uuidField = bd.DMInfo.DMUUID
