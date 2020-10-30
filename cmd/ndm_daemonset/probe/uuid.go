@@ -55,6 +55,7 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 
 	switch {
 	case bd.DeviceAttributes.DeviceType == blockdevice.BlockDeviceTypeLoop:
+		// hostname and device name, i.e /dev/loopX will be used for generating uuid
 		hostName, _ := os.Hostname()
 		klog.Infof("device(%s) is a loop device, using node name: %s and path: %s", bd.DevPath, hostName, bd.DevPath)
 		uuidField = hostName + bd.DevPath
