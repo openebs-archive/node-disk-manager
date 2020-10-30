@@ -30,6 +30,10 @@ func TestGenerateUUID(t *testing.T) {
 	fakeSerial := "CT500MX500SSD1"
 	fakeFileSystemUUID := "149108ca-f404-4556-a263-04943e6cb0b3"
 	fakePartitionUUID := "065e2357-05"
+	fakeLVM_DM_UUID := "LVM-j2xmqvbcVWBQK9Jdttte3CyeVTGgxtVV5VcCi3nxdwihZDxSquMOBaGL5eymBNvk"
+	fakeCRYPT_DM_UUID := "LVM-j2xmqvbcVWBQK9Jdttte3CyeVTGgxtVV5VcCi3nxdwihZDxSquMOBaGL5eymBNvk"
+	loopDevicePath := "/dev/loop98"
+	hostName, _ := os.Hostname()
 	tests := map[string]struct {
 		bd       blockdevice.BlockDevice
 		wantUUID string
@@ -102,6 +106,42 @@ func TestGenerateUUID(t *testing.T) {
 			},
 			wantUUID: "",
 			wantOk:   false,
+		},
+		"deviceType-lvm device": {
+			bd: blockdevice.BlockDevice{
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DMUUID: fakeLVM_DM_UUID,
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+			},
+			wantUUID: blockdevice.BlockDevicePrefix + util.Hash(fakeLVM_DM_UUID),
+			wantOk:   true,
+		},
+		"deviceType-crypt device": {
+			bd: blockdevice.BlockDevice{
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DMUUID: fakeCRYPT_DM_UUID,
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeCrypt,
+				},
+			},
+			wantUUID: blockdevice.BlockDevicePrefix + util.Hash(fakeCRYPT_DM_UUID),
+			wantOk:   true,
+		},
+		"deviceType-loop device": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: loopDevicePath,
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLoop,
+				},
+			},
+			wantUUID: blockdevice.BlockDevicePrefix + util.Hash(hostName+loopDevicePath),
+			wantOk:   true,
 		},
 	}
 	for name, tt := range tests {
