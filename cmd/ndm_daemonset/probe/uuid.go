@@ -18,7 +18,6 @@ package probe
 
 import (
 	"os"
-	"strings"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -129,13 +128,4 @@ func generateUUIDFromPartitionTable(bd blockdevice.BlockDevice) (string, bool) {
 		return blockdevice.BlockDevicePrefix + util.Hash(uuidField), true
 	}
 	return "", false
-}
-
-// TODO move it to some other pkg
-func isDM(devPath string) bool {
-	devName := strings.Replace(devPath, "/dev/", "", 1)
-	if devName[0:3] == "dm-" {
-		return true
-	}
-	return false
 }

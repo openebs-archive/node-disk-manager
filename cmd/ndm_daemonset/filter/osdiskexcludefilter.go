@@ -130,7 +130,6 @@ func (odf *oSDiskExcludeFilter) Exclude(blockDevice *blockdevice.BlockDevice) bo
 			partitionRegex = "[0-9]*$"
 		}
 		regex := "^" + excludeDevPath + partitionRegex
-
 		klog.Infof("applying os-filter regex %s on %s", regex, blockDevice.DevPath)
 		if util.IsMatchRegex(regex, blockDevice.DevPath) {
 			return false

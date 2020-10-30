@@ -282,6 +282,10 @@ func getCmdlineFile() string {
 	return procCmdLine
 }
 
+// getDeviceName gets the blockdevice special file name.
+// eg: sda, sdb
+// if a mapper device is specified the symlink will be evaluated and the
+// dm-X name will be returned
 func getDeviceName(devPath string) string {
 	var err error
 	var deviceName string
