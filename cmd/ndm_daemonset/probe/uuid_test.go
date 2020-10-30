@@ -31,7 +31,7 @@ func TestGenerateUUID(t *testing.T) {
 	fakeFileSystemUUID := "149108ca-f404-4556-a263-04943e6cb0b3"
 	fakePartitionUUID := "065e2357-05"
 	fakeLVM_DM_UUID := "LVM-j2xmqvbcVWBQK9Jdttte3CyeVTGgxtVV5VcCi3nxdwihZDxSquMOBaGL5eymBNvk"
-	fakeCRYPT_DM_UUID := "LVM-j2xmqvbcVWBQK9Jdttte3CyeVTGgxtVV5VcCi3nxdwihZDxSquMOBaGL5eymBNvk"
+	fakeCRYPT_DM_UUID := "CRYPT-LUKS1-f4608c76343d4b5badaf6651d32f752b-backup"
 	loopDevicePath := "/dev/loop98"
 	hostName, _ := os.Hostname()
 	tests := map[string]struct {
