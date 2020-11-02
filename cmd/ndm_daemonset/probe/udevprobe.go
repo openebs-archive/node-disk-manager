@@ -180,12 +180,13 @@ func (up *udevProbe) scan() error {
 				deviceDetails.PartitionInfo.PartitionTableUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_TABLE_UUID)
 				deviceDetails.PartitionInfo.PartitionEntryUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
 				deviceDetails.FSInfo.FileSystemUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_FS_UUID)
+				deviceDetails.DMInfo.DMUUID = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DM_UUID)
 			} else {
 				uuid := newUdevice.GetUid()
 				disksUid = append(disksUid, uuid)
 				deviceDetails.UUID = uuid
 			}
-			deviceDetails.DeviceAttributes.DeviceType = newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
+			udevDeviceType := newUdevice.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
 			deviceDetails.SysPath = newUdevice.GetSyspath()
 			deviceDetails.DevPath = newUdevice.GetPath()
 
@@ -211,15 +212,13 @@ func (up *udevProbe) scan() error {
 					deviceDetails.DevPath, deviceDetails.FSInfo.FileSystemUUID)
 			}
 
-			diskInfo = append(diskInfo, deviceDetails)
-
-			// get the dependents of the block device
-			// this is done by scanning sysfs
 			sysfsDevice, err := sysfs.NewSysFsDeviceFromDevPath(deviceDetails.DevPath)
 			// TODO if error occurs a rescan may be required
 			if err != nil {
 				klog.Errorf("could not get sysfs device for %s, err: %v", deviceDetails.DevPath, err)
 			} else {
+				// get the dependents of the block device
+				// this is done by scanning sysfs
 				dependents, err := sysfsDevice.GetDependents()
 				// TODO if error occurs need to do a scan from the beginning
 				if err != nil {
@@ -228,7 +227,18 @@ func (up *udevProbe) scan() error {
 					deviceDetails.DependentDevices = dependents
 					klog.Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 				}
+				// the device type reported by udev will always be disk/partition. Using this info
+				// and the entries from sysfs, the actual device type is found out.
+				deviceType, err := sysfsDevice.GetDeviceType(udevDeviceType)
+				if err != nil {
+					klog.Errorf("could not get device type for %s, falling back to udev reported type: %s", deviceDetails.DevPath, udevDeviceType)
+					deviceType = udevDeviceType
+				}
+				deviceDetails.DeviceAttributes.DeviceType = deviceType
+				klog.Infof("Device: %s is of type: %s", deviceDetails.DevPath, deviceDetails.DeviceAttributes.DeviceType)
 			}
+
+			diskInfo = append(diskInfo, deviceDetails)
 		}
 		newUdevice.UdevDeviceUnref()
 	}
@@ -295,7 +305,6 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice
 			Links: udevDiskDetails.ByPathDevLinks,
 		})
 	}
-	blockDevice.DeviceAttributes.DeviceType = udevDiskDetails.DiskType
 
 	// filesystem info of the attached device. Only filesystem data will be filled in the struct,
 	// as the mountpoint related information will be filled in by the mount probe
@@ -304,7 +313,7 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice
 	blockDevice.PartitionInfo.PartitionTableType = udevDiskDetails.PartitionTableType
 
 	// if this is a partition, partition number and partition UUID need to be filled
-	if udevDiskDetails.DiskType == libudevwrapper.UDEV_PARTITION {
+	if udevDiskDetails.DiskType == blockdevice.BlockDeviceTypePartition {
 		blockDevice.PartitionInfo.PartitionNumber = udevDiskDetails.PartitionNumber
 	}
 }

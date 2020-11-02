@@ -115,6 +115,9 @@ type BlockDevice struct {
 	// information on the disk
 	DeviceAttributes DeviceAttribute
 
+	// DMInfo is filled if the device is a DM device
+	DMInfo DeviceMapperInformation
+
 	DevUse DeviceUsage
 
 	// PartitionInfo contains details if this blockdevice is a partition
@@ -209,12 +212,18 @@ const (
 	// BlockDeviceTypeLoop represents a loop device
 	BlockDeviceTypeLoop = "loop"
 
+	// BlockDeviceTypeDMDevice is a dm device
 	BlockDeviceTypeDMDevice = "dm"
 
+	// BlockDeviceTypeLVM is an lvm device type
 	BlockDeviceTypeLVM = "lvm"
 
+	// BlockDeviceTypeCrypt is a LUKS volume
 	BlockDeviceTypeCrypt = "crypt"
 )
+
+// DeviceMapperDeviceTypes is the slice of device types that uses a device mapper
+var DeviceMapperDeviceTypes = []string{BlockDeviceTypeDMDevice, BlockDeviceTypeLVM, BlockDeviceTypeCrypt}
 
 const (
 	// DriveTypeHDD represents a rotating hard disk drive
@@ -354,6 +363,15 @@ type PartitionInformation struct {
 
 	// PartitionTableType is the type of the partition (dos/gpt)
 	PartitionTableType string
+}
+
+type DeviceMapperInformation struct {
+	// DMUUID is the UUID of the device as present in <dev-sys-path>/dm/uuid
+	DMUUID string
+
+	// DevMapperPath is the device mapper path. It will be of the format /dev/mapper/<mapper>
+	// This path will be a symlink to the actual dm-X device node
+	DevMapperPath string
 }
 
 // DependentBlockDevices contains path of all devices that are

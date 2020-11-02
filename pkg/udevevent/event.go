@@ -52,7 +52,7 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 
 	// fields used for UUID. These fields will be filled always. But used only if the
 	// GPTBasedUUID feature-gate is enabled.
-	deviceDetails.DeviceAttributes.DeviceType = device.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
+	udevDeviceType := device.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
 	deviceDetails.DeviceAttributes.WWN = device.GetPropertyValue(libudevwrapper.UDEV_WWN)
 	deviceDetails.DeviceAttributes.Serial = device.GetPropertyValue(libudevwrapper.UDEV_SERIAL)
 
@@ -66,6 +66,8 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 	deviceDetails.PartitionInfo.PartitionEntryUUID = device.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
 	deviceDetails.FSInfo.FileSystemUUID = device.GetPropertyValue(libudevwrapper.UDEV_FS_UUID)
 
+	deviceDetails.DMInfo.DMUUID = device.GetPropertyValue(libudevwrapper.UDEV_DM_UUID)
+
 	// fields used for dependents. dependents cannot be obtained while
 	// removing the device since sysfs entry will be absent
 	if action != libudevwrapper.UDEV_ACTION_REMOVE {
@@ -77,9 +79,17 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 			// TODO if error occurs need to do a scan from the beginning
 			if err != nil {
 				klog.Errorf("could not get dependents for %s, %v", deviceDetails.DevPath, err)
+			} else {
+				deviceDetails.DependentDevices = dependents
+				klog.V(4).Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 			}
-			deviceDetails.DependentDevices = dependents
-			klog.V(4).Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
+			deviceType, err := sysfsDevice.GetDeviceType(udevDeviceType)
+			if err != nil {
+				klog.Errorf("could not get device type for %s, falling back to udev reported type: %s", deviceDetails.DevPath, udevDeviceType)
+				deviceType = udevDeviceType
+			}
+			deviceDetails.DeviceAttributes.DeviceType = deviceType
+			klog.Infof("Device: %s is of type: %s", deviceDetails.DevPath, deviceDetails.DeviceAttributes.DeviceType)
 		}
 	}
 
