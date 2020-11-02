@@ -4,9 +4,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "openebs-ndm.operator.fullname" . }}
-  {{- if .Values.ndmOperator.annotations }}
-  annotations:
-  {{ toYaml .Values.ndmOperator.annotations | indent 4 }}
+  {{- with .Values.ndmOperator.annotations }}
+  annotations: {{ toYaml . | nindent 4 }}
   {{- end }}
   labels:
     {{- include "openebs-ndm.operator.labels" . | nindent 4 }}
@@ -20,6 +19,9 @@ spec:
       {{- include "openebs-ndm.operator.matchLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with .Values.ndmOperator.podAnnotations }}
+      annotations: {{ toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         {{- include "openebs-ndm.operator.labels" . | nindent 8 }}
         {{- if .Values.ndmOperator.podLabels}}

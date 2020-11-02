@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 release:
-  version: "0.8.0"
+  version: "0.9.0"
 ndm:
   componentName: ndm
   enabled: true
@@ -11,9 +11,9 @@ ndm:
     # For example : quay.io/ is a correct value here and quay.io is incorrect
     registry:
     repository: openebs/node-disk-manager
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.1
+    tag: 0.9.0
   sparse:
     path: "/var/openebs/sparse"
     size: "10737418240"
@@ -50,7 +50,7 @@ ndmOperator:
     repository: openebs/node-disk-operator
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.8.1
+    tag: 0.9.0
   annotations: {}
   podAnnotations: {}
   nodeSelector: {}

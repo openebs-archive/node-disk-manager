@@ -118,7 +118,7 @@ component: {{ default (include "openebs-ndm.operator.name" .) .Values.ndmOperato
 Create component labels for ndm operator component
 */}}
 {{- define "openebs-ndm.operator.componentLabels" -}}
-openbes.io/component-name: {{ default (include "openebs-ndm.operator.name" .) .Values.ndmOperator.componentName }}
+openebs.io/component-name: {{ default (include "openebs-ndm.operator.name" .) .Values.ndmOperator.componentName }}
 {{- end -}}
 
 

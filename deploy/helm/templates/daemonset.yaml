@@ -3,9 +3,8 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: {{ template "openebs-ndm.fullname" . }}
-  {{- if .Values.ndm.annotations }}
-  annotations:
-  {{ toYaml .Values.ndm.annotations | indent 4 }}
+  {{- with .Values.ndm.annotations }}
+  annotations: {{ toYaml . | nindent 4 }}
   {{- end }}
   labels:
     {{- include "openebs-ndm.labels" . | nindent 4 }}
@@ -17,9 +16,8 @@ spec:
       {{- include "openebs-ndm.matchLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- if .Values.ndm.podAnnotations }}
-      annotations:
-      {{ toYaml .Values.ndm.podAnnotations | indent 8 }}
+      {{- with .Values.ndm.podAnnotations }}
+      annotations: {{ toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "openebs-ndm.labels" . | nindent 8 }}
