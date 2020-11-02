@@ -1,5 +1,5 @@
 # See https://github.com/helm/chart-testing#configuration
 remote: origin
 chart-dirs:
-  - deploy/charts
+  - deploy/helm
 helm-extra-args: --timeout=500s

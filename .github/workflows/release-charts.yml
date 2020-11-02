@@ -3,7 +3,7 @@ name: Release Charts
 on:
   push:
     paths:
-      - 'deploy/charts/**'
+      - 'deploy/helm/**'
     branches:
       - master
 
