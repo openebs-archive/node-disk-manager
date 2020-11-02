@@ -30,10 +30,10 @@ kubectl config set-context <current_context_name> --namespace=openebs
 
 - If namespace is not created, run the following command
 ```bash
-helm install <your-relase-name> ndm/openebs-ndm --create-namespace
+helm install <your-release-name> ndm/openebs-ndm --create-namespace
 ```
 - Else, if namespace is already created, run the following command
 ```bash
-helm install <your-relase-name> ndm/openebs-ndm
+helm install <your-release-name> ndm/openebs-ndm
 ```
 
