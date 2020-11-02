@@ -265,13 +265,32 @@ func filterNodeName(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec
 // already been filtered by the given selector.
 func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
 
+	/// remove BDs with empty tag in all cases
+	emptyTagFilteredBDList := &apis.BlockDeviceList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "BlockDevice",
+			APIVersion: "openebs.io/v1alpha1",
+		},
+	}
+	// This is given as a separate filter loop that works in all cases, irrespective of whether the user
+	// has specified the the label selector in the BDC or not.
+	for _, bd := range originalBD.Items {
+		// if the tag label value is empty then the BD should not be selected
+		if val, ok := bd.Labels[kubernetes.BlockDeviceTagLabel]; ok {
+			if len(strings.TrimSpace(val)) == 0 {
+				continue
+			}
+		}
+		emptyTagFilteredBDList.Items = append(emptyTagFilteredBDList.Items, bd)
+	}
+
 	// if the block-device-tag label was already included in the selector
 	// given in the BDC by the user, then this filter is not required. This
 	// is because it would have already performed the filter operation with the
 	// label. If the label is not present, a new selector is made to remove
 	// devices which have that label.
 	if !isBDTagDoesNotExistSelectorRequired(spec.Selector) {
-		return originalBD
+		return emptyTagFilteredBDList
 	}
 
 	// a DoesNotExist requirement is created to filter out devices which have
@@ -282,7 +301,7 @@ func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceCla
 	// only when non zero length of values are passed
 	if err != nil {
 		klog.Info("could not create requirement for label ", kubernetes.BlockDeviceTagLabel)
-		return originalBD
+		return emptyTagFilteredBDList
 	}
 
 	blockDeviceTagDoesNotExistSelector := labels.NewSelector()
@@ -296,13 +315,7 @@ func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceCla
 		},
 	}
 
-	for _, bd := range originalBD.Items {
-		// if the tag label value is empty then the BD should not be selected
-		if val,ok:=bd.Labels[kubernetes.BlockDeviceTagLabel];ok{
-			if strings.TrimSpace(val)==""{
-				continue
-			}
-		}
+	for _, bd := range emptyTagFilteredBDList.Items {
 		// if the tag label is not present, the BD will be included in the list
 		if blockDeviceTagDoesNotExistSelector.Matches(labels.Set(bd.Labels)) {
 			filteredBDList.Items = append(filteredBDList.Items, bd)
