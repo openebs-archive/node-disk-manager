@@ -111,6 +111,33 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 		},
 	}
 
+	// label list with some devices having default label and some devices
+	// with device tag, and some devices with empty tag
+	bdLabelList4 := []BDLabel{
+		map[string]string{
+			kubernetes.KubernetesHostNameLabel: "host1",
+		},
+		map[string]string{
+			kubernetes.KubernetesHostNameLabel: "host2",
+		},
+		map[string]string{
+			kubernetes.KubernetesHostNameLabel: "host3",
+			kubernetes.BlockDeviceTagLabel:     "X",
+		},
+		map[string]string{
+			kubernetes.KubernetesHostNameLabel: "host4",
+			kubernetes.BlockDeviceTagLabel:     "X",
+		},
+		map[string]string{
+			kubernetes.KubernetesHostNameLabel: "host5",
+			kubernetes.BlockDeviceTagLabel:     "",
+		},
+		map[string]string{
+			kubernetes.KubernetesHostNameLabel: "host6",
+			kubernetes.BlockDeviceTagLabel:     "",
+		},
+	}
+
 	type args struct {
 		bdLabelList BDLabelList
 		spec        *apis.DeviceClaimSpec
@@ -163,6 +190,42 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 				},
 			},
 			wantedNoofBDs: 2,
+		},
+		"some BDs with tag key, but with empty selector": {
+			args: args{
+				bdLabelList: bdLabelList4,
+				spec: &apis.DeviceClaimSpec{
+					Selector: &v1.LabelSelector{},
+				},
+			},
+			wantedNoofBDs: 2,
+		},
+		"some BDs with tag key, with selector matching empty tag": {
+			args: args{
+				bdLabelList: bdLabelList4,
+				spec: &apis.DeviceClaimSpec{
+					Selector: &v1.LabelSelector{
+						MatchLabels: map[string]string{kubernetes.BlockDeviceTagLabel: ""},
+					},
+				},
+			},
+			wantedNoofBDs: 4,
+		},
+		"some BDs with tag key, with selector matching tag exists operation": {
+			args: args{
+				bdLabelList: bdLabelList4,
+				spec: &apis.DeviceClaimSpec{
+					Selector: &v1.LabelSelector{
+						MatchExpressions: []v1.LabelSelectorRequirement{
+							{
+								Key:      kubernetes.BlockDeviceTagLabel,
+								Operator: v1.LabelSelectorOpExists,
+							},
+						},
+					},
+				},
+			},
+			wantedNoofBDs: 4,
 		},
 	}
 	for name, test := range tests {
