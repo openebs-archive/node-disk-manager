@@ -1,4 +1,4 @@
-name: Chart Lint and Test
+name: Lint and Test Charts
 
 on:
   push:
