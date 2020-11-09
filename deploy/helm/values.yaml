@@ -2,7 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 release:
-  version: "0.9.0"
+  version: "0.9.1"
+
+imagePullSecrets:
+# - name: "image-pull-secret"
+
 ndm:
   componentName: ndm
   enabled: true
@@ -13,7 +17,7 @@ ndm:
     repository: openebs/node-disk-manager
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.9.0
+    tag: 0.9.1
   sparse:
     path: "/var/openebs/sparse"
     size: "10737418240"
@@ -22,18 +26,27 @@ ndm:
     type: RollingUpdate
   annotations: {}
   podAnnotations: {}
+  resources: {}
+  # limits:
+  #   cpu: 10m
+  #   memory: 32Mi
+  # requests:
+  #   cpu: 10m
+  #   memory: 32Mi
   ## Labels to be added to ndm daemonset pods
   podLabels:
     name: openebs-ndm
   nodeSelector: {}
   tolerations: []
+  securityContext: {}
+  hostNetwork: true
   filters:
     enableOsDiskExcludeFilter: true
     enableVendorFilter: true
     excludeVendors: "CLOUDBYT,OpenEBS"
     enablePathFilter: true
     includePaths: ""
-    excludePaths: "loop,fd0,sr0,/dev/ram,/dev/dm-,/dev/md,/dev/rbd"
+    excludePaths: "loop,fd0,sr0,/dev/ram,/dev/dm-,/dev/md,/dev/rbd,/dev/zd"
   probes:
     enableSeachest: true
     enableUdevProbe: true
@@ -50,10 +63,12 @@ ndmOperator:
     repository: openebs/node-disk-operator
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 0.9.0
+    tag: 0.9.1
   annotations: {}
   podAnnotations: {}
   nodeSelector: {}
+  resources: {}
+  securityContext: {}
   tolerations: []
   healthCheck:
     initialDelaySeconds: 30

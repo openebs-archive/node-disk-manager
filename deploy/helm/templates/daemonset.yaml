@@ -26,7 +26,6 @@ spec:
         {{- end}}
     spec:
       serviceAccountName: {{ template "openebs-ndm.serviceAccountName" . }}
-      hostNetwork: true
 {{- if .Values.featureGates.enabled }}
 {{- if .Values.featureGates.APIService.enabled }}
       hostPID: true
@@ -47,6 +46,8 @@ spec:
 {{- end}}
 {{- end}}
         imagePullPolicy: {{ .Values.ndm.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.ndm.resources | indent 12 }}
         securityContext:
           privileged: true
         env:
@@ -149,6 +150,10 @@ spec:
       # kubectl label node <node-name> "openebs.io/nodegroup"="storage-node"
       #nodeSelector:
       #  "openebs.io/nodegroup": "storage-node"
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 2 }}
+{{- end }}
 {{- if .Values.ndm.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.ndm.nodeSelector | indent 8 }}
@@ -156,5 +161,12 @@ spec:
 {{- if .Values.ndm.tolerations }}
       tolerations:
 {{ toYaml .Values.ndm.tolerations | indent 8 }}
+{{- end }}
+{{- if .Values.ndm.securityContext }}
+      securityContext:
+{{ toYaml .Values.ndm.securityContext | indent 8 }}
+{{- end }}
+{{- if .Values.ndm.hostNetwork }}
+      hostNetwork: true
 {{- end }}
 {{- end }}

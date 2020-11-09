@@ -33,6 +33,8 @@ spec:
       - name: {{ template "openebs-ndm.operator.fullname" . }}
         image: "{{ .Values.ndmOperator.image.registry }}{{ .Values.ndmOperator.image.repository }}:{{ .Values.ndmOperator.image.tag }}"
         imagePullPolicy: {{ .Values.ndmOperator.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.ndmOperator.resources | indent 12 }}
         readinessProbe:
           exec:
             command:
@@ -72,10 +74,17 @@ spec:
             - "ndo"
           initialDelaySeconds: {{ .Values.ndmOperator.healthCheck.initialDelaySeconds }}
           periodSeconds: {{ .Values.ndmOperator.healthCheck.periodSeconds }}
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 2 }}
+{{- end }}
 {{- if .Values.ndmOperator.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.ndmOperator.nodeSelector | indent 8 }}
 {{- end }}
+{{- if .Values.ndmOperator.securityContext }}
+      securityContext:
+{{ toYaml .Values.ndmOperator.securityContext | indent 8 }}
 {{- if .Values.ndmOperator.tolerations }}
       tolerations:
 {{ toYaml .Values.ndmOperator.tolerations | indent 8 }}
