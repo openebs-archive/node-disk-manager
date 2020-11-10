@@ -39,7 +39,6 @@ ndm:
   nodeSelector: {}
   tolerations: []
   securityContext: {}
-  hostNetwork: true
   filters:
     enableOsDiskExcludeFilter: true
     enableVendorFilter: true

@@ -85,6 +85,7 @@ spec:
 {{- if .Values.ndmOperator.securityContext }}
       securityContext:
 {{ toYaml .Values.ndmOperator.securityContext | indent 8 }}
+{{- end }}
 {{- if .Values.ndmOperator.tolerations }}
       tolerations:
 {{ toYaml .Values.ndmOperator.tolerations | indent 8 }}

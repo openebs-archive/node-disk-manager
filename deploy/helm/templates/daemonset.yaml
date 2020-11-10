@@ -166,7 +166,5 @@ spec:
       securityContext:
 {{ toYaml .Values.ndm.securityContext | indent 8 }}
 {{- end }}
-{{- if .Values.ndm.hostNetwork }}
       hostNetwork: true
-{{- end }}
 {{- end }}
