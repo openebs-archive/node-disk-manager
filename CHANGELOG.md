@@ -1,3 +1,12 @@
+v1.0.0-RC1 / 2020-11-11
+========================
+* add controller options to device list command, fixed sysfs probe processing empty devices ([#504](https://github.com/openebs/node-disk-manager/pull/504),[@akhilerm](https://github.com/akhilerm))
+* chore(build) Updating dockerfile(s) with buildx built-in ARGs ([#503](https://github.com/openebs/node-disk-manager/pull/503),[@xunholy](https://github.com/xunholy))
+* add support for device-mapper(dm) devices. ([#495](https://github.com/openebs/node-disk-manager/pull/495),[@akhilerm](https://github.com/akhilerm))
+* restrict claiming of blockdevices with empty block-device-tag value ([#500](https://github.com/openebs/node-disk-manager/pull/500),[@ajeetrai707](https://github.com/ajeetrai707))
+
+
+
 v0.9.0 / 2020-10-14
 ========================
 * (fix) Support excluding multiple OS disk paths ([#481](https://github.com/openebs/node-disk-manager/pull/481),[@rahulchheda](https://github.com/rahulchheda))
