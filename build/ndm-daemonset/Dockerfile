@@ -26,7 +26,8 @@ ENV GO111MODULE=on \
   GOARCH=${TARGETARCH} \
   GOARM=${TARGETVARIANT} \
   DEBIAN_FRONTEND=noninteractive \
-  PATH="/root/go/bin:${PATH}"
+  PATH="/root/go/bin:${PATH}" \
+  RELEASE_TAG=${RELEASE_TAG}
 
 WORKDIR /go/src/github.com/openebs/node-disk-manager/
 
