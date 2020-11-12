@@ -1,9 +1,3 @@
-# OpenEBS Node Disk Manager Helm Chart
-
-[OpenEBS Node Disk Manager](https://github.com/openebs/node-disk-manager) aims to make it easy to manage the disks 
-attached to the node on a Kubernetes cluster.
-Please visit the [link](https://github.com/openebs/node-disk-manager) to know more about node disk manager.
-
 ## Introduction
 
 This chart bootstraps OpenEBS NDM deployment on a [Kubernetes](http://kubernetes.io) cluster using the 
@@ -14,9 +8,10 @@ This chart bootstraps OpenEBS NDM deployment on a [Kubernetes](http://kubernetes
 You can run OpenEBS NDM on any Kubernetes 1.13+ cluster in a matter of seconds.
 
 Please visit the [link](https://openebs.github.io/node-disk-manager/) for install instructions via helm3.
+
 ## Configuration
 
-The following table lists the configurable parameters of the OpenEBS chart and their default values.
+The following table lists the configurable parameters of the OpenEBS NDM chart and their default values.
 
 | Parameter                               | Description                                   | Default                                   |
 | ----------------------------------------| --------------------------------------------- | ----------------------------------------- |

@@ -64,7 +64,7 @@ ndmOperator:
     # Overrides the image tag whose default is the chart appVersion.
     tag: 0.9.1
   podLabels:
-  #  name: openebs-ndm-operator
+    name: openebs-ndm-operator
   annotations: {}
   podAnnotations: {}
   nodeSelector: {}
