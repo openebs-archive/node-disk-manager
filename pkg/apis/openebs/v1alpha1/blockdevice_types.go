@@ -28,7 +28,10 @@ import (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
 
+// +kubebuilder:resource:scope=Namespaced,shortName=bd
+
 // BlockDevice is the Schema used to represent a BlockDevice CR
+// +kubebuilder:resource:scope=Namespaced,shortName=bd
 type BlockDevice struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -55,6 +58,7 @@ type DeviceSpec struct {
 	ClaimRef *v1.ObjectReference `json:"claimRef,omitempty"`
 
 	// Details contain static attributes of BD like model,serial, and so forth
+	// +optional
 	Details DeviceDetails `json:"details"`
 
 	// DevLinks contains soft links of a block device like
@@ -63,6 +67,7 @@ type DeviceSpec struct {
 	DevLinks []DeviceDevLink `json:"devlinks"`
 
 	// FileSystem contains mountpoint and filesystem type
+	// +optional
 	FileSystem FileSystemInfo `json:"filesystem,omitempty"`
 
 	// NodeAttributes has the details of the node on which BD is attached
@@ -82,6 +87,7 @@ type DeviceSpec struct {
 	// Currently always default to No.
 	// To be deprecated
 	// +kubebuilder:validation:Enum:=Yes;No
+	// +optional
 	Partitioned string `json:"partitioned"`
 
 	// Path contain devpath (e.g. /dev/sdb)
@@ -113,6 +119,7 @@ type DeviceSpec struct {
 type NodeAttribute struct {
 	// NodeName is the name of the Kubernetes node resource on which the device is attached
 	// +kubebuilder:printcolumn:name="NodeName",type="string",JSONPath=`.spec.nodeAttributes.nodeName`
+	// +optional
 	NodeName string `json:"nodeName"`
 }
 
@@ -123,9 +130,11 @@ type DeviceCapacity struct {
 	Storage uint64 `json:"storage"`
 
 	// PhysicalSectorSize is blockdevice physical-Sector size in bytes
+	// +optional
 	PhysicalSectorSize uint32 `json:"physicalSectorSize"`
 
 	// LogicalSectorSize is blockdevice logical-sector size in bytes
+	// +optional
 	LogicalSectorSize uint32 `json:"logicalSectorSize"`
 }
 
@@ -134,21 +143,26 @@ type DeviceDetails struct {
 	// DeviceType represents the type of device like
 	// sparse, disk, partition, lvm, raid
 	// +kubebuilder:validation:Enum:=disk;partition;sparse;loop;lvm;raid
+	// +optional
 	DeviceType string `json:"deviceType"`
 
 	// DriveType is the type of backing drive, HDD/SSD
 	// +kubebuilder:validation:Enum:=HDD;SDD;Unknown
+	// +optional
 	DriveType string `json:"driveType"`
 
 	// LogicalBlockSize is the logical block size in bytes
 	// reported by /sys/class/block/sda/queue/logical_block_size
+	// +optional
 	LogicalBlockSize uint32 `json:"logicalBlockSize"`
 
 	// PhysicalBlockSize is the physical block size in bytes
 	// reported by /sys/class/block/sda/queue/physical_block_size
+	// +optional
 	PhysicalBlockSize uint32 `json:"physicalBlockSize"`
 
 	// HardwareSectorSize is the hardware sector size in bytes
+	// +optional
 	HardwareSectorSize uint32 `json:"hardwareSectorSize"`
 
 	// Model is model of disk
@@ -202,9 +216,9 @@ type DeviceStatus struct {
 	// +kubebuilder:validation:Enum:=Claimed;Unclaimed;Released
 	ClaimState DeviceClaimState `json:"claimState"`
 
-	// State is the current state of the blockdevice (Active/Inactive)
+	// State is the current state of the blockdevice (Active/Inactive/Unknown)
 	// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.state`
-	// +kubebuilder:validation:Enum:=Active;Inactive
+	// +kubebuilder:validation:Enum:=Active;Inactive;Unknown
 	State BlockDeviceState `json:"state"`
 }
 

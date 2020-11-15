@@ -8,6 +8,8 @@ spec:
     kind: BlockDeviceClaim
     listKind: BlockDeviceClaimList
     plural: blockdeviceclaims
+    shortNames:
+    - bd
     singular: blockdeviceclaim
   scope: Namespaced
   versions:
@@ -90,7 +92,7 @@ spec:
                       x-kubernetes-int-or-string: true
                     description: 'Requests describes the minimum resources required.
                       eg: if storage resource of 10G is requested minimum capacity
-                      of 10G should be available'
+                      of 10G should be available TODO for validating'
                     type: object
                 required:
                 - requests
@@ -140,10 +142,6 @@ spec:
                       are ANDed.
                     type: object
                 type: object
-            required:
-            - deviceType
-            - hostName
-            - resources
             type: object
           status:
             description: DeviceClaimStatus defines the observed state of BlockDeviceClaim

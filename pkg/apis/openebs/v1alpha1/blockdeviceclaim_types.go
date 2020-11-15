@@ -29,6 +29,7 @@ import (
 // +k8s:openapi-gen=true
 
 // BlockDeviceClaim is the Schema for the BlockDeviceClaim CR
+// +kubebuilder:resource:scope=Namespaced,shortName=bd
 type BlockDeviceClaim struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -41,26 +42,33 @@ type BlockDeviceClaim struct {
 type DeviceClaimSpec struct {
 
 	// Selector is used to find block devices to be considered for claiming
+	// +optional
 	Selector *metav1.LabelSelector `json:"selector,omitempty"`
 
 	// Resources will help with placing claims on Capacity, IOPS
+	// +optional
 	Resources DeviceClaimResources `json:"resources"`
 
 	// DeviceType represents the type of drive like SSD, HDD etc.,
+	// +optional
 	DeviceType string `json:"deviceType"`
 
 	// Node name from where blockdevice has to be claimed.
 	// To be deprecated. Use NodeAttributes.HostName instead
+	// +optional
 	HostName string `json:"hostName"`
 
 	// Details of the device to be claimed
+	// +optional
 	Details DeviceClaimDetails `json:"deviceClaimDetails,omitempty"`
 
 	// BlockDeviceName is the reference to the block-device backing this claim
+	// +optional
 	BlockDeviceName string `json:"blockDeviceName,omitempty"`
 
 	// BlockDeviceNodeAttributes is the attributes on the node from which a BD should
 	// be selected for this claim. It can include nodename, failure domain etc.
+	// +optional
 	BlockDeviceNodeAttributes BlockDeviceNodeAttributes `json:"blockDeviceNodeAttributes,omitempty"`
 }
 
@@ -68,6 +76,7 @@ type DeviceClaimSpec struct {
 type DeviceClaimResources struct {
 	// Requests describes the minimum resources required. eg: if storage resource of 10G is
 	// requested minimum capacity of 10G should be available
+	//TODO for validating
 	Requests v1.ResourceList `json:"requests"`
 }
 

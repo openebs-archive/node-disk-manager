@@ -8,6 +8,8 @@ spec:
     kind: BlockDevice
     listKind: BlockDeviceList
     plural: blockdevices
+    shortNames:
+    - bd
     singular: blockdevice
   scope: Namespaced
   versions:
@@ -55,8 +57,6 @@ spec:
                     format: int64
                     type: integer
                 required:
-                - logicalSectorSize
-                - physicalSectorSize
                 - storage
                 type: object
               claimRef:
@@ -149,12 +149,6 @@ spec:
                   vendor:
                     description: Vendor is vendor of disk
                     type: string
-                required:
-                - deviceType
-                - driveType
-                - hardwareSectorSize
-                - logicalBlockSize
-                - physicalBlockSize
                 type: object
               devlinks:
                 description: DevLinks contains soft links of a block device like /dev/by-id/...
@@ -196,8 +190,6 @@ spec:
                     description: NodeName is the name of the Kubernetes node resource
                       on which the device is attached
                     type: string
-                required:
-                - nodeName
                 type: object
               parentDevice:
                 description: "ParentDevice was intended to store the UUID of the parent
@@ -216,10 +208,8 @@ spec:
                 type: string
             required:
             - capacity
-            - details
             - devlinks
             - nodeAttributes
-            - partitioned
             - path
             type: object
           status:
@@ -233,10 +223,11 @@ spec:
                 - Released
                 type: string
               state:
-                description: State is the current state of the blockdevice (Active/Inactive)
+                description: State is the current state of the blockdevice (Active/Inactive/Unknown)
                 enum:
                 - Active
                 - Inactive
+                - Unknown
                 type: string
             required:
             - claimState
