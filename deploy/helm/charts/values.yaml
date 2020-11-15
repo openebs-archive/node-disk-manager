@@ -63,6 +63,8 @@ ndmOperator:
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: 0.9.1
+  podLabels:
+    name: openebs-ndm-operator
   annotations: {}
   podAnnotations: {}
   nodeSelector: {}
@@ -85,7 +87,7 @@ helperPod:
     repository: openebs/linux-utils
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 2.0.0
+    tag: 2.2.0
 
 crd:
   enableInstall: true
