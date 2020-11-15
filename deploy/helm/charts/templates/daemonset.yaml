@@ -21,8 +21,8 @@ spec:
       {{- end }}
       labels:
         {{- include "openebs-ndm.labels" . | nindent 8 }}
-        {{- if .Values.ndm.podLabels}}
-        {{ toYaml .Values.ndm.podLabels | nindent 8 }}
+        {{- with .Values.ndm.podLabels}}
+        {{ toYaml . | nindent 8 }}
         {{- end}}
     spec:
       serviceAccountName: {{ template "openebs-ndm.serviceAccountName" . }}

@@ -38,7 +38,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndm.filters.enablePathFilter`          | Enable filters of paths                       | `true`                                    |
 | `ndm.filters.includePaths`              | Include devices with specified path patterns  | `""`                                      |
 | `ndm.filters.excludePaths`              | Exclude devices with specified path patterns  | `loop,fd0,sr0,/dev/ram,/dev/dm-,/dev/md,/dev/rbd,/dev/zd`|
-| `ndm.probes.enableSeachest`             | Enable Seachest probe for NDM                 | `true`                                    |
+| `ndm.probes.enableSeachest`             | Enable Seachest probe for NDM                 | `false`                                    |
 | `ndm.probes.enableUdevProbe`            | Enable Udev probe for NDM                     | `true`                                    |
 | `ndm.probes.enableSmartProbe`           | Enable Smart probe for NDM                    | `true`                                    |
 | `ndm.healthCheck.initialDelaySeconds`   | Delay before liveness probe is initiated      | `30`                                      |
