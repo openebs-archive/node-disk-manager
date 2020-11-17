@@ -31,7 +31,7 @@ jobs:
         if: steps.lint.outputs.changed == 'true'
 
       - name: Run chart-testing (install)
-        uses: helm/chart-testing-action@v1.1.0
+        uses: helm/chart-testing-action@v2.0.1
         with:
           command: install
           config: ct.yaml
