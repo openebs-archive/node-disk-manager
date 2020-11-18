@@ -4,9 +4,13 @@ on:
   push:
     paths:
       - 'deploy/helm/**'
+    branches:
+      - master
   pull_request:
     paths:
       - 'deploy/helm/**'
+    branches:
+      - master
 
 jobs:
   lint-test:
