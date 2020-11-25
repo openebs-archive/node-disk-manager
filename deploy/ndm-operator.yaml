@@ -1,14 +1,15 @@
-# Create NDM configmap
-# Define the Service Account
-# Define the RBAC rules for the Service Account
-# Launch the node-disk-manager ( daemon set )
-
+# Create the OpenEBS namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openebs
+---
 # Create NDM configmap
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: node-disk-manager-config
-  namespace: default
+  namespace: openebs
 data:
   # node-disk-manager-config contains config of available probes and filters.
   # Probes and Filters will initialize with default values if config for that
@@ -42,22 +43,22 @@ data:
         name: path filter
         state: true
         include: ""
-        exclude: "loop,/dev/fd0,/dev/sr0,/dev/ram,/dev/md,/dev/dm-,/dev/rbd,/dev/zd"
+        exclude: "/dev/loop,/dev/fd0,/dev/sr0,/dev/ram,/dev/md,/dev/dm-,/dev/rbd,/dev/zd"
 
 ---
 # Create NDM Service Account
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: openebs-ndm-operator
-  namespace: default
+  name: openebs-maya-operator
+  namespace: openebs
 ---
 # Define Role that allows operations on K8s pods/deployments
-#  in "default" namespace
+# in "openebs" namespace
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  namespace: default
+  namespace: openebs
   name: openebs-ndm-operator
 rules:
 - apiGroups: ["*"]
@@ -71,35 +72,32 @@ rules:
 - apiGroups:
   - openebs.io
   resources:
-  - disks
   - blockdevices
   - blockdeviceclaims
   verbs:
   - '*'
 ---
 # Bind the Service Account with the Role Privileges.
-# TODO: Check if default account also needs to be there
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: openebs-ndm-operator
-  namespace: default
+  namespace: openebs
 subjects:
 - kind: ServiceAccount
-  name: openebs-ndm-operator
-  namespace: default
-- kind: User
-  name: system:serviceaccount:default:default
-  apiGroup: rbac.authorization.k8s.io
+  name: openebs-maya-operator
+  namespace: openebs
 roleRef:
   kind: ClusterRole
   name: openebs-ndm-operator
   apiGroup: rbac.authorization.k8s.io
 ---
+# Create NDM daemonset
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: node-disk-manager
+  namespace: openebs
 spec:
   updateStrategy:
     type: RollingUpdate
@@ -205,10 +203,12 @@ spec:
         hostPath:
           path: /var/openebs/sparse
 ---
+# Create NDM operator deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: node-disk-operator
+  namespace: openebs
 spec:
   replicas: 1
   strategy:
@@ -256,10 +256,14 @@ spec:
             - name: CLEANUP_JOB_IMAGE
               value: "quay.io/openebs/linux-utils:latest"
 ---
+# Create NDM cluster exporter deployment.
+# This is an optional component and is not required for the basic
+# functioning of NDM
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ndm-cluster-exporter
+  namespace: openebs
 spec:
   replicas: 1
   strategy:
@@ -275,7 +279,7 @@ spec:
       serviceAccountName: openebs-ndm-operator
       containers:
         - name: ndm-cluster-exporter
-          image: openebs/node-disk-exporter-amd64:ci
+          image: openebs/node-disk-exporter:ci
           command:
             - /usr/local/bin/exporter
           args:
@@ -294,10 +298,14 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
 ---
+# Create NDM node exporter daemonset.
+# This is an optional component used for getting disk level
+# metrics from each of the storage nodes
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: ndm-node-exporter
+  namespace: openebs
 spec:
   updateStrategy:
     type: RollingUpdate
@@ -312,7 +320,7 @@ spec:
       serviceAccountName: openebs-ndm-operator
       containers:
         - name: node-disk-exporter
-          image: openebs/node-disk-exporter-amd64:ci
+          image: openebs/node-disk-exporter:ci
           command:
             - /usr/local/bin/exporter
           args:
@@ -332,6 +340,3 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-
-
-

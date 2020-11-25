@@ -1,32 +1,25 @@
+# Create NDM operator deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: node-disk-operator
-  labels:
-    app: openebs
-    component: ndm-operator
-    openebs.io/component-name: ndm-operator
+  namespace: openebs
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: openebs
-      component: ndm-operator
-      openebs.io/component-name: ndm-operator
+      name: node-disk-operator
   template:
     metadata:
       labels:
         name: node-disk-operator
-        app: openebs
-        component: ndm-operator
-        openebs.io/component-name: ndm-operator
     spec:
-      serviceAccountName: openebs-ndm
+      serviceAccountName: openebs-ndm-operator
       containers:
         - name: node-disk-operator
-          image: openebs/node-disk-operator-amd64:ci
+          image: openebs/node-disk-operator:ci
           ports:
             - containerPort: 8080
               name: liveness

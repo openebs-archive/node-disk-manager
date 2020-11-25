@@ -1,26 +1,19 @@
+# Create NDM daemonset
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: node-disk-manager
-  labels:
-    app: openebs
-    component: ndm
-    openebs.io/component-name: ndm
+  namespace: openebs
 spec:
   updateStrategy:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: openebs
-      component: ndm
-      openebs.io/component-name: ndm
+      name: node-disk-manager
   template:
     metadata:
       labels:
         name: node-disk-manager
-        app: openebs
-        component: ndm
-        openebs.io/component-name: ndm
     spec:
       # By default the node-disk-manager will be run on all kubernetes nodes
       # If you would like to limit this to only some nodes, say the nodes
@@ -32,27 +25,33 @@ spec:
       # Use host network as container network to monitor udev source using netlink
       # to detect disk attach and detach events using fd.
       hostNetwork: true
-      serviceAccountName: openebs-ndm
+      hostPID: true
+      serviceAccountName: openebs-ndm-operator
       containers:
         - name: node-disk-manager
-          image: openebs/node-disk-manager-amd64:ci
+          image: openebs/node-disk-manager:ci
           args:
-            - -v=2
-          #  - --feature-gates="GPTBasedUUID"
+            - -v=4
+            - --feature-gates="GPTBasedUUID"
+            - --feature-gates="APIService"
+            # Default address is 0.0.0.0:9115, do not use quotes around the address
+            # - --api-service-address=0.0.0.0:9115
           imagePullPolicy: Always
           securityContext:
             privileged: true
-          # make udev database available inside container
           volumeMounts:
             - name: config
               mountPath: /host/node-disk-manager.config
               subPath: node-disk-manager.config
               readOnly: true
+              # make udev database available inside container
             - name: udev
               mountPath: /run/udev
             - name: procmount
               mountPath: /host/proc
               readOnly: true
+            - name: devmount
+              mountPath: /dev
             - name: basepath
               mountPath: /var/openebs/ndm
             - name: sparsepath
@@ -95,6 +94,12 @@ spec:
           # to read which partition is mounted on / path
           hostPath:
             path: /proc
+            type: Directory
+        - name: devmount
+          # the /dev directory is mounted so that we have access to the devices that
+          # are connected at runtime of the pod.
+          hostPath:
+            path: /dev
             type: Directory
         - name: basepath
           hostPath:
