@@ -3,10 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: node-disk-manager-config
-  labels:
-    app: openebs
-    component: ndm-config
-    openebs.io/component-name: ndm-config
+  namespace: openebs
 data:
   # node-disk-manager-config contains config of available probes and filters.
   # Probes and Filters will initialize with default values if config for that
@@ -40,4 +37,4 @@ data:
         name: path filter
         state: true
         include: ""
-        exclude: loop
+        exclude: "/dev/loop,/dev/fd0,/dev/sr0,/dev/ram,/dev/md,/dev/dm-,/dev/rbd,/dev/zd"
