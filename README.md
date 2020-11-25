@@ -30,7 +30,7 @@ The design and implementation are currently in progress. The design is covered u
 A detailed usage documentation is maintained in the [wiki](https://github.com/openebs/node-disk-manager/wiki).
 
 ## Start Node Disk Manager
-* Edit [ndm-operator.yaml](./ndm-operator.yaml) to fit your environment: Set the `namespace`, `serviceAccount`, configure filters in the `node-disk-manager-config-map`.
+* Edit [ndm-operator.yaml](deploy/ndm-operator.yaml) to fit your environment: Set the `namespace`, `serviceAccount`, configure filters in the `node-disk-manager-config-map`.
 * Switch to Cluster Admin context and create the components with `kubectl create -f ndm-operator.yaml`.
 * This will install the daemon, operator and the exporters
 
