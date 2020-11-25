@@ -159,6 +159,10 @@ vet:
 fmt:
 	find . -type f -name "*.go" | grep -v "./vendor/*" | xargs gofmt -s -w -l
 
+manifests:
+	@echo "+ Generating NDM manifest"
+	$(PWD)/build/generate-manifests.sh
+
 # shellcheck target for checking shell scripts linting
 .PHONY: shellcheck
 shellcheck: getshellcheck
