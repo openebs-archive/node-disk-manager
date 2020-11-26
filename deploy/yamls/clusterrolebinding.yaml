@@ -5,9 +5,9 @@ metadata:
   name: openebs-ndm-operator
   namespace: openebs
 subjects:
-  - kind: ServiceAccount
-    name: openebs-maya-operator
-    namespace: openebs
+- kind: ServiceAccount
+  name: openebs-maya-operator
+  namespace: openebs
 roleRef:
   kind: ClusterRole
   name: openebs-ndm-operator

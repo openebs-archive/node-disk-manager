@@ -18,36 +18,36 @@ spec:
     spec:
       serviceAccountName: openebs-ndm-operator
       containers:
-        - name: node-disk-operator
-          image: openebs/node-disk-operator:ci
-          ports:
-            - containerPort: 8080
-              name: liveness
-          imagePullPolicy: Always
-          readinessProbe:
-            exec:
-              command:
-                - stat
-                - /tmp/operator-sdk-ready
-            initialDelaySeconds: 4
-            periodSeconds: 10
-            failureThreshold: 1
-          env:
-            - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            # the service account of this pod
-            - name: SERVICE_ACCOUNT
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.serviceAccountName
-            - name: OPERATOR_NAME
-              value: "node-disk-operator"
-            - name: CLEANUP_JOB_IMAGE
-              value: "quay.io/openebs/linux-utils:latest"
+      - name: node-disk-operator
+        image: openebs/node-disk-operator:ci
+        ports:
+        - containerPort: 8080
+          name: liveness
+        imagePullPolicy: Always
+        readinessProbe:
+          exec:
+            command:
+            - stat
+            - /tmp/operator-sdk-ready
+          initialDelaySeconds: 4
+          periodSeconds: 10
+          failureThreshold: 1
+        env:
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        # the service account of this pod
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+        - name: OPERATOR_NAME
+          value: "node-disk-operator"
+        - name: CLEANUP_JOB_IMAGE
+          value: "openebs/linux-utils:ci"
 ---
