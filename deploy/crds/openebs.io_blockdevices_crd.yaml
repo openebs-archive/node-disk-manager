@@ -28,11 +28,9 @@ spec:
       type: string
     - jsonPath: .spec.path
       name: Path
-      priority: 7
       type: string
     - jsonPath: .spec.filesystem.fsType
       name: FSType
-      priority: 8
       type: string
     name: v1alpha1
     schema:

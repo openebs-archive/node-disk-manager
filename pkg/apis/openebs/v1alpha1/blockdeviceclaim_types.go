@@ -29,7 +29,6 @@ import (
 // +k8s:openapi-gen=true
 
 // BlockDeviceClaim is the Schema for the BlockDeviceClaim CR
-// +kubebuilder:object:root=true
 // +kubebuilder:printcolumn:name="BlockDeviceName",type="string",JSONPath=`.spec.blockDeviceName`
 // +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=`.status.phase`
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=`.metadata.creationTimestamps`

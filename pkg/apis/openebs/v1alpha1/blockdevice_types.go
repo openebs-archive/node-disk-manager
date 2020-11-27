@@ -31,13 +31,12 @@ import (
 // +kubebuilder:resource:scope=Namespaced,shortName=bd
 
 // BlockDevice is the Schema used to represent a BlockDevice CR
-// +kubebuilder:object:root=true
 // +kubebuilder:printcolumn:name="NodeName",type="string",JSONPath=`.spec.nodeAttributes.nodeName`
 // +kubebuilder:printcolumn:name="Size",type="string",JSONPath=`.spec.capacity.storage`
 // +kubebuilder:printcolumn:name="ClaimState",type=string,JSONPath=`.status.claimState`
 // +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.state`
-// +kubebuilder:printcolumn:name="Path",type=string,JSONPath=`.spec.path`,priority=7
-// +kubebuilder:printcolumn:name="FSType",type=string,JSONPath=`.spec.filesystem.fsType`,priority=8
+// +kubebuilder:printcolumn:name="Path",type=string,JSONPath=`.spec.path`
+// +kubebuilder:printcolumn:name="FSType",type=string,JSONPath=`.spec.filesystem.fsType`
 // +kubebuilder:resource:scope=Namespaced,shortName=bd
 type BlockDevice struct {
 	metav1.TypeMeta   `json:",inline"`
