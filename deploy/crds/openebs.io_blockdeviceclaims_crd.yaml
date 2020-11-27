@@ -9,11 +9,21 @@ spec:
     listKind: BlockDeviceClaimList
     plural: blockdeviceclaims
     shortNames:
-    - bd
+    - bdc
     singular: blockdeviceclaim
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.blockDeviceName
+      name: BlockDeviceName
+      type: string
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .metadata.creationTimestamps
+      name: Age
+      type: date
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: BlockDeviceClaim is the Schema for the BlockDeviceClaim CR
@@ -155,3 +165,4 @@ spec:
         type: object
     served: true
     storage: true
+    subresources: {}

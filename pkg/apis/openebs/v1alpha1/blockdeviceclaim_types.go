@@ -29,7 +29,11 @@ import (
 // +k8s:openapi-gen=true
 
 // BlockDeviceClaim is the Schema for the BlockDeviceClaim CR
-// +kubebuilder:resource:scope=Namespaced,shortName=bd
+// +kubebuilder:object:root=true
+// +kubebuilder:printcolumn:name="BlockDeviceName",type="string",JSONPath=`.spec.blockDeviceName`
+// +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=`.status.phase`
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=`.metadata.creationTimestamps`
+// +kubebuilder:resource:scope=Namespaced,shortName=bdc
 type BlockDeviceClaim struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

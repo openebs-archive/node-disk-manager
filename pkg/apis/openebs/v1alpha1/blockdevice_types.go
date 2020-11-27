@@ -31,6 +31,13 @@ import (
 // +kubebuilder:resource:scope=Namespaced,shortName=bd
 
 // BlockDevice is the Schema used to represent a BlockDevice CR
+// +kubebuilder:object:root=true
+// +kubebuilder:printcolumn:name="NodeName",type="string",JSONPath=`.spec.nodeAttributes.nodeName`
+// +kubebuilder:printcolumn:name="Size",type="string",JSONPath=`.spec.capacity.storage`
+// +kubebuilder:printcolumn:name="ClaimState",type=string,JSONPath=`.status.claimState`
+// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.state`
+// +kubebuilder:printcolumn:name="Path",type=string,JSONPath=`.spec.path`,priority=7
+// +kubebuilder:printcolumn:name="FSType",type=string,JSONPath=`.spec.filesystem.fsType`,priority=8
 // +kubebuilder:resource:scope=Namespaced,shortName=bd
 type BlockDevice struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -91,7 +98,6 @@ type DeviceSpec struct {
 	Partitioned string `json:"partitioned"`
 
 	// Path contain devpath (e.g. /dev/sdb)
-	// +kubebuilder:printcolumn:name="Path",type=string,JSONPath=`.spec.path`,priority=7
 	// +kubebuilder:validation:Pattern:`^/dev/[a-z]{3,4}$`
 	Path string `json:"path"`
 }
@@ -118,7 +124,6 @@ type DeviceSpec struct {
 // if the node was recreated with same node name.
 type NodeAttribute struct {
 	// NodeName is the name of the Kubernetes node resource on which the device is attached
-	// +kubebuilder:printcolumn:name="NodeName",type="string",JSONPath=`.spec.nodeAttributes.nodeName`
 	// +optional
 	NodeName string `json:"nodeName"`
 }
@@ -126,7 +131,6 @@ type NodeAttribute struct {
 // DeviceCapacity defines the physical and logical size of the block device
 type DeviceCapacity struct {
 	// Storage is the blockdevice capacity in bytes
-	// +kubebuilder:printcolumn:name="Size",type="string",JSONPath=`.spec.capacity.storage`
 	Storage uint64 `json:"storage"`
 
 	// PhysicalSectorSize is blockdevice physical-Sector size in bytes
@@ -190,7 +194,6 @@ type DeviceDetails struct {
 // FileSystemInfo defines the filesystem type and mountpoint of the device if it exists
 type FileSystemInfo struct {
 	//Type represents the FileSystem type of the block device
-	// +kubebuilder:printcolumn:name="FSType",type=string,JSONPath=`.spec.filesystem.fsType`,priority=8
 	// +optional
 	Type string `json:"fsType,omitempty"`
 
@@ -212,12 +215,10 @@ type DeviceDevLink struct {
 // DeviceStatus defines the observed state of BlockDevice
 type DeviceStatus struct {
 	// ClaimState represents the claim state of the block device
-	// +kubebuilder:printcolumn:name="ClaimState",type=string,JSONPath=`.status.claimState`
 	// +kubebuilder:validation:Enum:=Claimed;Unclaimed;Released
 	ClaimState DeviceClaimState `json:"claimState"`
 
 	// State is the current state of the blockdevice (Active/Inactive/Unknown)
-	// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.state`
 	// +kubebuilder:validation:Enum:=Active;Inactive;Unknown
 	State BlockDeviceState `json:"state"`
 }

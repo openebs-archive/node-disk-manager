@@ -13,7 +13,28 @@ spec:
     singular: blockdevice
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.nodeAttributes.nodeName
+      name: NodeName
+      type: string
+    - jsonPath: .spec.capacity.storage
+      name: Size
+      type: string
+    - jsonPath: .status.claimState
+      name: ClaimState
+      type: string
+    - jsonPath: .status.state
+      name: Status
+      type: string
+    - jsonPath: .spec.path
+      name: Path
+      priority: 7
+      type: string
+    - jsonPath: .spec.filesystem.fsType
+      name: FSType
+      priority: 8
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: BlockDevice is the Schema used to represent a BlockDevice CR
@@ -238,3 +259,4 @@ spec:
         type: object
     served: true
     storage: true
+    subresources: {}
