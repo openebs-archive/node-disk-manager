@@ -106,14 +106,16 @@ spec:
                     type: string
                   deviceType:
                     description: DeviceType represents the type of device like sparse,
-                      disk, partition, lvm, raid
+                      disk, partition, lvm, crypt
                     enum:
                     - disk
                     - partition
                     - sparse
                     - loop
                     - lvm
-                    - raid
+                    - crypt
+                    - dm
+                    - mpath
                     type: string
                   driveType:
                     description: DriveType is the type of backing drive, HDD/SSD

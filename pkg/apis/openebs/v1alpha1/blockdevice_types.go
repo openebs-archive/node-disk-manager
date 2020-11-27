@@ -141,8 +141,8 @@ type DeviceCapacity struct {
 // DeviceDetails represent certain hardware/static attributes of the block device
 type DeviceDetails struct {
 	// DeviceType represents the type of device like
-	// sparse, disk, partition, lvm, raid
-	// +kubebuilder:validation:Enum:=disk;partition;sparse;loop;lvm;raid
+	// sparse, disk, partition, lvm, crypt
+	// +kubebuilder:validation:Enum:=disk;partition;sparse;loop;lvm;crypt;dm;mpath
 	// +optional
 	DeviceType string `json:"deviceType"`
 
