@@ -17,6 +17,14 @@ spec:
     - jsonPath: .spec.nodeAttributes.nodeName
       name: NodeName
       type: string
+    - jsonPath: .spec.path
+      name: Path
+      priority: 1
+      type: string
+    - jsonPath: .spec.filesystem.fsType
+      name: FSType
+      priority: 1
+      type: string
     - jsonPath: .spec.capacity.storage
       name: Size
       type: string
@@ -26,11 +34,8 @@ spec:
     - jsonPath: .status.state
       name: Status
       type: string
-    - jsonPath: .spec.path
-      name: Path
-      type: string
-    - jsonPath: .spec.filesystem.fsType
-      name: FSType
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
       type: string
     name: v1alpha1
     schema:
