@@ -32,12 +32,12 @@ import (
 
 // BlockDevice is the Schema used to represent a BlockDevice CR
 // +kubebuilder:printcolumn:name="NodeName",type="string",JSONPath=`.spec.nodeAttributes.nodeName`
-// +kubebuilder:printcolumn:name="Path",type=string,JSONPath=`.spec.path`,priority=1
-// +kubebuilder:printcolumn:name="FSType",type=string,JSONPath=`.spec.filesystem.fsType`,priority=1
+// +kubebuilder:printcolumn:name="Path",type="string",JSONPath=`.spec.path`,priority=1
+// +kubebuilder:printcolumn:name="FSType",type="string",JSONPath=`.spec.filesystem.fsType`,priority=1
 // +kubebuilder:printcolumn:name="Size",type="string",JSONPath=`.spec.capacity.storage`
-// +kubebuilder:printcolumn:name="ClaimState",type=string,JSONPath=`.status.claimState`
+// +kubebuilder:printcolumn:name="ClaimState",type="string",JSONPath=`.status.claimState`
 // +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.state`
-// +kubebuilder:printcolumn:name="Age",type=string,JSONPath=`.metadata.creationTimestamp`
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=`.metadata.creationTimestamp`
 // +kubebuilder:resource:scope=Namespaced,shortName=bd
 type BlockDevice struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -151,7 +151,7 @@ type DeviceDetails struct {
 	DeviceType string `json:"deviceType"`
 
 	// DriveType is the type of backing drive, HDD/SSD
-	// +kubebuilder:validation:Enum:=HDD;SDD;Unknown
+	// +kubebuilder:validation:Enum:=HDD;SDD;Unknown;""
 	// +optional
 	DriveType string `json:"driveType"`
 

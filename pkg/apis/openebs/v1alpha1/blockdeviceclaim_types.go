@@ -31,7 +31,7 @@ import (
 // BlockDeviceClaim is the Schema for the BlockDeviceClaim CR
 // +kubebuilder:printcolumn:name="BlockDeviceName",type="string",JSONPath=`.spec.blockDeviceName`
 // +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=`.status.phase`
-// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=`.metadata.creationTimestamps`
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=`.metadata.creationTimestamp`
 // +kubebuilder:resource:scope=Namespaced,shortName=bdc
 type BlockDeviceClaim struct {
 	metav1.TypeMeta   `json:",inline"`
