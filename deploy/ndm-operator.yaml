@@ -125,7 +125,7 @@ spec:
       # to detect disk attach and detach events using fd.
       hostNetwork: true
       hostPID: true
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-maya-operator
       containers:
       - name: node-disk-manager
         image: openebs/node-disk-manager:ci
@@ -226,7 +226,7 @@ spec:
       labels:
         name: node-disk-operator
     spec:
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-maya-operator
       containers:
       - name: node-disk-operator
         image: openebs/node-disk-operator:ci
@@ -281,7 +281,7 @@ spec:
       labels:
         name: ndm-cluster-exporter
     spec:
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-maya-operator
       containers:
       - name: ndm-cluster-exporter
         image: openebs/node-disk-exporter:ci
@@ -322,7 +322,7 @@ spec:
       labels:
         name: ndm-node-exporter
     spec:
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-maya-operator
       containers:
       - name: node-disk-exporter
         image: openebs/node-disk-exporter:ci
