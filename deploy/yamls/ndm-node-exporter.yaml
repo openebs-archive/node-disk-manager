@@ -17,7 +17,7 @@ spec:
       labels:
         name: ndm-node-exporter
     spec:
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-maya-operator
       containers:
       - name: node-disk-exporter
         image: openebs/node-disk-exporter:ci

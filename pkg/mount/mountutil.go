@@ -191,6 +191,14 @@ func parseRootDeviceLink(file io.Reader) (string, error) {
 
 			rootSpec := strings.Split(arg[len(rootPrefix):], "=")
 
+			// if the expected format is not present, then we skip getting the root partition
+			if len(rootSpec) < 2 {
+				if strings.HasPrefix(rootSpec[0], "/dev") {
+					return rootSpec[0], nil
+				}
+				return "", ErrCouldNotFindRootDevice
+			}
+
 			identifierType := strings.ToLower(rootSpec[0])
 			identifier := rootSpec[1]
 

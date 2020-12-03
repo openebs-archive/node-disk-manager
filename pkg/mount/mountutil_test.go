@@ -266,6 +266,11 @@ func TestParseRootDeviceLink(t *testing.T) {
 			"/dev/disk/by-partuuid/325c5bfa-08a8-433c-bc62-2dd5255213fd",
 			nil,
 		},
+		"single line with root on dm device, (simulates cmdline in GKE)": {
+			"BOOT_IMAGE=/syslinux/vmlinuz.A root=/dev/dm-0",
+			"/dev/dm-0",
+			nil,
+		},
 	}
 
 	for name, test := range tests {

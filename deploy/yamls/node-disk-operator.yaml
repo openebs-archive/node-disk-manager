@@ -16,7 +16,7 @@ spec:
       labels:
         name: node-disk-operator
     spec:
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-maya-operator
       containers:
       - name: node-disk-operator
         image: openebs/node-disk-operator:ci
