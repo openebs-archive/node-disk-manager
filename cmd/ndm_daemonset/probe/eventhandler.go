@@ -17,6 +17,7 @@ limitations under the License.
 package probe
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/features"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
@@ -51,6 +52,8 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 	isGPTBasedUUIDEnabled := features.FeatureGates.IsEnabled(features.GPTBasedUUID)
 
 	isErrorDuringUpdate := false
+	erroredDevices := make([]string, 0)
+
 	// iterate through each block device and perform the add/update operation
 	for _, device := range msg.Devices {
 		klog.Infof("Processing details for %s", device.DevPath)
@@ -65,6 +68,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 			err := pe.addBlockDevice(*device, bdAPIList)
 			if err != nil {
 				isErrorDuringUpdate = true
+				erroredDevices = append(erroredDevices, device.DevPath)
 				klog.Error(err)
 				// if error occurs we should start the scan again
 				break
@@ -120,4 +124,18 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 	if !isDeactivated && !isGPTBasedUUIDEnabled {
 		go Rescan(pe.Controller)
 	}
+}
+
+// check if parent of bd2 or any slaves of bd2 is parent to bd1
+func isParentOrSlaveDevice(bd1, bd2 blockdevice.BlockDevice) bool {
+	if bd1.DevPath == bd2.DependentDevices.Parent {
+		return true
+	}
+
+	for _, slave := range bd2.DependentDevices.Slaves {
+		if bd1.DevPath == slave {
+			return true
+		}
+	}
+	return false
 }
