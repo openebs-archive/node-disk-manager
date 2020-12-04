@@ -1,0 +1,1 @@
+fix a bug in parsing /proc/cmdline where the root partition identifier is not present
