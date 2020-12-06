@@ -54,6 +54,7 @@ type DeviceClaimSpec struct {
 
 	// DeviceType represents the type of drive like SSD, HDD etc.,
 	// +optional
+	// +nullable
 	DeviceType string `json:"deviceType"`
 
 	// Node name from where blockdevice has to be claimed.
