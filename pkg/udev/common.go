@@ -117,8 +117,11 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 		PartitionType:      device.GetPartitionType(),
 		PartitionNumber:    device.GetPartitionNumber(),
 		PartitionTableType: device.GetPropertyValue(UDEV_PARTITION_TABLE_TYPE),
-		// get the devicemapper path from the dm name
-		DMPath: "/dev/mapper" + device.GetPropertyValue(UDEV_DM_NAME),
+	}
+	// get the devicemapper path from the dm name
+	dmName := device.GetPropertyValue(UDEV_DM_NAME)
+	if len(dmName) != 0 {
+		diskDetails.DMPath = "/dev/mapper/" + dmName
 	}
 	return diskDetails
 }
