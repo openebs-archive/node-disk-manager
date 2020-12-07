@@ -68,6 +68,8 @@ const (
 	UDEV_PARTITION_UUID       = "ID_PART_ENTRY_UUID"   // udev attribute to get partition uuid
 	UDEV_PARTITION_TYPE       = "ID_PART_ENTRY_TYPE"   // udev attribute to get partition type
 	UDEV_DM_UUID              = "DM_UUID"              // udev attribute to get the device mapper uuid
+	// UDEV_DM_NAME is udev attribute to get the name of the dm device. This is used to generate the device mapper path
+	UDEV_DM_NAME = "DM_NAME"
 )
 
 // UdevDiskDetails struct contain different attribute of disk.
@@ -89,6 +91,8 @@ type UdevDiskDetails struct {
 	PartitionNumber uint8
 	// PartitionTableType is the type of the partition table (dos/gpt)
 	PartitionTableType string
+	// DMPath is the /dev/mapper path if this is a dm device
+	DMPath string
 }
 
 // freeCharPtr frees c pointer
@@ -113,6 +117,11 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 		PartitionType:      device.GetPartitionType(),
 		PartitionNumber:    device.GetPartitionNumber(),
 		PartitionTableType: device.GetPropertyValue(UDEV_PARTITION_TABLE_TYPE),
+	}
+	// get the devicemapper path from the dm name
+	dmName := device.GetPropertyValue(UDEV_DM_NAME)
+	if len(dmName) != 0 {
+		diskDetails.DMPath = "/dev/mapper/" + dmName
 	}
 	return diskDetails
 }

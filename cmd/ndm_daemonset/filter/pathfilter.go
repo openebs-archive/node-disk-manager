@@ -94,6 +94,12 @@ func (pf *pathFilter) Include(blockDevice *blockdevice.BlockDevice) bool {
 	if len(pf.includePaths) == 0 {
 		return true
 	}
+	if util.Contains(blockdevice.DeviceMapperDeviceTypes,
+		blockDevice.DeviceAttributes.DeviceType) {
+		if util.MatchIgnoredCase(pf.includePaths, blockDevice.DMInfo.DevMapperPath) {
+			return true
+		}
+	}
 	return util.MatchIgnoredCase(pf.includePaths, blockDevice.DevPath)
 }
 
@@ -102,6 +108,13 @@ func (pf *pathFilter) Include(blockDevice *blockdevice.BlockDevice) bool {
 func (pf *pathFilter) Exclude(blockDevice *blockdevice.BlockDevice) bool {
 	if len(pf.excludePaths) == 0 {
 		return true
+	}
+	// for DM devices, need to check both the devpath and device mapper path
+	if util.Contains(blockdevice.DeviceMapperDeviceTypes,
+		blockDevice.DeviceAttributes.DeviceType) {
+		if util.MatchIgnoredCase(pf.excludePaths, blockDevice.DMInfo.DevMapperPath) {
+			return false
+		}
 	}
 	return !util.MatchIgnoredCase(pf.excludePaths, blockDevice.DevPath)
 }
