@@ -270,6 +270,8 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice
 	blockDevice.DeviceAttributes.Vendor = udevDiskDetails.Vendor
 	blockDevice.DeviceAttributes.IDType = udevDiskDetails.IDType
 
+	blockDevice.DMInfo.DevMapperPath = udevDiskDetails.DMPath
+
 	// log only if details are present to prevent log flooding
 	if blockDevice.DeviceAttributes.Model != "" {
 		klog.V(4).Infof("device: %s, Model: %s filled by udev probe",

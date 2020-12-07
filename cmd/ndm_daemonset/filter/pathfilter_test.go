@@ -91,53 +91,211 @@ func TestPathStart(t *testing.T) {
 }
 
 func TestPathFilterExclude(t *testing.T) {
-	fakePathFilter1 := pathFilter{}
-	fakePathFilter2 := pathFilter{}
-	fakePathFilter3 := pathFilter{}
 	tests := map[string]struct {
-		filter      pathFilter
 		excludePath string
-		path        string
+		bd          blockdevice.BlockDevice
 		expected    bool
 	}{
-		"excludePath is empty":             {filter: fakePathFilter1, excludePath: "", path: "/dev/loop0", expected: true},
-		"excludePath and path is same":     {filter: fakePathFilter2, excludePath: "loop", path: "/dev/loop0", expected: false},
-		"excludePath and path is not same": {filter: fakePathFilter3, excludePath: "loop", path: "/dev/sdb", expected: true},
+		"excludePath is empty": {
+			excludePath: "",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/loop0",
+				},
+			},
+			expected: true,
+		},
+		"excludePath and path is same": {
+			excludePath: "loop",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/loop0",
+				},
+			},
+			expected: false,
+		},
+		"excludePath and path is not same": {
+			excludePath: "loop",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sdb",
+				},
+			},
+			expected: true,
+		},
+		"dm device with only mapper path in exclude list": {
+			excludePath: "/dev/mapper/vg0-lv0",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DevMapperPath: "/dev/mapper/vg0-lv0",
+				},
+			},
+			expected: false,
+		},
+		"dm device with mapper path not in exclude list, but /dev/dm-x path in list": {
+			excludePath: "/dev/dm-0",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DevMapperPath: "/dev/mapper/vg0-lv0",
+				},
+			},
+			expected: false,
+		},
+		"dm device with both mapper and /dev/dm-x path in exclude list": {
+			excludePath: "/dev/mapper/vg0-lv0,/dev/dm-0",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DevMapperPath: "/dev/mapper/vg0-lv0",
+				},
+			},
+			expected: false,
+		},
+		"dm device with no dm paths in exclude list": {
+			excludePath: "/dev/sdb",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DevMapperPath: "/dev/mapper/vg0-lv0",
+				},
+			},
+			expected: true,
+		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			bd := &blockdevice.BlockDevice{}
-			bd.DevPath = test.path
+			filter := pathFilter{}
 			if test.excludePath != "" {
-				test.filter.excludePaths = strings.Split(test.excludePath, ",")
+				filter.excludePaths = strings.Split(test.excludePath, ",")
 			}
-			assert.Equal(t, test.expected, test.filter.Exclude(bd))
+			assert.Equal(t, test.expected, filter.Exclude(&test.bd))
 		})
 	}
 }
 
 func TestPathFilterInclude(t *testing.T) {
-	fakePathFilter1 := pathFilter{}
-	fakePathFilter2 := pathFilter{}
-	fakePathFilter3 := pathFilter{}
 	tests := map[string]struct {
-		filter      pathFilter
 		includePath string
-		path        string
+		bd          blockdevice.BlockDevice
 		expected    bool
 	}{
-		"includePath is empty":             {filter: fakePathFilter1, includePath: "", path: "/dev/loop0", expected: true},
-		"includePath and path is same":     {filter: fakePathFilter2, includePath: "loop", path: "/dev/loop0", expected: true},
-		"includePath and path is not same": {filter: fakePathFilter3, includePath: "loop", path: "/dev/sdb", expected: false},
+		"includePath is empty": {
+			includePath: "",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/loop0",
+				},
+			},
+			expected: true,
+		},
+		"includePath and path is same": {
+			includePath: "loop",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/loop0",
+				},
+			},
+			expected: true,
+		},
+		"includePath and path is not same": {
+			includePath: "loop",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sdb",
+				},
+			},
+			expected: false,
+		},
+		"dm device with only mapper path in exclude list": {
+			includePath: "/dev/mapper/vg0-lv0",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DevMapperPath: "/dev/mapper/vg0-lv0",
+				},
+			},
+			expected: true,
+		},
+		"dm device with mapper path not in exclude list, but /dev/dm-x path in list": {
+			includePath: "/dev/dm-0",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DevMapperPath: "/dev/mapper/vg0-lv0",
+				},
+			},
+			expected: true,
+		},
+		"dm device with both mapper and /dev/dm-x path in exclude list": {
+			includePath: "/dev/mapper/vg0-lv0,/dev/dm-0",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DevMapperPath: "/dev/mapper/vg0-lv0",
+				},
+			},
+			expected: true,
+		},
+		"dm device with no dm paths in exclude list": {
+			includePath: "/dev/sdb",
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DevMapperPath: "/dev/mapper/vg0-lv0",
+				},
+			},
+			expected: false,
+		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			bd := &blockdevice.BlockDevice{}
-			bd.DevPath = test.path
+			filter := pathFilter{}
 			if test.includePath != "" {
-				test.filter.includePaths = strings.Split(test.includePath, ",")
+				filter.includePaths = strings.Split(test.includePath, ",")
 			}
-			assert.Equal(t, test.expected, test.filter.Include(bd))
+			assert.Equal(t, test.expected, filter.Include(&test.bd))
 		})
 	}
 }
