@@ -1,0 +1,1 @@
+fix a bug causing blockdevice resources not to be created for all the disks if one of the disk goes bad
