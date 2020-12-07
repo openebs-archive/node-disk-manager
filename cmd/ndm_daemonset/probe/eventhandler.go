@@ -21,6 +21,7 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/features"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
 )
 
@@ -65,13 +66,14 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 		klog.Infof("Processed details for %s", device.DevPath)
 
 		if isGPTBasedUUIDEnabled {
+			if isParentOrSlaveDevice(*device, erroredDevices) {
+				continue
+			}
 			err := pe.addBlockDevice(*device, bdAPIList)
 			if err != nil {
 				isErrorDuringUpdate = true
 				erroredDevices = append(erroredDevices, device.DevPath)
 				klog.Error(err)
-				// if error occurs we should start the scan again
-				break
 			}
 		} else {
 			// if GPTBasedUUID is disabled and the device type is partition,
@@ -126,14 +128,14 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 	}
 }
 
-// check if parent of bd2 or any slaves of bd2 is parent to bd1
-func isParentOrSlaveDevice(bd1, bd2 blockdevice.BlockDevice) bool {
-	if bd1.DevPath == bd2.DependentDevices.Parent {
-		return true
-	}
-
-	for _, slave := range bd2.DependentDevices.Slaves {
-		if bd1.DevPath == slave {
+// isParentOrSlaveDevice check if any of the errored device is a parent / slave to the
+// given blockdevice
+func isParentOrSlaveDevice(bd blockdevice.BlockDevice, erroredDevices []string) bool {
+	for _, erroredDevice := range erroredDevices {
+		if bd.DependentDevices.Parent == erroredDevice {
+			return true
+		}
+		if util.Contains(bd.DependentDevices.Slaves, erroredDevice) {
 			return true
 		}
 	}
