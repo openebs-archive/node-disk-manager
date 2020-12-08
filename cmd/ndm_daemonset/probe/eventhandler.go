@@ -17,9 +17,11 @@ limitations under the License.
 package probe
 
 import (
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/features"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
 )
 
@@ -51,6 +53,8 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 	isGPTBasedUUIDEnabled := features.FeatureGates.IsEnabled(features.GPTBasedUUID)
 
 	isErrorDuringUpdate := false
+	erroredDevices := make([]string, 0)
+
 	// iterate through each block device and perform the add/update operation
 	for _, device := range msg.Devices {
 		klog.Infof("Processing details for %s", device.DevPath)
@@ -62,12 +66,15 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 		klog.Infof("Processed details for %s", device.DevPath)
 
 		if isGPTBasedUUIDEnabled {
+			if isParentOrSlaveDevice(*device, erroredDevices) {
+				klog.Warningf("device: %s skipped, because the parent / slave device has errored", device.DevPath)
+				continue
+			}
 			err := pe.addBlockDevice(*device, bdAPIList)
 			if err != nil {
 				isErrorDuringUpdate = true
+				erroredDevices = append(erroredDevices, device.DevPath)
 				klog.Error(err)
-				// if error occurs we should start the scan again
-				break
 			}
 		} else {
 			// if GPTBasedUUID is disabled and the device type is partition,
@@ -120,4 +127,18 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 	if !isDeactivated && !isGPTBasedUUIDEnabled {
 		go Rescan(pe.Controller)
 	}
+}
+
+// isParentOrSlaveDevice check if any of the errored device is a parent / slave to the
+// given blockdevice
+func isParentOrSlaveDevice(bd blockdevice.BlockDevice, erroredDevices []string) bool {
+	for _, erroredDevice := range erroredDevices {
+		if bd.DependentDevices.Parent == erroredDevice {
+			return true
+		}
+		if util.Contains(bd.DependentDevices.Slaves, erroredDevice) {
+			return true
+		}
+	}
+	return false
 }
