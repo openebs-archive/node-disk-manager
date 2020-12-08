@@ -67,6 +67,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 
 		if isGPTBasedUUIDEnabled {
 			if isParentOrSlaveDevice(*device, erroredDevices) {
+				klog.Warningf("device: %s skipped, because the parent / slave device has errored", device.DevPath)
 				continue
 			}
 			err := pe.addBlockDevice(*device, bdAPIList)
