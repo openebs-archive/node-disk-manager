@@ -251,3 +251,78 @@ func compareBlockDeviceList(t *testing.T, bdList1, bdList2 apis.BlockDeviceList)
 		compareBlockDevice(t, bdList1.Items[i], bdList2.Items[i])
 	}
 }
+
+func TestIsParentOrSlaveDevice(t *testing.T) {
+	tests := map[string]struct {
+		bd             blockdevice.BlockDevice
+		erroredDevices []string
+		want           bool
+	}{
+		"no devices in errored state": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda1",
+				},
+				DependentDevices: blockdevice.DependentBlockDevices{
+					Parent:     "/dev/sda",
+					Partitions: nil,
+					Holders:    nil,
+					Slaves:     nil,
+				},
+			},
+			erroredDevices: nil,
+			want:           false,
+		},
+		"multiple devices in errored state with no matching BD": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda1",
+				},
+				DependentDevices: blockdevice.DependentBlockDevices{
+					Parent:     "/dev/sda",
+					Partitions: nil,
+					Holders:    nil,
+					Slaves:     nil,
+				},
+			},
+			erroredDevices: []string{"/dev/sdb", "/dev/sdc"},
+			want:           false,
+		},
+		"one device in errored state that is the parent of the given BD": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda1",
+				},
+				DependentDevices: blockdevice.DependentBlockDevices{
+					Parent:     "/dev/sda",
+					Partitions: nil,
+					Holders:    nil,
+					Slaves:     nil,
+				},
+			},
+			erroredDevices: []string{"/dev/sda"},
+			want:           true,
+		},
+		"one device in errored state that that the BD is a slave to": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DependentDevices: blockdevice.DependentBlockDevices{
+					Parent:     "",
+					Partitions: nil,
+					Holders:    nil,
+					Slaves:     []string{"/dev/sda", "/dev/sdb"},
+				},
+			},
+			erroredDevices: []string{"/dev/sda", "/dev/sdc"},
+			want:           true,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := isParentOrSlaveDevice(tt.bd, tt.erroredDevices)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
