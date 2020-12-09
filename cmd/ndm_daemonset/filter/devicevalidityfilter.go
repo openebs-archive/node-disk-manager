@@ -19,6 +19,8 @@ package filter
 import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/pkg/util"
+
 	"k8s.io/klog"
 )
 
@@ -73,6 +75,8 @@ func (dvf *deviceValidityFilter) Start() {
 	dvf.excludeValidationFuncs = append(dvf.excludeValidationFuncs,
 		isValidDevPath,
 		isValidCapacity,
+		isValidDMDevice,
+		isValidPartition,
 	)
 }
 
@@ -106,6 +110,26 @@ func isValidDevPath(bd *blockdevice.BlockDevice) bool {
 func isValidCapacity(bd *blockdevice.BlockDevice) bool {
 	if bd.Capacity.Storage == 0 {
 		klog.V(4).Infof("device: %s has invalid capacity", bd.DevPath)
+		return false
+	}
+	return true
+}
+
+// isValidPartition checks if the blockdevice for the partition has a valid partition UUID
+func isValidPartition(bd *blockdevice.BlockDevice) bool {
+	if bd.DeviceAttributes.DeviceType == blockdevice.BlockDeviceTypePartition &&
+		len(bd.PartitionInfo.PartitionEntryUUID) == 0 {
+		klog.V(4).Infof("device: %s of device-type partition has invalid partition UUID", bd.DevPath)
+		return false
+	}
+	return true
+}
+
+// isValidDMDevice checks if the blockdevice is a valid dm device
+func isValidDMDevice(bd *blockdevice.BlockDevice) bool {
+	if util.Contains(blockdevice.DeviceMapperDeviceTypes, bd.DeviceAttributes.DeviceType) &&
+		len(bd.DMInfo.DMUUID) == 0 {
+		klog.V(4).Infof("device: %s of device mapper type has invalid DM_UUID", bd.DevPath)
 		return false
 	}
 	return true
