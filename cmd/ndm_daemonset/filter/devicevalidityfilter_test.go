@@ -138,3 +138,81 @@ func Test_isValidCapacity(t *testing.T) {
 		})
 	}
 }
+
+func TestIsValidPartition(t *testing.T) {
+	tests := map[string]struct {
+		bd   *blockdevice.BlockDevice
+		want bool
+	}{
+		"valid blockdevice of type partition": {
+			bd: &blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda1",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypePartition,
+				},
+				PartitionInfo: blockdevice.PartitionInformation{
+					PartitionEntryUUID: "065e2357-05",
+				},
+			},
+			want: true,
+		},
+		"invalid blockdevice of type partition": {
+			bd: &blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda1",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypePartition,
+				},
+			},
+			want: false,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := isValidPartition(tt.bd)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestIsValidDMDevice(t *testing.T) {
+	tests := map[string]struct {
+		bd   *blockdevice.BlockDevice
+		want bool
+	}{
+		"valid blockdevice of type device mapper": {
+			bd: &blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-0",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+				DMInfo: blockdevice.DeviceMapperInformation{
+					DMUUID: "LVM-j2xmqvbcVWBQK9Jdttte3CyeVTGgxtVV5VcCi3nxdwihZDxSquMOBaGL5eymBNvk",
+				},
+			},
+			want: true,
+		},
+		"invalid blockdevice of type device mapper": {
+			bd: &blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/dm-1",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeLVM,
+				},
+			},
+			want: false,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := isValidDMDevice(tt.bd)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
