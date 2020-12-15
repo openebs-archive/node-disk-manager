@@ -1,3 +1,12 @@
+v1.0.1-RC1 / 2020-12-15
+========================
+* add check for device mapper path in path filter ([#518](https://github.com/openebs/node-disk-manager/pull/518),[@akhilerm](https://github.com/akhilerm))
+* fix a bug causing blockdevice resources not to be created for all the disks if one of the disk goes bad ([#517](https://github.com/openebs/node-disk-manager/pull/517),[@akhilerm](https://github.com/akhilerm))
+* fix a bug in parsing /proc/cmdline where the root partition identifier is not present ([#516](https://github.com/openebs/node-disk-manager/pull/516),[@akhilerm](https://github.com/akhilerm))
+* add checks for validity of partition and dm device resources created ([#519](https://github.com/openebs/node-disk-manager/pull/519),[@akhilerm](https://github.com/akhilerm))
+
+
+
 v1.0.0 / 2020-11-14
 ========================
 * add controller options to device list command, fixed sysfs probe processing empty devices ([#504](https://github.com/openebs/node-disk-manager/pull/504),[@akhilerm](https://github.com/akhilerm))
