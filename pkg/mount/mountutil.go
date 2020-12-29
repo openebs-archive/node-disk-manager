@@ -19,6 +19,7 @@ package mount
 import (
 	"bufio"
 	"fmt"
+	"github.com/openebs/node-disk-manager/pkg/features"
 	"io"
 	"os"
 	"path/filepath"
@@ -116,11 +117,20 @@ func getDiskDevPath(partition string) (string, error) {
 		return "", err
 	}
 
-	parentDisk, ok := getParentBlockDevice(link)
-	if !ok {
-		return "", fmt.Errorf("could not find parent device for %s", link)
+	var disk string
+	var ok bool
+	if features.FeatureGates.IsEnabled(features.UseOSDisk) {
+		// the last part will be used instead of the parent disk
+		split := strings.Split(link, "/")
+		disk = split[len(split)-1]
+	} else {
+		disk, ok = getParentBlockDevice(link)
+		if !ok {
+			return "", fmt.Errorf("could not find parent device for %s", link)
+		}
 	}
-	return "/dev/" + parentDisk, nil
+
+	return "/dev/" + disk, nil
 }
 
 //	getSoftLinkForPartition returns path to /sys/class/block/$partition
