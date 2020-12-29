@@ -1,0 +1,1 @@
+add `Unknown` drive type into blockdevice resource instead of using an empty string
