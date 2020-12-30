@@ -34,21 +34,45 @@ import (
 )
 
 var (
-	mockBDuid      = "blockdevice-fake-uid"
-	ignoreDiskUuid = "ignore-disk-uuid"
-	fakeHostName   = "node-name"
-	fakeModel      = "fake-disk-model"
-	fakeSerial     = "fake-disk-serial"
-	fakeVendor     = "fake-disk-vendor"
-	fakeWWN        = "fake-WWN"
-	fakeBDType     = "blockdevice"
+	ignoreDiskDevPath = "/dev/sdZ"
+	fakeHostName      = "node-name"
+	fakeModel         = "fake-disk-model"
+	fakeSerial        = "fake-disk-serial"
+	fakeVendor        = "fake-disk-vendor"
+	fakeWWN           = "fake-WWN"
+	fakeBDType        = "blockdevice"
+)
+
+var (
+	fakeBD1 = blockdevice.BlockDevice{
+		Identifier: blockdevice.Identifier{
+			DevPath: "/dev/sdX",
+		},
+		DeviceAttributes: blockdevice.DeviceAttribute{
+			WWN:    fakeWWN,
+			Serial: fakeSerial,
+		},
+	}
+	fakeBD2 = blockdevice.BlockDevice{
+		Identifier: blockdevice.Identifier{
+			DevPath: ignoreDiskDevPath,
+		},
+		DeviceAttributes: blockdevice.DeviceAttribute{
+			WWN: fakeWWN,
+		},
+	}
+)
+
+var (
+	fakeBD1Uuid, _ = generateUUID(fakeBD1)
+	fakeBD2Uuid, _ = generateUUID(fakeBD2)
 )
 
 func mockEmptyBlockDeviceCr() apis.BlockDevice {
 	fakeBDr := apis.BlockDevice{}
 	fakeObjectMeta := metav1.ObjectMeta{
 		Labels: make(map[string]string),
-		Name:   mockBDuid,
+		Name:   fakeBD1Uuid,
 	}
 	fakeTypeMeta := metav1.TypeMeta{
 		Kind:       controller.NDMBlockDeviceKind,
@@ -98,7 +122,7 @@ func (nf *fakeFilter) Include(fakeDiskInfo *blockdevice.BlockDevice) bool {
 }
 
 func (nf *fakeFilter) Exclude(fakeDiskInfo *blockdevice.BlockDevice) bool {
-	return fakeDiskInfo.UUID != ignoreDiskUuid
+	return fakeDiskInfo.DevPath != ignoreDiskDevPath
 }
 
 func TestAddBlockDeviceEvent(t *testing.T) {
@@ -111,6 +135,7 @@ func TestAddBlockDeviceEvent(t *testing.T) {
 		Filters:        make([]*controller.Filter, 0),
 		Probes:         make([]*controller.Probe, 0),
 		NodeAttributes: nodeAttributes,
+		BDHierarchy:    make(blockdevice.Hierarchy),
 	}
 	//add one filter
 	filter := &fakeFilter{}
@@ -134,13 +159,9 @@ func TestAddBlockDeviceEvent(t *testing.T) {
 	}
 	// blockdevice-1 details
 	eventmsg := make([]*blockdevice.BlockDevice, 0)
-	device1Details := &blockdevice.BlockDevice{}
-	device1Details.UUID = mockBDuid
-	eventmsg = append(eventmsg, device1Details)
+	eventmsg = append(eventmsg, &fakeBD1)
 	// blockdevice-2 details
-	device2Details := &blockdevice.BlockDevice{}
-	device2Details.UUID = ignoreDiskUuid
-	eventmsg = append(eventmsg, device2Details)
+	eventmsg = append(eventmsg, &fakeBD2)
 	// Creating one event message
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
@@ -148,10 +169,10 @@ func TestAddBlockDeviceEvent(t *testing.T) {
 	}
 	probeEvent.addBlockDeviceEvent(eventDetails)
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetBlockDevice(mockBDuid)
+	cdr1, err1 := fakeController.GetBlockDevice(fakeBD1Uuid)
 
 	// Retrieve disk resource
-	cdr2, _ := fakeController.GetBlockDevice(ignoreDiskUuid)
+	cdr2, _ := fakeController.GetBlockDevice(fakeBD2Uuid)
 	if cdr2 != nil {
 		t.Error("resource with ignoreDiskUuid should not be present in etcd")
 	}
@@ -164,6 +185,7 @@ func TestAddBlockDeviceEvent(t *testing.T) {
 	fakeDr.Spec.Details.Serial = fakeSerial
 	fakeDr.Spec.Details.Vendor = fakeVendor
 	fakeDr.Spec.Partitioned = controller.NDMNotPartitioned
+	fakeDr.Spec.Path = "/dev/sdX"
 
 	tests := map[string]struct {
 		actualDisk    apis.BlockDevice
@@ -192,6 +214,9 @@ func TestDeleteDiskEvent(t *testing.T) {
 		Probes:         probes,
 		Mutex:          mutex,
 		NodeAttributes: nodeAttributes,
+		BDHierarchy: blockdevice.Hierarchy{
+			"/dev/sdX": fakeBD1,
+		},
 	}
 
 	// Create one fake block device resource
@@ -205,9 +230,7 @@ func TestDeleteDiskEvent(t *testing.T) {
 		Controller: fakeController,
 	}
 	eventmsg := make([]*blockdevice.BlockDevice, 0)
-	deviceDetails := &blockdevice.BlockDevice{}
-	deviceDetails.UUID = mockBDuid
-	eventmsg = append(eventmsg, deviceDetails)
+	eventmsg = append(eventmsg, &fakeBD1)
 	eventDetails := controller.EventMessage{
 		Action:  libudevwrapper.UDEV_ACTION_REMOVE,
 		Devices: eventmsg,
@@ -215,7 +238,7 @@ func TestDeleteDiskEvent(t *testing.T) {
 	probeEvent.deleteBlockDeviceEvent(eventDetails)
 
 	// Retrieve resources
-	bdR1, err1 := fakeController.GetBlockDevice(mockBDuid)
+	bdR1, err1 := fakeController.GetBlockDevice(fakeBD1Uuid)
 
 	fakeBDr.Status.State = controller.NDMInactive
 	tests := map[string]struct {
