@@ -121,6 +121,8 @@ func getDiskDevPath(partition string) (string, error) {
 	var ok bool
 	if features.FeatureGates.IsEnabled(features.UseOSDisk) {
 		// the last part will be used instead of the parent disk
+		// eg: /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4 is the link
+		// and sda4 will be the device.
 		split := strings.Split(link, "/")
 		disk = split[len(split)-1]
 	} else {
