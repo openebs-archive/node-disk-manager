@@ -285,6 +285,12 @@ push:
 	DIMAGE=${IMAGE_ORG}/node-disk-operator-${XC_ARCH} ./build/push;
 	DIMAGE=${IMAGE_ORG}/node-disk-exporter-${XC_ARCH} ./build/push;
 
+.PHONY: crds
+crds:
+	touch build/Dockerfile 
+	# Install the binary from https://github.com/operator-framework/operator-sdk/releases/tag/v0.17.0
+	operator-sdk-v0.17.0-x86_64-linux-gnu generate crds
+	rm build/Dockerfile
 #-----------------------------------------------------------------------------
 # Target: docker.buildx.ndm docker.buildx.ndo docker.buildx.exporter
 #-----------------------------------------------------------------------------
