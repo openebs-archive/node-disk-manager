@@ -310,7 +310,7 @@ func TestGetSoftLinkForPartition(t *testing.T) {
 }
 
 func TestGetDiskDevPath_WithRoot(t *testing.T) {
-	path, err := getDiskDevPath("root")
+	path, err := getPartitionDevPath("root")
 
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(path, "/dev/"))
