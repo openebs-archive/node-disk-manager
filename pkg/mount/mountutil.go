@@ -19,6 +19,7 @@ package mount
 import (
 	"bufio"
 	"fmt"
+	"github.com/openebs/node-disk-manager/pkg/features"
 	"io"
 	"os"
 	"path/filepath"
@@ -58,7 +59,7 @@ func (m DiskMountUtil) GetDiskPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	devPath, err := getDiskDevPath(mountAttr.DevPath)
+	devPath, err := getPartitionDevPath(mountAttr.DevPath)
 	if err != nil {
 		return "", err
 	}
@@ -103,9 +104,14 @@ func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, err
 	return mountAttr, fmt.Errorf("could not get device mount attributes, Path/MountPoint not present in mounts file")
 }
 
-//	getDiskSysPath takes disk/partition name as input (sda, sda1, sdb, sdb2 ...) and
-//	returns syspath of that disk from which we can generate ndm given uuid of that disk.
-func getDiskDevPath(partition string) (string, error) {
+//	getPartitionDevPath takes disk/partition name as input (sda, sda1, sdb, sdb2 ...) and
+//	returns dev path of that disk/partition (/dev/sda1,/dev/sda)
+//
+// NOTE: if the feature gate to use OS disk is enabled, the dev path of disk /partition is returned,
+// eg: sda1, sda2, root on sda5 returns /dev/sda1, /dev/sda2, /dev/sda5 respectively
+// else, the devpath of the parent disk will be returned
+// eg: sda1, root on sda5 returns /dev/sda, /dev/sda respectively
+func getPartitionDevPath(partition string) (string, error) {
 	softlink, err := getSoftLinkForPartition(partition)
 	if err != nil {
 		return "", err
@@ -116,11 +122,22 @@ func getDiskDevPath(partition string) (string, error) {
 		return "", err
 	}
 
-	parentDisk, ok := getParentBlockDevice(link)
-	if !ok {
-		return "", fmt.Errorf("could not find parent device for %s", link)
+	var disk string
+	var ok bool
+	if features.FeatureGates.IsEnabled(features.UseOSDisk) {
+		// the last part will be used instead of the parent disk
+		// eg: /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4 is the link
+		// and sda4 will be the device.
+		split := strings.Split(link, "/")
+		disk = split[len(split)-1]
+	} else {
+		disk, ok = getParentBlockDevice(link)
+		if !ok {
+			return "", fmt.Errorf("could not find parent device for %s", link)
+		}
 	}
-	return "/dev/" + parentDisk, nil
+
+	return "/dev/" + disk, nil
 }
 
 //	getSoftLinkForPartition returns path to /sys/class/block/$partition
