@@ -34,6 +34,7 @@ package seachest
 import "C"
 import (
 	"fmt"
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"unsafe"
 
 	"k8s.io/klog"
@@ -181,13 +182,13 @@ func (I *Identifier) GetRotationalLatency(driveInfo *C.driveInformationSAS_SATA)
 func (I *Identifier) DriveType(driveInfo *C.driveInformationSAS_SATA) string {
 
 	if driveInfo.rotationRate == 0x0000 {
-		return "Not Available"
+		return blockdevice.DriveTypeUnknown
 	}
 
 	if driveInfo.rotationRate == 0x0001 {
-		return "SSD"
+		return blockdevice.DriveTypeSSD
 	}
-	return "HDD"
+	return blockdevice.DriveTypeHDD
 }
 
 func (I *Identifier) GetTotalBytesRead(driveInfo *C.driveInformationSAS_SATA) uint64 {

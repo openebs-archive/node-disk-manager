@@ -126,7 +126,8 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			blockDevice.DevPath, blockDevice.DeviceAttributes.HardwareSectorSize)
 	}
 
-	if blockDevice.DeviceAttributes.DriveType == "" {
+	if blockDevice.DeviceAttributes.DriveType == "" ||
+		blockDevice.DeviceAttributes.DriveType == blockdevice.DriveTypeUnknown {
 		driveType, err := sysFsDevice.GetDriveType()
 		if err != nil {
 			klog.Warningf("unable to get drive type for device: %s, err: %v", blockDevice.DevPath, err)

@@ -472,7 +472,7 @@ func TestSysFsDeviceGetDriveType(t *testing.T) {
 			},
 			createQueueDir: false,
 			rotational:     "0",
-			want:           "",
+			want:           blockdevice.DriveTypeUnknown,
 			wantErr:        true,
 		},
 		"valid rotational value (1) present in syspath": {

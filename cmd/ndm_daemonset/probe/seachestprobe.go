@@ -117,7 +117,8 @@ func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockD
 		klog.V(4).Infof("Disk: %s PhysicalBlockSize:%d filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.PhysicalBlockSize)
 	}
 
-	if blockDevice.DeviceAttributes.DriveType == "" {
+	if blockDevice.DeviceAttributes.DriveType == "" ||
+		blockDevice.DeviceAttributes.DriveType == blockdevice.DriveTypeUnknown {
 		blockDevice.DeviceAttributes.DriveType = seachestProbe.SeachestIdentifier.DriveType(driveInfo)
 		klog.V(4).Infof("Disk: %s DriveType:%s filled by seachest.", blockDevice.DevPath, blockDevice.DeviceAttributes.DriveType)
 	}

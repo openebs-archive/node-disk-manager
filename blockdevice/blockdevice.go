@@ -231,6 +231,9 @@ const (
 
 	// DriveTypeSSD represents a solid state drive
 	DriveTypeSSD = "SSD"
+
+	// DriveTypeUnknown is used when the drive type of the disk could not be determined.
+	DriveTypeUnknown = "Unknown"
 )
 
 // FileSystemInformation contains the filesystem and mount information of blockdevice, if present

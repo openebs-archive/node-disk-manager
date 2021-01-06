@@ -234,7 +234,7 @@ func (s Device) GetHardwareSectorSize() (int64, error) {
 func (s Device) GetDriveType() (string, error) {
 	rotational, err := readSysFSFileAsInt64(s.sysPath + "queue/rotational")
 	if err != nil {
-		return "", err
+		return blockdevice.DriveTypeUnknown, err
 	}
 
 	if rotational == 1 {
@@ -242,7 +242,7 @@ func (s Device) GetDriveType() (string, error) {
 	} else if rotational == 0 {
 		return blockdevice.DriveTypeSSD, nil
 	}
-	return "", fmt.Errorf("undefined rotational value %d", rotational)
+	return blockdevice.DriveTypeUnknown, fmt.Errorf("undefined rotational value %d", rotational)
 }
 
 // GetCapacityInBytes gets the capacity of the device in bytes
