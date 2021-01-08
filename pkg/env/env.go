@@ -33,6 +33,7 @@ const (
 	// installCRDEnvDefaultValue is the default value for the INSTALL_CRD_ENV
 	installCRDEnvDefaultValue = true
 
+	// IMAGE_PULL_SECRETS_ENV is the environment variable used to pass the image pull secrets
 	IMAGE_PULL_SECRETS_ENV = "OPENEBS_IO_IMAGE_PULL_SECRETS"
 )
 
@@ -48,6 +49,7 @@ func IsInstallCRDEnabled() bool {
 	return util.CheckTruthy(val)
 }
 
+// GetOpenEBSImagePullSecrets is used to get the image pull secrets from the environment variable
 func GetOpenEBSImagePullSecrets() []v1.LocalObjectReference {
 	secrets := strings.TrimSpace(os.Getenv(IMAGE_PULL_SECRETS_ENV))
 
