@@ -26,6 +26,7 @@ import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	"github.com/openebs/node-disk-manager/pkg/env"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -136,6 +137,7 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, tolerations []v
 	podSpec.ServiceAccountName = getServiceAccount()
 	podSpec.Containers = []v1.Container{jobContainer}
 	podSpec.NodeSelector = map[string]string{controller.KubernetesHostNameLabel: nodeName}
+	podSpec.ImagePullSecrets = env.GetOpenEBSImagePullSecrets()
 	podTemplate := v1.Pod{}
 	podTemplate.Spec = podSpec
 
