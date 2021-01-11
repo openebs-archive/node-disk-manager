@@ -16,7 +16,9 @@ limitations under the License.
 
 package cleaner
 
-import "os"
+import (
+	"os"
+)
 
 const (
 	// EnvCleanUpJobImage is the environment variable for getting the

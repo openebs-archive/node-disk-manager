@@ -20,6 +20,8 @@ import (
 	"os"
 	"testing"
 
+	v1 "k8s.io/api/core/v1"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -55,6 +57,46 @@ func TestIsInstallCRDEnabled(t *testing.T) {
 			}
 			assert.Equal(t, tt.want, IsInstallCRDEnabled())
 			_ = os.Unsetenv(INSTALL_CRD_ENV)
+		})
+	}
+}
+
+func TestGetOpenEBSImagePullSecrets(t *testing.T) {
+	tests := map[string]struct {
+		envValue string
+		secret   []v1.LocalObjectReference
+	}{
+		"empty variable": {
+			envValue: "",
+			secret:   []v1.LocalObjectReference{},
+		},
+		"single value": {
+			envValue: "image-pull-secret",
+			secret:   []v1.LocalObjectReference{{Name: "image-pull-secret"}},
+		},
+		"multiple value": {
+			envValue: "image-pull-secret,secret-1",
+			secret:   []v1.LocalObjectReference{{Name: "image-pull-secret"}, {Name: "secret-1"}},
+		},
+		"whitespaces": {
+			envValue: " ",
+			secret:   []v1.LocalObjectReference{},
+		},
+		"single value with whitespaces": {
+			envValue: " docker-secret ",
+			secret:   []v1.LocalObjectReference{{Name: "docker-secret"}},
+		},
+		"multiple value with whitespaces": {
+			envValue: " docker-secret, image-pull-secret ",
+			secret:   []v1.LocalObjectReference{{Name: "docker-secret"}, {Name: "image-pull-secret"}},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			os.Setenv(IMAGE_PULL_SECRETS_ENV, tt.envValue)
+			got := GetOpenEBSImagePullSecrets()
+			assert.Equal(t, tt.secret, got)
+			os.Unsetenv(IMAGE_PULL_SECRETS_ENV)
 		})
 	}
 }
