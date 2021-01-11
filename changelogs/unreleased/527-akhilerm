@@ -1,0 +1,1 @@
+add image pull secrets to cleanup job pod via environment variable

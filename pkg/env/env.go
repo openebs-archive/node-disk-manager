@@ -18,6 +18,9 @@ package env
 
 import (
 	"os"
+	"strings"
+
+	v1 "k8s.io/api/core/v1"
 
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
@@ -29,6 +32,9 @@ const (
 
 	// installCRDEnvDefaultValue is the default value for the INSTALL_CRD_ENV
 	installCRDEnvDefaultValue = true
+
+	// IMAGE_PULL_SECRETS_ENV is the environment variable used to pass the image pull secrets
+	IMAGE_PULL_SECRETS_ENV = "OPENEBS_IO_IMAGE_PULL_SECRETS"
 )
 
 // IsInstallCRDEnabled is used to check whether the CRDs need to be installed
@@ -41,4 +47,23 @@ func IsInstallCRDEnabled() bool {
 	}
 
 	return util.CheckTruthy(val)
+}
+
+// GetOpenEBSImagePullSecrets is used to get the image pull secrets from the environment variable
+func GetOpenEBSImagePullSecrets() []v1.LocalObjectReference {
+	secrets := strings.TrimSpace(os.Getenv(IMAGE_PULL_SECRETS_ENV))
+
+	list := make([]v1.LocalObjectReference, 0)
+
+	if len(secrets) == 0 {
+		return list
+	}
+	arr := strings.Split(secrets, ",")
+	for _, item := range arr {
+		if len(item) > 0 {
+			l := v1.LocalObjectReference{Name: strings.TrimSpace(item)}
+			list = append(list, l)
+		}
+	}
+	return list
 }
