@@ -1,6 +1,6 @@
 # Bind the Service Account with the Role Privileges.
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: openebs-ndm-operator
   namespace: openebs
