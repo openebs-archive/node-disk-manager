@@ -1,3 +1,24 @@
+v1.1.0 / 2021-01-13
+========================
+* add `Unknown` drive type into blockdevice resource instead of using an empty string ([#523](https://github.com/openebs/node-disk-manager/pull/523),[@akhilerm](https://github.com/akhilerm))
+* add support for creating blockdevices for unused os-disk partitions ([#524](https://github.com/openebs/node-disk-manager/pull/524),[@akhilerm](https://github.com/akhilerm))
+* upgrade CRDs to v1 and add openAPI validation ([#493](https://github.com/openebs/node-disk-manager/pull/493),[@RealHarshThakur](https://github.com/RealHarshThakur))
+* add image pull secrets to cleanup job pod via environment variable ([#527](https://github.com/openebs/node-disk-manager/pull/527),[@akhilerm](https://github.com/akhilerm))
+
+
+v1.1.0-RC2 / 2021-01-11
+========================
+* add image pull secrets to cleanup job pod via environment variable ([#527](https://github.com/openebs/node-disk-manager/pull/527),[@akhilerm](https://github.com/akhilerm))
+
+
+v1.1.0-RC1 / 2021-01-09
+========================
+* add `Unknown` drive type into blockdevice resource instead of using an empty string ([#523](https://github.com/openebs/node-disk-manager/pull/523),[@akhilerm](https://github.com/akhilerm))
+* add support for creating blockdevices for unused os-disk partitions ([#524](https://github.com/openebs/node-disk-manager/pull/524),[@akhilerm](https://github.com/akhilerm))
+* upgrade CRDs to v1 and add openAPI validation ([#493](https://github.com/openebs/node-disk-manager/pull/493),[@RealHarshThakur](https://github.com/RealHarshThakur))
+
+
+
 v1.0.1 / 2020-12-13
 ========================
 * add check for device mapper path in path filter ([#518](https://github.com/openebs/node-disk-manager/pull/518),[@akhilerm](https://github.com/akhilerm))
