@@ -220,10 +220,18 @@ const (
 
 	// BlockDeviceTypeCrypt is a LUKS volume
 	BlockDeviceTypeCrypt = "crypt"
+
+	// BlockDeviceTypeMultiPath is a multipath device
+	BlockDeviceTypeMultiPath = "mpath"
 )
 
 // DeviceMapperDeviceTypes is the slice of device types that uses a device mapper
-var DeviceMapperDeviceTypes = []string{BlockDeviceTypeDMDevice, BlockDeviceTypeLVM, BlockDeviceTypeCrypt}
+var DeviceMapperDeviceTypes = []string{
+	BlockDeviceTypeDMDevice,
+	BlockDeviceTypeLVM,
+	BlockDeviceTypeCrypt,
+	BlockDeviceTypeMultiPath,
+}
 
 const (
 	// DriveTypeHDD represents a rotating hard disk drive
