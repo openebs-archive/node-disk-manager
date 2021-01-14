@@ -1,6 +1,6 @@
 apiVersion: v2
 name: openebs-ndm
-description: Kubernetes Storage Device Management. Also used to maintain the inventory of block devices.
+description: Helm chart for OpenEBS Node Disk Manager - a Kubernetes native storage device management solution. For instructions on how to install, refer to https://openebs.github.io/node-disk-manager/.
 version: 1.1.0
 appVersion: 1.1.0
 icon: https://raw.githubusercontent.com/cncf/artwork/master/projects/openebs/icon/color/openebs-icon-color.png
