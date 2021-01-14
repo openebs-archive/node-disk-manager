@@ -36,6 +36,7 @@ spec:
         - --feature-gates="APIService"
         # Default address is 0.0.0.0:9115, do not use quotes around the address
         # - --api-service-address=0.0.0.0:9115
+        - --feature-gates="UseOSDisk"
         imagePullPolicy: Always
         securityContext:
           privileged: true

@@ -61,7 +61,7 @@ metadata:
 # Define Role that allows operations on K8s pods/deployments
 # in "openebs" namespace
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: openebs
   name: openebs-ndm-operator
@@ -84,7 +84,7 @@ rules:
 ---
 # Bind the Service Account with the Role Privileges.
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: openebs-ndm-operator
   namespace: openebs
@@ -135,6 +135,7 @@ spec:
         - --feature-gates="APIService"
         # Default address is 0.0.0.0:9115, do not use quotes around the address
         # - --api-service-address=0.0.0.0:9115
+        - --feature-gates="UseOSDisk"
         imagePullPolicy: Always
         securityContext:
           privileged: true
@@ -260,6 +261,10 @@ spec:
           value: "node-disk-operator"
         - name: CLEANUP_JOB_IMAGE
           value: "openebs/linux-utils:ci"
+       # OPENEBS_IO_IMAGE_PULL_SECRETS environment variable is used to pass the image pull secrets
+       # to the cleanup pod launched by NDM operator
+       #- name: OPENEBS_IO_IMAGE_PULL_SECRETS
+       #  value: ""
 ---
 # Create NDM cluster exporter deployment.
 # This is an optional component and is not required for the basic
