@@ -37,3 +37,16 @@ helm install <your-release-name> ndm/openebs-ndm --create-namespace
 helm install <your-release-name> ndm/openebs-ndm
 ```
 
+#### Upgrade OpenEBS NDM
+
+- Upgrade the CRDs by applying the CRD yaml from the helm repo 
+```bash
+kubectl apply -f https://raw.githubusercontent.com/openebs/node-disk-manager/master/deploy/helm/charts/crds/blockdevice.yaml
+kubectl apply -f https://raw.githubusercontent.com/openebs/node-disk-manager/master/deploy/helm/charts/crds/blockdeviceclaim.yaml
+```
+
+- Upgrade the helm release
+```bash
+helm upgrade <your-release-name> ndm/openebs-ndm --namespace=openebs
+```
+
