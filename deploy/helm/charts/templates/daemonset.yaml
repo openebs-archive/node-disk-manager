@@ -44,6 +44,9 @@ spec:
           - --feature-gates={{ .Values.featureGates.APIService.featureGateFlag }}
           - --api-service-address={{ .Values.featureGates.APIService.address }}
 {{- end}}
+{{- if .Values.featureGates.UseOSDisk.enabled }}
+          - --feature-gates={{ .Values.featureGates.UseOSDisk.featureGateFlag }}
+{{- end}}
 {{- end}}
         imagePullPolicy: {{ .Values.ndm.image.pullPolicy }}
         resources:
@@ -150,9 +153,9 @@ spec:
       # kubectl label node <node-name> "openebs.io/nodegroup"="storage-node"
       #nodeSelector:
       #  "openebs.io/nodegroup": "storage-node"
-{{- if .Values.imagePullSecrets }}
+{{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-{{ toYaml .Values.imagePullSecrets | indent 2 }}
+        {{- toYaml . | nindent 6 }}
 {{- end }}
 {{- if .Values.ndm.nodeSelector }}
       nodeSelector:

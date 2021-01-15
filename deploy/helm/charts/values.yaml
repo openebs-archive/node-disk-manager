@@ -2,10 +2,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 release:
-  version: "1.0.1"
+  version: "1.1.0"
 
 imagePullSecrets:
-# - name: "image-pull-secret"
+#  - name: "image-pull-secret"
 
 ndm:
   componentName: ndm
@@ -17,7 +17,7 @@ ndm:
     repository: openebs/node-disk-manager
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.0.1
+    tag: 1.1.0
   sparse:
     path: "/var/openebs/sparse"
     size: "10737418240"
@@ -62,7 +62,7 @@ ndmOperator:
     repository: openebs/node-disk-operator
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.0.1
+    tag: 1.1.0
   podLabels:
     name: openebs-ndm-operator
   annotations: {}
@@ -87,10 +87,10 @@ helperPod:
     repository: openebs/linux-utils
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 2.4.0
+    tag: 2.5.0
 
 crd:
-  enableInstall: true
+  enableInstall: false
 
 featureGates:
   enabled: true
@@ -101,6 +101,9 @@ featureGates:
     enabled: true
     featureGateFlag: "APIService"
     address: "0.0.0.0:9115"
+  UseOSDisk:
+    enabled: false
+    featureGateFlag: "UseOSDisk"
 
 # Directory used by the OpenEBS to store debug information and so forth
 # that are generated in the course of running OpenEBS containers.
