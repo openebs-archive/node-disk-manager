@@ -90,7 +90,7 @@ helperPod:
     tag: 2.5.0
 
 crd:
-  enableInstall: true
+  enableInstall: false
 
 featureGates:
   enabled: true
