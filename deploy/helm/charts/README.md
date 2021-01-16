@@ -20,7 +20,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndm.image.registry`                    | Registry for Node Disk Manager image          | `""`                                      |
 | `ndm.image.repository`                  | Image repository for Node Disk Manager        | `openebs/node-disk-manager`               |
 | `ndm.image.pullPolicy`                  | Image pull policy for Node Disk Manager       | `IfNotPresent`                            |
-| `ndm.image.tag`                         | Image tag for Node Disk Manager               | `1.1.0`                                   |
+| `ndm.image.tag`                         | Image tag for Node Disk Manager               | `1.1.1`                                   |
 | `ndm.sparse.path`                       | Directory where Sparse files are created      | `/var/openebs/sparse`                     |
 | `ndm.sparse.size`                       | Size of the sparse file in bytes              | `10737418240`                             |
 | `ndm.sparse.count`                      | Number of sparse files to be created          | `0`                                       |
@@ -49,7 +49,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndmOperator.image.registry`            | Registry for NDM operator image               | `""`                                      |
 | `ndmOperator.image.repository`          | Image repository for NDM operator             | `openebs/node-disk-operator`              |
 | `ndmOperator.image.pullPolicy`          | Image pull policy for NDM operator            | `IfNotPresent`                            |
-| `ndmOperator.image.tag`                 | Image tag for NDM operator                    | `1.1.0`                                   |
+| `ndmOperator.image.tag`                 | Image tag for NDM operator                    | `1.1.1`                                   |
 | `ndmOperator.annotations`               | Annotations for NDM operator metadata         | `""`                                      |
 | `ndmOperator.podAnnotations`            | Annotations for NDM operator's pods metadata  | `""`                                      |
 | `ndmOperator.resources`                 | Resource and request and limit for containers | `""`                                      |
