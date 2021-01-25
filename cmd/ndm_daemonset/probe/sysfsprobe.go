@@ -90,6 +90,33 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 		return
 	}
 
+	if blockDevice.Capacity.Storage == 0 {
+		capacity, err := sysFsDevice.GetCapacityInBytes()
+		if err != nil {
+			klog.Warningf("unable to get capacity for device: %s, err: %v", blockDevice.DevPath, err)
+		}
+		blockDevice.Capacity.Storage = uint64(capacity)
+		klog.V(4).Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
+			blockDevice.DevPath, blockDevice.Capacity.Storage)
+	}
+
+	// If the blockdevice is a partition, we will use its parent disk to get block size, hw
+	// sector size and drive type.
+	// Get the parent disk sysfs device using the parent's dev path stored in the blokdevice
+	if blockDevice.DeviceAttributes.DeviceType == blockdevice.BlockDeviceTypePartition {
+		parentDev := blockDevice.DependentDevices.Parent
+		if parentDev == "" {
+			klog.Errorf("cannot find the parent disk for partition: %s", blockDevice.DevPath)
+			return
+		}
+		parentSysFsDevice, err := sysfs.NewSysFsDeviceFromDevPath(parentDev)
+		if err != nil {
+			klog.Errorf("unable to get sysfs device for device: %s, err: %v", parentDev, err)
+			return
+		}
+		sysFsDevice = parentSysFsDevice
+	}
+
 	if blockDevice.DeviceAttributes.LogicalBlockSize == 0 {
 		logicalBlockSize, err := sysFsDevice.GetLogicalBlockSize()
 		if err != nil {
@@ -115,7 +142,7 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 	}
 
 	if blockDevice.DeviceAttributes.HardwareSectorSize == 0 {
-		hwSectorSize, err := sysFsDevice.GetPhysicalBlockSize()
+		hwSectorSize, err := sysFsDevice.GetHardwareSectorSize()
 		if err != nil {
 			klog.Warningf("unable to get hardware sector size for device: %s, err: %v", blockDevice.DevPath, err)
 		} else if hwSectorSize == 0 {
@@ -135,15 +162,5 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 		blockDevice.DeviceAttributes.DriveType = driveType
 		klog.V(4).Infof("blockdevice path: %s drive type :%s filled by sysfs probe.",
 			blockDevice.DevPath, blockDevice.DeviceAttributes.DriveType)
-	}
-
-	if blockDevice.Capacity.Storage == 0 {
-		capacity, err := sysFsDevice.GetCapacityInBytes()
-		if err != nil {
-			klog.Warningf("unable to get capacity for device: %s, err: %v", blockDevice.DevPath, err)
-		}
-		blockDevice.Capacity.Storage = uint64(capacity)
-		klog.V(4).Infof("blockdevice path: %s capacity :%d filled by sysfs probe.",
-			blockDevice.DevPath, blockDevice.Capacity.Storage)
 	}
 }
