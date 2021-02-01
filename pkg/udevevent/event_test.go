@@ -47,12 +47,14 @@ func TestProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 	actualEvent.process(device)
+	// this is done so that the legacy UUID is not used.
+	// TODO. can be removed once legacy UUID is completely removed.
+	actualEvent.eventDetails.Devices[0].UUID = ""
 
 	// creating mock event
 	expectedEvent := newEvent()
 	diskInfo := make([]*blockdevice.BlockDevice, 0)
 	deviceDetails := &blockdevice.BlockDevice{}
-	deviceDetails.UUID = osDiskDetails.Uid
 	deviceDetails.SysPath = osDiskDetails.SysPath
 	deviceDetails.DevPath = osDiskDetails.DevNode
 
