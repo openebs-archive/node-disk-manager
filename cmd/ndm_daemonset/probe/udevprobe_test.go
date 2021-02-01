@@ -142,6 +142,7 @@ func TestUdevProbe(t *testing.T) {
 		Probes:         probes,
 		Filters:        filters,
 		NodeAttributes: nodeAttributes,
+		BDHierarchy:    make(blockdevice.Hierarchy),
 	}
 	udevprobe := newUdevProbe(fakeController)
 	var pi controller.ProbeInterface = udevprobe
