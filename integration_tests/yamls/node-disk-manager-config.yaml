@@ -1,0 +1,41 @@
+# Create NDM configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-disk-manager-config
+  namespace: openebs
+data:
+  # node-disk-manager-config contains config of available probes and filters.
+  # Probes and Filters will initialize with default values if config for that
+  # filter or probe are not present in configmap
+
+  # udev-probe is default or primary probe it should be enabled to run ndm
+  # filterconfigs contains configs of filters. To provide a group of include
+  # and exclude values add it as , separated string
+  node-disk-manager.config: |
+    probeconfigs:
+      - key: udev-probe
+        name: udev probe
+        state: true
+      - key: seachest-probe
+        name: seachest probe
+        state: true
+      - key: smart-probe
+        name: smart probe
+        state: true
+    filterconfigs:
+      - key: os-disk-exclude-filter
+        name: os disk exclude filter
+        state: true
+        exclude: "/,/etc/hosts,/boot"
+      - key: vendor-filter
+        name: vendor filter
+        state: true
+        include: ""
+        exclude: "CLOUDBYT,OpenEBS"
+      - key: path-filter
+        name: path filter
+        state: true
+        include: ""
+        exclude: "/dev/fd0,/dev/sr0,/dev/ram,/dev/md,/dev/dm-,/dev/rbd,/dev/zd"
+---

@@ -31,7 +31,7 @@ type NDMYaml string
 
 // Path to various YAMLs used for integration testing
 const (
-	ConfigMapYAML           NDMYaml = "../../deploy/yamls/node-disk-manager-config.yaml"
+	ConfigMapYAML           NDMYaml = "../yamls/node-disk-manager-config.yaml"
 	ServiceAccountYAML      NDMYaml = "../../deploy/yamls/serviceaccount.yaml"
 	ClusterRoleYAML         NDMYaml = "../../deploy/yamls/clusterrole.yaml"
 	ClusterRoleBindingYAML  NDMYaml = "../../deploy/yamls/clusterrolebinding.yaml"

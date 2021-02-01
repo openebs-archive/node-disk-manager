@@ -74,7 +74,7 @@ var _ = Describe("Device Discovery Tests", func() {
 					noOfSparseBlockDevices++
 				}
 			}
-			Expect(noOfSparseBlockDevices).To(Equal(0))
+			Expect(noOfSparseBlockDevices).To(Equal(1))
 		})
 	})
 
@@ -108,7 +108,7 @@ var _ = Describe("Device Discovery Tests", func() {
 				Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
 			}
 
-			Expect(noOfSparseBlockDeviceCR).To(Equal(0))
+			Expect(noOfSparseBlockDeviceCR).To(Equal(1))
 			Expect(noOfPhysicalBlockDeviceCR).To(Equal(1))
 		})
 		It("should have blockdeviceCR inactive when disk is detached", func() {
