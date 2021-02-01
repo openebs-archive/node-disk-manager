@@ -128,6 +128,7 @@ func TestSmartProbe(t *testing.T) {
 		Probes:         probes,
 		Filters:        filters,
 		NodeAttributes: nodeAttributes,
+		BDHierarchy:    make(blockdevice.Hierarchy),
 	}
 
 	smartProbe := newSmartProbe("fakeController")
