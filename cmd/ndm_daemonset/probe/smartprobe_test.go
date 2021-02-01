@@ -110,10 +110,6 @@ func TestSmartProbe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mockOsDiskDetailsUsingUdev, err := libudevwrapper.MockDiskDetails()
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	fakeHostName := "node-name"
 	fakeNdmClient := CreateFakeClient(t)
@@ -159,7 +155,6 @@ func TestSmartProbe(t *testing.T) {
 
 	eventmsg := make([]*blockdevice.BlockDevice, 0)
 	deviceDetails := &blockdevice.BlockDevice{}
-	deviceDetails.UUID = mockOsDiskDetailsUsingUdev.Uid
 	deviceDetails.DevPath = mockOsDiskDetails.DevPath
 	eventmsg = append(eventmsg, deviceDetails)
 
@@ -170,7 +165,8 @@ func TestSmartProbe(t *testing.T) {
 	probeEvent.addBlockDeviceEvent(eventDetails)
 
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetBlockDevice(mockOsDiskDetailsUsingUdev.Uid)
+	uuid, _ := generateUUID(*deviceDetails)
+	cdr1, err1 := fakeController.GetBlockDevice(uuid)
 	if err1 != nil {
 		t.Fatal(err1)
 	}
@@ -179,6 +175,7 @@ func TestSmartProbe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	fakeDr.Name = uuid
 	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
 	fakeDr.ObjectMeta.Labels[controller.NDMDeviceTypeKey] = "blockdevice"
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
