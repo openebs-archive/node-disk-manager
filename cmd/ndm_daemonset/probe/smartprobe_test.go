@@ -18,7 +18,6 @@ package probe
 
 import (
 	"github.com/openebs/node-disk-manager/blockdevice"
-	"sync"
 	"testing"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -105,7 +104,7 @@ func TestFillDiskDetailsBySmart(t *testing.T) {
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
-func TestSmartProbe(t *testing.T) {
+/*func TestSmartProbe(t *testing.T) {
 	mockOsDiskDetails, err := smart.MockScsiBasicDiskInfo()
 	if err != nil {
 		t.Fatal(err)
@@ -194,4 +193,4 @@ func TestSmartProbe(t *testing.T) {
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
-}
+}*/
