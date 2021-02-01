@@ -31,15 +31,30 @@ type NDMYaml string
 
 // Path to various YAMLs used for integration testing
 const (
-	ConfigMapYAML           NDMYaml = "../yamls/configmap.yaml"
-	ServiceAccountYAML      NDMYaml = "../yamls/serviceaccount.yaml"
-	ClusterRoleYAML         NDMYaml = "../yamls/clusterrole.yaml"
-	ClusterRoleBindingYAML  NDMYaml = "../yamls/clusterrolebinding.yaml"
-	BlockDeviceCRDYAML      NDMYaml = "../yamls/blockDeviceCR.yaml"
-	BlockDeviceClaimCRDYAML NDMYaml = "../yamls/blockDeviceClaimCR.yaml"
-	DaemonSetYAML           NDMYaml = "../yamls/daemonset.yaml"
-	DeploymentYAML          NDMYaml = "../yamls/deployment.yaml"
+	ConfigMapYAML           NDMYaml = "../../deploy/yamls/node-disk-manager-config.yaml"
+	ServiceAccountYAML      NDMYaml = "../../deploy/yamls/serviceaccount.yaml"
+	ClusterRoleYAML         NDMYaml = "../../deploy/yamls/clusterrole.yaml"
+	ClusterRoleBindingYAML  NDMYaml = "../../deploy/yamls/clusterrolebinding.yaml"
+	BlockDeviceCRDYAML      NDMYaml = "../../deploy/crds/openebs.io_blockdevices_crd.yaml"
+	BlockDeviceClaimCRDYAML NDMYaml = "../../deploy/crds/openebs.io_blockdeviceclaims_crd.yaml"
+	DaemonSetYAML           NDMYaml = "../../deploy/yamls/node-disk-manager.yaml"
+	DeploymentYAML          NDMYaml = "../../deploy/yamls/node-disk-operator.yaml"
+	OpenEBSNamespaceYAML    NDMYaml = "../../deploy/yamls/namespace.yaml"
 )
+
+// GetNamespace generates the openebs namespace object from yaml file
+func GetNamespace() (v1.Namespace, error) {
+	var ns v1.Namespace
+	yamlstring, err := utils.GetYAMLString(string(OpenEBSNamespaceYAML))
+	if err != nil {
+		return ns, err
+	}
+	err = yaml.Unmarshal([]byte(yamlstring), &ns)
+	if err != nil {
+		return ns, err
+	}
+	return ns, nil
+}
 
 // GetConfigMap generates the ConfigMap object for NDM from the yaml file
 func GetConfigMap() (v1.ConfigMap, error) {

@@ -32,7 +32,7 @@ import (
 
 const (
 	// Namespace is the default namespace
-	Namespace = "default"
+	Namespace = "openebs"
 	// WaitDuration is the default wait duration
 	WaitDuration time.Duration = 5 * time.Second
 	// Running is the active/running status of pod

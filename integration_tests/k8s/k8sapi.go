@@ -151,6 +151,18 @@ func NewBDC(bdcName string) *apis.BlockDeviceClaim {
 	return bdc
 }
 
+// CreateNamespace creates a namespace
+func (c K8sClient) CreateNamespace(namespace v1.Namespace) error {
+	err := c.RunTimeClient.Create(context.Background(), &namespace)
+	return err
+}
+
+// DeleteNamespace deletes a namespace
+func (c K8sClient) DeleteNamespace(namespace v1.Namespace) error {
+	err := c.RunTimeClient.Delete(context.Background(), &namespace)
+	return err
+}
+
 // CreateConfigMap creates a config map
 func (c K8sClient) CreateConfigMap(configMap v1.ConfigMap) error {
 	err := c.RunTimeClient.Create(context.Background(), &configMap)
