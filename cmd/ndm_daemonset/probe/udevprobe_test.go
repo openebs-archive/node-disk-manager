@@ -169,7 +169,6 @@ func TestUdevProbe(t *testing.T) {
 	}
 	eventmsg := make([]*blockdevice.BlockDevice, 0)
 	deviceDetails := &blockdevice.BlockDevice{}
-	deviceDetails.UUID = mockOsDiskDetails.Uid
 	deviceDetails.SysPath = mockOsDiskDetails.SysPath
 	eventmsg = append(eventmsg, deviceDetails)
 	eventDetails := controller.EventMessage{
@@ -178,11 +177,13 @@ func TestUdevProbe(t *testing.T) {
 	}
 	probeEvent.addBlockDeviceEvent(eventDetails)
 	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetBlockDevice(mockOsDiskDetails.Uid)
+	uuid, _ := generateUUID(*deviceDetails)
+	cdr1, err1 := fakeController.GetBlockDevice(uuid)
 	fakeDr, err := mockOsDiskToAPI()
 	if err != nil {
 		t.Fatal(err)
 	}
+	fakeDr.Name = uuid
 	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
 	fakeDr.ObjectMeta.Labels[controller.NDMDeviceTypeKey] = "blockdevice"
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
