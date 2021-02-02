@@ -37,7 +37,7 @@ const (
 	ClusterRoleBindingYAML  NDMYaml = "../../deploy/yamls/clusterrolebinding.yaml"
 	BlockDeviceCRDYAML      NDMYaml = "../../deploy/crds/openebs.io_blockdevices_crd.yaml"
 	BlockDeviceClaimCRDYAML NDMYaml = "../../deploy/crds/openebs.io_blockdeviceclaims_crd.yaml"
-	DaemonSetYAML           NDMYaml = "../../deploy/yamls/node-disk-manager.yaml"
+	DaemonSetYAML           NDMYaml = "../yamls/node-disk-manager.yaml"
 	DeploymentYAML          NDMYaml = "../../deploy/yamls/node-disk-operator.yaml"
 	OpenEBSNamespaceYAML    NDMYaml = "../../deploy/yamls/namespace.yaml"
 )
