@@ -36,6 +36,6 @@ data:
       - key: path-filter
         name: path filter
         state: true
-        include: ""
-        exclude: "/dev/fd0,/dev/sr0,/dev/ram,/dev/md,/dev/dm-,/dev/rbd,/dev/zd"
+        include: "loop9"
+        exclude: ""
 ---
