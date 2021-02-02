@@ -95,7 +95,7 @@ func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 		return
 	}
 	mountProbe := newMountProbe(blockDevice.DevPath)
-	basicMountInfo, err := mountProbe.MountIdentifier.DeviceBasicMountInfo()
+	basicMountInfo, err := mountProbe.MountIdentifier.DeviceBasicMountInfo(mount.HostMountsFilePath)
 	if err != nil {
 		klog.Error(err)
 		return

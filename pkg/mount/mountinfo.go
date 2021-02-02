@@ -17,7 +17,9 @@ limitations under the License.
 package mount
 
 const (
-	hostMountFilePath = "/host/proc/1/mounts" // hostMountFilePath is the file path mounted inside container
+	// HostMountsFilePath is the default path of
+	// the mounts file mounted inside container
+	HostMountsFilePath = "/host/proc/1/mounts"
 )
 
 // Identifier is an identifier for the mount probe. It will be a devpath like
@@ -39,8 +41,8 @@ type DeviceMountAttr struct {
 // attributes include the filesystem type, mountpoint, device path etc. These mount attributes
 // are fetched by parsing a mounts file (/proc/1/mounts) and getting the relevant data. If the
 // device is not mounted, then the function will return an error.
-func (I *Identifier) DeviceBasicMountInfo() (DeviceMountAttr, error) {
-	mountUtil := NewMountUtil(hostMountFilePath, I.DevPath, "")
+func (I *Identifier) DeviceBasicMountInfo(mountsFilePath string) (DeviceMountAttr, error) {
+	mountUtil := NewMountUtil(mountsFilePath, I.DevPath, "")
 	mountAttr, err := mountUtil.getDeviceMountAttr(mountUtil.getMountName)
 	return mountAttr, err
 }
