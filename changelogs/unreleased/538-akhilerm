@@ -1,0 +1,1 @@
+add all devices to hierarchy cache irrespective of whether the blockdevice will be filtered or not.
