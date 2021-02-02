@@ -88,7 +88,6 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	diskDetails.Serial = device.GetPropertyValue(UDEV_SERIAL)
 	diskDetails.Vendor = device.GetPropertyValue(UDEV_VENDOR)
 	diskDetails.Wwn = device.GetPropertyValue(UDEV_WWN)
-	diskDetails.Uid = device.GetUid()
 	diskDetails.FileSystem = osFilesystem
 	diskDetails.PartTableType = device.GetPropertyValue(UDEV_PARTITION_TABLE_TYPE)
 	diskDetails.PartTableUUID = device.GetPropertyValue(UDEV_PARTITION_TABLE_UUID)

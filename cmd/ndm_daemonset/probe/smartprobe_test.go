@@ -18,7 +18,6 @@ package probe
 
 import (
 	"github.com/openebs/node-disk-manager/blockdevice"
-	"sync"
 	"testing"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -103,97 +102,4 @@ func TestFillDiskDetailsBySmart(t *testing.T) {
 	expectedDiskInfo.DeviceAttributes.FirmwareRevision = mockOsDiskDetails.FirmwareRevision
 	expectedDiskInfo.DeviceAttributes.Compliance = mockOsDiskDetails.Compliance
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
-}
-
-func TestSmartProbe(t *testing.T) {
-	mockOsDiskDetails, err := smart.MockScsiBasicDiskInfo()
-	if err != nil {
-		t.Fatal(err)
-	}
-	mockOsDiskDetailsUsingUdev, err := libudevwrapper.MockDiskDetails()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fakeHostName := "node-name"
-	fakeNdmClient := CreateFakeClient(t)
-	probes := make([]*controller.Probe, 0)
-	filters := make([]*controller.Filter, 0)
-	nodeAttributes := make(map[string]string)
-	nodeAttributes[controller.HostNameKey] = fakeHostName
-	mutex := &sync.Mutex{}
-	fakeController := &controller.Controller{
-		Clientset:      fakeNdmClient,
-		Mutex:          mutex,
-		Probes:         probes,
-		Filters:        filters,
-		NodeAttributes: nodeAttributes,
-	}
-
-	smartProbe := newSmartProbe("fakeController")
-	var pi controller.ProbeInterface = smartProbe
-
-	newRegisterProbe := &registerProbe{
-		priority:   1,
-		name:       "smart probe",
-		state:      true,
-		pi:         pi,
-		controller: fakeController,
-	}
-
-	newRegisterProbe.register()
-
-	// Add one filter
-	filter := &alwaysTrueFilter{}
-	filter1 := &controller.Filter{
-		Name:      "filter1",
-		State:     true,
-		Interface: filter,
-	}
-
-	fakeController.AddNewFilter(filter1)
-	probeEvent := &ProbeEvent{
-		Controller: fakeController,
-	}
-
-	eventmsg := make([]*blockdevice.BlockDevice, 0)
-	deviceDetails := &blockdevice.BlockDevice{}
-	deviceDetails.UUID = mockOsDiskDetailsUsingUdev.Uid
-	deviceDetails.DevPath = mockOsDiskDetails.DevPath
-	eventmsg = append(eventmsg, deviceDetails)
-
-	eventDetails := controller.EventMessage{
-		Action:  libudevwrapper.UDEV_ACTION_ADD,
-		Devices: eventmsg,
-	}
-	probeEvent.addBlockDeviceEvent(eventDetails)
-
-	// Retrieve disk resource
-	cdr1, err1 := fakeController.GetBlockDevice(mockOsDiskDetailsUsingUdev.Uid)
-	if err1 != nil {
-		t.Fatal(err1)
-	}
-
-	fakeDr, err := mockOsDiskToAPIBySmart()
-	if err != nil {
-		t.Fatal(err)
-	}
-	fakeDr.ObjectMeta.Labels[controller.KubernetesHostNameLabel] = fakeController.NodeAttributes[controller.HostNameKey]
-	fakeDr.ObjectMeta.Labels[controller.NDMDeviceTypeKey] = "blockdevice"
-	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
-
-	tests := map[string]struct {
-		actualDisk    apis.BlockDevice
-		expectedDisk  apis.BlockDevice
-		actualError   error
-		expectedError error
-	}{
-		"add event for resource with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
-	}
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			compareBlockDevice(t, test.expectedDisk, test.actualDisk)
-			assert.Equal(t, test.expectedError, test.actualError)
-		})
-	}
 }

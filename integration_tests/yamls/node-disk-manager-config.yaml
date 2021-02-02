@@ -1,8 +1,9 @@
+# Create NDM configmap
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: node-disk-manager-config
-  namespace: default
+  namespace: openebs
 data:
   # node-disk-manager-config contains config of available probes and filters.
   # Probes and Filters will initialize with default values if config for that
@@ -35,6 +36,6 @@ data:
       - key: path-filter
         name: path filter
         state: true
-        include: loop9
+        include: "loop9"
         exclude: ""
-
+---

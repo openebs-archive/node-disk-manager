@@ -1,7 +1,9 @@
+# Create NDM daemonset
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: node-disk-manager
+  namespace: openebs
 spec:
   updateStrategy:
     type: RollingUpdate
@@ -24,30 +26,37 @@ spec:
       # to detect disk attach and detach events using fd.
       hostNetwork: true
       hostPID: true
-      serviceAccountName: openebs-ndm-operator
+      serviceAccountName: openebs-maya-operator
       containers:
       - name: node-disk-manager
-        image: openebs/node-disk-manager-amd64:ci
+        image: openebs/node-disk-manager:ci
         args:
-          - -v=2
-          - --feature-gates="APIService"
-#          - --feature-gates="GPTBasedUUID"
-        imagePullPolicy: IfNotPresent
+        - -v=4
+        - --feature-gates="GPTBasedUUID"
+        - --feature-gates="APIService"
+        # Default address is 0.0.0.0:9115, do not use quotes around the address
+        # - --api-service-address=0.0.0.0:9115
+        # - --feature-gates="UseOSDisk"
+        imagePullPolicy: Always
         securityContext:
           privileged: true
-        # make udev database available inside container
         volumeMounts:
         - name: config
           mountPath: /host/node-disk-manager.config
           subPath: node-disk-manager.config
           readOnly: true
+          # make udev database available inside container
         - name: udev
           mountPath: /run/udev
         - name: procmount
           mountPath: /host/proc
           readOnly: true
+        - name: devmount
+          mountPath: /dev
+        - name: basepath
+          mountPath: /var/openebs/ndm
         - name: sparsepath
-          mountPath: /var/openebs
+          mountPath: /var/openebs/sparse
         env:
         # namespace in which NDM is installed will be passed to NDM Daemonset
         # as environment variable
@@ -63,13 +72,16 @@ spec:
         # specify the directory where the sparse files need to be created.
         # if not specified, then sparse files will not be created.
         - name: SPARSE_FILE_DIR
-          value: "/var/openebs"
+          value: "/var/openebs/sparse"
         # Size of the sparse file to be created.
         - name: SPARSE_FILE_SIZE
           value: "1073741824"
         # Specify the number of sparse files to be created
         - name: SPARSE_FILE_COUNT
           value: "1"
+        # Set the core dump env to enable core dump for NDM daemon
+        #- name: ENABLE_COREDUMP
+        #  value: "1"
       volumes:
       - name: config
         configMap:
@@ -79,11 +91,22 @@ spec:
           path: /run/udev
           type: Directory
       - name: procmount
-      # mount /proc/1/mounts (mount file of process 1 of host) inside container
-      # to read which partition is mounted on / path
+        # mount /proc/1/mounts (mount file of process 1 of host) inside container
+        # to read which partition is mounted on / path
         hostPath:
           path: /proc
           type: Directory
+      - name: devmount
+        # the /dev directory is mounted so that we have access to the devices that
+        # are connected at runtime of the pod.
+        hostPath:
+          path: /dev
+          type: Directory
+      - name: basepath
+        hostPath:
+          path: /var/openebs/ndm
+          type: DirectoryOrCreate
       - name: sparsepath
         hostPath:
-          path: /var/openebs
+          path: /var/openebs/sparse
+---

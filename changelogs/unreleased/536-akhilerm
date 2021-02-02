@@ -1,0 +1,1 @@
+set values for default feature gates when flag is not provided and fix integration tests

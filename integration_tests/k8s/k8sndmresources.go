@@ -16,6 +16,15 @@ limitations under the License.
 
 package k8s
 
+// CreateOpenEBSNamespace creates the openebs namespace required for NDM installation
+func (c K8sClient) CreateOpenEBSNamespace() error {
+	ns, err := GetNamespace()
+	if err != nil {
+		return err
+	}
+	return c.CreateNamespace(ns)
+}
+
 // CreateNDMConfigMap creates the ConfigMap required for NDM
 func (c K8sClient) CreateNDMConfigMap() error {
 	configmap, err := GetConfigMap()
@@ -91,6 +100,15 @@ func (c K8sClient) CreateNDMDaemonSet() error {
 		return err
 	}
 	return c.CreateDaemonSet(daemonset)
+}
+
+// DeleteOpenEBSNamespace deletes the openebs namespace in which NDM was installed
+func (c K8sClient) DeleteOpenEBSNamespace() error {
+	ns, err := GetNamespace()
+	if err != nil {
+		return err
+	}
+	return c.DeleteNamespace(ns)
 }
 
 // DeleteNDMConfigMap deletes the ConfigMap required for NDM

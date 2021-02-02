@@ -34,6 +34,9 @@ var _ = BeforeSuite(func() {
 	c, err := k8s.GetClientSet()
 	Expect(err).NotTo(HaveOccurred())
 
+	err = c.CreateOpenEBSNamespace()
+	Expect(err).NotTo(HaveOccurred())
+
 	// Create service account and cluster roles required for NDM
 	err = c.CreateNDMServiceAccount()
 	Expect(err).NotTo(HaveOccurred())
@@ -76,5 +79,8 @@ var _ = AfterSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	err = c.DeleteNDMOperatorDeployment()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = c.DeleteOpenEBSNamespace()
 	Expect(err).NotTo(HaveOccurred())
 })

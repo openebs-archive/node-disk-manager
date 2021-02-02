@@ -58,7 +58,7 @@ var supportedFeatures = []Feature{
 
 // defaultFeatureGates is the default features that will be applied to the application
 var defaultFeatureGates = map[Feature]bool{
-	GPTBasedUUID: false,
+	GPTBasedUUID: true,
 	APIService:   false,
 	UseOSDisk:    false,
 }
@@ -90,8 +90,7 @@ func (fg featureFlag) IsEnabled(f Feature) bool {
 // SetFeatureFlag parses a slice of string and sets the feature flag.
 func (fg featureFlag) SetFeatureFlag(features []string) error {
 	if len(features) == 0 {
-		klog.V(4).Info("No feature gates are set")
-		return nil
+		klog.V(4).Info("No feature flags are set, default values will be used")
 	}
 	// iterate through each feature and set its state onto the featureFlag map
 	for _, feature := range features {
@@ -117,7 +116,11 @@ func (fg featureFlag) SetFeatureFlag(features []string) error {
 			return fmt.Errorf("unknown feature flag %s", f)
 		}
 		fg[f] = isEnabled
-		klog.Infof("Feature gate: %s, state: %s", f, util.StateStatus(isEnabled))
 	}
+
+	for k, v := range fg {
+		klog.Infof("Feature gate: %s, state: %s", k, util.StateStatus(v))
+	}
+
 	return nil
 }
