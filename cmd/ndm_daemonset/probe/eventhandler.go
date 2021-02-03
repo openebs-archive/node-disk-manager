@@ -59,6 +59,13 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 	for _, device := range msg.Devices {
 		klog.Infof("Processing details for %s", device.DevPath)
 		pe.Controller.FillBlockDeviceDetails(device)
+
+		// add all devices to the hierarchy cache, irrespective of whether they will be
+		// filtered at a later stage. This is done so that a complete disk hierarchy is available
+		// at all times by NDM. It also helps in device processing when complex filter configurations
+		// are provided. Ref: https://github.com/openebs/openebs/issues/3321
+		pe.addBlockDeviceToHierarchyCache(*device)
+
 		// if ApplyFilter returns true then we process the event further
 		if !pe.Controller.ApplyFilter(device) {
 			continue

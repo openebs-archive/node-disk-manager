@@ -61,8 +61,6 @@ func (pe *ProbeEvent) addBlockDeviceToHierarchyCache(bd blockdevice.BlockDevice)
 // addBlockDevice processed when an add event is received for a device
 func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) error {
 
-	pe.addBlockDeviceToHierarchyCache(bd)
-
 	// handle devices that are not managed by NDM
 	// eg:devices in use by mayastor, zfs PV and jiva
 	// TODO jiva handling is still to be added.
