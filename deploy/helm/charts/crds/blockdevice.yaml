@@ -143,7 +143,7 @@ spec:
                   description: DriveType is the type of backing drive, HDD/SSD
                   enum:
                     - HDD
-                    - SDD
+                    - SSD
                     - Unknown
                     - ""
                   type: string
