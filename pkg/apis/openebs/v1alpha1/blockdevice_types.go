@@ -151,7 +151,7 @@ type DeviceDetails struct {
 	DeviceType string `json:"deviceType"`
 
 	// DriveType is the type of backing drive, HDD/SSD
-	// +kubebuilder:validation:Enum:=HDD;SDD;Unknown;""
+	// +kubebuilder:validation:Enum:=HDD;SSD;Unknown;""
 	// +optional
 	DriveType string `json:"driveType"`
 
