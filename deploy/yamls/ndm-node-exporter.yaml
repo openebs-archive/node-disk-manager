@@ -32,7 +32,7 @@ spec:
         - containerPort: 9101
           protocol: TCP
           name: metrics
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
         env:

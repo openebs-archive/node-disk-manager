@@ -23,11 +23,10 @@ import (
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"os"
 )
 
 const (
-	// HostName is the hostname in which the tests are performed
-	HostName = "minikube"
 	// FakeHostName is a generated fake hostname
 	FakeHostName = "fake-minikube"
 	// FakeBlockDevice is a generated fake block device name
@@ -37,6 +36,8 @@ const (
 var (
 	BDCUnavailableCapacity = resource.MustParse("10Gi")
 	BDCAvailableCapacity   = resource.MustParse("1Gi")
+	// HostName is the hostname in which the tests are performed
+	HostName = os.Getenv("HOSTNAME")
 )
 
 var _ = Describe("BlockDevice Claim tests", func() {
