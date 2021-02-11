@@ -136,7 +136,7 @@ spec:
         # Default address is 0.0.0.0:9115, do not use quotes around the address
         # - --api-service-address=0.0.0.0:9115
         - --feature-gates="UseOSDisk"
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
         volumeMounts:
@@ -234,7 +234,7 @@ spec:
         ports:
         - containerPort: 8080
           name: liveness
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         readinessProbe:
           exec:
             command:
@@ -301,7 +301,7 @@ spec:
         - containerPort: 9100
           protocol: TCP
           name: metrics
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: NAMESPACE
           valueFrom:
@@ -342,7 +342,7 @@ spec:
         - containerPort: 9101
           protocol: TCP
           name: metrics
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
         env:

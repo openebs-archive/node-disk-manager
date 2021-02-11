@@ -296,3 +296,49 @@ jobs:
             DBUILD_REPO_URL=https://github.com/openebs/node-disk-manager
             DBUILD_SITE_URL=https://openebs.io
 
+  integration-test:
+    runs-on: ubuntu-latest
+    # ndm exporter is not needed here as the integration tests do not use exporter
+    # since the multiplatform images are not used for testing, the image will be rebuilt and then used
+    # needs: ['ndm-daemonset', 'ndm-operator']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Minikube-Kubernetes
+        uses: manusa/actions-setup-minikube@v2.3.0
+        with:
+          minikube version: v1.15.0
+          kubernetes version: 1.18.0
+
+      - name: Install Dependencies
+        run: make install-dep
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          version: v0.5.1
+
+      - name: Build Node Disk Manager
+        uses: docker/build-push-action@v2
+        with:
+          file: ./build/ndm-daemonset/Dockerfile
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: |
+            openebs/node-disk-manager:ci
+
+      - name: Build Node Disk Operator
+        uses: docker/build-push-action@v2
+        with:
+          file: ./build/ndm-operator/Dockerfile
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: |
+            openebs/node-disk-operator:ci
+
+      - name: Integration Test
+        run: sudo -E env "PATH=$PATH" make integration-test

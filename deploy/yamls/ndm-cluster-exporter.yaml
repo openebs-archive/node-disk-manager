@@ -33,7 +33,7 @@ spec:
         - containerPort: 9100
           protocol: TCP
           name: metrics
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: NAMESPACE
           valueFrom:
