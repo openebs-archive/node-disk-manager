@@ -51,6 +51,7 @@ jobs:
       - name: Print tags
         run: |
           echo "${{ steps.docker_meta.outputs.tags }}"
+          echo "${{ env.TAG }}"
 
 #      - name: Set up QEMU
 #        uses: docker/setup-qemu-action@v1
