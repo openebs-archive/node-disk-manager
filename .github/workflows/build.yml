@@ -43,7 +43,7 @@ jobs:
         uses: crazy-max/ghaction-docker-meta@v1
         with:
           images: |
-            {{ secrets.IMAGE_ORG }}/node-disk-operator
+            ${{ secrets.IMAGE_ORG }}/node-disk-operator
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
