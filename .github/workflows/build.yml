@@ -40,6 +40,8 @@ jobs:
           images: |
             ${{ secrets.IMAGE_ORG }}/node-disk-operator
             quay.io/${{ secrets.IMAGE_ORG }}/node-disk-operator
+          tag-latest: false
+          tag-custom-only: true
           tag-custom: |
             ${{ env.TAG }}
 
