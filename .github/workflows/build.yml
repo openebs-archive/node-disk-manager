@@ -47,11 +47,12 @@ jobs:
             quay.io/${{ secrets.IMAGE_ORG }}/node-disk-operator
           tag-semver: |
             {{version}}
+          tag-custom: |
+            ${{ env.TAG }}
 
       - name: Print tags
         run: |
           echo "${{ steps.docker_meta.outputs.tags }}"
-          echo "${{ env.TAG }}"
 
 #      - name: Set up QEMU
 #        uses: docker/setup-qemu-action@v1
