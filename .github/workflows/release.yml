@@ -11,26 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-name: build
+name: release
 
-on: ['push']
+on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-
-  ndm-operator:
+  ndm-daemonset:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set Tag
-        run: |
-          BRANCH="${GITHUB_REF##*/}"
-          CI_TAG=${BRANCH#v}-ci
-          if [ ${BRANCH} = "master" ]; then
-            CI_TAG="ci"
-          fi
-          echo "TAG=${CI_TAG}" >> $GITHUB_ENV
+        uses: actions/checkout@v1
 
       - name: Docker meta
         id: docker_meta
@@ -40,35 +33,10 @@ jobs:
           images: |
             ${{ secrets.IMAGE_ORG }}/node-disk-operator
             quay.io/${{ secrets.IMAGE_ORG }}/node-disk-operator
-          tag-custom: |
-            ${{ env.TAG }}
+          tag-semver: |
+            {{version}}
 
       - name: Print tags
         run: |
           echo "${{ steps.docker_meta.outputs.tags }}"
 
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v1
-#        with:
-#          platforms: all
-#
-#      - name: Set up Docker Buildx
-#        id: buildx
-#        uses: docker/setup-buildx-action@v1
-#        with:
-#          version: v0.5.1
-#
-#      - name: Login to DockerHub
-#        uses: docker/login-action@v1
-#        with:
-#          username: ${{ secrets.DOCKERHUB_USERNAME }}
-#          password: ${{ secrets.DOCKERHUB_TOKEN }}
-#
-#      - name: Build & Push Image
-#        uses: docker/build-push-action@v2
-#        with:
-#          file: ./build/ndm-operator/Dockerfile
-#          push: true
-#          platforms: linux/amd64
-#          tags: |
-#            ${{ steps.docker_meta.outputs.tags }}
