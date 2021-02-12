@@ -38,6 +38,13 @@ jobs:
           echo "BRANCH: ${BRANCH}"
           echo "TAG: ${TAG}"
 
+      - name: Docker meta
+        id: docker_meta
+        uses: crazy-max/ghaction-docker-meta@v1
+        with:
+          images: |
+            {{ secrets.IMAGE_ORG }}/node-disk-operator
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
         with:
@@ -60,5 +67,6 @@ jobs:
         with:
           file: ./build/ndm-operator/Dockerfile
           push: true
-          platforms: linux/amd64, linux/arm64
-          tags: akhilerm/node-disk-operator:ci
+          platforms: linux/amd64
+          tags: |
+            ${{ steps.docker_meta.outputs.tags }}
