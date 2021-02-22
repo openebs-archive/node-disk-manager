@@ -263,8 +263,23 @@ func TestDeleteDiskEvent(t *testing.T) {
 func compareBlockDevice(t *testing.T, bd1, bd2 apis.BlockDevice) {
 	assert.Equal(t, bd1.Name, bd2.Name)
 	assert.Equal(t, bd1.Labels, bd2.Labels)
+	// devlinks will be compared separately
+	assert.Equal(t, len(bd1.Spec.DevLinks), len(bd2.Spec.DevLinks))
+	if len(bd1.Spec.DevLinks) != len(bd2.Spec.DevLinks) {
+		assert.Fail(t, "Devlinks, expected: %+v \n actual: %+v", bd1.Spec.DevLinks, bd2.Spec.DevLinks)
+		return
+	}
+	// compare each set of devlinks
+	for i := 0; i < len(bd1.Spec.DevLinks); i++ {
+		assert.True(t, unorderedEqual(bd1.Spec.DevLinks[i].Links, bd2.Spec.DevLinks[i].Links))
+	}
+	// links will be made nil since they are already compared
+	bd1.Spec.DevLinks = nil
+	bd2.Spec.DevLinks = nil
+
 	assert.Equal(t, bd1.Spec, bd2.Spec)
 	assert.Equal(t, bd1.Status, bd2.Status)
+
 }
 
 // compareBlockDeviceList is the custom comparison function for blockdevice list

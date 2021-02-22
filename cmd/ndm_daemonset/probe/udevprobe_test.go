@@ -121,6 +121,15 @@ func TestFillDiskDetails(t *testing.T) {
 		Kind:  libudevwrapper.BY_PATH_LINK,
 		Links: mockOsDiskDetails.ByPathDevLinks,
 	})
+
+	// The devlinks are compared separately as the ordering of devlinks can be different in some systems
+	// eg: ubuntu 20.04 in github actions
+	assert.True(t, compareDevLinks(expectedDiskInfo.DevLinks, actualDiskInfo.DevLinks))
+
+	// The devlinks are made nil since they are already compared
+	expectedDiskInfo.DevLinks = nil
+	actualDiskInfo.DevLinks = nil
+
 	assert.Equal(t, expectedDiskInfo, actualDiskInfo)
 }
 
@@ -241,4 +250,31 @@ func TestNewUdevProbeForFillDiskDetails(t *testing.T) {
 			assert.Equal(t, test.expectedError, test.actualError)
 		})
 	}
+}
+
+func compareDevLinks(devLink1, devLink2 []blockdevice.DevLink) bool {
+	if len(devLink1) != len(devLink2) {
+		return false
+	}
+	cmp := true
+	for i := 0; i < len(devLink1); i++ {
+		cmp = cmp && unorderedEqual(devLink1[0].Links, devLink2[0].Links)
+	}
+	return cmp
+}
+
+func unorderedEqual(first, second []string) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	exists := make(map[string]bool)
+	for _, value := range first {
+		exists[value] = true
+	}
+	for _, value := range second {
+		if !exists[value] {
+			return false
+		}
+	}
+	return true
 }

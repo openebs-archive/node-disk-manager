@@ -26,6 +26,7 @@ import "C"
 import (
 	"bufio"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/sysfs"
 	"io/ioutil"
 	"os"
@@ -128,28 +129,13 @@ func OsDiskName() (string, string, error) {
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		return osPartPath, osFileSystem, err
-	}
-	// dev path be like /dev/sda4 we need to remove /dev/ from this string to get sys block path.
-	osPartPath = strings.Replace(osPartPath, "/dev/", "", 1)
-	softlink := "/sys/class/block/" + osPartPath
-	link, err := os.Readlink(softlink)
+	mountPointUtil := mount.NewMountUtil("/proc/self/mounts", "", "/")
+	disk, err := mountPointUtil.GetDiskPath()
 	if err != nil {
 		return osPartPath, osFileSystem, err
 	}
-	parts := strings.Split(link, "/")
-	if parts[len(parts)-2] != "block" {
-		// If the link path is not for parent disk we need to remove partition name from link.
-		// link looks like ../../devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
-		// or ../../devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda
-		// where sda is the parent disk if sda1 / sda2 .. partition present in link
-		// we need to remove /sda4 from the link to get parent disk
-		link = strings.Replace(link, "/"+osPartPath, "", 1)
-	}
-	parts = strings.Split(link, "/")
-	osDiskName := parts[len(parts)-1]
-	return osDiskName, osFileSystem, nil
+	disk = strings.Replace(disk, "/dev/", "", 1)
+	return disk, osFileSystem, nil
 }
 
 // getSyspathOfOsDisk returns syspath of os disk in success
