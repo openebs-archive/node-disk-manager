@@ -25,6 +25,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - name: Set Release Tag
+        run: |
+          TAG="${GITHUB_REF#refs/*/v}"
+          echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
+
       - name: Docker meta
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1
@@ -40,6 +45,7 @@ jobs:
       - name: Print Tags
         run: |
           echo "${{ steps.docker_meta.outputs.tags }}"
+          echo "RELEASE TAG: ${RELEASE_TAG}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -80,6 +86,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - name: Set Release Tag
+        run: |
+          TAG="${GITHUB_REF#refs/*/v}"
+          echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
+
       - name: Docker meta
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1
@@ -95,6 +106,7 @@ jobs:
       - name: Print Tags
         run: |
           echo "${{ steps.docker_meta.outputs.tags }}"
+          echo "RELEASE TAG: ${RELEASE_TAG}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -135,6 +147,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - name: Set Release Tag
+        run: |
+          TAG="${GITHUB_REF#refs/*/v}"
+          echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
+
       - name: Docker meta
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1
@@ -150,6 +167,7 @@ jobs:
       - name: Print Tags
         run: |
           echo "${{ steps.docker_meta.outputs.tags }}"
+          echo "RELEASE TAG: ${RELEASE_TAG}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
