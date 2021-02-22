@@ -85,7 +85,7 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
           build-args: |
-            DBUILD_DATE=${{ steps.date.outputs.DATE }}"
+            DBUILD_DATE="${{ steps.date.outputs.DATE }}"
             DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
             DBUILD_SITE_URL="https://openebs.io"
             RELEASE_TAG=${RELEASE_TAG}
@@ -156,7 +156,7 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
           build-args: |
-            DBUILD_DATE=${{ steps.date.outputs.DATE }}"
+            DBUILD_DATE="${{ steps.date.outputs.DATE }}"
             DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
             DBUILD_SITE_URL="https://openebs.io"
             RELEASE_TAG=${RELEASE_TAG}
@@ -227,7 +227,7 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
           build-args: |
-            DBUILD_DATE=${{ steps.date.outputs.DATE }}"
+            DBUILD_DATE="${{ steps.date.outputs.DATE }}"
             DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
             DBUILD_SITE_URL="https://openebs.io"
             RELEASE_TAG=${RELEASE_TAG}
