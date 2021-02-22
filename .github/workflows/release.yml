@@ -31,8 +31,9 @@ jobs:
           echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
 
       - name: Set Build Date
+        id: date
         run: |
-          echo "NOW::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')" >> $GITHUB_ENV
+          echo "::set-output name=DATE::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')"
 
       - name: Docker meta
         id: docker_meta
@@ -84,9 +85,10 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
           build-args: |
-            DBUILD_DATE=${NOW}
+            DBUILD_DATE=${{ steps.date.outputs.DATE }}"
             DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
             DBUILD_SITE_URL="https://openebs.io"
+            RELEASE_TAG=${RELEASE_TAG}
 
   ndm-exporter:
     runs-on: ubuntu-latest
@@ -100,8 +102,9 @@ jobs:
           echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
 
       - name: Set Build Date
+        id: date
         run: |
-          echo "NOW::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')" >> $GITHUB_ENV
+          echo "::set-output name=DATE::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')"
 
       - name: Docker meta
         id: docker_meta
@@ -153,10 +156,10 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
           build-args: |
-            DBUILD_DATE=${NOW}
+            DBUILD_DATE=${{ steps.date.outputs.DATE }}"
             DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
             DBUILD_SITE_URL="https://openebs.io"
-
+            RELEASE_TAG=${RELEASE_TAG}
 
   ndm-operator:
     runs-on: ubuntu-latest
@@ -170,8 +173,9 @@ jobs:
           echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
 
       - name: Set Build Date
+        id: date
         run: |
-          echo "NOW::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')" >> $GITHUB_ENV
+          echo "::set-output name=DATE::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')"
 
       - name: Docker meta
         id: docker_meta
@@ -223,7 +227,8 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
           build-args: |
-            DBUILD_DATE=${NOW}
+            DBUILD_DATE=${{ steps.date.outputs.DATE }}"
             DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
             DBUILD_SITE_URL="https://openebs.io"
+            RELEASE_TAG=${RELEASE_TAG}
 
