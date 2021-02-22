@@ -71,7 +71,7 @@ jobs:
 
       - name: Set Build Date
         run: |
-          echo "NOW=${date -u +'%Y-%m-%dT%H:%M:%S%Z'} >> $GITHUB_ENV"
+          echo "NOW::${date -u +'%Y-%m-%dT%H:%M:%S%Z'} >> $GITHUB_ENV"
 
       - name: Docker meta
         id: docker_meta
@@ -145,7 +145,7 @@ jobs:
 
       - name: Set Build Date
         run: |
-          echo "NOW=${date -u +'%Y-%m-%dT%H:%M:%S%Z'} >> $GITHUB_ENV"
+          echo "NOW::${date -u +'%Y-%m-%dT%H:%M:%S%Z'} >> $GITHUB_ENV"
 
       - name: Docker meta
         id: docker_meta
@@ -219,7 +219,7 @@ jobs:
 
       - name: Set Build Date
         run: |
-          echo "NOW=${date -u +'%Y-%m-%dT%H:%M:%S%Z'} >> $GITHUB_ENV"
+          echo "NOW::${date -u +'%Y-%m-%dT%H:%M:%S%Z'} >> $GITHUB_ENV"
 
       - name: Docker meta
         id: docker_meta
