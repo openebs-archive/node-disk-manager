@@ -69,6 +69,10 @@ jobs:
           fi
           echo "TAG=${CI_TAG}" >> $GITHUB_ENV
 
+      - name: Set Build Date
+        run: |
+          echo "NOW=${date -u +'%Y-%m-%dT%H:%M:%S%Z'} >> $GITHUB_ENV"
+
       - name: Docker meta
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1
@@ -118,6 +122,10 @@ jobs:
           platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/ppc64le
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
+          build-args: |
+            DBUILD_DATE=${NOW}
+            DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
+            DBUILD_SITE_URL="https://openebs.io"
 
   ndm-exporter:
     runs-on: ubuntu-latest
@@ -134,6 +142,10 @@ jobs:
             CI_TAG="ci"
           fi
           echo "TAG=${CI_TAG}" >> $GITHUB_ENV
+
+      - name: Set Build Date
+        run: |
+          echo "NOW=${date -u +'%Y-%m-%dT%H:%M:%S%Z'} >> $GITHUB_ENV"
 
       - name: Docker meta
         id: docker_meta
@@ -184,6 +196,10 @@ jobs:
           platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/ppc64le
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
+          build-args: |
+            DBUILD_DATE=${NOW}
+            DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
+            DBUILD_SITE_URL="https://openebs.io"
 
   ndm-operator:
     runs-on: ubuntu-latest
@@ -200,6 +216,10 @@ jobs:
             CI_TAG="ci"
           fi
           echo "TAG=${CI_TAG}" >> $GITHUB_ENV
+
+      - name: Set Build Date
+        run: |
+          echo "NOW=${date -u +'%Y-%m-%dT%H:%M:%S%Z'} >> $GITHUB_ENV"
 
       - name: Docker meta
         id: docker_meta
@@ -250,3 +270,8 @@ jobs:
           platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/ppc64le
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
+          build-args: |
+            DBUILD_DATE=${NOW}
+            DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
+            DBUILD_SITE_URL="https://openebs.io"
+
