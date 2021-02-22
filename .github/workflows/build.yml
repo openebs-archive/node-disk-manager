@@ -124,9 +124,9 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
           build-args: |
-            DBUILD_DATE="${{ steps.date.outputs.DATE }}"
-            DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
-            DBUILD_SITE_URL="https://openebs.io"
+            DBUILD_DATE=${{ steps.date.outputs.DATE }}
+            DBUILD_REPO_URL=https://github.com/openebs/node-disk-manager
+            DBUILD_SITE_URL=https://openebs.io
 
   ndm-exporter:
     runs-on: ubuntu-latest
@@ -199,9 +199,9 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
           build-args: |
-            DBUILD_DATE="${{ steps.date.outputs.DATE }}"
-            DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
-            DBUILD_SITE_URL="https://openebs.io"
+            DBUILD_DATE=${{ steps.date.outputs.DATE }}
+            DBUILD_REPO_URL=https://github.com/openebs/node-disk-manager
+            DBUILD_SITE_URL=https://openebs.io
 
   ndm-operator:
     runs-on: ubuntu-latest
@@ -274,7 +274,7 @@ jobs:
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
           build-args: |
-            DBUILD_DATE="${{ steps.date.outputs.DATE }}"
-            DBUILD_REPO_URL="https://github.com/openebs/node-disk-manager"
-            DBUILD_SITE_URL="https://openebs.io"
+            DBUILD_DATE=${{ steps.date.outputs.DATE }}
+            DBUILD_REPO_URL=https://github.com/openebs/node-disk-manager
+            DBUILD_SITE_URL=https://openebs.io
 
