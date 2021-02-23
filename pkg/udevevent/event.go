@@ -52,7 +52,7 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 
 	// fields used for UUID. These fields will be filled always. But used only if the
 	// GPTBasedUUID feature-gate is enabled.
-	udevDeviceType := device.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
+	deviceDetails.DeviceAttributes.DeviceType = device.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
 	deviceDetails.DeviceAttributes.WWN = device.GetPropertyValue(libudevwrapper.UDEV_WWN)
 	deviceDetails.DeviceAttributes.Serial = device.GetPropertyValue(libudevwrapper.UDEV_SERIAL)
 
@@ -83,6 +83,7 @@ func (e *event) process(device *libudevwrapper.UdevDevice) {
 				deviceDetails.DependentDevices = dependents
 				klog.V(4).Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
 			}
+			udevDeviceType := deviceDetails.DeviceAttributes.DeviceType
 			deviceType, err := sysfsDevice.GetDeviceType(udevDeviceType)
 			if err != nil {
 				klog.Errorf("could not get device type for %s, falling back to udev reported type: %s", deviceDetails.DevPath, udevDeviceType)
