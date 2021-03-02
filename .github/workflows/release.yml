@@ -25,6 +25,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - name: Set Image Org
+        # sets the default IMAGE_ORG to openebs
+        run: |
+          [ -z "${{ secrets.IMAGE_ORG }}" ] && IMAGE_ORG=openebs || IMAGE_ORG=${{ secrets.IMAGE_ORG}}
+          echo "IMAGE_ORG=${IMAGE_ORG}" >> $GITHUB_ENV
+
       - name: Set Release Tag
         run: |
           TAG="${GITHUB_REF#refs/*/v}"
@@ -41,8 +47,8 @@ jobs:
         with:
           # add each registry to which the image needs to be pushed here
           images: |
-            ${{ secrets.IMAGE_ORG }}/node-disk-manager
-            quay.io/${{ secrets.IMAGE_ORG }}/node-disk-manager
+            ${{ env.IMAGE_ORG }}/node-disk-manager
+            quay.io/${{ env.IMAGE_ORG }}/node-disk-manager
           tag-latest: true
           tag-semver: |
             {{version}}
@@ -96,6 +102,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - name: Set Image Org
+        # sets the default IMAGE_ORG to openebs
+        run: |
+          [ -z "${{ secrets.IMAGE_ORG }}" ] && IMAGE_ORG=openebs || IMAGE_ORG=${{ secrets.IMAGE_ORG}}
+          echo "IMAGE_ORG=${IMAGE_ORG}" >> $GITHUB_ENV
+
       - name: Set Release Tag
         run: |
           TAG="${GITHUB_REF#refs/*/v}"
@@ -112,8 +124,8 @@ jobs:
         with:
           # add each registry to which the image needs to be pushed here
           images: |
-            ${{ secrets.IMAGE_ORG }}/node-disk-exporter
-            quay.io/${{ secrets.IMAGE_ORG }}/node-disk-exporter
+            ${{ env.IMAGE_ORG }}/node-disk-exporter
+            quay.io/${{ env.IMAGE_ORG }}/node-disk-exporter
           tag-latest: true
           tag-semver: |
             {{version}}
@@ -167,6 +179,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - name: Set Image Org
+        # sets the default IMAGE_ORG to openebs
+        run: |
+          [ -z "${{ secrets.IMAGE_ORG }}" ] && IMAGE_ORG=openebs || IMAGE_ORG=${{ secrets.IMAGE_ORG}}
+          echo "IMAGE_ORG=${IMAGE_ORG}" >> $GITHUB_ENV
+
       - name: Set Release Tag
         run: |
           TAG="${GITHUB_REF#refs/*/v}"
@@ -183,8 +201,8 @@ jobs:
         with:
           # add each registry to which the image needs to be pushed here
           images: |
-            ${{ secrets.IMAGE_ORG }}/node-disk-operator
-            quay.io/${{ secrets.IMAGE_ORG }}/node-disk-operator
+            ${{ env.IMAGE_ORG }}/node-disk-operator
+            quay.io/${{ env.IMAGE_ORG }}/node-disk-operator
           tag-latest: true
           tag-semver: |
             {{version}}
