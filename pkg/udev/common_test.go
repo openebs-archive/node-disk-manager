@@ -96,6 +96,13 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			assert.True(t, unorderedEqual(test.expectedDetails.ByIdDevLinks, test.actualDetails.ByIdDevLinks))
+			assert.True(t, unorderedEqual(test.expectedDetails.ByPathDevLinks, test.actualDetails.ByPathDevLinks))
+			// need to make this nil as devlinks already compared.
+			test.expectedDetails.ByIdDevLinks = nil
+			test.expectedDetails.ByPathDevLinks = nil
+			test.actualDetails.ByIdDevLinks = nil
+			test.actualDetails.ByPathDevLinks = nil
 			assert.Equal(t, test.expectedDetails, test.actualDetails)
 		})
 	}
@@ -198,4 +205,23 @@ func TestGetDevLinks(t *testing.T) {
 			})
 		}
 	}
+}
+
+// unorderedEqual compares 2 arrays, if all elements in one array are present
+// in the second array.
+// eg: [1,2,3] and [3,1,2] are equal in unorderedEqual.
+func unorderedEqual(first, second []string) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	exists := make(map[string]bool)
+	for _, value := range first {
+		exists[value] = true
+	}
+	for _, value := range second {
+		if !exists[value] {
+			return false
+		}
+	}
+	return true
 }
