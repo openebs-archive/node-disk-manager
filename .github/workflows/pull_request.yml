@@ -171,6 +171,7 @@ jobs:
         with:
           file: ./build/ndm-daemonset/Dockerfile
           push: false
+          load: true
           platforms: linux/amd64
           tags: |
             openebs/node-disk-manager:ci
@@ -180,6 +181,7 @@ jobs:
         with:
           file: ./build/ndm-operator/Dockerfile
           push: false
+          load: true
           platforms: linux/amd64
           tags: |
             openebs/node-disk-operator:ci
