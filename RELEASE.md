@@ -26,21 +26,21 @@ Once the release branch is created, changelog from `changelogs/unreleased` needs
 
 The format of the release tag is either "Release-Name-RC1" or "Release-Name" depending on whether the tag is a release candidate or a release. (Example: v0.5.0-RC1 is a GitHub release tag for node-disk-manager release candidate build. v0.5.0 is the release tag that is created after the release criteria are satisfied by the node-disk-manager RC builds.)
 
-Once the release is triggered, Travis build process has to be monitored. Once Travis build passes, images are pushed to docker hub and quay.io. Images can be verified by going through docker hub and quay.io. Also, the images shouldn't have any high level vulnerabilities.
+Once the release is triggered, Github Action release workflow has to be monitored. Once the workflow passes, images are pushed to docker hub and quay.io. Images can be verified by going through docker hub and quay.io. Also, the images shouldn't have any high level vulnerabilities.
 
-Images for the different components are published at the following location depending on the architecture (amd64, arm64, ppc64le):
+Images for the different components are published at the following location:
 
 - Node Disk Manager Daemon
-    https://quay.io/repository/openebs/node-disk-manager-{ARCH}?tab=tags
-    https://hub.docker.com/r/openebs/node-disk-manager-{ARCH}/tags
+    https://quay.io/repository/openebs/node-disk-manager?tab=tags
+    https://hub.docker.com/r/openebs/node-disk-manager/tags
 
 - Node Disk Operator
-    https://quay.io/repository/openebs/node-disk-operator-{ARCH}?tab=tags
-    https://hub.docker.com/r/openebs/node-disk-operator-{ARCH}/tags
+    https://quay.io/repository/openebs/node-disk-operator?tab=tags
+    https://hub.docker.com/r/openebs/node-disk-operator/tags
 
 - Node Disk Exporter
-    https://quay.io/repository/openebs/node-disk-exporter-{ARCH}?tab=tags
-    https://hub.docker.com/r/openebs/node-disk-exporter-{ARCH}/tags
+    https://quay.io/repository/openebs/node-disk-exporter?tab=tags
+    https://hub.docker.com/r/openebs/node-disk-exporter/tags
 
 
 Once a release is created, update the release description with the change log mentioned in `changelog/v0.5.x`. Once the change logs are updated in release, repo owner needs to create a PR to `master` with the following details:

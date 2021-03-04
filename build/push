@@ -59,11 +59,11 @@ BUILD_ID=$(git describe --tags --always)
 
 # Determine the current branch
 CURRENT_BRANCH=""
-if [ -z ${TRAVIS_BRANCH} ];
+if [ -z ${BRANCH} ];
 then
   CURRENT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
 else
-  CURRENT_BRANCH=${TRAVIS_BRANCH}
+  CURRENT_BRANCH=${BRANCH}
 fi
 
 #Depending on the branch where builds are generated,
@@ -106,12 +106,12 @@ then
   # This unique/build image will be pushed to corresponding ci repo.
   TagAndPushImage "${DIMAGE}-ci" "${BUILD_TAG}"
 
-  if [ ! -z "${TRAVIS_TAG}" ] ;
+  if [ ! -z "${RELEASE_TAG}" ] ;
   then
     # Push with different tags if tagged as a release
-    # When github is tagged with a release, then Travis will
-    # set the release tag in env TRAVIS_TAG
-    TagAndPushImage "${DIMAGE}" "${TRAVIS_TAG}"
+    # When github is tagged with a release, then github action release workflow
+    # will set the release tag in env RELEASE_TAG
+    TagAndPushImage "${DIMAGE}" "${RELEASE_TAG}"
     TagAndPushImage "${DIMAGE}" "latest"
   fi;
 else
@@ -126,13 +126,13 @@ then
   # Push CI tagged image - :ci or :branch-ci
   TagAndPushImage "quay.io/${DIMAGE}" "${CI_TAG}"
 
-  if [ ! -z "${TRAVIS_TAG}" ] ;
+  if [ ! -z "${RELEASE_TAG}" ] ;
   then
     # Push with different tags if tagged as a release
-    # When github is tagged with a release, then Travis will
-    # set the release tag in env TRAVIS_TAG
-    # Trim the `v` from the TRAVIS_TAG if it exists
-    TagAndPushImage "quay.io/${DIMAGE}" "${TRAVIS_TAG}"
+    # When github is tagged with a release, then github action reelase workflow
+    # will set the release tag in env RELEASE_TAG
+    # Trim the `v` from the RELEASE_TAG if it exists
+    TagAndPushImage "quay.io/${DIMAGE}" "${RELEASE_TAG}"
     TagAndPushImage "quay.io/${DIMAGE}" "latest"
   fi;
 else

@@ -44,7 +44,7 @@ A detailed usage documentation is maintained in the [wiki](https://github.com/op
 Before building the image locally, you need to setup your development environment. The detailed instructions for setting up development environment, building and testing are available [here](./BUILD.md).
 
 #### Push Image
-By default travis pushes the docker image to `openebs/node-disk-manager-amd64`, with *ci* as well as commit tags. 
+By default Github Action pushes the docker image to `openebs/node-disk-manager`, with *ci* tags. 
 You can push to your custom registry and modify the ndm-operator.yaml file for your testing. 
 
 # License
