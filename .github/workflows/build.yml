@@ -248,8 +248,8 @@ jobs:
         with:
           # add each registry to which the image needs to be pushed here
           images: |
-            ${{ env.IMAGE_ORG }}/node-disk-manager
-            quay.io/${{ env.IMAGE_ORG }}/node-disk-manager
+            ${{ env.IMAGE_ORG }}/node-disk-operator
+            quay.io/${{ env.IMAGE_ORG }}/node-disk-operator
           tag-latest: false
           tag-custom-only: true
           tag-custom: |
