@@ -134,8 +134,8 @@ VERSION="ci"
 
 if [ -n "${RELEASE_TAG}" ] ;
 then
-    # When github is tagged with a release, then Travis will
-    # set the release tag in env RELEASE_TAG
+    # When github is tagged with a release, then github action release workflow
+    # will set the release tag in env RELEASE_TAG
     VERSION="${RELEASE_TAG}"
 fi;
 
