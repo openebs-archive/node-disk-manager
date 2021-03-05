@@ -1,0 +1,10 @@
+layout: go.kubebuilder.io/v2
+projectName: node-disk-manager
+repo: github.com/openebs/node-disk-manager
+resources:
+- group: openebs.io
+  kind: BlockDevice
+  version: v1alpha1
+version: 3-alpha
+plugins:
+  go.sdk.operatorframework.io/v2-alpha: {}

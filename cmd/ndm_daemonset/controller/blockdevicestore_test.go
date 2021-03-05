@@ -19,7 +19,11 @@ package controller
 import (
 	"testing"
 
+<<<<<<< HEAD
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+=======
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -38,7 +42,7 @@ func mockEmptyDeviceCr() apis.BlockDevice {
 		APIVersion: NDMVersion,
 	}
 
-	fakeDeviceSpec := apis.DeviceSpec{
+	fakeDeviceSpec := apis.BlockDeviceSpec{
 		DevLinks:    make([]apis.DeviceDevLink, 0),
 		Partitioned: NDMNotPartitioned,
 	}

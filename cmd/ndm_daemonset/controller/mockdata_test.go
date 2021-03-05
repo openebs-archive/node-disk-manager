@@ -20,7 +20,11 @@ import (
 	"fmt"
 	"testing"
 
+<<<<<<< HEAD
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+=======
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,7 +50,11 @@ var (
 		Vendor: "disk-fake-vendor",
 	}
 
+<<<<<<< HEAD
 	fakeDeviceObj = apis.DeviceSpec{
+=======
+	fakeDeviceObj = apis.BlockDeviceSpec{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 		Path:        "dev/disk-fake-path",
 		Capacity:    fakeDeviceCapacity,
 		Details:     fakeDeviceDetails,
@@ -64,7 +72,11 @@ var (
 		Name:   fakeDeviceUID,
 	}
 
+<<<<<<< HEAD
 	fakeDeviceStatus = apis.DeviceStatus{
+=======
+	fakeDeviceStatus = apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 		ClaimState: apis.BlockDeviceUnclaimed,
 		State:      NDMActive,
 	}
@@ -87,7 +99,11 @@ var (
 		Vendor: "disk-fake-vendor-new",
 	}
 
+<<<<<<< HEAD
 	newFakeDeviceObj = apis.DeviceSpec{
+=======
+	newFakeDeviceObj = apis.BlockDeviceSpec{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 		Path:     "dev/disk-fake-path-new",
 		Capacity: newFakeDeviceCapacity,
 		Details:  newFakeDeviceDetails,
@@ -104,7 +120,7 @@ var (
 		Name:   newFakeDeviceUID,
 	}
 
-	newFakeDeviceStatus = apis.DeviceStatus{
+	newFakeDeviceStatus = apis.BlockDeviceStatus{
 		ClaimState: apis.BlockDeviceUnclaimed,
 		State:      NDMActive,
 	}
@@ -135,8 +151,13 @@ func CreateFakeClient(t *testing.T) client.Client {
 
 	s := scheme.Scheme
 
+<<<<<<< HEAD
 	s.AddKnownTypes(apis.SchemeGroupVersion, deviceR)
 	s.AddKnownTypes(apis.SchemeGroupVersion, deviceList)
+=======
+	s.AddKnownTypes(apis.GroupVersion, deviceR)
+	s.AddKnownTypes(apis.GroupVersion, deviceList)
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 
 	fakeNdmClient := ndmFakeClientset.NewFakeClient()
 	if fakeNdmClient == nil {

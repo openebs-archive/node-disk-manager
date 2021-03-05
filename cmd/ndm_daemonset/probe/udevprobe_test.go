@@ -18,12 +18,22 @@ package probe
 
 import (
 	"errors"
+<<<<<<< HEAD
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+=======
+	"sync"
+	"testing"
+
+	"github.com/openebs/node-disk-manager/blockdevice"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,7 +61,11 @@ func mockOsDiskToAPI() (apis.BlockDevice, error) {
 		Serial: mockOsDiskDetails.Serial,
 		Vendor: mockOsDiskDetails.Vendor,
 	}
+<<<<<<< HEAD
 	fakeObj := apis.DeviceSpec{
+=======
+	fakeObj := apis.BlockDeviceSpec{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 		Path:        mockOsDiskDetails.DevNode,
 		Details:     fakeDetails,
 		Partitioned: controller.NDMNotPartitioned,
@@ -82,7 +96,11 @@ func mockOsDiskToAPI() (apis.BlockDevice, error) {
 		Labels: make(map[string]string),
 		Name:   mockOsDiskDetails.Uid,
 	}
+<<<<<<< HEAD
 	fakeDiskStatus := apis.DeviceStatus{
+=======
+	fakeDiskStatus := apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 		State:      controller.NDMActive,
 		ClaimState: apis.BlockDeviceUnclaimed,
 	}

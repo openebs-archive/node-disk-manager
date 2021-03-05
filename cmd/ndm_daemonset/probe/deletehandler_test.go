@@ -20,9 +20,15 @@ import (
 	"context"
 	"testing"
 
+<<<<<<< HEAD
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+=======
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"github.com/stretchr/testify/assert"
@@ -214,10 +220,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakePhysicalDiskGPTBasedUUID,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -226,10 +239,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakePhysicalDiskGPTBasedUUIDPart1,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda1",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda1",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -247,10 +267,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakePhysicalDiskGPTBasedUUID,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -259,10 +286,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakePhysicalDiskGPTBasedUUIDPart1,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda1",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda1",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -279,10 +313,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakePhysicalDiskGPTBasedUUID,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -300,10 +341,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakePhysicalDiskLegacyUUID,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -321,10 +369,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakecstorVirtualDiskLegacyUUID,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -345,10 +400,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 								internalPartitionUUIDAnnotation: fakePartTable,
 							},
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdb",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdb",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -366,10 +428,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakelocalpvVirtualDiskLegacyUUID,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -390,10 +459,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 								internalFSUUIDAnnotation: fakeFSUUID,
 							},
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdb",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdb",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -411,10 +487,17 @@ func TestDeleteBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakezfspvPhysicalDiskUUID,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 							State:      apis.BlockDeviceActive,
 						},
@@ -431,8 +514,13 @@ func TestDeleteBlockDevice(t *testing.T) {
 			bd := tt.bd
 			bdAPIList := tt.bdAPIList
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 			ctrl := &controller.Controller{
 				Clientset:   cl,

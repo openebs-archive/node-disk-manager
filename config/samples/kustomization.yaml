@@ -1,0 +1,4 @@
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- openebs.io_v1alpha1_blockdevice.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

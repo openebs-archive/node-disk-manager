@@ -17,8 +17,13 @@ limitations under the License.
 package probe
 
 import (
+<<<<<<< HEAD
 	"github.com/openebs/node-disk-manager/blockdevice"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+=======
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/blockdevice"
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 
 	"k8s.io/klog"
 )

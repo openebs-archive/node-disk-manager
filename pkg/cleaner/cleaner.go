@@ -22,7 +22,8 @@ package cleaner
 
 import (
 	"context"
-	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+
+	"github.com/openebs/node-disk-manager/api/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1 "k8s.io/api/core/v1"
@@ -187,7 +188,7 @@ func getTolerationsForTaints(taints ...v1.Taint) []v1.Toleration {
 }
 
 // getVolumeMode returns the volume mode of the BD that is being released
-func getVolumeMode(spec v1alpha1.DeviceSpec) VolumeMode {
+func getVolumeMode(spec v1alpha1.BlockDeviceSpec) VolumeMode {
 	if spec.FileSystem.Mountpoint != "" {
 		return VolumeModeFileSystem
 	}

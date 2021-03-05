@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/pkg/apis"
+	"github.com/operator-framework/operator-sdk/test/test-framework/pkg/apis"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"

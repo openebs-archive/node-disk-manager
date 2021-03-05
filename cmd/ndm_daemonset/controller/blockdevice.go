@@ -17,8 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -109,8 +109,8 @@ func (di *DeviceInfo) getTypeMeta() metav1.TypeMeta {
 // getStatus returns DeviceStatus struct which contains
 // state of BlockDevice resource. It is used to populate data
 // of BlockDevice struct of BlockDevice CR.
-func (di *DeviceInfo) getStatus() apis.DeviceStatus {
-	deviceStatus := apis.DeviceStatus{
+func (di *DeviceInfo) getStatus() apis.BlockDeviceStatus {
+	deviceStatus := apis.BlockDeviceStatus{
 		ClaimState: apis.BlockDeviceUnclaimed,
 		State:      NDMActive,
 	}
@@ -122,8 +122,8 @@ func (di *DeviceInfo) getStatus() apis.DeviceStatus {
 // - capacity - (size,logical sector size ...)
 // - devlinks - (by-id , by-path links)
 // It is used to populate data of BlockDevice struct of blockdevice CR.
-func (di *DeviceInfo) getDeviceSpec() apis.DeviceSpec {
-	deviceSpec := apis.DeviceSpec{}
+func (di *DeviceInfo) getDeviceSpec() apis.BlockDeviceSpec {
+	deviceSpec := apis.BlockDeviceSpec{}
 	deviceSpec.NodeAttributes.NodeName = di.NodeAttributes[NodeNameKey]
 	deviceSpec.Path = di.getPath()
 	deviceSpec.Details = di.getDeviceDetails()

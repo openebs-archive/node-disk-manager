@@ -17,12 +17,13 @@ limitations under the License.
 package k8s
 
 import (
+	"time"
+
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
-	"github.com/openebs/node-disk-manager/pkg/apis"
+	"github.com/operator-framework/operator-sdk/test/test-framework/pkg/apis"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"time"
 
 	//"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"

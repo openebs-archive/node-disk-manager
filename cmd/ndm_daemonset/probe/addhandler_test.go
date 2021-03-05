@@ -20,10 +20,17 @@ import (
 	"context"
 	"testing"
 
+<<<<<<< HEAD
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+=======
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/db/kubernetes"
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"github.com/stretchr/testify/assert"
@@ -350,7 +357,11 @@ func TestDeviceInUseByZFSLocalPV(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakeUUID,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
+=======
+						Spec: apis.BlockDeviceSpec{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							Path: "/dev/sdb",
 						},
 					},
@@ -365,8 +376,13 @@ func TestDeviceInUseByZFSLocalPV(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -907,7 +923,11 @@ func TestHandleUnmanagedDevices(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fakeUUID,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
+=======
+						Spec: apis.BlockDeviceSpec{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							Path: "/dev/sdb",
 						},
 					},
@@ -922,8 +942,13 @@ func TestHandleUnmanagedDevices(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -1011,7 +1036,11 @@ func TestCreateBlockDeviceResourceIfNoHolders(t *testing.T) {
 							Name:   "blockdevice-123",
 							Labels: make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
+=======
+						Spec: apis.BlockDeviceSpec{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							Path: "/dev/sda",
 						},
 					},
@@ -1024,8 +1053,13 @@ func TestCreateBlockDeviceResourceIfNoHolders(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -1108,10 +1142,17 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: gptUuidForPhysicalDevice,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1142,10 +1183,17 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: gptUuidForPhysicalDevicePartition,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1173,10 +1221,17 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: gptUuidForPhysicalDevice,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -1197,10 +1252,17 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1237,10 +1299,17 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 								internalUUIDSchemeAnnotation:    legacyUUIDScheme,
 							},
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1285,10 +1354,17 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 								internalUUIDSchemeAnnotation:    legacyUUIDScheme,
 							},
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1298,10 +1374,17 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 							Labels:      make(map[string]string),
 							Annotations: make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1322,10 +1405,17 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -1360,10 +1450,17 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 								internalUUIDSchemeAnnotation:    legacyUUIDScheme,
 							},
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1384,7 +1481,11 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Status: apis.DeviceStatus{
+=======
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -1421,7 +1522,11 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 							},
 							Labels: make(map[string]string),
 						},
+<<<<<<< HEAD
 						Status: apis.DeviceStatus{
+=======
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -1436,8 +1541,13 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -1527,10 +1637,17 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: gptUuidForPhysicalDevice,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1561,10 +1678,17 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: gptUuidForPhysicalDevicePartition,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1592,10 +1716,17 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: gptUuidForPhysicalDevice,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -1616,10 +1747,17 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1656,10 +1794,17 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 								internalUUIDSchemeAnnotation: legacyUUIDScheme,
 							},
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1704,10 +1849,17 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 								internalUUIDSchemeAnnotation: legacyUUIDScheme,
 							},
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1717,10 +1869,17 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 							Labels:      make(map[string]string),
 							Annotations: make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1741,10 +1900,17 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -1779,10 +1945,17 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 								internalUUIDSchemeAnnotation: legacyUUIDScheme,
 							},
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -1803,7 +1976,11 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Status: apis.DeviceStatus{
+=======
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -1840,7 +2017,11 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 							},
 							Labels: make(map[string]string),
 						},
+<<<<<<< HEAD
 						Status: apis.DeviceStatus{
+=======
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -1855,8 +2036,13 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -1972,10 +2158,17 @@ func TestUpgradeBD(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -2011,10 +2204,17 @@ func TestUpgradeBD(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -2050,7 +2250,11 @@ func TestUpgradeBD(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Status: apis.DeviceStatus{
+=======
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -2086,7 +2290,11 @@ func TestUpgradeBD(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Status: apis.DeviceStatus{
+=======
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -2101,8 +2309,13 @@ func TestUpgradeBD(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -2274,10 +2487,17 @@ func TestAddBlockDevice(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -2312,10 +2532,17 @@ func TestAddBlockDevice(t *testing.T) {
 							Annotations: make(map[string]string),
 							Labels:      make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sdX",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sdX",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -2372,13 +2599,21 @@ func TestAddBlockDevice(t *testing.T) {
 							Labels:      make(map[string]string),
 							Annotations: make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
+=======
+						Spec: apis.BlockDeviceSpec{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							Path: "/dev/sdx",
 							NodeAttributes: apis.NodeAttribute{
 								NodeName: "node0",
 							},
 						},
+<<<<<<< HEAD
 						Status: apis.DeviceStatus{
+=======
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -2418,13 +2653,21 @@ func TestAddBlockDevice(t *testing.T) {
 							},
 							Annotations: make(map[string]string),
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
+=======
+						Spec: apis.BlockDeviceSpec{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							Path: "/dev/sdx",
 							NodeAttributes: apis.NodeAttribute{
 								NodeName: "node0",
 							},
 						},
+<<<<<<< HEAD
 						Status: apis.DeviceStatus{
+=======
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -2492,10 +2735,17 @@ func TestAddBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: gptUuidForPhysicalDevice,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceClaimed,
 						},
 					},
@@ -2547,10 +2797,17 @@ func TestAddBlockDevice(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Name: gptUuidForPhysicalDevice,
 						},
+<<<<<<< HEAD
 						Spec: apis.DeviceSpec{
 							Path: "/dev/sda",
 						},
 						Status: apis.DeviceStatus{
+=======
+						Spec: apis.BlockDeviceSpec{
+							Path: "/dev/sda",
+						},
+						Status: apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 							ClaimState: apis.BlockDeviceUnclaimed,
 						},
 					},
@@ -2602,8 +2859,13 @@ func TestAddBlockDevice(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -2704,8 +2966,13 @@ func TestProbeEvent_createOrUpdateWithFSUUID(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with the bd resource
@@ -2807,8 +3074,13 @@ func TestProbeEvent_createOrUpdateWithPartitionUUID(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with the bd resource
@@ -2914,8 +3186,13 @@ func TestCreateOrUpdateWithAnnotation(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
+<<<<<<< HEAD
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
 			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+=======
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with the bd resource

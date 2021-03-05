@@ -19,10 +19,12 @@ package cmd
 import (
 	goflag "flag"
 	"fmt"
+	"os"
+
 	ndm_exporter "github.com/openebs/node-disk-manager/ndm-exporter"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"os"
 )
 
 // rootCmd represents the base command when called without any subcommands

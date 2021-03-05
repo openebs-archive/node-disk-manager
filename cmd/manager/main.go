@@ -23,8 +23,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/openebs/node-disk-manager/pkg/apis"
-	"github.com/openebs/node-disk-manager/pkg/controller"
 	"github.com/openebs/node-disk-manager/pkg/env"
 	ndmlogger "github.com/openebs/node-disk-manager/pkg/logs"
 	"github.com/openebs/node-disk-manager/pkg/setup"
@@ -36,6 +34,8 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/ready"
+	"github.com/operator-framework/operator-sdk/test/test-framework/pkg/apis"
+	"github.com/operator-framework/operator-sdk/test/test-framework/pkg/controller"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"

@@ -17,11 +17,20 @@ limitations under the License.
 package probe
 
 import (
+<<<<<<< HEAD
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"testing"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+=======
+	"testing"
+
+	"github.com/openebs/node-disk-manager/blockdevice"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 	"github.com/openebs/node-disk-manager/pkg/smart"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/stretchr/testify/assert"
@@ -51,7 +60,11 @@ func mockOsDiskToAPIBySmart() (apis.BlockDevice, error) {
 		LogicalSectorSize: mockOsDiskDetails.LBSize,
 	}
 
+<<<<<<< HEAD
 	fakeObj := apis.DeviceSpec{
+=======
+	fakeObj := apis.BlockDeviceSpec{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 		Capacity:    fakeCapacity,
 		Details:     fakeDetails,
 		Path:        mockOsDiskDetails.DevPath,
@@ -71,7 +84,11 @@ func mockOsDiskToAPIBySmart() (apis.BlockDevice, error) {
 		Name:   mockOsDiskDetailsFromUdev.Uid,
 	}
 
+<<<<<<< HEAD
 	fakeDiskStatus := apis.DeviceStatus{
+=======
+	fakeDiskStatus := apis.BlockDeviceStatus{
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 		State:      apis.BlockDeviceActive,
 		ClaimState: apis.BlockDeviceUnclaimed,
 	}

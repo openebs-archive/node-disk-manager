@@ -34,9 +34,16 @@ package seachest
 import "C"
 import (
 	"fmt"
+<<<<<<< HEAD
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"unsafe"
 
+=======
+	"unsafe"
+
+	"github.com/openebs/node-disk-manager/blockdevice"
+
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 	"k8s.io/klog"
 )
 

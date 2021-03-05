@@ -21,9 +21,15 @@ import (
 	"sync"
 	"testing"
 
+<<<<<<< HEAD
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+=======
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 
 	"github.com/stretchr/testify/assert"
@@ -103,8 +109,13 @@ func CreateFakeClient(t *testing.T) client.Client {
 	}
 
 	s := scheme.Scheme
+<<<<<<< HEAD
 	s.AddKnownTypes(apis.SchemeGroupVersion, deviceR)
 	s.AddKnownTypes(apis.SchemeGroupVersion, deviceList)
+=======
+	s.AddKnownTypes(apis.GroupVersion, deviceR)
+	s.AddKnownTypes(apis.GroupVersion, deviceList)
+>>>>>>> 3bfc5e1e... Inital project structuring and adding BlockDevice type
 
 	fakeNdmClient := ndmFakeClientset.NewFakeClient()
 	if fakeNdmClient == nil {
