@@ -82,6 +82,7 @@ jobs:
       - name: Build & Push Image
         uses: docker/build-push-action@v2
         with:
+          context: .
           file: ./build/ndm-daemonset/Dockerfile
           push: false
           platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/ppc64le
@@ -109,6 +110,7 @@ jobs:
       - name: Build & Push Image
         uses: docker/build-push-action@v2
         with:
+          context: .
           file: ./build/ndm-exporter/Dockerfile
           push: false
           platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/ppc64le
@@ -136,6 +138,7 @@ jobs:
       - name: Build & Push Image
         uses: docker/build-push-action@v2
         with:
+          context: .
           file: ./build/ndm-operator/Dockerfile
           push: false
           platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/ppc64le
@@ -169,6 +172,7 @@ jobs:
       - name: Build Node Disk Manager
         uses: docker/build-push-action@v2
         with:
+          context: .
           file: ./build/ndm-daemonset/Dockerfile
           push: false
           load: true
@@ -179,6 +183,7 @@ jobs:
       - name: Build Node Disk Operator
         uses: docker/build-push-action@v2
         with:
+          context: .
           file: ./build/ndm-operator/Dockerfile
           push: false
           load: true
