@@ -95,7 +95,7 @@ jobs:
             DBUILD_DATE=${{ steps.date.outputs.DATE }}
             DBUILD_REPO_URL=https://github.com/openebs/node-disk-manager
             DBUILD_SITE_URL=https://openebs.io
-            RELEASE_TAG=${RELEASE_TAG}
+            RELEASE_TAG=${{ env.RELEASE_TAG }}
 
   ndm-exporter:
     runs-on: ubuntu-latest
@@ -173,7 +173,7 @@ jobs:
             DBUILD_DATE=${{ steps.date.outputs.DATE }}
             DBUILD_REPO_URL=https://github.com/openebs/node-disk-manager
             DBUILD_SITE_URL=https://openebs.io
-            RELEASE_TAG=${RELEASE_TAG}
+            RELEASE_TAG=${{ env.RELEASE_TAG }}
 
   ndm-operator:
     runs-on: ubuntu-latest
@@ -251,4 +251,4 @@ jobs:
             DBUILD_DATE=${{ steps.date.outputs.DATE }}
             DBUILD_REPO_URL=https://github.com/openebs/node-disk-manager
             DBUILD_SITE_URL=https://openebs.io
-            RELEASE_TAG=${RELEASE_TAG}
+            RELEASE_TAG=${{ env.RELEASE_TAG }}
