@@ -1,3 +1,28 @@
+v1.3.0 / 2021-03-12
+========================
+* add support to push multiarch images to multiple registries ([#544](https://github.com/openebs/node-disk-manager/pull/544),[@akhilerm](https://github.com/akhilerm))
+* fixed cannot deactive BlockDevice immediately when "unplugged" device with GPTBasedUUID enabled ([#546](https://github.com/openebs/node-disk-manager/pull/546),[@cospotato](https://github.com/cospotato))
+* migrate integration tests from travis to github actions ([#548](https://github.com/openebs/node-disk-manager/pull/548),[@akhilerm](https://github.com/akhilerm))
+
+
+v1.3.0-RC1 / 2021-03-09
+========================
+* add support to push multiarch images to multiple registries ([#544](https://github.com/openebs/node-disk-manager/pull/544),[@akhilerm](https://github.com/akhilerm))
+* fixed cannot deactive BlockDevice immediately when "unplugged" device with GPTBasedUUID enabled ([#546](https://github.com/openebs/node-disk-manager/pull/546),[@cospotato](https://github.com/cospotato))
+* migrate integration tests from travis to github actions ([#548](https://github.com/openebs/node-disk-manager/pull/548),[@akhilerm](https://github.com/akhilerm))
+
+
+
+v1.2.0 / 2021-02-13
+========================
+* set values for default feature gates when flag is not provided and fix integration tests ([#536](https://github.com/openebs/node-disk-manager/pull/536),[@akhilerm](https://github.com/akhilerm))
+* fix sysfsprobe to fetch block/sector size and drive type for partitions ([#537](https://github.com/openebs/node-disk-manager/pull/537),[@z0marlin](https://github.com/z0marlin))
+* add support for multipath devices ([#530](https://github.com/openebs/node-disk-manager/pull/530),[@akhilerm](https://github.com/akhilerm))
+* pass mounts file path as a parameter when fetching mount attributes using DeviceBasicMountInfo() ([#539](https://github.com/openebs/node-disk-manager/pull/539),[@z0marlin](https://github.com/z0marlin))
+* add all devices to hierarchy cache irrespective of whether the blockdevice will be filtered or not. ([#538](https://github.com/openebs/node-disk-manager/pull/538),[@akhilerm](https://github.com/akhilerm))
+* fix typo for driveType in OpenAPI validation for blockdevice API ([#541](https://github.com/openebs/node-disk-manager/pull/541),[@akhilerm](https://github.com/akhilerm))
+
+
 v1.2.0-RC2 / 2021-02-11
 ========================
 * fix typo for driveType in OpenAPI validation for blockdevice API ([#541](https://github.com/openebs/node-disk-manager/pull/541),[@akhilerm](https://github.com/akhilerm))
