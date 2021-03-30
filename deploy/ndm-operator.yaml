@@ -2,7 +2,7 @@
 # Do the modification to the yamls in deploy/yamls/  directory
 # and then run 'make manifests' command
 
-# This manifest deploys the OpenEBS NDM components with associated RBAC rules.
+# This manifest deploys the OpenEBS NDM components with associated RBAC rules and crds.
 
 
 ---

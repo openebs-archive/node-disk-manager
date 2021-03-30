@@ -22,7 +22,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
-	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsV1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 // NDMYaml is a string type that stores the path to the YAML files
@@ -114,8 +114,8 @@ func GetClusterRoleBinding() (rbacv1beta1.ClusterRoleBinding, error) {
 
 // GetCustomResourceDefinition generates the CustomResourceDefinition object from the specified
 // YAML file
-func GetCustomResourceDefinition(crdyaml NDMYaml) (apiextensionsv1beta1.CustomResourceDefinition, error) {
-	var customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition
+func GetCustomResourceDefinition(crdyaml NDMYaml) (apiextensionsV1.CustomResourceDefinition, error) {
+	var customResourceDefinition apiextensionsV1.CustomResourceDefinition
 	yamlString, err := utils.GetYAMLString(string(crdyaml))
 	if err != nil {
 		return customResourceDefinition, err
