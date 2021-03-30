@@ -17,10 +17,11 @@ limitations under the License.
 package sanity
 
 import (
+	"testing"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
-	"testing"
 )
 
 func TestNDM(t *testing.T) {
@@ -32,6 +33,10 @@ func TestNDM(t *testing.T) {
 var _ = BeforeSuite(func() {
 	// Create the client set
 	c, err := k8s.GetClientSet()
+	Expect(err).NotTo(HaveOccurred())
+
+	// Create the crds
+	err = c.CreateNDMCRDs()
 	Expect(err).NotTo(HaveOccurred())
 
 	err = c.CreateOpenEBSNamespace()
