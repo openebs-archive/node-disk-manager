@@ -159,7 +159,12 @@ vet:
 fmt:
 	find . -type f -name "*.go" | grep -v "./vendor/*" | xargs gofmt -s -w -l
 
-manifests:
+
+.PHONY: controller-gen
+controller-gen:
+	TMP_DIR=$(shell mktemp -d) && cd $$TMP_DIR && go mod init tmp && go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.0 && rm -rf $$TMP_DIR;
+
+manifests: controller-gen
 	@echo "+ Generating NDM manifest"
 	$(PWD)/build/generate-manifests.sh
 
@@ -288,14 +293,6 @@ push:
 	DIMAGE=${IMAGE_ORG}/node-disk-operator-${XC_ARCH} ./build/push;
 	DIMAGE=${IMAGE_ORG}/node-disk-exporter-${XC_ARCH} ./build/push;
 
-.PHONY: controller-gen
-controller-gen:
-	TMP_DIR=$(shell mktemp -d) && cd $$TMP_DIR && go mod init tmp && go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.0 && rm -rf $$TMP_DIR;
-
-
-.PHONY: crds
-crds: controller-gen
-	$(shell which controller-gen) crd:trivialVersions=false,preserveUnknownFields=false paths=./pkg/apis/... output:crd:artifacts:config=deploy/crds
 
 #-----------------------------------------------------------------------------
 # Target: docker.buildx.ndm docker.buildx.ndo docker.buildx.exporter
