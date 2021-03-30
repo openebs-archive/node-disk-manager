@@ -1,4 +1,4 @@
-apiVersion: openebs.io/v1alpha1
+apiVersion: openebs.io/v1
 kind: BlockDevice
 metadata:
   name: example-blockdevice
