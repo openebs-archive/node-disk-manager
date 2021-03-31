@@ -1,0 +1,1 @@
+updated the apiextension version to v1 and moved the installation of crds from operator deployment to the operator yaml

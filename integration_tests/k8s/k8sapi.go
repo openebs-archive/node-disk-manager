@@ -27,7 +27,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
-	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsV1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -212,14 +212,14 @@ func (c K8sClient) DeleteClusterRoleBinding(clusterrolebinding rbacv1beta1.Clust
 }
 
 // CreateCustomResourceDefinition creates a CRD
-func (c K8sClient) CreateCustomResourceDefinition(customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition) error {
-	_, err := c.APIextClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(&customResourceDefinition)
+func (c K8sClient) CreateCustomResourceDefinition(customResourceDefinition apiextensionsV1.CustomResourceDefinition) error {
+	_, err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Create(&customResourceDefinition)
 	return err
 }
 
 // DeleteCustomResourceDefinition deletes the CRD
-func (c K8sClient) DeleteCustomResourceDefinition(customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition) error {
-	err := c.APIextClient.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(customResourceDefinition.Name, &metav1.DeleteOptions{})
+func (c K8sClient) DeleteCustomResourceDefinition(customResourceDefinition apiextensionsV1.CustomResourceDefinition) error {
+	err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Delete(customResourceDefinition.Name, &metav1.DeleteOptions{})
 	return err
 }
 

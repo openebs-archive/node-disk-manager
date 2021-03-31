@@ -159,7 +159,12 @@ vet:
 fmt:
 	find . -type f -name "*.go" | grep -v "./vendor/*" | xargs gofmt -s -w -l
 
-manifests:
+
+.PHONY: controller-gen
+controller-gen:
+	TMP_DIR=$(shell mktemp -d) && cd $$TMP_DIR && go mod init tmp && go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.0 && rm -rf $$TMP_DIR;
+
+manifests: controller-gen
 	@echo "+ Generating NDM manifest"
 	$(PWD)/build/generate-manifests.sh
 
@@ -288,13 +293,9 @@ push:
 	DIMAGE=${IMAGE_ORG}/node-disk-operator-${XC_ARCH} ./build/push;
 	DIMAGE=${IMAGE_ORG}/node-disk-exporter-${XC_ARCH} ./build/push;
 
-.PHONY: crds
-crds:
-	touch build/Dockerfile 
-	# Install the binary from https://github.com/operator-framework/operator-sdk/releases/tag/v0.17.0
-	operator-sdk-v0.17.0-x86_64-linux-gnu generate crds
-	rm build/Dockerfile
+
 #-----------------------------------------------------------------------------
 # Target: docker.buildx.ndm docker.buildx.ndo docker.buildx.exporter
 #-----------------------------------------------------------------------------
+
 include Makefile.buildx.mk

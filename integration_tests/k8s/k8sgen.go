@@ -20,9 +20,9 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
-	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsV1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 // NDMYaml is a string type that stores the path to the YAML files
@@ -35,8 +35,8 @@ const (
 	ServiceAccountYAML      NDMYaml = "../../deploy/yamls/serviceaccount.yaml"
 	ClusterRoleYAML         NDMYaml = "../../deploy/yamls/clusterrole.yaml"
 	ClusterRoleBindingYAML  NDMYaml = "../../deploy/yamls/clusterrolebinding.yaml"
-	BlockDeviceCRDYAML      NDMYaml = "../../deploy/crds/openebs.io_blockdevices_crd.yaml"
-	BlockDeviceClaimCRDYAML NDMYaml = "../../deploy/crds/openebs.io_blockdeviceclaims_crd.yaml"
+	BlockDeviceCRDYAML      NDMYaml = "../../deploy/crds/openebs.io_blockdevices.yaml"
+	BlockDeviceClaimCRDYAML NDMYaml = "../../deploy/crds/openebs.io_blockdeviceclaims.yaml"
 	DaemonSetYAML           NDMYaml = "../yamls/node-disk-manager.yaml"
 	DeploymentYAML          NDMYaml = "../../deploy/yamls/node-disk-operator.yaml"
 	OpenEBSNamespaceYAML    NDMYaml = "../../deploy/yamls/namespace.yaml"
@@ -114,8 +114,8 @@ func GetClusterRoleBinding() (rbacv1beta1.ClusterRoleBinding, error) {
 
 // GetCustomResourceDefinition generates the CustomResourceDefinition object from the specified
 // YAML file
-func GetCustomResourceDefinition(crdyaml NDMYaml) (apiextensionsv1beta1.CustomResourceDefinition, error) {
-	var customResourceDefinition apiextensionsv1beta1.CustomResourceDefinition
+func GetCustomResourceDefinition(crdyaml NDMYaml) (apiextensionsV1.CustomResourceDefinition, error) {
+	var customResourceDefinition apiextensionsV1.CustomResourceDefinition
 	yamlString, err := utils.GetYAMLString(string(crdyaml))
 	if err != nil {
 		return customResourceDefinition, err
