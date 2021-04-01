@@ -1,0 +1,1 @@
+add check for empty devpath while creating sysfs device
