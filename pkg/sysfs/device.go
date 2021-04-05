@@ -37,8 +37,11 @@ type Device struct {
 // The sysfs device struct contains the device name along with the syspath
 func NewSysFsDeviceFromDevPath(devPath string) (*Device, error) {
 	devName := strings.Replace(devPath, "/dev/", "", 1)
-	sysPath, err := getDeviceSysPath(devPath)
+	if len(devName) == 0 {
+		return nil, fmt.Errorf("unable to create sysfs device from devPath for device: %s, error: device name empty", devPath)
+	}
 
+	sysPath, err := getDeviceSysPath(devPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create sysfs device from devpath for device: %s, error: %v", devPath, err)
 	}
