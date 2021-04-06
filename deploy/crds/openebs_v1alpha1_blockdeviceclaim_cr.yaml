@@ -1,4 +1,4 @@
-apiVersion: openebs.io/v1
+apiVersion: openebs.io/v1alpha1
 kind: BlockDeviceClaim
 metadata:
   name: example-blockdeviceclaim
