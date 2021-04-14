@@ -1,3 +1,16 @@
+v1.4.0 / 2021-04-14
+========================
+* updated the apiextension version to v1 and moved the installation of crds from operator deployment to the operator yaml ([#559](https://github.com/openebs/node-disk-manager/pull/559),[@shubham14bajpai](https://github.com/shubham14bajpai))
+* add check for empty devpath while creating sysfs device ([#560](https://github.com/openebs/node-disk-manager/pull/560),[@akhilerm](https://github.com/akhilerm))
+
+
+v1.4.0-RC1 / 2021-04-06
+========================
+* updated the apiextension version to v1 and moved the installation of crds from operator deployment to the operator yaml ([#559](https://github.com/openebs/node-disk-manager/pull/559),[@shubham14bajpai](https://github.com/shubham14bajpai))
+* add check for empty devpath while creating sysfs device ([#560](https://github.com/openebs/node-disk-manager/pull/560),[@akhilerm](https://github.com/akhilerm))
+
+
+
 v1.3.0 / 2021-03-12
 ========================
 * add support to push multiarch images to multiple registries ([#544](https://github.com/openebs/node-disk-manager/pull/544),[@akhilerm](https://github.com/akhilerm))
