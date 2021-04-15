@@ -20,7 +20,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndm.image.registry`                    | Registry for Node Disk Manager image          | `""`                                      |
 | `ndm.image.repository`                  | Image repository for Node Disk Manager        | `openebs/node-disk-manager`               |
 | `ndm.image.pullPolicy`                  | Image pull policy for Node Disk Manager       | `IfNotPresent`                            |
-| `ndm.image.tag`                         | Image tag for Node Disk Manager               | `1.3.0`                                   |
+| `ndm.image.tag`                         | Image tag for Node Disk Manager               | `1.4.0`                                   |
 | `ndm.sparse.path`                       | Directory where Sparse files are created      | `/var/openebs/sparse`                     |
 | `ndm.sparse.size`                       | Size of the sparse file in bytes              | `10737418240`                             |
 | `ndm.sparse.count`                      | Number of sparse files to be created          | `0`                                       |
@@ -33,7 +33,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndm.tolerations`                       | NDM daemonset's pod toleration values         | `""`                                      |
 | `ndm.securityContext`                   | Seurity context for container                 | `""`                                      |
 | `ndm.filters.enableOsDiskExcludeFilter` | Enable filters of OS disk exclude             | `true`                                    |
-| `ndm.filters.enableVendorFilter`        | Enable filters of venders                     | `true`                                    |
+| `ndm.filters.osDiskExcludePaths`        | Paths/Mountpoints to be excluded by OS Disk Filter| `/,/etc/hosts,/boot`                           || `ndm.filters.enableVendorFilter`        | Enable filters of venders                     | `true`                                    |
 | `ndm.filters.excludeVendors`            | Exclude devices with specified vendor         | `CLOUDBYT,OpenEBS`                        |
 | `ndm.filters.enablePathFilter`          | Enable filters of paths                       | `true`                                    |
 | `ndm.filters.includePaths`              | Include devices with specified path patterns  | `""`                                      |
@@ -49,7 +49,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndmOperator.image.registry`            | Registry for NDM operator image               | `""`                                      |
 | `ndmOperator.image.repository`          | Image repository for NDM operator             | `openebs/node-disk-operator`              |
 | `ndmOperator.image.pullPolicy`          | Image pull policy for NDM operator            | `IfNotPresent`                            |
-| `ndmOperator.image.tag`                 | Image tag for NDM operator                    | `1.3.0`                                   |
+| `ndmOperator.image.tag`                 | Image tag for NDM operator                    | `1.4.0`                                   |
 | `ndmOperator.annotations`               | Annotations for NDM operator metadata         | `""`                                      |
 | `ndmOperator.podAnnotations`            | Annotations for NDM operator's pods metadata  | `""`                                      |
 | `ndmOperator.resources`                 | Resource and request and limit for containers | `""`                                      |
@@ -65,7 +65,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `helperPod.image.registry`              | Registry for helper image                     | `""`                                      |
 | `helperPod.image.repository`            | Image for helper pod                          | `openebs/linux-utils`                     |
 | `helperPod.image.pullPolicy`            | Pull policy for helper pod                    | `IfNotPresent`                            |
-| `helperPod.image.tag`                   | Image tag for helper image                    | `2.7.0`                                   |
+| `helperPod.image.tag`                   | Image tag for helper image                    | `2.8.0`                                   |
 | `varDirectoryPath.baseDir`              | Directory to store debug info and so forth    | `/var/openebs`                            |
 | `serviceAccount.create`                 | Create a service account or not               | `true`                                    |
 | `serviceAccount.name`                   | Name for the service account                  | `true`                                    |
