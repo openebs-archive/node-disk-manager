@@ -21,9 +21,9 @@ import (
 	"sync"
 	"testing"
 
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 
 	"github.com/stretchr/testify/assert"

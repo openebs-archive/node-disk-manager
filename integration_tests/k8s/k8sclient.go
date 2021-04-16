@@ -17,8 +17,8 @@ limitations under the License.
 package k8s
 
 import (
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
-	"github.com/openebs/node-disk-manager/pkg/apis"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"

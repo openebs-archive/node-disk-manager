@@ -24,8 +24,8 @@ import (
 	"sync"
 	"time"
 
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/pkg/apis"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
@@ -33,7 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
 
 const (

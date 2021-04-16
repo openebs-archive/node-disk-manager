@@ -19,7 +19,7 @@ package controller
 import (
 	"testing"
 
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

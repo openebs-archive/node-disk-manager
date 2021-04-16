@@ -19,9 +19,9 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/pkg/apis"
-	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"

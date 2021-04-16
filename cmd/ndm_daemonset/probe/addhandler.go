@@ -19,9 +19,9 @@ package probe
 import (
 	"fmt"
 
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/partition"
 
 	"k8s.io/apimachinery/pkg/api/errors"

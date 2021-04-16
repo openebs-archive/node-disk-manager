@@ -20,9 +20,9 @@ import (
 	"context"
 	"testing"
 
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"github.com/stretchr/testify/assert"

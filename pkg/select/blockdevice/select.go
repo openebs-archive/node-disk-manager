@@ -18,7 +18,7 @@ package blockdevice
 
 import (
 	"fmt"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 )
 
 // Filter selects a single block device from a list of block devices
