@@ -16,36 +16,36 @@ limitations under the License.
 
 package setup
 
-import (
-	"github.com/openebs/node-disk-manager/api/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
+// import (
+// 	"github.com/openebs/node-disk-manager/api/v1alpha1"
+// 	"k8s.io/apimachinery/pkg/api/errors"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
+// 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+// )
 
-func (sc Config) deleteDiskCRD() error {
-	diskCRDName := "disks" + "." + v1alpha1.GroupName
-	return sc.deleteCRD(diskCRDName)
-}
+// func (sc Config) deleteDiskCRD() error {
+// 	diskCRDName := "disks" + "." + v1alpha1.GroupName
+// 	return sc.deleteCRD(diskCRDName)
+// }
 
-func (sc Config) deleteCRD(crdName string) error {
-	// check if crd exists,
-	_, err := sc.apiExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdName, v1.GetOptions{})
-	if errors.IsNotFound(err) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
+// func (sc Config) deleteCRD(crdName string) error {
+// 	// check if crd exists,
+// 	_, err := sc.apiExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdName, v1.GetOptions{})
+// 	if errors.IsNotFound(err) {
+// 		return nil
+// 	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	// if exists delete the crd
-	propagationPolicy := v1.DeletePropagationForeground
-	deleteOptions := &v1.DeleteOptions{
-		PropagationPolicy: &propagationPolicy,
-	}
-	if err = sc.apiExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().
-		Delete(crdName, deleteOptions); err != nil {
-		return err
-	}
-	return err
-}
+// 	// if exists delete the crd
+// 	propagationPolicy := v1.DeletePropagationForeground
+// 	deleteOptions := &v1.DeleteOptions{
+// 		PropagationPolicy: &propagationPolicy,
+// 	}
+// 	if err = sc.apiExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().
+// 		Delete(crdName, deleteOptions); err != nil {
+// 		return err
+// 	}
+// 	return err
+// }

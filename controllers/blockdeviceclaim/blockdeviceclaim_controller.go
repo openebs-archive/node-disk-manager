@@ -14,15 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package blockdeviceclaim
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/reference"
+	"k8s.io/klog"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -56,7 +64,7 @@ func (r *BlockDeviceClaimReconciler) Reconcile(ctx context.Context, request ctrl
 	// your logic here
 	// Fetch the BlockDeviceClaim instance
 
-	instance := &bdcapis.BlockDeviceClaim{}
+	instance := &apis.BlockDeviceClaim{}
 	err := r.Client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -75,9 +83,9 @@ func (r *BlockDeviceClaimReconciler) Reconcile(ctx context.Context, request ctrl
 	}
 
 	switch instance.Status.Phase {
-	case bdcapis.BlockDeviceClaimStatusPending:
+	case apis.BlockDeviceClaimStatusPending:
 		fallthrough
-	case bdcapis.BlockDeviceClaimStatusEmpty:
+	case apis.BlockDeviceClaimStatusEmpty:
 		klog.Infof("BDC %s claim phase is: %s", instance.Name, instance.Status.Phase)
 		// claim the BD only if deletion time stamp is not set.
 		// since BDC can now have multiple finalizers, we should not claim a
@@ -89,17 +97,17 @@ func (r *BlockDeviceClaimReconciler) Reconcile(ctx context.Context, request ctrl
 				return reconcile.Result{}, err
 			}
 		}
-	case bdcapis.BlockDeviceClaimStatusInvalidCapacity:
+	case apis.BlockDeviceClaimStatusInvalidCapacity:
 		// migrating state to Pending if in InvalidCapacity state.
 		// The InvalidCapacityState is deprecated and pending will be used.
 		// InvalidCapacity will be the reason for why the BDC is in Pending state.
-		instance.Status.Phase = bdcapis.BlockDeviceClaimStatusPending
-		err := r.updateClaimStatus(bdcapis.BlockDeviceClaimStatusPending, instance)
+		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
+		err := r.updateClaimStatus(apis.BlockDeviceClaimStatusPending, instance)
 		if err != nil {
 			klog.Errorf("error in updating phase to pending from invalid capacity for %s: %v", instance.Name, err)
 		}
 		klog.Infof("%s claim phase is: %s", instance.Name, instance.Status.Phase)
-	case bdcapis.BlockDeviceClaimStatusDone:
+	case apis.BlockDeviceClaimStatusDone:
 		err := r.FinalizerHandling(instance)
 		if err != nil {
 			klog.Errorf("Finalizer handling failed for %s: %v", instance.Name, err)
@@ -112,7 +120,7 @@ func (r *BlockDeviceClaimReconciler) Reconcile(ctx context.Context, request ctrl
 
 // claimDeviceForBlockDeviceClaim is created, try to determine blockdevice which is
 // free and has size equal/greater than BlockDeviceClaim request.
-func (r *BlockDeviceClaimReconciler) claimDeviceForBlockDeviceClaim(instance *bdcapis.BlockDeviceClaim) error {
+func (r *BlockDeviceClaimReconciler) claimDeviceForBlockDeviceClaim(instance *apis.BlockDeviceClaim) error {
 
 	config := blockdevice.NewConfig(&instance.Spec, r.Client)
 
@@ -124,7 +132,7 @@ func (r *BlockDeviceClaimReconciler) claimDeviceForBlockDeviceClaim(instance *bd
 		if err != nil {
 			r.recorder.Eventf(instance, corev1.EventTypeWarning, "InvalidCapacity", "Invalid Capacity requested")
 			//Update deviceClaim CR with pending status
-			instance.Status.Phase = bdcapis.BlockDeviceClaimStatusPending
+			instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 			err1 := r.updateClaimStatus(instance.Status.Phase, instance)
 			if err1 != nil {
 				klog.Errorf("%s requested an invalid capacity: %v", instance.Name, err1)
@@ -148,10 +156,10 @@ func (r *BlockDeviceClaimReconciler) claimDeviceForBlockDeviceClaim(instance *bd
 	if err != nil {
 		klog.Errorf("Error selecting device for %s: %v", instance.Name, err)
 		r.recorder.Eventf(instance, corev1.EventTypeWarning, "SelectionFailed", err.Error())
-		instance.Status.Phase = bdcapis.BlockDeviceClaimStatusPending
+		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 	} else {
 		instance.Spec.BlockDeviceName = selectedDevice.Name
-		instance.Status.Phase = bdcapis.BlockDeviceClaimStatusDone
+		instance.Status.Phase = apis.BlockDeviceClaimStatusDone
 		err = r.claimBlockDevice(selectedDevice, instance)
 		if err != nil {
 			return err
@@ -164,7 +172,7 @@ func (r *BlockDeviceClaimReconciler) claimDeviceForBlockDeviceClaim(instance *bd
 }
 
 // FinalizerHandling removes the finalizer from the claim resource
-func (r *BlockDeviceClaimReconciler) FinalizerHandling(instance *bdcapis.BlockDeviceClaim) error {
+func (r *BlockDeviceClaimReconciler) FinalizerHandling(instance *apis.BlockDeviceClaim) error {
 
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
 		return nil
@@ -195,10 +203,10 @@ func (r *BlockDeviceClaimReconciler) FinalizerHandling(instance *bdcapis.BlockDe
 	return nil
 }
 
-func (r *BlockDeviceClaimReconciler) updateClaimStatus(phase bdcapis.DeviceClaimPhase,
-	instance *bdcapis.BlockDeviceClaim) error {
+func (r *BlockDeviceClaimReconciler) updateClaimStatus(phase apis.DeviceClaimPhase,
+	instance *apis.BlockDeviceClaim) error {
 	switch phase {
-	case bdcapis.BlockDeviceClaimStatusDone:
+	case apis.BlockDeviceClaimStatusDone:
 		instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer)
 		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimBound", "BlockDeviceClaim is bound to %v", instance.Spec.BlockDeviceName)
 
@@ -214,9 +222,9 @@ func (r *BlockDeviceClaimReconciler) updateClaimStatus(phase bdcapis.DeviceClaim
 
 // isDeviceRequestedByThisDeviceClaim checks whether a claimed block device belongs to the given BDC
 func (r *BlockDeviceClaimReconciler) isDeviceRequestedByThisDeviceClaim(
-	instance *bdcapis.BlockDeviceClaim, item bdapis.BlockDevice) bool {
+	instance *apis.BlockDeviceClaim, item apis.BlockDevice) bool {
 
-	if item.Status.ClaimState != bdapis.BlockDeviceClaimed {
+	if item.Status.ClaimState != apis.BlockDeviceClaimed {
 		return false
 
 	}
@@ -237,7 +245,7 @@ func (r *BlockDeviceClaimReconciler) isDeviceRequestedByThisDeviceClaim(
 
 // releaseClaimedBlockDevice releases the block device claimed by this BlockDeviceClaim
 func (r *BlockDeviceClaimReconciler) releaseClaimedBlockDevice(
-	instance *bdcapis.BlockDeviceClaim) error {
+	instance *apis.BlockDeviceClaim) error {
 
 	klog.Infof("Releasing claimed block device %s from %s", instance.Spec.BlockDeviceName, instance.Name)
 
@@ -270,7 +278,7 @@ func (r *BlockDeviceClaimReconciler) releaseClaimedBlockDevice(
 
 	dvr := claimedBd.DeepCopy()
 	dvr.Spec.ClaimRef = nil
-	dvr.Status.ClaimState = bdapis.BlockDeviceReleased
+	dvr.Status.ClaimState = apis.BlockDeviceReleased
 
 	err = r.Client.Update(context.TODO(), dvr)
 	if err != nil {
@@ -283,7 +291,7 @@ func (r *BlockDeviceClaimReconciler) releaseClaimedBlockDevice(
 }
 
 // claimBlockDevice is used to claim the passed on blockdevice
-func (r *BlockDeviceClaimReconciler) claimBlockDevice(bd *bdapis.BlockDevice, instance *bdcapis.BlockDeviceClaim) error {
+func (r *BlockDeviceClaimReconciler) claimBlockDevice(bd *apis.BlockDevice, instance *apis.BlockDeviceClaim) error {
 	claimRef, err := reference.GetReference(r.Scheme, instance)
 	if err != nil {
 		return fmt.Errorf("error getting claim reference for BDC:%s, %v", instance.ObjectMeta.Name, err)
@@ -291,7 +299,7 @@ func (r *BlockDeviceClaimReconciler) claimBlockDevice(bd *bdapis.BlockDevice, in
 	// add finalizer to BlockDevice to prevent accidental deletion of BD
 	bd.Finalizers = append(bd.Finalizers, controllerutil.BlockDeviceFinalizer)
 	bd.Spec.ClaimRef = claimRef
-	bd.Status.ClaimState = bdapis.BlockDeviceClaimed
+	bd.Status.ClaimState = apis.BlockDeviceClaimed
 	err = r.Client.Update(context.TODO(), bd)
 	if err != nil {
 		return fmt.Errorf("error while updating BD:%s, %v", bd.ObjectMeta.Name, err)
@@ -301,8 +309,8 @@ func (r *BlockDeviceClaimReconciler) claimBlockDevice(bd *bdapis.BlockDevice, in
 }
 
 // GetBlockDevice get block device resource from etcd
-func (r *BlockDeviceClaimReconciler) GetBlockDevice(name string) (*bdapis.BlockDevice, error) {
-	bd := &bdapis.BlockDevice{}
+func (r *BlockDeviceClaimReconciler) GetBlockDevice(name string) (*apis.BlockDevice, error) {
+	bd := &apis.BlockDevice{}
 	err := r.Client.Get(context.TODO(),
 		client.ObjectKey{Namespace: "", Name: name}, bd)
 
@@ -316,13 +324,13 @@ func (r *BlockDeviceClaimReconciler) GetBlockDevice(name string) (*bdapis.BlockD
 // TODO:
 //  ListBlockDeviceResource in package cmd/ndm_daemonset/controller has the same functionality.
 //  Need to merge these 2 functions.
-func (r *BlockDeviceClaimReconciler) getListofDevices(selector *v1.LabelSelector) (*bdapis.BlockDeviceList, error) {
+func (r *BlockDeviceClaimReconciler) getListofDevices(selector *v1.LabelSelector) (*apis.BlockDeviceList, error) {
 
 	//Initialize a deviceList object.
-	listBlockDevice := &bdapis.BlockDeviceList{
+	listBlockDevice := &apis.BlockDeviceList{
 		TypeMeta: v1.TypeMeta{
-			Kind:       bdapis.BlockDeviceResourceKind,
-			APIVersion: bdapis.GroupVersion.Version,
+			Kind:       apis.BlockDeviceResourceKind,
+			APIVersion: apis.GroupVersion.Version,
 		},
 	}
 
@@ -346,13 +354,13 @@ func (r *BlockDeviceClaimReconciler) getListofDevices(selector *v1.LabelSelector
 
 // IsReconcileDisabled is used to check if reconciliation is disabled for
 // BlockDeviceClaim
-func IsReconcileDisabled(bdc *bdcapis.BlockDeviceClaim) bool {
+func IsReconcileDisabled(bdc *apis.BlockDeviceClaim) bool {
 	return bdc.Annotations[ndm.OpenEBSReconcile] == "false"
 }
 
 // generateSelector creates the label selector for BlockDevices from
 // the BlockDeviceClaim spec
-func generateSelector(bdc bdcapis.BlockDeviceClaim) *v1.LabelSelector {
+func generateSelector(bdc apis.BlockDeviceClaim) *v1.LabelSelector {
 	var hostName string
 	// get the hostname
 	if len(bdc.Spec.HostName) != 0 {
@@ -384,7 +392,7 @@ func generateSelector(bdc bdcapis.BlockDeviceClaim) *v1.LabelSelector {
 func (r *BlockDeviceClaimReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&bdcapis.BlockDeviceClaim{}).
-		Owns(&bdcapis.BlockDeviceClaim{}).
+		For(&apis.BlockDeviceClaim{}).
+		Owns(&apis.BlockDeviceClaim{}).
 		Complete(r)
 }

@@ -118,7 +118,7 @@ func (c K8sClient) RestartPod(name string) error {
 	}
 	for pod := range pods {
 		if strings.Contains(pod, name) {
-			return c.ClientSet.CoreV1().Pods(Namespace).Delete(pod, &metav1.DeleteOptions{})
+			return c.ClientSet.CoreV1().Pods(Namespace).Delete(context.Background(), pod, metav1.DeleteOptions{})
 		}
 	}
 	return fmt.Errorf("could not find given pod")
@@ -209,13 +209,13 @@ func (c K8sClient) DeleteClusterRoleBinding(clusterrolebinding rbacv1beta1.Clust
 
 // CreateCustomResourceDefinition creates a CRD
 func (c K8sClient) CreateCustomResourceDefinition(customResourceDefinition apiextensionsV1.CustomResourceDefinition) error {
-	_, err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Create(&customResourceDefinition)
+	_, err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Create(context.Background(), &customResourceDefinition, metav1.CreateOptions{})
 	return err
 }
 
 // DeleteCustomResourceDefinition deletes the CRD
 func (c K8sClient) DeleteCustomResourceDefinition(customResourceDefinition apiextensionsV1.CustomResourceDefinition) error {
-	err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Delete(customResourceDefinition.Name, &metav1.DeleteOptions{})
+	err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Delete(context.Background(), customResourceDefinition.Name, metav1.DeleteOptions{})
 	return err
 }
 

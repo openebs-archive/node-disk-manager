@@ -32,7 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	openebsiov1alpha1 "github.com/openebs/node-disk-manager/api/v1alpha1"
-	"github.com/openebs/node-disk-manager/controllers"
+	blockdevice "github.com/openebs/node-disk-manager/controllers/blockdevice"
+	blockdeviceclaim "github.com/openebs/node-disk-manager/controllers/blockdeviceclaim"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -78,7 +79,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.BlockDeviceClaimReconciler{
+	if err = (&blockdeviceclaim.BlockDeviceClaimReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("BlockDeviceClaim"),
 		Scheme: mgr.GetScheme(),
@@ -86,7 +87,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "BlockDeviceClaim")
 		os.Exit(1)
 	}
-	if err = (&controllers.BlockDeviceReconciler{
+	if err = (&blockdevice.BlockDeviceReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("BlockDevice"),
 		Scheme: mgr.GetScheme(),

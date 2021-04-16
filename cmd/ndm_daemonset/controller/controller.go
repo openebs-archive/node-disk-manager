@@ -258,8 +258,8 @@ func (c *Controller) WaitForBlockDeviceCRD() {
 func (c *Controller) Start() {
 	c.InitializeSparseFiles()
 	// set up signals so we handle the first shutdown signal gracefully
-	stopCh := signals.SetupSignalHandler()
-	if err := c.run(2, stopCh); err != nil {
+	ctx := signals.SetupSignalHandler()
+	if err := c.run(2, ctx); err != nil {
 		klog.Fatalf("error running controller: %s", err.Error())
 	}
 }
@@ -278,10 +278,13 @@ func (c *Controller) Broadcast() {
 }
 
 // run waits until it gets any interrupt signals
-func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
+func (c *Controller) run(threadiness int, ctx context.Context) error {
 	klog.Info("started the controller")
-	<-stopCh
-	klog.Info("changing the state to unknown before shutting down.")
+
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	<-ctx.Done()
 	// Changing the state to unknown before shutting down. Similar as when one pod is
 	// running and you stopped kubelet it will make pod status unknown.
 	c.MarkBlockDeviceStatusToUnknown()
