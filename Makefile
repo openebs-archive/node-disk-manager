@@ -71,7 +71,7 @@ export BASEIMAGE
 # By default the organization name is `openebs`.
 
 ifeq (${IMAGE_ORG}, )
-  IMAGE_ORG="openebs"
+  IMAGE_ORG="harshthakur"
   export IMAGE_ORG
 endif
 
