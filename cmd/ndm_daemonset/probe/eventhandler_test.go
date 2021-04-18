@@ -103,8 +103,8 @@ func CreateFakeClient(t *testing.T) client.Client {
 	}
 
 	s := scheme.Scheme
-	s.AddKnownTypes(apis.SchemeGroupVersion, deviceR)
-	s.AddKnownTypes(apis.SchemeGroupVersion, deviceList)
+	s.AddKnownTypes(apis.GroupVersion, deviceR)
+	s.AddKnownTypes(apis.GroupVersion, deviceList)
 
 	fakeNdmClient := ndmFakeClientset.NewFakeClient()
 	if fakeNdmClient == nil {

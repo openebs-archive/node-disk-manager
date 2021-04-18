@@ -23,7 +23,6 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/klog"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -71,18 +70,18 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{})
-	if err != nil {
-		klog.Errorf("Failed to get client: %v", err)
-		os.Exit(1)
-	}
-	klog.Info("Check if CR has to be upgraded, and perform upgrade")
+	// k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{})
+	// if err != nil {
+	// 	klog.Errorf("Failed to get client: %v", err)
+	// 	os.Exit(1)
+	// }
+	// klog.Info("Check if CR has to be upgraded, and perform upgrade")
 
-	err = performUpgrade(k8sClient)
-	if err != nil {
-		klog.Errorf("Upgrade failed: %v", err)
-		os.Exit(1)
-	}
+	// err = performUpgrade(k8sClient)
+	// if err != nil {
+	// 	klog.Errorf("Upgrade failed: %v", err)
+	// 	os.Exit(1)
+	// }
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,

@@ -431,8 +431,8 @@ func TestDeleteBlockDevice(t *testing.T) {
 			bd := tt.bd
 			bdAPIList := tt.bdAPIList
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 			ctrl := &controller.Controller{
 				Clientset:   cl,

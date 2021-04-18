@@ -922,8 +922,8 @@ func TestHandleUnmanagedDevices(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -1024,8 +1024,8 @@ func TestCreateBlockDeviceResourceIfNoHolders(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -1436,8 +1436,8 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -1855,8 +1855,8 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -2101,8 +2101,8 @@ func TestUpgradeBD(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -2602,8 +2602,8 @@ func TestAddBlockDevice(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -2704,8 +2704,8 @@ func TestProbeEvent_createOrUpdateWithFSUUID(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with the bd resource
@@ -2807,8 +2807,8 @@ func TestProbeEvent_createOrUpdateWithPartitionUUID(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with the bd resource
@@ -2914,8 +2914,8 @@ func TestCreateOrUpdateWithAnnotation(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with the bd resource
