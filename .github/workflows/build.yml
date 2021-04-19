@@ -14,11 +14,16 @@
 name: build
 
 on:
+  create:
   push:
+    branches:
+      - master
+      - 'v*'
     paths-ignore:
-    - 'docs/**'
-    - 'deploy/helm/**'
-    - 'changelogs/**'
+      - 'docs/**'
+      - 'changelogs/**'
+      - 'deploy/helm/**'
+      - 'CHANGELOG.md'
 
 jobs:
   lint:
