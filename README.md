@@ -24,7 +24,10 @@ and 2 optional components:
 - ndm-cluster-exporter deployment, which fetches block device object from etcd and exposes it as prometheus metrics.
 - ndm-node-exporter daemonset, which runs on each node, queries the disk for details like SMART and expose it as prometheus metrics.
 
-The design and implementation are currently in progress. The design is covered under this [design proposal](./docs/design.md)
+The design of the project is covered under this [design proposal](./docs/design.md)
+
+## Project Status
+Currently, the NDM project is in beta.
 
 # Usage
 A detailed usage documentation is maintained in the [wiki](https://github.com/openebs/node-disk-manager/wiki).

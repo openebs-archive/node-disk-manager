@@ -20,6 +20,7 @@ on:
       - 'docs/**'
       - 'deploy/helm/**'
       - 'changelogs/**'
+      - 'CHANGELOG.md'
     branches:
       # on pull requests to master and release branches
       - master
