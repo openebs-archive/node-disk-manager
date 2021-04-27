@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 
@@ -38,7 +39,9 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) error {
 	blockDevice.SetNamespace(c.Namespace)
 
 	blockDeviceCopy := blockDevice.DeepCopy()
-	err := c.Clientset.Create(context.TODO(), blockDeviceCopy)
+	err := c.Clientset.Create(context.TODO(), blockDeviceCopy, &client.CreateOptions{
+		FieldManager: "NDM",
+	})
 	if err == nil {
 		klog.Infof("eventcode=%s msg=%s rname=%v",
 			"ndm.blockdevice.create.success", "Created blockdevice object in etcd",
@@ -114,21 +117,27 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 	return nil
 }
 
+func boolPtr(b bool) *bool {
+	var bp *bool
+	bp = &b
+	return bp
+}
+
 // DeactivateBlockDevice API is used to set blockdevice status to "inactive" state in etcd
 func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 
-	blockDeviceCopy := blockDevice.DeepCopy()
-	blockDeviceCopy.Status.State = NDMInactive
-	err := c.Clientset.Update(context.TODO(), blockDeviceCopy)
+	patch := client.MergeFrom(blockDevice.DeepCopy())
+	blockDevice.Status.State = NDMInactive
+	err := c.Clientset.Status().Patch(context.Background(), &blockDevice, patch)
 	if err != nil {
 		klog.Errorf("eventcode=%s msg=%s : %v rname=%v ",
 			"ndm.blockdevice.deactivate.failure", "Unable to deactivate blockdevice",
-			err, blockDeviceCopy.ObjectMeta.Name)
+			err, blockDevice.ObjectMeta.Name)
 		return
 	}
 	klog.Infof("eventcode=%s msg=%s rname=%v",
 		"ndm.blockdevice.deactivate.success", "Deactivated blockdevice",
-		blockDeviceCopy.ObjectMeta.Name)
+		blockDevice.ObjectMeta.Name)
 }
 
 // GetBlockDevice get Disk resource from etcd
