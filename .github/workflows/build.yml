@@ -27,7 +27,7 @@ on:
 
 jobs:
   lint:
-    if: ${{ (github.event.ref_type == 'branch') }}
+    if: ${{ (github.event.ref_type != 'tag') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -46,7 +46,7 @@ jobs:
         run: make license-check
 
   unit-test:
-    if: ${{ (github.event.ref_type == 'branch') }}
+    if: ${{ (github.event.ref_type != 'tag') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
