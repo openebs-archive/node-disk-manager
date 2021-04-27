@@ -14,14 +14,20 @@
 name: build
 
 on:
+  create:
   push:
+    branches:
+      - master
+      - 'v*'
     paths-ignore:
-    - 'docs/**'
-    - 'deploy/helm/**'
-    - 'changelogs/**'
+      - 'docs/**'
+      - 'changelogs/**'
+      - 'deploy/helm/**'
+      - 'CHANGELOG.md'
 
 jobs:
   lint:
+    if: ${{ (github.event.ref_type == 'branch') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,6 +46,7 @@ jobs:
         run: make license-check
 
   unit-test:
+    if: ${{ (github.event.ref_type == 'branch') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
