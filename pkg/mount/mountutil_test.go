@@ -66,6 +66,8 @@ func TestGetMountAttr(t *testing.T) {
 	fileContent1 := []byte("/dev/sda4 / ext4 rw,relatime,errors=remount-ro,data=ordered 0 0")
 	fileContent2 := []byte("/dev/sda3 /home ext4 rw,relatime,errors=remount-ro,data=ordered 0 0")
 	fileContent3 := []byte("sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0")
+	fileContent4 := []byte(`/dev/sda3 /home ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
+/dev/sda3 /usr ext4 rw,relatime,errors=remount-ro,data=ordered 0 0`)
 
 	mountAttrTests := map[string]struct {
 		devPath           string
@@ -79,7 +81,7 @@ func TestGetMountAttr(t *testing.T) {
 			"/dev/sda4",
 			"",
 			getMountName,
-			DeviceMountAttr{MountPoint: "/", FileSystem: "ext4"},
+			DeviceMountAttr{MountPoint: []string{"/"}, FileSystem: "ext4"},
 			nil,
 			fileContent1,
 		},
@@ -87,7 +89,7 @@ func TestGetMountAttr(t *testing.T) {
 			"/dev/sda3",
 			"",
 			getMountName,
-			DeviceMountAttr{MountPoint: "/home", FileSystem: "ext4"},
+			DeviceMountAttr{MountPoint: []string{"/home"}, FileSystem: "ext4"},
 			nil,
 			fileContent2,
 		},
@@ -98,6 +100,14 @@ func TestGetMountAttr(t *testing.T) {
 			DeviceMountAttr{},
 			errors.New("could not get device mount attributes, Path/MountPoint not present in mounts file"),
 			fileContent3,
+		},
+		"sda3 mounted at /home and /usr": {
+			"/dev/sda3",
+			"",
+			getMountName,
+			DeviceMountAttr{MountPoint: []string{"/home", "/usr"}, FileSystem: "ext4"},
+			nil,
+			fileContent4,
 		},
 		"Mountpoint /": {
 			"",
@@ -130,6 +140,22 @@ func TestGetMountAttr(t *testing.T) {
 			DeviceMountAttr{},
 			errors.New("could not get device mount attributes, Path/MountPoint not present in mounts file"),
 			fileContent3,
+		},
+		"Mountpoint /home, /dev/sda3 mounted twice": {
+			"",
+			"/home",
+			getPartitionName,
+			DeviceMountAttr{DevPath: "sda3"},
+			nil,
+			fileContent4,
+		},
+		"Mountpoint /usr, /dev/sda3 mounted twice": {
+			"",
+			"/usr",
+			getPartitionName,
+			DeviceMountAttr{DevPath: "sda3"},
+			nil,
+			fileContent4,
 		},
 	}
 	for name, test := range mountAttrTests {
@@ -202,7 +228,7 @@ func TestGetMountName(t *testing.T) {
 		devPath           string
 		line              string
 	}{
-		"device sda4 is mounted":     {DeviceMountAttr{MountPoint: mountPoint, FileSystem: fsType}, true, devPath1, mountLine},
+		"device sda4 is mounted":     {DeviceMountAttr{MountPoint: []string{mountPoint}, FileSystem: fsType}, true, devPath1, mountLine},
 		"device sda3 is not mounted": {DeviceMountAttr{}, false, devPath2, mountLine},
 		"mount line is empty":        {DeviceMountAttr{}, false, devPath2, ""},
 	}
@@ -365,4 +391,117 @@ func TestGetDiskDevPath_WithRoot(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(path, "/dev/"))
+}
+
+func TestMergeDeviceMountAttrs(t *testing.T) {
+	tests := map[string]struct {
+		first    DeviceMountAttr
+		second   DeviceMountAttr
+		expected DeviceMountAttr
+	}{
+		"First empty, second has DevPath only": {
+			first:    DeviceMountAttr{},
+			second:   DeviceMountAttr{DevPath: "/dev/sda3"},
+			expected: DeviceMountAttr{DevPath: "/dev/sda3"},
+		},
+		"First has DevPath, does not match with second's DevPath": {
+			first: DeviceMountAttr{DevPath: "/dev/sda3"},
+			second: DeviceMountAttr{
+				DevPath:    "/dev/sda4",
+				MountPoint: []string{"/home"},
+				FileSystem: "ext4",
+			},
+			expected: DeviceMountAttr{DevPath: "/dev/sda3"},
+		},
+		"DevPaths match, FileSystem empty in first only": {
+			first: DeviceMountAttr{
+				DevPath: "/dev/sda3",
+			},
+			second: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/"},
+				FileSystem: "ext4",
+			},
+			expected: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/"},
+				FileSystem: "ext4",
+			},
+		},
+		"DevPaths match, FileSystems don't match": {
+			first: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/"},
+				FileSystem: "ext3",
+			},
+			second: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/home"},
+				FileSystem: "ext4",
+			},
+			expected: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/"},
+				FileSystem: "ext3",
+			},
+		},
+		"Both DevPath and FileSystem match, FileSystem empty": {
+			first: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/"},
+				FileSystem: "",
+			},
+			second: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/home"},
+				FileSystem: "",
+			},
+			expected: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/"},
+				FileSystem: "",
+			},
+		},
+		"Both DevPath and FileSystem match, FileSystem non-empty": {
+			first: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/"},
+				FileSystem: "ext4",
+			},
+			second: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/home"},
+				FileSystem: "ext4",
+			},
+			expected: DeviceMountAttr{
+				DevPath:    "/dev/sda3",
+				MountPoint: []string{"/", "/home"},
+				FileSystem: "ext4",
+			},
+		},
+		"Both DevPaths empty, FileSystems match and non-empty": {
+			first: DeviceMountAttr{
+				DevPath:    "",
+				MountPoint: []string{"/"},
+				FileSystem: "ext4",
+			},
+			second: DeviceMountAttr{
+				DevPath:    "",
+				MountPoint: []string{"/home"},
+				FileSystem: "ext4",
+			},
+			expected: DeviceMountAttr{
+				DevPath:    "",
+				MountPoint: []string{"/", "/home"},
+				FileSystem: "ext4",
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mergeDeviceMountAttrs(&test.first, &test.second)
+			assert.Equal(t, test.first, test.expected)
+		})
+	}
 }

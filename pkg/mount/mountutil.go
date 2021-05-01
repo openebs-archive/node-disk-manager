@@ -19,11 +19,12 @@ package mount
 import (
 	"bufio"
 	"fmt"
-	"github.com/openebs/node-disk-manager/pkg/features"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/openebs/node-disk-manager/pkg/features"
 )
 
 var ErrCouldNotFindRootDevice = fmt.Errorf("could not find root device")
@@ -73,6 +74,7 @@ func (m DiskMountUtil) GetDiskPath() (string, error) {
 // getDeviceMountAttr read mounts file and returns device mount attributes, which includes partition name,
 // mountpoint and filesystem
 func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, error) {
+	found := false
 	mountAttr := DeviceMountAttr{}
 	// Read file from filepath and get which partition is mounted on given mount point
 	file, err := os.Open(m.filePath)
@@ -97,9 +99,13 @@ func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, err
 		if !strings.HasPrefix(line, "/dev") {
 			continue
 		}
-		if mountAttr, ok := fn(line); ok {
-			return mountAttr, nil
+		if lineMountAttr, ok := fn(line); ok {
+			found = true
+			mergeDeviceMountAttrs(&mountAttr, &lineMountAttr)
 		}
+	}
+	if found {
+		return mountAttr, nil
 	}
 	return mountAttr, fmt.Errorf("could not get device mount attributes, Path/MountPoint not present in mounts file")
 }
@@ -293,7 +299,7 @@ func (m *DiskMountUtil) getMountName(mountLine string) (DeviceMountAttr, bool) {
 	}
 	// mountoptions are ignored. devicepath, mountpoint and filesystem is used
 	if parts := strings.Split(mountLine, " "); parts[0] == m.devPath {
-		mountAttr.MountPoint = parts[1]
+		mountAttr.MountPoint = []string{parts[1]}
 		mountAttr.FileSystem = parts[2]
 		isValid = true
 	}
@@ -332,4 +338,28 @@ func fileExists(file string) bool {
 		return false
 	}
 	return true
+}
+
+// mergeDeviceMountAttrs merges the second mountattr into the first. The merge is
+// performed as follows:
+// 1. If the DevPath of the first mountattr is empty, then it is set to the DevPath of
+// the second mountattr
+// 2. If the FileSystem of the first mountattr is empty, it is set to the FileSystem of
+// the second mountattr provided that the DevPaths of both the mountattrs match
+// 3. The MountPoint(s) of the second mountattr are appended to first's only if the
+// DevPath and the FileSystem of both the mountattrs match and the FileSystem of first
+// mountattr is non-empty (!= "")
+func mergeDeviceMountAttrs(ma *DeviceMountAttr, mb *DeviceMountAttr) {
+	if ma.DevPath == "" {
+		ma.DevPath = mb.DevPath
+	}
+	if ma.DevPath != mb.DevPath {
+		return
+	}
+	if ma.FileSystem == "" {
+		ma.FileSystem = mb.FileSystem
+	}
+	if ma.FileSystem != "" && ma.FileSystem == mb.FileSystem {
+		ma.MountPoint = append(ma.MountPoint, mb.MountPoint...)
+	}
 }

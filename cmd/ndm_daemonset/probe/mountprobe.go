@@ -101,7 +101,7 @@ func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 		return
 	}
 
-	blockDevice.FSInfo.MountPoint = append(blockDevice.FSInfo.MountPoint, basicMountInfo.MountPoint)
+	blockDevice.FSInfo.MountPoint = basicMountInfo.MountPoint
 	if blockDevice.FSInfo.FileSystem == "" {
 		blockDevice.FSInfo.FileSystem = basicMountInfo.FileSystem
 	}
