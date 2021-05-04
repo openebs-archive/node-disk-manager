@@ -68,7 +68,11 @@ func Start() {
 
 		// Listen for requests
 		klog.Infof("Starting server at : %v ", Address)
-		grpcServer.Serve(l)
+		err = grpcServer.Serve(l)
+		if err != nil {
+			klog.Errorf("Unable to Serve %v", err)
+			os.Exit(1)
+		}
 
 	}
 }
