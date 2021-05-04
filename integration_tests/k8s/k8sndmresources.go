@@ -68,11 +68,7 @@ func (c K8sClient) CreateNDMCRDs() error {
 	if err != nil {
 		return err
 	}
-	err = c.CreateNDMBlockDeviceClaimCRD()
-	if err != nil {
-		return err
-	}
-	return nil
+	return c.CreateNDMBlockDeviceClaimCRD()
 }
 
 // CreateNDMBlockDeviceCRD creates the CustomResourceDefinition for a Device type
@@ -154,11 +150,7 @@ func (c K8sClient) DeleteNDMCRDs() error {
 	if err != nil {
 		return err
 	}
-	err = c.DeleteNDMBlockDeviceClaimCRD()
-	if err != nil {
-		return err
-	}
-	return nil
+	return c.DeleteNDMBlockDeviceClaimCRD()
 }
 
 // DeleteNDMBlockDeviceCRD deletes the CustomResourceDefinition for a Device type
