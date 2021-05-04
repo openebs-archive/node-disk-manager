@@ -222,6 +222,6 @@ func (c *Controller) MarkSparseBlockDeviceStateActive(sparseFile string, sparseF
 	klog.Info("Updating the BlockDevice CR for Sparse file: ", BlockDeviceDetails.UUID)
 	err = c.CreateBlockDevice(BlockDeviceDetails.ToDevice())
 	if err != nil {
-		klog.Error("Failed to create a block device resource in etcd, Error: %v", err)
+		klog.Error("Failed to create a block device resource in etcd, Error: ", err)
 	}
 }
