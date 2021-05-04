@@ -150,37 +150,37 @@ func NewBDC(bdcName string) *apis.BlockDeviceClaim {
 }
 
 // CreateNamespace creates a namespace
-func (c K8sClient) CreateNamespace(namespace v1.Namespace) error {
+func (c K8sClient) CreateNamespace(namespace corev1.Namespace) error {
 	err := c.RunTimeClient.Create(context.Background(), &namespace)
 	return err
 }
 
 // DeleteNamespace deletes a namespace
-func (c K8sClient) DeleteNamespace(namespace v1.Namespace) error {
+func (c K8sClient) DeleteNamespace(namespace corev1.Namespace) error {
 	err := c.RunTimeClient.Delete(context.Background(), &namespace)
 	return err
 }
 
 // CreateConfigMap creates a config map
-func (c K8sClient) CreateConfigMap(configMap v1.ConfigMap) error {
+func (c K8sClient) CreateConfigMap(configMap corev1.ConfigMap) error {
 	err := c.RunTimeClient.Create(context.Background(), &configMap)
 	return err
 }
 
 // DeleteConfigMap deletes the config map
-func (c K8sClient) DeleteConfigMap(configMap v1.ConfigMap) error {
+func (c K8sClient) DeleteConfigMap(configMap corev1.ConfigMap) error {
 	err := c.RunTimeClient.Delete(context.Background(), &configMap)
 	return err
 }
 
 // CreateServiceAccount creates a service account
-func (c K8sClient) CreateServiceAccount(serviceAccount v1.ServiceAccount) error {
+func (c K8sClient) CreateServiceAccount(serviceAccount corev1.ServiceAccount) error {
 	err := c.RunTimeClient.Create(context.Background(), &serviceAccount)
 	return err
 }
 
 // DeleteServiceAc[2050]:4589616count deletes the service account
-func (c K8sClient) DeleteServiceAccount(serviceAccount v1.ServiceAccount) error {
+func (c K8sClient) DeleteServiceAccount(serviceAccount corev1.ServiceAccount) error {
 	err := c.RunTimeClient.Delete(context.Background(), &serviceAccount)
 	return err
 }
