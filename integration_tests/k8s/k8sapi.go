@@ -77,8 +77,7 @@ func (c K8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
 		},
 	}
 
-	var err error
-	err = c.RunTimeClient.List(context.TODO(), bdList)
+	err := c.RunTimeClient.List(context.TODO(), bdList)
 	if err != nil {
 		return nil, fmt.Errorf("cannot list blockdevices. Error :%v", err)
 	}
