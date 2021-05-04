@@ -25,7 +25,6 @@ import (
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
 	apiextensionsV1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -43,7 +42,7 @@ const k8sReconcileTime = 10 * time.Second
 // with their status
 func (c K8sClient) ListPodStatus() (map[string]string, error) {
 	pods := make(map[string]string)
-	podList := &v1.PodList{}
+	podList := &corev1.PodList{}
 	podList, err := c.ClientSet.CoreV1().Pods(Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -58,7 +57,7 @@ func (c K8sClient) ListPodStatus() (map[string]string, error) {
 // their status
 func (c K8sClient) ListNodeStatus() (map[string]string, error) {
 	nodes := make(map[string]string)
-	nodeList := &v1.NodeList{}
+	nodeList := &corev1.NodeList{}
 	nodeList, err := c.ClientSet.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
