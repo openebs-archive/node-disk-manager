@@ -71,7 +71,6 @@ func Start() {
 		err = grpcServer.Serve(l)
 		if err != nil {
 			klog.Errorf("Unable to Serve %v", err)
-			os.Exit(1)
 		}
 
 	}
