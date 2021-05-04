@@ -244,7 +244,7 @@ func (c *Controller) WaitForBlockDeviceCRD() {
 			klog.Errorf("BlockDevice CRD is not available yet. Retrying after %v, error: %v", CRDRetryInterval, err)
 			time.Sleep(CRDRetryInterval)
 			_, err := c.newClientSet()
-			if err!= nil {
+			if err != nil {
 				klog.Errorf("unable to set clientset field in controller struct, Error: %v",err)
 			}
 			continue
