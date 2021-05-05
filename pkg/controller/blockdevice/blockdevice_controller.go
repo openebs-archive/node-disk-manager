@@ -59,12 +59,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource BlockDevice
-	err = c.Watch(&source.Kind{Type: &openebsv1alpha1.BlockDevice{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.Watch(&source.Kind{Type: &openebsv1alpha1.BlockDevice{}}, &handler.EnqueueRequestForObject{})
 }
 
 var _ reconcile.Reconciler = &ReconcileBlockDevice{}
@@ -147,11 +142,7 @@ func (r *ReconcileBlockDevice) Reconcile(request reconcile.Request) (reconcile.R
 
 func (r *ReconcileBlockDevice) updateBDStatus(state openebsv1alpha1.DeviceClaimState, instance *openebsv1alpha1.BlockDevice) error {
 	instance.Status.ClaimState = state
-	err := r.client.Update(context.TODO(), instance)
-	if err != nil {
-		return err
-	}
-	return nil
+	return r.client.Update(context.TODO(), instance)
 }
 
 // IsReconcileDisabled is used to check if reconciliation is disabled for

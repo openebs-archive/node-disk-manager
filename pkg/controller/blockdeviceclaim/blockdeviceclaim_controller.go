@@ -63,12 +63,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource BlockDeviceClaim
-	err = c.Watch(&source.Kind{Type: &apis.BlockDeviceClaim{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.Watch(&source.Kind{Type: &apis.BlockDeviceClaim{}}, &handler.EnqueueRequestForObject{})
 }
 
 var _ reconcile.Reconciler = &ReconcileBlockDeviceClaim{}
@@ -194,12 +189,7 @@ func (r *ReconcileBlockDeviceClaim) claimDeviceForBlockDeviceClaim(instance *api
 		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice: %v claimed", instance.Spec.BlockDeviceName)
 	}
 
-	err = r.updateClaimStatus(instance.Status.Phase, instance)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return r.updateClaimStatus(instance.Status.Phase, instance)
 }
 
 // FinalizerHandling removes the finalizer from the claim resource

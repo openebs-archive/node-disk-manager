@@ -95,10 +95,7 @@ func New() (Client, error) {
 	klog.V(2).Infof("Namespace \"%s\" set for the client", c.namespace)
 
 	err = c.InitClient()
-	if err != nil {
-		return c, err
-	}
-	return c, nil
+	return c, err
 }
 
 // InitClient sets the client using the config

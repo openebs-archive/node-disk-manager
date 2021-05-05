@@ -111,8 +111,5 @@ func (k *K8sClient) RegenerateClient() error {
 	}
 
 	k.RunTimeClient, err = client.New(k.config, client.Options{Scheme: scheme})
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
