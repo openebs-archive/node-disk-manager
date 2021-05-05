@@ -25,7 +25,6 @@ import (
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
 	apiextensionsV1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -43,7 +42,7 @@ const k8sReconcileTime = 10 * time.Second
 // with their status
 func (c K8sClient) ListPodStatus() (map[string]string, error) {
 	pods := make(map[string]string)
-	podList := &v1.PodList{}
+	podList := &corev1.PodList{}
 	podList, err := c.ClientSet.CoreV1().Pods(Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -58,7 +57,7 @@ func (c K8sClient) ListPodStatus() (map[string]string, error) {
 // their status
 func (c K8sClient) ListNodeStatus() (map[string]string, error) {
 	nodes := make(map[string]string)
-	nodeList := &v1.NodeList{}
+	nodeList := &corev1.NodeList{}
 	nodeList, err := c.ClientSet.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -78,8 +77,7 @@ func (c K8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
 		},
 	}
 
-	var err error
-	err = c.RunTimeClient.List(context.TODO(), bdList)
+	err := c.RunTimeClient.List(context.TODO(), bdList)
 	if err != nil {
 		return nil, fmt.Errorf("cannot list blockdevices. Error :%v", err)
 	}
@@ -152,37 +150,37 @@ func NewBDC(bdcName string) *apis.BlockDeviceClaim {
 }
 
 // CreateNamespace creates a namespace
-func (c K8sClient) CreateNamespace(namespace v1.Namespace) error {
+func (c K8sClient) CreateNamespace(namespace corev1.Namespace) error {
 	err := c.RunTimeClient.Create(context.Background(), &namespace)
 	return err
 }
 
 // DeleteNamespace deletes a namespace
-func (c K8sClient) DeleteNamespace(namespace v1.Namespace) error {
+func (c K8sClient) DeleteNamespace(namespace corev1.Namespace) error {
 	err := c.RunTimeClient.Delete(context.Background(), &namespace)
 	return err
 }
 
 // CreateConfigMap creates a config map
-func (c K8sClient) CreateConfigMap(configMap v1.ConfigMap) error {
+func (c K8sClient) CreateConfigMap(configMap corev1.ConfigMap) error {
 	err := c.RunTimeClient.Create(context.Background(), &configMap)
 	return err
 }
 
 // DeleteConfigMap deletes the config map
-func (c K8sClient) DeleteConfigMap(configMap v1.ConfigMap) error {
+func (c K8sClient) DeleteConfigMap(configMap corev1.ConfigMap) error {
 	err := c.RunTimeClient.Delete(context.Background(), &configMap)
 	return err
 }
 
 // CreateServiceAccount creates a service account
-func (c K8sClient) CreateServiceAccount(serviceAccount v1.ServiceAccount) error {
+func (c K8sClient) CreateServiceAccount(serviceAccount corev1.ServiceAccount) error {
 	err := c.RunTimeClient.Create(context.Background(), &serviceAccount)
 	return err
 }
 
 // DeleteServiceAc[2050]:4589616count deletes the service account
-func (c K8sClient) DeleteServiceAccount(serviceAccount v1.ServiceAccount) error {
+func (c K8sClient) DeleteServiceAccount(serviceAccount corev1.ServiceAccount) error {
 	err := c.RunTimeClient.Delete(context.Background(), &serviceAccount)
 	return err
 }

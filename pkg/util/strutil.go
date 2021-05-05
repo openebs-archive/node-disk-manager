@@ -36,7 +36,7 @@ func Contains(s []string, k string) bool {
 // in array else it returns false. This function is not case sensitive.
 func ContainsIgnoredCase(s []string, k string) bool {
 	for _, e := range s {
-		if strings.ToLower(e) == strings.ToLower(k) {
+		if strings.EqualFold(e,k)  {
 			return true
 		}
 	}
