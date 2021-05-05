@@ -317,8 +317,5 @@ func (s Device) GetDeviceType(devType string) (string, error) {
 }
 
 func isDM(devName string) bool {
-	if devName[0:3] == "dm-" {
-		return true
-	}
-	return false
+	return devName[0:3] == "dm-"
 }

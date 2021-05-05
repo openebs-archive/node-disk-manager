@@ -103,7 +103,6 @@ func (di *DeviceIdentifier) GetSPDKSuperBlockSignature() (string, error) {
 	spdk = (*C.struct_spdk_bs_super_block)(C.CBytes(buf))
 	defer C.free(unsafe.Pointer(spdk))
 
-	var ptr *C.char
-	ptr = (*C.char)(C.get_signature(spdk))
+	ptr := (*C.char)(C.get_signature(spdk))
 	return C.GoString(ptr), nil
 }
