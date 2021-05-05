@@ -50,10 +50,7 @@ func GetNamespace() (v1.Namespace, error) {
 		return ns, err
 	}
 	err = yaml.Unmarshal([]byte(yamlstring), &ns)
-	if err != nil {
-		return ns, err
-	}
-	return ns, nil
+	return ns, err
 }
 
 // GetConfigMap generates the ConfigMap object for NDM from the yaml file
@@ -64,10 +61,7 @@ func GetConfigMap() (v1.ConfigMap, error) {
 		return configMap, err
 	}
 	err = yaml.Unmarshal([]byte(yamlstring), &configMap)
-	if err != nil {
-		return configMap, err
-	}
-	return configMap, nil
+	return configMap, err
 }
 
 // GetServiceAccount generates the ServiceAccount object from the yaml file
@@ -78,10 +72,7 @@ func GetServiceAccount() (v1.ServiceAccount, error) {
 		return serviceAccount, err
 	}
 	err = yaml.Unmarshal([]byte(yamlstring), &serviceAccount)
-	if err != nil {
-		return serviceAccount, err
-	}
-	return serviceAccount, nil
+	return serviceAccount, err
 }
 
 // GetClusterRole generates the ClusterRole object from the yaml file
@@ -92,10 +83,7 @@ func GetClusterRole() (rbacv1beta1.ClusterRole, error) {
 		return clusterRole, err
 	}
 	err = yaml.Unmarshal([]byte(yamlstring), &clusterRole)
-	if err != nil {
-		return clusterRole, err
-	}
-	return clusterRole, nil
+	return clusterRole, err
 }
 
 // GetClusterRoleBinding generates the ClusterRoleBinding object from the yaml file
@@ -106,9 +94,6 @@ func GetClusterRoleBinding() (rbacv1beta1.ClusterRoleBinding, error) {
 		return clusterRoleBinding, err
 	}
 	err = yaml.Unmarshal([]byte(yamlstring), &clusterRoleBinding)
-	if err != nil {
-		return clusterRoleBinding, err
-	}
 	return clusterRoleBinding, err
 }
 
@@ -121,9 +106,6 @@ func GetCustomResourceDefinition(crdyaml NDMYaml) (apiextensionsV1.CustomResourc
 		return customResourceDefinition, err
 	}
 	err = yaml.Unmarshal([]byte(yamlString), &customResourceDefinition)
-	if err != nil {
-		return customResourceDefinition, err
-	}
 	return customResourceDefinition, err
 }
 
@@ -135,9 +117,6 @@ func GetDaemonSet() (appsv1.DaemonSet, error) {
 		return daemonSet, err
 	}
 	err = yaml.Unmarshal([]byte(yamlstring), &daemonSet)
-	if err != nil {
-		return daemonSet, err
-	}
 	return daemonSet, err
 }
 
@@ -149,8 +128,5 @@ func GetDeployment() (appsv1.Deployment, error) {
 		return deployment, err
 	}
 	err = yaml.Unmarshal([]byte(yamlstring), &deployment)
-	if err != nil {
-		return deployment, err
-	}
 	return deployment, err
 }

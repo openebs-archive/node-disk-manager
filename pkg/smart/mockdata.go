@@ -117,11 +117,7 @@ func MockScsiBasicDiskInfo() (MockOsDiskDetails, error) {
 
 	// Get all the available disk details in the form of struct and errors if any (in form of map)
 	diskDetails, err = d.mockDiskDetailsBySmart()
-	if err != nil {
-		return diskDetails, err
-	}
-
-	return diskDetails, nil
+	return diskDetails, err
 }
 
 func mockdetectSCSIType(name string) (mockDev, error) {

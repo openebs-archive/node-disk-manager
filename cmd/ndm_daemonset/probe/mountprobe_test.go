@@ -126,10 +126,7 @@ func enterFakeRoot(t *testing.T) error {
 
 	// Chroot into the tmp dir
 	err = syscall.Chroot(fakeRootPath)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // exitFakeRoot exits from the chrooted environment

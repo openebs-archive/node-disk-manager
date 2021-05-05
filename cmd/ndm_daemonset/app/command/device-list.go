@@ -99,8 +99,5 @@ func deviceList() error {
 	}
 	diskListTemplate := template.Must(template.New("defaultDeviceList").Parse(defaultDeviceList))
 	err = diskListTemplate.Execute(os.Stdout, diskList)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
