@@ -63,16 +63,11 @@ func (c K8sClient) CreateNDMClusterRoleBinding() error {
 
 // CreateNDMCRDs creates the Disk, BlockDevice and BlockDeviceClaim CRDs
 func (c K8sClient) CreateNDMCRDs() error {
-	var err error
-	err = c.CreateNDMBlockDeviceCRD()
+	err := c.CreateNDMBlockDeviceCRD()
 	if err != nil {
 		return err
 	}
-	err = c.CreateNDMBlockDeviceClaimCRD()
-	if err != nil {
-		return err
-	}
-	return nil
+	return c.CreateNDMBlockDeviceClaimCRD()
 }
 
 // CreateNDMBlockDeviceCRD creates the CustomResourceDefinition for a Device type
@@ -149,16 +144,11 @@ func (c K8sClient) DeleteNDMClusterRoleBinding() error {
 
 // DeleteNDMCRDs deletes the disk, blockdevice and blockdevice claim CRDs
 func (c K8sClient) DeleteNDMCRDs() error {
-	var err error
-	err = c.DeleteNDMBlockDeviceCRD()
+	err := c.DeleteNDMBlockDeviceCRD()
 	if err != nil {
 		return err
 	}
-	err = c.DeleteNDMBlockDeviceClaimCRD()
-	if err != nil {
-		return err
-	}
-	return nil
+	return c.DeleteNDMBlockDeviceClaimCRD()
 }
 
 // DeleteNDMBlockDeviceCRD deletes the CustomResourceDefinition for a Device type
