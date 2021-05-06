@@ -18,6 +18,7 @@ package v041_042
 
 import (
 	"context"
+
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -47,8 +48,8 @@ func (p *UpgradeTask) PreUpgrade() bool {
 		return false
 	}
 
-	for _, bdc := range bdcList.Items {
-		err = p.copyHostName(&bdc)
+	for i := range bdcList.Items {
+		err = p.copyHostName(&bdcList.Items[i])
 		if err != nil {
 			p.err = err
 			return false
