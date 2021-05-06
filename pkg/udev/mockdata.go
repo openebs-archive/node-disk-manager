@@ -25,12 +25,13 @@ package udev
 import "C"
 import (
 	"bufio"
-	bd "github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/pkg/mount"
-	"github.com/openebs/node-disk-manager/pkg/sysfs"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	bd "github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/pkg/mount"
+	"github.com/openebs/node-disk-manager/pkg/sysfs"
 )
 
 // MockOsDiskDetails struct contain different attribute of os disk.
@@ -116,7 +117,10 @@ func OsDiskName() (string, string, error) {
 	if err != nil {
 		return osPartPath, osFileSystem, err
 	}
-	defer file.Close()
+	defer func() {
+		file.Close()
+	}()
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()

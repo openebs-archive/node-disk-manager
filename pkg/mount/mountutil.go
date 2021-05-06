@@ -19,11 +19,12 @@ package mount
 import (
 	"bufio"
 	"fmt"
-	"github.com/openebs/node-disk-manager/pkg/features"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/openebs/node-disk-manager/pkg/features"
 )
 
 var ErrCouldNotFindRootDevice = fmt.Errorf("could not find root device")
@@ -79,7 +80,9 @@ func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, err
 	if err != nil {
 		return mountAttr, err
 	}
-	defer file.Close()
+	defer func() {
+		file.Close()
+	}()
 	scanner := bufio.NewScanner(file)
 	if err := scanner.Err(); err != nil {
 		return mountAttr, err
@@ -168,7 +171,9 @@ func getRootPartition() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer func() {
+		file.Close()
+	}()
 
 	path, err := parseRootDeviceLink(file)
 	if err != nil {
