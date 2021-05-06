@@ -47,7 +47,10 @@ func (d *SATA) ataIdentify() (ATACSPage, error) {
 	if err := d.sendSCSICDB(cdb16[:], &responseBuf); err != nil {
 		return identifyBuf, fmt.Errorf("error in sending SCSICDB 16 for ATA device, Error: %+v", err)
 	}
-	binary.Read(bytes.NewBuffer(responseBuf), NativeEndian, &identifyBuf)
+	err := binary.Read(bytes.NewBuffer(responseBuf), NativeEndian, &identifyBuf)
+	if err != nil {
+		return identifyBuf, fmt.Errorf("error in reading data, Error: %+v", err)
+	}
 	return identifyBuf, nil
 }
 

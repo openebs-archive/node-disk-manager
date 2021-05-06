@@ -30,7 +30,10 @@ var logFlushFreq = pflag.Duration("log-flush-frequency", 5*time.Second, "Maximum
 
 // TODO(thockin): This is temporary until we agree on log dirs and put those into each cmd.
 func init() {
-	flag.Set("logtostderr", "true")
+	err := flag.Set("logtostderr", "true")
+	if err != nil {
+		klog.Errorf("unable to set flag, Error: %v",err)
+	}
 }
 
 // KlogWriter serves as a bridge between the standard log package and the klog package.

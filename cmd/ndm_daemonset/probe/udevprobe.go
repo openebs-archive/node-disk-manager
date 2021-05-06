@@ -120,7 +120,10 @@ func (up *udevProbe) Start() {
 	go up.listen()
 	go udevevent.Monitor()
 	probeEvent := newUdevProbe(up.controller)
-	probeEvent.scan()
+	err := probeEvent.scan()
+	if err != nil {
+		klog.Errorf("error while scanning system for block devices, Error: %v", err)
+	}
 }
 
 // Rescan syncs etcd and NDM
