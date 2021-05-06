@@ -117,8 +117,9 @@ func OsDiskName() (string, string, error) {
 	if err != nil {
 		return osPartPath, osFileSystem, err
 	}
+
 	defer func() {
-		file.Close()
+		err = file.Close()
 	}()
 
 	scanner := bufio.NewScanner(file)
@@ -139,7 +140,7 @@ func OsDiskName() (string, string, error) {
 		return osPartPath, osFileSystem, err
 	}
 	disk = strings.Replace(disk, "/dev/", "", 1)
-	return disk, osFileSystem, nil
+	return disk, osFileSystem, err
 }
 
 // getSyspathOfOsDisk returns syspath of os disk in success

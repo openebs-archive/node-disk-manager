@@ -80,9 +80,17 @@ func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, err
 	if err != nil {
 		return mountAttr, err
 	}
+
 	defer func() {
-		file.Close()
+		cerr := file.Close()
+		if cerr != nil {
+			err = cerr
+		}
 	}()
+	if err != nil {
+		return mountAttr, err
+	}
+
 	scanner := bufio.NewScanner(file)
 	if err := scanner.Err(); err != nil {
 		return mountAttr, err
@@ -171,8 +179,12 @@ func getRootPartition() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	defer func() {
-		file.Close()
+		cerr := file.Close()
+		if cerr != nil {
+			err = cerr
+		}
 	}()
 
 	path, err := parseRootDeviceLink(file)
@@ -185,7 +197,7 @@ func getRootPartition() (string, error) {
 		return "", err
 	}
 
-	return getDeviceName(link), nil
+	return getDeviceName(link), err
 }
 
 func parseRootDeviceLink(file io.Reader) (string, error) {

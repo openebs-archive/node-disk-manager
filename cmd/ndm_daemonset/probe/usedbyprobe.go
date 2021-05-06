@@ -210,8 +210,8 @@ func isBlockDeviceInUseByKernel(path string) (bool, error) {
 	}
 
 	defer func() {
-		f.Close()
+		err = f.Close()
 	}()
 
-	return false, nil
+	return false, err
 }
