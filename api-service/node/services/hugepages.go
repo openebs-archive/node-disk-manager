@@ -41,7 +41,7 @@ func (n *Node) SetHugepages(ctx context.Context, h *protos.Hugepages) (*protos.H
 	}
 
 	msg := []byte(strconv.Itoa(int(hugepages.Pages)))
-	err := ioutil.WriteFile(hugepagesPath, msg, 0644)
+	err := ioutil.WriteFile(hugepagesPath, msg, 0600)
 	if err != nil {
 		klog.Errorf("Error setting huge pages: %v", err)
 		return nil, status.Errorf(codes.Internal, "Error setting hugepages")
