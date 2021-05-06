@@ -48,7 +48,10 @@ func (d *SCSIDev) scsiInquiry() (InquiryResponse, error) {
 		return response, err
 	}
 
-	binary.Read(bytes.NewBuffer(respBuf), NativeEndian, &response)
+	err := binary.Read(bytes.NewBuffer(respBuf), NativeEndian, &response)
+	if err != nil {
+		return response, fmt.Errorf("error in reading data, Error: %+v", err)
+	}
 
 	return response, nil
 }
