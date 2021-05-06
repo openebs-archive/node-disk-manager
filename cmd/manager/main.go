@@ -87,7 +87,11 @@ func main() {
 	}
 
 	// Become the leader before proceeding
-	leader.Become(context.TODO(), "node-disk-manager-lock")
+	err = leader.Become(context.TODO(), "node-disk-manager-lock")
+	if err != nil {
+		klog.Errorf("Failed to become leader, Error: %v", err)
+		os.Exit(1)
+	}
 
 	r := ready.NewFileReady()
 	err = r.Set()
