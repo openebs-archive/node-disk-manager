@@ -19,6 +19,7 @@ package probe
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -200,7 +201,7 @@ func getBlockDeviceZFSPartition(bd blockdevice.BlockDevice) (string, bool) {
 // isBlockDeviceInUseByKernel tries to open the device exclusively to check if the device is
 // being held by some process. eg: If kernel zfs uses the disk, the open will fail
 func isBlockDeviceInUseByKernel(path string) (bool, error) {
-	f, err := os.OpenFile(path, os.O_EXCL, 0444)
+	f, err := os.OpenFile(filepath.Clean(path), os.O_EXCL, 0444)
 
 	if errors.Is(err, syscall.EBUSY) {
 		return true, nil
