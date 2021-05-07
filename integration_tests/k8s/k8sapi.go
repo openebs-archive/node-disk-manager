@@ -42,7 +42,6 @@ const k8sReconcileTime = 10 * time.Second
 // with their status
 func (c K8sClient) ListPodStatus() (map[string]string, error) {
 	pods := make(map[string]string)
-	podList := &corev1.PodList{}
 	podList, err := c.ClientSet.CoreV1().Pods(Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -57,7 +56,6 @@ func (c K8sClient) ListPodStatus() (map[string]string, error) {
 // their status
 func (c K8sClient) ListNodeStatus() (map[string]string, error) {
 	nodes := make(map[string]string)
-	nodeList := &corev1.NodeList{}
 	nodeList, err := c.ClientSet.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
