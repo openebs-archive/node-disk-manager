@@ -17,7 +17,7 @@ limitations under the License.
 package util
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -105,9 +105,9 @@ func StrToInt32(val string) *int32 {
 	return n32
 }
 
-// Hash retrieves an encoded string using the md5 encrypt
+// Hash retrieves an encoded string using the sha1 encrypt
 func Hash(s string) string {
-	hasher := md5.New()
+	hasher := sha256.New()
 	hasher.Write([]byte(s))
 	return hex.EncodeToString(hasher.Sum(nil))
 }
