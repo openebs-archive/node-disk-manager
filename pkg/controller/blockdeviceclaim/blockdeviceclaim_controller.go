@@ -280,11 +280,11 @@ func (r *ReconcileBlockDeviceClaim) releaseClaimedBlockDevice(
 
 	// Check if same deviceclaim holding the ObjRef
 	var claimedBd *apis.BlockDevice
-	for _, item := range bdList.Items {
+	for i := range bdList.Items {
 		// Found a blockdevice ObjRef with BlockDeviceClaim, Clear
 		// ObjRef and mark blockdevice released in etcd
-		if r.isDeviceRequestedByThisDeviceClaim(instance, item) {
-			claimedBd = &item
+		if r.isDeviceRequestedByThisDeviceClaim(instance, bdList.Items[i]) {
+			claimedBd = &bdList.Items[i]
 			break
 		}
 	}

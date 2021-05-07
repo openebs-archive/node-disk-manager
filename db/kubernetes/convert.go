@@ -24,9 +24,8 @@ import (
 func convertBlockDeviceAPIListToBlockDeviceList(in *api.BlockDeviceList, out *[]blockdevice.BlockDevice) error {
 	var err error
 	var bd blockdevice.BlockDevice
-
-	for _, bdAPI := range in.Items {
-		err = convertBlockDeviceAPIToBlockDevice(&bdAPI, &bd)
+	for i := range in.Items {
+		err = convertBlockDeviceAPIToBlockDevice(&in.Items[i], &bd)
 		if err != nil {
 			return err
 		}
