@@ -82,11 +82,9 @@ func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, err
 	}
 
 	defer func() {
-		cerr := file.Close()
-		if cerr != nil {
-			err = cerr
-		}
+		file.Close()
 	}()
+
 	if err != nil {
 		return mountAttr, err
 	}
@@ -181,10 +179,7 @@ func getRootPartition() (string, error) {
 	}
 
 	defer func() {
-		cerr := file.Close()
-		if cerr != nil {
-			err = cerr
-		}
+		file.Close()
 	}()
 
 	path, err := parseRootDeviceLink(file)
