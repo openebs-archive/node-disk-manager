@@ -65,8 +65,8 @@ func ExecCommandWithPipe(cmd1, cmd2 string) (string, error) {
 	parts1 := strings.Fields(cmd1)
 	parts2 := strings.Fields(cmd2)
 
-	c1 := exec.Command(parts1[0], parts1[1:]...)
-	c2 := exec.Command(parts2[0], parts2[1:]...)
+	c1 := exec.Command(parts1[0], parts1[1:]...) // #nosec G204
+	c2 := exec.Command(parts2[0], parts2[1:]...) // #nosec G204
 
 	reader, writer := io.Pipe()
 	c1.Stdout = writer
