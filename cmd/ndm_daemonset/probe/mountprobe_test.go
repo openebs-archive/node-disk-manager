@@ -67,7 +67,9 @@ func TestMountProbeFillBlockDeviceDetails(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer exitFakeRoot()
+		defer func() {
+			exitFakeRoot()
+		}()
 
 		bd := blockdevice.BlockDevice{
 			Identifier: blockdevice.Identifier{
@@ -86,7 +88,9 @@ func TestMountProbeFillBlockDeviceDetails(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer exitFakeRoot()
+		defer func() {
+			exitFakeRoot()
+		}()
 
 		bd := blockdevice.BlockDevice{
 			Identifier: blockdevice.Identifier{
