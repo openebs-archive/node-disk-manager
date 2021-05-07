@@ -25,12 +25,14 @@ package udev
 import "C"
 import (
 	"bufio"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+
 	bd "github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/sysfs"
-	"io/ioutil"
-	"os"
-	"strings"
 )
 
 // MockOsDiskDetails struct contain different attribute of os disk.
@@ -140,7 +142,7 @@ func OsDiskName() (string, string, error) {
 
 // getSyspathOfOsDisk returns syspath of os disk in success
 func getSyspathOfOsDisk(osDiskName string) (string, error) {
-	data, err := ioutil.ReadFile("/sys/class/block/" + osDiskName + "/dev")
+	data, err := ioutil.ReadFile(filepath.Clean("/sys/class/block/" + osDiskName + "/dev"))
 	if err != nil {
 		return "", err
 	}
@@ -149,7 +151,7 @@ func getSyspathOfOsDisk(osDiskName string) (string, error) {
 
 // getOsDiskSize returns size of os disk in success
 func getOsDiskSize(osDiskName string) (string, error) {
-	sizeByte, err := ioutil.ReadFile("/sys/class/block/" + osDiskName + "/size")
+	sizeByte, err := ioutil.ReadFile(filepath.Clean("/sys/class/block/" + osDiskName + "/size"))
 	if err != nil {
 		return "", err
 	}

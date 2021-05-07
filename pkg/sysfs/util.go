@@ -18,6 +18,7 @@ package sysfs
 
 import (
 	"io/ioutil"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -25,7 +26,7 @@ import (
 // readSysFSFileAsInt64 reads a file and
 // converts that content into int64
 func readSysFSFileAsInt64(sysFilePath string) (int64, error) {
-	b, err := ioutil.ReadFile(sysFilePath)
+	b, err := ioutil.ReadFile(filepath.Clean(sysFilePath))
 	if err != nil {
 		return 0, err
 	}
@@ -33,7 +34,7 @@ func readSysFSFileAsInt64(sysFilePath string) (int64, error) {
 }
 
 func readSysFSFileAsString(sysFilePath string) (string, error) {
-	b, err := ioutil.ReadFile(sysFilePath)
+	b, err := ioutil.ReadFile(filepath.Clean(sysFilePath))
 	if err != nil {
 		return "", err
 	}
