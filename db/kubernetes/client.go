@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/openebs/node-disk-manager/api/v1alpha1"
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 
@@ -145,7 +144,7 @@ func (cl *Client) setNamespace() error {
 // ListBlockDevice lists the block device from etcd based on
 // the filters used
 func (cl *Client) ListBlockDevice(filters ...interface{}) ([]blockdevice.BlockDevice, error) {
-	bdList := &v1alpha1.BlockDeviceList{
+	bdList := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
