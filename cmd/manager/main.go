@@ -28,16 +28,12 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	openebsiov1alpha1 "github.com/openebs/node-disk-manager/api/v1alpha1"
 	blockdevice "github.com/openebs/node-disk-manager/controllers/blockdevice"
 	blockdeviceclaim "github.com/openebs/node-disk-manager/controllers/blockdeviceclaim"
-	"github.com/openebs/node-disk-manager/pkg/upgrade"
-	"github.com/openebs/node-disk-manager/pkg/upgrade/v040_041"
-	"github.com/openebs/node-disk-manager/pkg/upgrade/v041_042"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -69,19 +65,6 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-
-	// k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{})
-	// if err != nil {
-	// 	klog.Errorf("Failed to get client: %v", err)
-	// 	os.Exit(1)
-	// }
-	// klog.Info("Check if CR has to be upgraded, and perform upgrade")
-
-	// err = performUpgrade(k8sClient)
-	// if err != nil {
-	// 	klog.Errorf("Upgrade failed: %v", err)
-	// 	os.Exit(1)
-	// }
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
@@ -128,11 +111,4 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-}
-
-// performUpgrade performs the upgrade operations
-func performUpgrade(client client.Client) error {
-	v040_v041UpgradeTask := v040_041.NewUpgradeTask("0.4.0", "0.4.1", client)
-	v041_v042UpgradeTask := v041_042.NewUpgradeTask("0.4.1", "0.4.2", client)
-	return upgrade.RunUpgrade(v040_v041UpgradeTask, v041_v042UpgradeTask)
 }
