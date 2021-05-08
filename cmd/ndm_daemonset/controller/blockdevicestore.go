@@ -87,7 +87,6 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) error {
 func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDevice *apis.BlockDevice) error {
 	var err error
 
-	blockDeviceCopy := blockDevice.DeepCopy()
 	if oldBlockDevice == nil {
 		oldBlockDevice = blockDevice.DeepCopy()
 		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
@@ -97,30 +96,44 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 			klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
 				"ndm.blockdevice.update.failure",
 				"Failed to update block device : unable to get blockdevice object",
-				oldBlockDevice.ObjectMeta.Name, err, blockDeviceCopy.ObjectMeta.Name)
+				oldBlockDevice.ObjectMeta.Name, err, blockDevice.ObjectMeta.Name)
 			return err
 		}
+	} else {
+		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
+			Namespace: oldBlockDevice.Namespace,
+			Name:      oldBlockDevice.Name}, oldBlockDevice)
+		if err != nil {
+			klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
+				"ndm.blockdevice.update.failure",
+				"Failed to update block device : unable to get blockdevice object",
+				oldBlockDevice.ObjectMeta.Name, err, blockDevice.ObjectMeta.Name)
+			return err
+		}
+
 	}
+	// err = c.Clientset.Get(context.TODO(), client.ObjectKey{
+	// 	Namespace: blockDevice.Namespace,
+	// 	Name:      blockDevice.Name}, &blockDevice)
+	// if err != nil {
+	// 	klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
+	// 		"ndm.blockdevice.update.failure",
+	// 		"Failed to update block device : unable to get blockdevice object",
+	// 		blockDevice.ObjectMeta.Name, err, blockDevice.ObjectMeta.Name)
+	// 	return err
+	// }
 
-	blockDeviceCopy = mergeBlockDeviceData(*blockDeviceCopy, *oldBlockDevice)
-
-	err = c.Clientset.Update(context.TODO(), blockDeviceCopy)
+	err = c.Clientset.Patch(context.TODO(), &blockDevice, client.MergeFrom(oldBlockDevice), &client.PatchOptions{})
 	if err != nil {
 		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
 			"ndm.blockdevice.update.failure", "Unable to update blockdevice object",
-			err, blockDeviceCopy.ObjectMeta.Name)
+			err, blockDevice.ObjectMeta.Name)
 		return err
 	}
 	klog.Infof("eventcode=%s msg=%s rname=%v",
 		"ndm.blockdevice.update.success", "Updated blockdevice object",
-		blockDeviceCopy.ObjectMeta.Name)
+		blockDevice.ObjectMeta.Name)
 	return nil
-}
-
-func boolPtr(b bool) *bool {
-	var bp *bool
-	bp = &b
-	return bp
 }
 
 // DeactivateBlockDevice API is used to set blockdevice status to "inactive" state in etcd
@@ -128,7 +141,7 @@ func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 
 	patch := client.MergeFrom(blockDevice.DeepCopy())
 	blockDevice.Status.State = NDMInactive
-	err := c.Clientset.Status().Patch(context.Background(), &blockDevice, patch)
+	err := c.Clientset.Status().Patch(context.TODO(), &blockDevice, patch)
 	if err != nil {
 		klog.Errorf("eventcode=%s msg=%s : %v rname=%v ",
 			"ndm.blockdevice.deactivate.failure", "Unable to deactivate blockdevice",
@@ -274,12 +287,12 @@ func (c *Controller) MarkBlockDeviceStatusToUnknown() {
 		return
 	}
 	for _, item := range blockDeviceList.Items {
-		blockDeviceCopy := item.DeepCopy()
-		blockDeviceCopy.Status.State = NDMUnknown
-		err := c.Clientset.Update(context.TODO(), blockDeviceCopy)
+		patch := client.MergeFrom(item.DeepCopy())
+		item.Status.State = NDMUnknown
+		err := c.Clientset.Patch(context.TODO(), &item, patch)
 		if err == nil {
 			klog.Error("Status marked unknown for blockdevice object: ",
-				blockDeviceCopy.ObjectMeta.Name)
+				item.ObjectMeta.Name)
 		}
 	}
 }

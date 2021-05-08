@@ -59,7 +59,7 @@ type BlockDeviceClaimReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.2/pkg/reconcile
 func (r *BlockDeviceClaimReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
-	_ = r.Log.WithValues("blockdeviceclaim", request.NamespacedName)
+	// _ = r.Log.WithValues("blockdeviceclaim", request.NamespacedName)
 
 	// your logic here
 	// Fetch the BlockDeviceClaim instance
