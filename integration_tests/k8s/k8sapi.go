@@ -42,7 +42,7 @@ const k8sReconcileTime = 10 * time.Second
 // with their status
 func (c K8sClient) ListPodStatus() (map[string]string, error) {
 	pods := make(map[string]string)
-	podList, err := c.ClientSet.CoreV1().Pods(Namespace).List(metav1.ListOptions{})
+	podList, err := c.ClientSet.CoreV1().Pods(Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (c K8sClient) ListPodStatus() (map[string]string, error) {
 // their status
 func (c K8sClient) ListNodeStatus() (map[string]string, error) {
 	nodes := make(map[string]string)
-	nodeList, err := c.ClientSet.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := c.ClientSet.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (c K8sClient) CreateServiceAccount(serviceAccount corev1.ServiceAccount) er
 	return err
 }
 
-// DeleteServiceAc[2050]:4589616count deletes the service account
+// DeleteServiceAccount deletes the service account
 func (c K8sClient) DeleteServiceAccount(serviceAccount corev1.ServiceAccount) error {
 	err := c.RunTimeClient.Delete(context.Background(), &serviceAccount)
 	return err
