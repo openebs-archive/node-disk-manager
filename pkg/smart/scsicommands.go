@@ -103,7 +103,7 @@ func (d *SCSIDev) sendSCSICDB(cdb []byte, respBuf *[]byte) error {
 		dxferLen:       uint32(len(*respBuf)),
 		dxferp:         uintptr(unsafe.Pointer(&(*respBuf)[0])),
 		cmdp:           uintptr(unsafe.Pointer(&cdb[0])),
-		sbp:            uintptr(unsafe.Pointer(&senseBuf[0])),
+		sbp:            uintptr(unsafe.Pointer(&senseBuf[0])), // nosec
 		timeout:        DefaultTimeout,
 	}
 
