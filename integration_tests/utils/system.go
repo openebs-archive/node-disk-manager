@@ -40,7 +40,7 @@ func RunCommand(cmd string) error {
 	substring := strings.Fields(cmd)
 	name := substring[0]
 	args := substring[1:]
-	err := exec.Command(name, args...).Run()
+	err := exec.Command(name, args...).Run() // #nosec G204
 	if err != nil {
 		return fmt.Errorf("run failed %s %v", cmd, err)
 	}
@@ -52,7 +52,7 @@ func ExecCommand(cmd string) (string, error) {
 	substring := strings.Fields(cmd)
 	name := substring[0]
 	args := substring[1:]
-	out, err := exec.Command(name, args...).CombinedOutput()
+	out, err := exec.Command(name, args...).CombinedOutput() // #nosec G204
 	if err != nil {
 		return "", fmt.Errorf("exec failed %s %v", cmd, err)
 	}
@@ -65,8 +65,8 @@ func ExecCommandWithPipe(cmd1, cmd2 string) (string, error) {
 	parts1 := strings.Fields(cmd1)
 	parts2 := strings.Fields(cmd2)
 
-	c1 := exec.Command(parts1[0], parts1[1:]...)
-	c2 := exec.Command(parts2[0], parts2[1:]...)
+	c1 := exec.Command(parts1[0], parts1[1:]...) // #nosec G204
+	c2 := exec.Command(parts2[0], parts2[1:]...) // #nosec G204
 
 	reader, writer := io.Pipe()
 	c1.Stdout = writer
