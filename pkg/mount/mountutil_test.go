@@ -27,6 +27,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	getMountName = iota
+	getPartitionName
+)
+
 func TestNewMountUtil(t *testing.T) {
 	filePath := "/host/proc/1/mounts"
 	devPath := "/dev/sda"
@@ -64,24 +69,64 @@ func TestGetMountAttr(t *testing.T) {
 
 	mountAttrTests := map[string]struct {
 		devPath           string
+		mountPoint        string
+		attrFunc          int
 		expectedMountAttr DeviceMountAttr
 		expectedError     error
 		fileContent       []byte
 	}{
 		"sda4 mounted at /": {
 			"/dev/sda4",
+			"",
+			getMountName,
 			DeviceMountAttr{MountPoint: "/", FileSystem: "ext4"},
 			nil,
 			fileContent1,
 		},
 		"sda3 mounted at /home": {
 			"/dev/sda3",
+			"",
+			getMountName,
 			DeviceMountAttr{MountPoint: "/home", FileSystem: "ext4"},
 			nil,
 			fileContent2,
 		},
 		"device is not mounted": {
 			"/dev/sda3",
+			"",
+			getMountName,
+			DeviceMountAttr{},
+			errors.New("could not get device mount attributes, Path/MountPoint not present in mounts file"),
+			fileContent3,
+		},
+		"Mountpoint /": {
+			"",
+			"/",
+			getPartitionName,
+			DeviceMountAttr{DevPath: "sda4"},
+			nil,
+			fileContent1,
+		},
+		"Mountpoint /home": {
+			"",
+			"/home",
+			getPartitionName,
+			DeviceMountAttr{DevPath: "sda3"},
+			nil,
+			fileContent2,
+		},
+		"Mountpoint not found": {
+			"",
+			"/usr",
+			getPartitionName,
+			DeviceMountAttr{},
+			errors.New("could not get device mount attributes, Path/MountPoint not present in mounts file"),
+			fileContent2,
+		},
+		"Mountpoint found but device not /dev/*": {
+			"",
+			"/sys",
+			getPartitionName,
 			DeviceMountAttr{},
 			errors.New("could not get device mount attributes, Path/MountPoint not present in mounts file"),
 			fileContent3,
@@ -89,7 +134,8 @@ func TestGetMountAttr(t *testing.T) {
 	}
 	for name, test := range mountAttrTests {
 		t.Run(name, func(t *testing.T) {
-			mountUtil := NewMountUtil(filePath, test.devPath, "")
+			var fn getMountData
+			mountUtil := NewMountUtil(filePath, test.devPath, test.mountPoint)
 
 			// create the temp file which will be read for getting attributes
 			err := ioutil.WriteFile(filePath, test.fileContent, 0644)
@@ -97,7 +143,13 @@ func TestGetMountAttr(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			mountAttr, err := mountUtil.getDeviceMountAttr(mountUtil.getMountName)
+			switch test.attrFunc {
+			case getMountName:
+				fn = mountUtil.getMountName
+			case getPartitionName:
+				fn = mountUtil.getPartitionName
+			}
+			mountAttr, err := mountUtil.getDeviceMountAttr(fn)
 
 			assert.Equal(t, test.expectedMountAttr, mountAttr)
 			assert.Equal(t, test.expectedError, err)
@@ -106,7 +158,6 @@ func TestGetMountAttr(t *testing.T) {
 			os.Remove(filePath)
 		})
 	}
-	// TODO tests that use mountUtil.getPartitionName in getDeviceMountAttr
 
 	// invalid path mountAttrTests
 	mountUtil := NewMountUtil(filePath, "/dev/sda3", "")
