@@ -19,7 +19,7 @@ package udev
 import (
 	"fmt"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
-	"math/rand" #nosec G404
+	"math/rand" // #nosec G404
 	"os"
 	"strconv"
 	"time"
