@@ -32,9 +32,9 @@ type Identifier struct {
 // mount point, filesystem type etc.
 // It helps to find mountpoint of a partition/block
 type DeviceMountAttr struct {
-	DevPath    string // DevPath of the device/block
-	MountPoint string // MountPoint of the the device/block
-	FileSystem string // FileSystem in the device that is mounted
+	DevPath    string   // DevPath of the device/block
+	MountPoint []string // MountPoint of the the device/block
+	FileSystem string   // FileSystem in the device that is mounted
 }
 
 // DeviceBasicMountInfo gives the mount attributes of a device that is attached. The mount
