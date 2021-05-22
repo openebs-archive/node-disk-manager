@@ -61,7 +61,7 @@ func (n *Node) GetHugepages(ctx context.Context, null *protos.Null) (*protos.Hug
 		return nil, status.Errorf(codes.Internal, "Error fetching the number of hugepages set on the node")
 	}
 
-	pages, err := strconv.Atoi(strings.TrimRight(string(hugepages), "\n"))
+	pages, err := strconv.ParseInt(strings.TrimRight(string(hugepages), "\n"), 10, 32)
 	if err != nil {
 		klog.Errorf("Error converting number of hugepages %v", err)
 		return nil, status.Errorf(codes.Internal, "Error converting the number of hugepages set on the node")
