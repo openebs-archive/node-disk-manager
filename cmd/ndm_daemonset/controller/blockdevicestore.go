@@ -86,23 +86,23 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) error {
 // UpdateBlockDevice update the BlockDevice resource in etcd
 func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDevice *apis.BlockDevice) error {
 	var err error
+	tempBD := new(apis.BlockDevice)
 
 	if oldBlockDevice == nil {
-		oldBlockDevice = blockDevice.DeepCopy()
 		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
-			Namespace: oldBlockDevice.Namespace,
-			Name:      oldBlockDevice.Name}, oldBlockDevice)
+			Namespace: blockDevice.Namespace,
+			Name:      blockDevice.Name}, tempBD)
 		if err != nil {
 			klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
 				"ndm.blockdevice.update.failure",
 				"Failed to update block device : unable to get blockdevice object",
-				oldBlockDevice.ObjectMeta.Name, err, blockDevice.ObjectMeta.Name)
+				blockDevice.ObjectMeta.Name, err, blockDevice.ObjectMeta.Name)
 			return err
 		}
 	} else {
 		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
 			Namespace: oldBlockDevice.Namespace,
-			Name:      oldBlockDevice.Name}, oldBlockDevice)
+			Name:      oldBlockDevice.Name}, tempBD)
 		if err != nil {
 			klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
 				"ndm.blockdevice.update.failure",
@@ -112,18 +112,10 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 		}
 
 	}
-	// err = c.Clientset.Get(context.TODO(), client.ObjectKey{
-	// 	Namespace: blockDevice.Namespace,
-	// 	Name:      blockDevice.Name}, &blockDevice)
-	// if err != nil {
-	// 	klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
-	// 		"ndm.blockdevice.update.failure",
-	// 		"Failed to update block device : unable to get blockdevice object",
-	// 		blockDevice.ObjectMeta.Name, err, blockDevice.ObjectMeta.Name)
-	// 	return err
-	// }
 
-	err = c.Clientset.Patch(context.TODO(), &blockDevice, client.MergeFrom(oldBlockDevice), &client.PatchOptions{})
+	// Ensure that the patch doesn't change the resourceVersion field.
+	blockDevice.ObjectMeta.ResourceVersion = tempBD.ObjectMeta.ResourceVersion
+	err = c.Clientset.Patch(context.TODO(), &blockDevice, client.MergeFrom(tempBD))
 	if err != nil {
 		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
 			"ndm.blockdevice.update.failure", "Unable to update blockdevice object",
