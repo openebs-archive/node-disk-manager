@@ -27,6 +27,7 @@ import (
 	"bufio"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -142,7 +143,7 @@ func OsDiskName() (string, string, error) {
 
 // getSyspathOfOsDisk returns syspath of os disk in success
 func getSyspathOfOsDisk(osDiskName string) (string, error) {
-	data, err := ioutil.ReadFile(filepath.Clean("/sys/class/block/" + osDiskName + "/dev"))
+	data, err := ioutil.ReadFile(filepath.Clean(path.Join("/sys/class/block/", osDiskName, "dev")))
 	if err != nil {
 		return "", err
 	}
@@ -151,7 +152,7 @@ func getSyspathOfOsDisk(osDiskName string) (string, error) {
 
 // getOsDiskSize returns size of os disk in success
 func getOsDiskSize(osDiskName string) (string, error) {
-	sizeByte, err := ioutil.ReadFile(filepath.Clean("/sys/class/block/" + osDiskName + "/size"))
+	sizeByte, err := ioutil.ReadFile(filepath.Clean(path.Join("/sys/class/block/", osDiskName, "size")))
 	if err != nil {
 		return "", err
 	}
