@@ -17,11 +17,15 @@ limitations under the License.
 package probe
 
 import (
+	"k8s.io/klog"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"github.com/openebs/node-disk-manager/pkg/epoll"
+	"github.com/openebs/node-disk-manager/pkg/features"
 	"github.com/openebs/node-disk-manager/pkg/mount"
+	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
-	"k8s.io/klog"
 )
 
 // mountProbe contains required variables for populating diskInfo
@@ -31,6 +35,9 @@ type mountProbe struct {
 	// create, update, delete, deactivate the disk resources or list the probes already registered.
 	Controller      *controller.Controller
 	MountIdentifier *mount.Identifier
+	epoll           *epoll.Epoll
+	destination     chan controller.EventMessage
+	mountsFileName  string
 }
 
 const (
@@ -64,11 +71,21 @@ var mountProbeRegister = func() {
 		priority:   mountProbePriority,
 		name:       mountProbeName,
 		state:      mountProbeState,
-		pi:         &mountProbe{Controller: ctrl},
+		pi:         newMountProbeForRegistration(ctrl),
 		controller: ctrl,
 	}
 	// Here we register the probe (mount probe in this case)
 	newRegisterProbe.register()
+}
+
+// newMountProbeForRegistration returns mountprobe struct which helps
+// register the probe and start mount-point and fs change detection loop
+func newMountProbeForRegistration(c *controller.Controller) *mountProbe {
+	return &mountProbe{
+		Controller:     c,
+		mountsFileName: mount.HostMountsFilePath,
+		destination:    udevevent.UdevEventMessageChannel,
+	}
 }
 
 // newMountProbe returns mountProbe struct which helps populate diskInfo struct
@@ -86,7 +103,17 @@ func newMountProbe(devPath string) *mountProbe {
 // Start is mainly used for one time activities such as monitoring.
 // It is a part of probe interface but here we does not require to perform
 // such activities, hence empty implementation
-func (mp *mountProbe) Start() {}
+func (mp *mountProbe) Start() {
+	if !features.FeatureGates.
+		IsEnabled(features.MountChangeDetection) {
+		return
+	}
+	if err := mp.setupEpoll(); err != nil {
+		klog.Errorf("failed to setup epoll: %v", err)
+		return
+	}
+	go mp.listen()
+}
 
 // FillBlockDeviceDetails fills details in diskInfo struct using information it gets from probe
 func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
@@ -104,5 +131,36 @@ func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 	blockDevice.FSInfo.MountPoint = basicMountInfo.MountPoint
 	if blockDevice.FSInfo.FileSystem == "" {
 		blockDevice.FSInfo.FileSystem = basicMountInfo.FileSystem
+	}
+}
+
+func (mp *mountProbe) setupEpoll() error {
+	ep, err := epoll.New()
+	if err != nil {
+		return err
+	}
+	mp.epoll = &ep
+	return ep.AddWatcher(epoll.Watcher{
+		FileName:   mp.mountsFileName,
+		EventTypes: []epoll.EventType{epoll.EPOLLERR, epoll.EPOLLPRI},
+	})
+}
+
+func (mp *mountProbe) listen() {
+	eventCh, err := mp.epoll.Start()
+	if err != nil {
+		klog.Errorf("error while starting epoll: %v", err)
+		return
+	}
+	defer mp.epoll.Stop()
+	klog.Info("started mount change detection loop")
+	msg := controller.EventMessage{
+		Action:          string(MountEA),
+		Devices:         nil,
+		AllBlockDevices: true,
+	}
+
+	for range eventCh {
+		mp.destination <- msg
 	}
 }

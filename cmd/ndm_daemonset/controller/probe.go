@@ -30,6 +30,7 @@ type EventMessage struct {
 	Action          string                     // Action is event action like attach/detach
 	Devices         []*blockdevice.BlockDevice // list of block device details
 	RequestedProbes []string                   // List of probes (given as probe names) to be run for this event. Optional
+	AllBlockDevices bool                       // If true, ignore Devices list and iterate through all block devices present in the hierarchy cache.
 }
 
 // Probe contains name, state and probeinterface

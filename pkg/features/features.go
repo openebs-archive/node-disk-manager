@@ -46,6 +46,10 @@ const (
 	APIService Feature = "APIService"
 
 	UseOSDisk Feature = "UseOSDisk"
+
+	// MountChangeDetection feature flag is used to enable/disable
+	// mount point and fs type change detection for block devices
+	MountChangeDetection = "MountChangeDetection"
 )
 
 // supportedFeatures is the list of supported features. This is used while parsing the
@@ -54,13 +58,15 @@ var supportedFeatures = []Feature{
 	GPTBasedUUID,
 	APIService,
 	UseOSDisk,
+	MountChangeDetection,
 }
 
 // defaultFeatureGates is the default features that will be applied to the application
 var defaultFeatureGates = map[Feature]bool{
-	GPTBasedUUID: true,
-	APIService:   false,
-	UseOSDisk:    false,
+	GPTBasedUUID:         true,
+	APIService:           false,
+	UseOSDisk:            false,
+	MountChangeDetection: false,
 }
 
 // featureFlag is a map representing the flag and its state
