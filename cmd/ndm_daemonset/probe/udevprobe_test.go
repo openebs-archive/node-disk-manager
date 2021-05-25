@@ -18,10 +18,10 @@ package probe
 
 import (
 	"errors"
-	"github.com/openebs/node-disk-manager/blockdevice"
 	"sync"
 	"testing"
 
+	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
@@ -113,14 +113,18 @@ func TestFillDiskDetails(t *testing.T) {
 	expectedDiskInfo.DeviceAttributes.WWN = mockOsDiskDetails.Wwn
 	expectedDiskInfo.PartitionInfo.PartitionTableType = mockOsDiskDetails.PartTableType
 	expectedDiskInfo.DeviceAttributes.IDType = mockOsDiskDetails.IdType
-	expectedDiskInfo.DevLinks = append(expectedDiskInfo.DevLinks, blockdevice.DevLink{
-		Kind:  libudevwrapper.BY_ID_LINK,
-		Links: mockOsDiskDetails.ByIdDevLinks,
-	})
-	expectedDiskInfo.DevLinks = append(expectedDiskInfo.DevLinks, blockdevice.DevLink{
-		Kind:  libudevwrapper.BY_PATH_LINK,
-		Links: mockOsDiskDetails.ByPathDevLinks,
-	})
+	if len(mockOsDiskDetails.ByIdDevLinks) > 0 {
+		expectedDiskInfo.DevLinks = append(expectedDiskInfo.DevLinks, blockdevice.DevLink{
+			Kind:  libudevwrapper.BY_ID_LINK,
+			Links: mockOsDiskDetails.ByIdDevLinks,
+		})
+	}
+	if len(mockOsDiskDetails.ByPathDevLinks) > 0 {
+		expectedDiskInfo.DevLinks = append(expectedDiskInfo.DevLinks, blockdevice.DevLink{
+			Kind:  libudevwrapper.BY_PATH_LINK,
+			Links: mockOsDiskDetails.ByPathDevLinks,
+		})
+	}
 
 	// The devlinks are compared separately as the ordering of devlinks can be different in some systems
 	// eg: ubuntu 20.04 in github actions
@@ -186,7 +190,7 @@ func TestUdevProbe(t *testing.T) {
 	}
 	probeEvent.addBlockDeviceEvent(eventDetails)
 	// Retrieve disk resource
-	uuid, _ := generateUUID(*deviceDetails)
+	uuid, ok := generateUUID(*deviceDetails)
 	cdr1, err1 := fakeController.GetBlockDevice(uuid)
 	fakeDr, err := mockOsDiskToAPI()
 	if err != nil {
@@ -197,17 +201,21 @@ func TestUdevProbe(t *testing.T) {
 	fakeDr.ObjectMeta.Labels[controller.NDMDeviceTypeKey] = "blockdevice"
 	fakeDr.ObjectMeta.Labels[controller.NDMManagedKey] = controller.TrueString
 	tests := map[string]struct {
-		actualDisk    apis.BlockDevice
+		actualDisk    *apis.BlockDevice
 		expectedDisk  apis.BlockDevice
 		actualError   error
 		expectedError error
 	}{
-		"add event for resource with 'fake-disk-uid' uuid": {actualDisk: *cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
+		"add event for resource with 'fake-disk-uid' uuid": {actualDisk: cdr1, expectedDisk: fakeDr, actualError: err1, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			compareBlockDevice(t, test.expectedDisk, test.actualDisk)
-			assert.Equal(t, test.expectedError, test.actualError)
+			if !ok {
+				assert.Nil(t, cdr1)
+			} else {
+				compareBlockDevice(t, test.expectedDisk, *test.actualDisk)
+				assert.Equal(t, test.expectedError, test.actualError)
+			}
 		})
 	}
 }
