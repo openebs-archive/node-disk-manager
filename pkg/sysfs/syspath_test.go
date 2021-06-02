@@ -17,10 +17,13 @@ limitations under the License.
 package sysfs
 
 import (
-	"github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/stretchr/testify/assert"
 	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/openebs/node-disk-manager/blockdevice"
 )
 
 func TestGetParent(t *testing.T) {
@@ -76,20 +79,24 @@ func TestGetParent(t *testing.T) {
 }
 
 func TestGetDeviceSysPath(t *testing.T) {
-	sysFSDirectoryPath = "/tmp/sys/"
-
-	pciPath := "devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/"
+	tmp := sysFSDirectoryPath
+	sysFSDirectoryPath = filepath.Join(t.TempDir(), "sys") + "/"
+	t.Cleanup(func() {
+		sysFSDirectoryPath = tmp
+	})
+	pciPath := "devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda"
 
 	// create top level sys directory
 	os.MkdirAll(sysFSDirectoryPath, 0700)
 	// create block directory
-	os.MkdirAll(sysFSDirectoryPath+"class/block", 0700)
+	os.MkdirAll(filepath.Join(sysFSDirectoryPath, "class", "block"), 0700)
 	// create devices directory
-	os.MkdirAll(sysFSDirectoryPath+"devices", 0700)
+	os.MkdirAll(filepath.Join(sysFSDirectoryPath, "devices"), 0700)
 
 	// create device directory
-	os.MkdirAll(sysFSDirectoryPath+pciPath, 0700)
-	os.Symlink(sysFSDirectoryPath+pciPath, sysFSDirectoryPath+"class/block/sda")
+	os.MkdirAll(filepath.Join(sysFSDirectoryPath, pciPath), 0700)
+	os.Symlink(filepath.Join(sysFSDirectoryPath, pciPath),
+		filepath.Join(sysFSDirectoryPath, "class", "block", "sda"))
 
 	tests := map[string]struct {
 		devicePath string
@@ -98,18 +105,19 @@ func TestGetDeviceSysPath(t *testing.T) {
 	}{
 		"devicenode name is used": {
 			devicePath: "/dev/sda",
-			want:       sysFSDirectoryPath + pciPath,
+			want:       filepath.Join(sysFSDirectoryPath, pciPath) + "/",
 			wantErr:    false,
 		},
 		"actual syspath is used": {
-			devicePath: sysFSDirectoryPath + pciPath,
-			want:       sysFSDirectoryPath + pciPath,
+			devicePath: filepath.Join(sysFSDirectoryPath, pciPath) + "/",
+			want:       filepath.Join(sysFSDirectoryPath, pciPath) + "/",
 			wantErr:    false,
 		},
 		"class/block path is used": {
-			devicePath: sysFSDirectoryPath + "class/block/sda",
-			want:       sysFSDirectoryPath + pciPath,
-			wantErr:    false,
+			devicePath: filepath.Join(sysFSDirectoryPath, "class",
+				"block", "sda"),
+			want:    filepath.Join(sysFSDirectoryPath, pciPath) + "/",
+			wantErr: false,
 		},
 	}
 	for name, tt := range tests {
@@ -124,6 +132,7 @@ func TestGetDeviceSysPath(t *testing.T) {
 }
 
 func TestSysFsDeviceGetPartitions(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		fileEntries []string
 		sysfsDevice *Device
@@ -134,8 +143,9 @@ func TestSysFsDeviceGetPartitions(t *testing.T) {
 			fileEntries: nil,
 			sysfsDevice: &Device{
 				deviceName: "sda1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1/",
-				path:       "/dev/sda1",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1") + "/",
+				path: "/dev/sda1",
 			},
 			want:   []string{},
 			wantOk: true,
@@ -144,8 +154,9 @@ func TestSysFsDeviceGetPartitions(t *testing.T) {
 			fileEntries: nil,
 			sysfsDevice: &Device{
 				deviceName: "sda",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/",
-				path:       "/dev/sda",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda") + "/",
+				path: "/dev/sda",
 			},
 			want:   []string{},
 			wantOk: true,
@@ -154,8 +165,9 @@ func TestSysFsDeviceGetPartitions(t *testing.T) {
 			fileEntries: []string{"sdb1", "sdb2", "sdb3"},
 			sysfsDevice: &Device{
 				deviceName: "sdb",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb/",
-				path:       "/dev/sdb",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb") + "/",
+				path: "/dev/sdb",
 			},
 			want:   []string{"sdb1", "sdb2", "sdb3"},
 			wantOk: true,
@@ -164,8 +176,9 @@ func TestSysFsDeviceGetPartitions(t *testing.T) {
 			fileEntries: []string{"nvme0n1p1", "nvme0n1p2", "nvme0n1p3"},
 			sysfsDevice: &Device{
 				deviceName: "nvme0n1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/",
-				path:       "/dev/nvme0n1",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1") + "/",
+				path: "/dev/nvme0n1",
 			},
 			want:   []string{"nvme0n1p1", "nvme0n1p2", "nvme0n1p3"},
 			wantOk: true,
@@ -175,7 +188,7 @@ func TestSysFsDeviceGetPartitions(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.MkdirAll(tt.sysfsDevice.sysPath, 0700)
 			for _, file := range tt.fileEntries {
-				os.Create(tt.sysfsDevice.sysPath + file)
+				os.Create(filepath.Join(tt.sysfsDevice.sysPath, file))
 			}
 			got, gotOk := tt.sysfsDevice.getPartitions()
 			assert.Equal(t, tt.wantOk, gotOk)
@@ -186,6 +199,7 @@ func TestSysFsDeviceGetPartitions(t *testing.T) {
 }
 
 func TestSysFsDeviceGetHolders(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		fileEntries     []string
 		sysfsDevice     *Device
@@ -197,8 +211,9 @@ func TestSysFsDeviceGetHolders(t *testing.T) {
 			fileEntries: []string{},
 			sysfsDevice: &Device{
 				deviceName: "sda",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/",
-				path:       "/dev/sda",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda") + "/",
+				path: "/dev/sda",
 			},
 			createHolderDir: true,
 			want:            []string{},
@@ -208,8 +223,9 @@ func TestSysFsDeviceGetHolders(t *testing.T) {
 			fileEntries: []string{"dm-0", "dm-1"},
 			sysfsDevice: &Device{
 				deviceName: "sdb",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb/",
-				path:       "/dev/sdb",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb") + "/",
+				path: "/dev/sdb",
 			},
 			createHolderDir: true,
 			want:            []string{"dm-0", "dm-1"},
@@ -219,8 +235,9 @@ func TestSysFsDeviceGetHolders(t *testing.T) {
 			fileEntries: []string{},
 			sysfsDevice: &Device{
 				deviceName: "sdc",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdc/",
-				path:       "/dev/sdc",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdc") + "/",
+				path: "/dev/sdc",
 			},
 			createHolderDir: false,
 			want:            nil,
@@ -231,9 +248,11 @@ func TestSysFsDeviceGetHolders(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.MkdirAll(tt.sysfsDevice.sysPath, 0700)
 			if tt.createHolderDir {
-				os.MkdirAll(tt.sysfsDevice.sysPath+"holders", 0700)
+				os.MkdirAll(filepath.Join(tt.sysfsDevice.sysPath,
+					"holders"), 0700)
 				for _, file := range tt.fileEntries {
-					os.Create(tt.sysfsDevice.sysPath + "holders/" + file)
+					os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+						"holders", file))
 				}
 			}
 			got, gotOk := tt.sysfsDevice.getHolders()
@@ -245,6 +264,7 @@ func TestSysFsDeviceGetHolders(t *testing.T) {
 }
 
 func TestSysFsDeviceGetSlaves(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		fileEntries    []string
 		sysfsDevice    *Device
@@ -256,8 +276,9 @@ func TestSysFsDeviceGetSlaves(t *testing.T) {
 			fileEntries: []string{},
 			sysfsDevice: &Device{
 				deviceName: "dm-0",
-				sysPath:    "/tmp/sys/devices/virtual/block/dm-0/",
-				path:       "/dev/dm-0",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/dm-0") + "/",
+				path: "/dev/dm-0",
 			},
 			createSlaveDir: true,
 			want:           []string{},
@@ -267,8 +288,9 @@ func TestSysFsDeviceGetSlaves(t *testing.T) {
 			fileEntries: []string{"sda", "sdb"},
 			sysfsDevice: &Device{
 				deviceName: "dm-1",
-				sysPath:    "/tmp/sys/devices/virtual/block/dm-1/",
-				path:       "/dev/dm-1",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/dm-1") + "/",
+				path: "/dev/dm-1",
 			},
 			createSlaveDir: true,
 			want:           []string{"sda", "sdb"},
@@ -278,8 +300,9 @@ func TestSysFsDeviceGetSlaves(t *testing.T) {
 			fileEntries: []string{},
 			sysfsDevice: &Device{
 				deviceName: "dm-2",
-				sysPath:    "/tmp/sys/devices/virtual/block/dm-2/",
-				path:       "/dev/dm-2",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/dm-2") + "/",
+				path: "/dev/dm-2",
 			},
 			createSlaveDir: false,
 			want:           nil,
@@ -290,9 +313,11 @@ func TestSysFsDeviceGetSlaves(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.MkdirAll(tt.sysfsDevice.sysPath, 0700)
 			if tt.createSlaveDir {
-				os.MkdirAll(tt.sysfsDevice.sysPath+"slaves", 0700)
+				os.MkdirAll(filepath.Join(tt.sysfsDevice.sysPath,
+					"slaves"), 0700)
 				for _, file := range tt.fileEntries {
-					os.Create(tt.sysfsDevice.sysPath + "slaves/" + file)
+					os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+						"slaves", file))
 				}
 			}
 			got, gotOk := tt.sysfsDevice.getSlaves()
@@ -304,6 +329,7 @@ func TestSysFsDeviceGetSlaves(t *testing.T) {
 }
 
 func TestSysFsDeviceGetLogicalBlockSize(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		sysfsDevice    *Device
 		createQueueDir bool
@@ -314,8 +340,9 @@ func TestSysFsDeviceGetLogicalBlockSize(t *testing.T) {
 		"no queue directory in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1/",
-				path:       "/dev/sda1",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1") + "/",
+				path: "/dev/sda1",
 			},
 			createQueueDir: false,
 			lbSize:         "0",
@@ -325,8 +352,9 @@ func TestSysFsDeviceGetLogicalBlockSize(t *testing.T) {
 		"valid blocksize present in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/",
-				path:       "/dev/sda",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda") + "/",
+				path: "/dev/sda",
 			},
 			createQueueDir: true,
 			lbSize:         "512",
@@ -338,8 +366,10 @@ func TestSysFsDeviceGetLogicalBlockSize(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.MkdirAll(tt.sysfsDevice.sysPath, 0700)
 			if tt.createQueueDir {
-				os.MkdirAll(tt.sysfsDevice.sysPath+"queue", 0700)
-				file, _ := os.Create(tt.sysfsDevice.sysPath + "queue/logical_block_size")
+				os.MkdirAll(filepath.Join(tt.sysfsDevice.sysPath,
+					"queue"), 0700)
+				file, _ := os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+					"queue", "logical_block_size"))
 				file.Write([]byte(tt.lbSize))
 				file.Close()
 			}
@@ -355,6 +385,7 @@ func TestSysFsDeviceGetLogicalBlockSize(t *testing.T) {
 }
 
 func TestSysFsDeviceGetPhysicalBlockSize(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		sysfsDevice    *Device
 		createQueueDir bool
@@ -365,8 +396,9 @@ func TestSysFsDeviceGetPhysicalBlockSize(t *testing.T) {
 		"no queue directory in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1/",
-				path:       "/dev/sda1",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1") + "/",
+				path: "/dev/sda1",
 			},
 			createQueueDir: false,
 			pbSize:         "0",
@@ -376,8 +408,9 @@ func TestSysFsDeviceGetPhysicalBlockSize(t *testing.T) {
 		"valid blocksize present in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/",
-				path:       "/dev/sda",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda") + "/",
+				path: "/dev/sda",
 			},
 			createQueueDir: true,
 			pbSize:         "512",
@@ -389,8 +422,10 @@ func TestSysFsDeviceGetPhysicalBlockSize(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.MkdirAll(tt.sysfsDevice.sysPath, 0700)
 			if tt.createQueueDir {
-				os.MkdirAll(tt.sysfsDevice.sysPath+"queue", 0700)
-				file, _ := os.Create(tt.sysfsDevice.sysPath + "queue/physical_block_size")
+				os.MkdirAll(filepath.Join(tt.sysfsDevice.sysPath,
+					"queue"), 0700)
+				file, _ := os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+					"queue", "physical_block_size"))
 				file.Write([]byte(tt.pbSize))
 				file.Close()
 			}
@@ -406,6 +441,7 @@ func TestSysFsDeviceGetPhysicalBlockSize(t *testing.T) {
 }
 
 func TestSysFsDeviceGetHardwareSectorSize(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		sysfsDevice    *Device
 		createQueueDir bool
@@ -416,8 +452,9 @@ func TestSysFsDeviceGetHardwareSectorSize(t *testing.T) {
 		"no queue directory in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1/",
-				path:       "/dev/sda1",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1") + "/",
+				path: "/dev/sda1",
 			},
 			createQueueDir: false,
 			hwSize:         "0",
@@ -427,8 +464,9 @@ func TestSysFsDeviceGetHardwareSectorSize(t *testing.T) {
 		"valid blocksize present in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/",
-				path:       "/dev/sda",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda") + "/",
+				path: "/dev/sda",
 			},
 			createQueueDir: true,
 			hwSize:         "512",
@@ -440,8 +478,10 @@ func TestSysFsDeviceGetHardwareSectorSize(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.MkdirAll(tt.sysfsDevice.sysPath, 0700)
 			if tt.createQueueDir {
-				os.MkdirAll(tt.sysfsDevice.sysPath+"queue", 0700)
-				file, _ := os.Create(tt.sysfsDevice.sysPath + "queue/hw_sector_size")
+				os.MkdirAll(filepath.Join(tt.sysfsDevice.sysPath,
+					"queue"), 0700)
+				file, _ := os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+					"queue", "hw_sector_size"))
 				file.Write([]byte(tt.hwSize))
 				file.Close()
 			}
@@ -457,6 +497,7 @@ func TestSysFsDeviceGetHardwareSectorSize(t *testing.T) {
 }
 
 func TestSysFsDeviceGetDriveType(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		sysfsDevice    *Device
 		createQueueDir bool
@@ -467,8 +508,9 @@ func TestSysFsDeviceGetDriveType(t *testing.T) {
 		"no queue directory in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1/",
-				path:       "/dev/sda1",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1") + "/",
+				path: "/dev/sda1",
 			},
 			createQueueDir: false,
 			rotational:     "0",
@@ -478,8 +520,9 @@ func TestSysFsDeviceGetDriveType(t *testing.T) {
 		"valid rotational value (1) present in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/",
-				path:       "/dev/sda",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda") + "/",
+				path: "/dev/sda",
 			},
 			createQueueDir: true,
 			rotational:     "1",
@@ -489,8 +532,9 @@ func TestSysFsDeviceGetDriveType(t *testing.T) {
 		"valid rotational value (0) present in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sdb",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb/",
-				path:       "/dev/sdb",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb") + "/",
+				path: "/dev/sdb",
 			},
 			createQueueDir: true,
 			rotational:     "0",
@@ -502,8 +546,10 @@ func TestSysFsDeviceGetDriveType(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.MkdirAll(tt.sysfsDevice.sysPath, 0700)
 			if tt.createQueueDir {
-				os.MkdirAll(tt.sysfsDevice.sysPath+"queue", 0700)
-				file, _ := os.Create(tt.sysfsDevice.sysPath + "queue/rotational")
+				os.MkdirAll(filepath.Join(tt.sysfsDevice.sysPath,
+					"queue"), 0700)
+				file, _ := os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+					"queue", "rotational"))
 				file.Write([]byte(tt.rotational))
 				file.Close()
 			}
@@ -519,6 +565,7 @@ func TestSysFsDeviceGetDriveType(t *testing.T) {
 }
 
 func TestSysFsDeviceGetCapacityInBytes(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		sysfsDevice *Device
 		size        string
@@ -528,8 +575,9 @@ func TestSysFsDeviceGetCapacityInBytes(t *testing.T) {
 		"size 0 in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1/",
-				path:       "/dev/sda1",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda1") + "/",
+				path: "/dev/sda1",
 			},
 			size:    "0",
 			want:    0,
@@ -538,8 +586,9 @@ func TestSysFsDeviceGetCapacityInBytes(t *testing.T) {
 		"non zero size present in syspath": {
 			sysfsDevice: &Device{
 				deviceName: "sda",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/",
-				path:       "/dev/sda",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda") + "/",
+				path: "/dev/sda",
 			},
 			size:    "976773168",
 			want:    500107862016,
@@ -550,7 +599,8 @@ func TestSysFsDeviceGetCapacityInBytes(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.MkdirAll(tt.sysfsDevice.sysPath, 0700)
 
-			file, _ := os.Create(tt.sysfsDevice.sysPath + "size")
+			file, _ := os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+				"size"))
 			file.Write([]byte(tt.size))
 			file.Close()
 
@@ -566,6 +616,7 @@ func TestSysFsDeviceGetCapacityInBytes(t *testing.T) {
 }
 
 func TestSysFsDeviceGetDeviceType(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		sysfsDevice *Device
 		// should be either disk / partition
@@ -583,7 +634,8 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "sda",
 				path:       "/dev/sda",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda") + "/",
 			},
 			devType:          blockdevice.BlockDeviceTypeDisk,
 			subDirectoryName: "",
@@ -596,7 +648,8 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "sdb1",
 				path:       "/dev/sdb1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb/sdb1/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb/sdb1") + "/",
 			},
 			devType:          blockdevice.BlockDeviceTypePartition,
 			subDirectoryName: "",
@@ -609,7 +662,8 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "dm-0",
 				path:       "/dev/dm-0",
-				sysPath:    "/tmp/sys/devices/virtual/block/dm-0/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/dm-0") + "/",
 			},
 			devType:          blockdevice.BlockDeviceTypeDisk,
 			subDirectoryName: "dm",
@@ -622,7 +676,8 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "dm-1",
 				path:       "/dev/dm-1",
-				sysPath:    "/tmp/sys/devices/virtual/block/dm-1/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/dm-1") + "/",
 			},
 			devType:          blockdevice.BlockDeviceTypeDisk,
 			subDirectoryName: "dm",
@@ -635,7 +690,8 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "dm-2",
 				path:       "/dev/dm-2",
-				sysPath:    "/tmp/sys/devices/virtual/block/dm-2/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/dm-2") + "/",
 			},
 			devType:          blockdevice.BlockDeviceTypeDisk,
 			subDirectoryName: "dm",
@@ -648,7 +704,8 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "dm-3",
 				path:       "/dev/dm-3",
-				sysPath:    "/tmp/sys/devices/virtual/block/dm-3/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/dm-3") + "/",
 			},
 			devType:          blockdevice.BlockDeviceTypeDisk,
 			subDirectoryName: "dm",
@@ -661,7 +718,8 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "loop7",
 				path:       "/dev/loop7",
-				sysPath:    "/tmp/sys/devices/virtual/block/loop7/",
+				sysPath: filepath.Join(tmpDir,
+					"/devices/virtual/block/loop7") + "/",
 			},
 			devType:          blockdevice.BlockDeviceTypeDisk,
 			subDirectoryName: "",
@@ -674,7 +732,8 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "md0",
 				path:       "/dev/md0",
-				sysPath:    "/tmp/sys/devices/virtual/block/md0/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/md0") + "/",
 			},
 			devType:          blockdevice.BlockDeviceTypeDisk,
 			subDirectoryName: "md",
@@ -688,8 +747,10 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.MkdirAll(tt.sysfsDevice.sysPath, 0700)
 			if len(tt.subDirectoryName) != 0 {
-				os.MkdirAll(tt.sysfsDevice.sysPath+tt.subDirectoryName, 0700)
-				f, _ := os.Create(tt.sysfsDevice.sysPath + tt.subDirectoryName + "/" + tt.subFileName)
+				os.MkdirAll(filepath.Join(tt.sysfsDevice.sysPath,
+					tt.subDirectoryName), 0700)
+				f, _ := os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+					tt.subDirectoryName, tt.subFileName))
 				f.Write([]byte(tt.subFileContent))
 				f.Close()
 			}
@@ -705,6 +766,7 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 }
 
 func TestSysFsDeviceGetDependents(t *testing.T) {
+	tmpDir := t.TempDir()
 	tests := map[string]struct {
 		partitionEntries []string
 		createHolderDir  bool
@@ -724,7 +786,8 @@ func TestSysFsDeviceGetDependents(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "sda",
 				path:       "/dev/sda",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda") + "/",
 			},
 			want: blockdevice.DependentBlockDevices{
 				Partitions: []string{},
@@ -742,7 +805,8 @@ func TestSysFsDeviceGetDependents(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "sdb",
 				path:       "/dev/sdb",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdb") + "/",
 			},
 			want: blockdevice.DependentBlockDevices{
 				Partitions: []string{"/dev/sdb1", "/dev/sdb2"},
@@ -760,7 +824,8 @@ func TestSysFsDeviceGetDependents(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "sdc",
 				path:       "/dev/sdc",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdc/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdc") + "/",
 			},
 			want: blockdevice.DependentBlockDevices{
 				Partitions: []string{},
@@ -778,7 +843,8 @@ func TestSysFsDeviceGetDependents(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "sdd1",
 				path:       "/dev/sdd1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdd/sdd1",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sdd/sdd1") + "/",
 			},
 			want: blockdevice.DependentBlockDevices{
 				Parent:     "/dev/sdd",
@@ -797,7 +863,8 @@ func TestSysFsDeviceGetDependents(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "sde1",
 				path:       "/dev/sde1",
-				sysPath:    "/tmp/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sde/sde1/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sde/sde1") + "/",
 			},
 			want: blockdevice.DependentBlockDevices{
 				Parent:     "/dev/sde",
@@ -816,7 +883,8 @@ func TestSysFsDeviceGetDependents(t *testing.T) {
 			sysfsDevice: &Device{
 				deviceName: "dm-0",
 				path:       "/dev/dm-0",
-				sysPath:    "/tmp/sys/devices/virtual/block/dm-0/",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/dm-0") + "/",
 			},
 			want: blockdevice.DependentBlockDevices{
 				Partitions: []string{},
@@ -833,22 +901,26 @@ func TestSysFsDeviceGetDependents(t *testing.T) {
 
 			// partition entries
 			for _, file := range tt.partitionEntries {
-				os.Create(tt.sysfsDevice.sysPath + file)
+				os.Create(filepath.Join(tt.sysfsDevice.sysPath, file))
 			}
 
 			// holder entries
 			if tt.createHolderDir {
-				os.MkdirAll(tt.sysfsDevice.sysPath+"holders", 0700)
+				os.MkdirAll(filepath.Join(tt.sysfsDevice.sysPath,
+					"holders"), 0700)
 				for _, file := range tt.holderEntries {
-					os.Create(tt.sysfsDevice.sysPath + "holders/" + file)
+					os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+						"holders", file))
 				}
 			}
 
 			// slave entries
 			if tt.createSlaveDir {
-				os.MkdirAll(tt.sysfsDevice.sysPath+"slaves", 0700)
+				os.MkdirAll(filepath.Join(tt.sysfsDevice.sysPath,
+					"slaves"), 0700)
 				for _, file := range tt.slaveEntries {
-					os.Create(tt.sysfsDevice.sysPath + "slaves/" + file)
+					os.Create(filepath.Join(tt.sysfsDevice.sysPath,
+						"slaves", file))
 				}
 			}
 
