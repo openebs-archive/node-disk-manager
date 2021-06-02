@@ -21,7 +21,7 @@ import (
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apiextensionsV1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
@@ -76,8 +76,8 @@ func GetServiceAccount() (v1.ServiceAccount, error) {
 }
 
 // GetClusterRole generates the ClusterRole object from the yaml file
-func GetClusterRole() (rbacv1beta1.ClusterRole, error) {
-	var clusterRole rbacv1beta1.ClusterRole
+func GetClusterRole() (rbacv1.ClusterRole, error) {
+	var clusterRole rbacv1.ClusterRole
 	yamlstring, err := utils.GetYAMLString(string(ClusterRoleYAML))
 	if err != nil {
 		return clusterRole, err
@@ -87,8 +87,8 @@ func GetClusterRole() (rbacv1beta1.ClusterRole, error) {
 }
 
 // GetClusterRoleBinding generates the ClusterRoleBinding object from the yaml file
-func GetClusterRoleBinding() (rbacv1beta1.ClusterRoleBinding, error) {
-	var clusterRoleBinding rbacv1beta1.ClusterRoleBinding
+func GetClusterRoleBinding() (rbacv1.ClusterRoleBinding, error) {
+	var clusterRoleBinding rbacv1.ClusterRoleBinding
 	yamlstring, err := utils.GetYAMLString(string(ClusterRoleBindingYAML))
 	if err != nil {
 		return clusterRoleBinding, err

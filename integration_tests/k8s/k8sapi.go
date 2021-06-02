@@ -25,7 +25,7 @@ import (
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apiextensionsV1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -184,25 +184,25 @@ func (c K8sClient) DeleteServiceAccount(serviceAccount corev1.ServiceAccount) er
 }
 
 // CreateClusterRole creates a cluster role
-func (c K8sClient) CreateClusterRole(clusterRole rbacv1beta1.ClusterRole) error {
+func (c K8sClient) CreateClusterRole(clusterRole rbacv1.ClusterRole) error {
 	err := c.RunTimeClient.Create(context.Background(), &clusterRole)
 	return err
 }
 
 // DeleteClusterRole deletes the cluster role
-func (c K8sClient) DeleteClusterRole(clusterRole rbacv1beta1.ClusterRole) error {
+func (c K8sClient) DeleteClusterRole(clusterRole rbacv1.ClusterRole) error {
 	err := c.RunTimeClient.Delete(context.Background(), &clusterRole)
 	return err
 }
 
 // CreateClusterRoleBinding creates a rolebinding
-func (c K8sClient) CreateClusterRoleBinding(clusterRoleBinding rbacv1beta1.ClusterRoleBinding) error {
+func (c K8sClient) CreateClusterRoleBinding(clusterRoleBinding rbacv1.ClusterRoleBinding) error {
 	err := c.RunTimeClient.Create(context.Background(), &clusterRoleBinding)
 	return err
 }
 
 // DeleteClusterRoleBinding deletes the role binding
-func (c K8sClient) DeleteClusterRoleBinding(clusterrolebinding rbacv1beta1.ClusterRoleBinding) error {
+func (c K8sClient) DeleteClusterRoleBinding(clusterrolebinding rbacv1.ClusterRoleBinding) error {
 	err := c.RunTimeClient.Delete(context.Background(), &clusterrolebinding)
 	return err
 }

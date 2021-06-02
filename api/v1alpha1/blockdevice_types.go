@@ -229,7 +229,6 @@ const (
 )
 
 //+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
 //+kubebuilder:resource:scope=Namespaced,shortName=bd
 
 // BlockDevice is the Schema for the blockdevices API

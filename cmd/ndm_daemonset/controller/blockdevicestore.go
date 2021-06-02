@@ -133,7 +133,7 @@ func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 
 	patch := client.MergeFrom(blockDevice.DeepCopy())
 	blockDevice.Status.State = NDMInactive
-	err := c.Clientset.Status().Patch(context.TODO(), &blockDevice, patch)
+	err := c.Clientset.Patch(context.TODO(), &blockDevice, patch)
 	if err != nil {
 		klog.Errorf("eventcode=%s msg=%s : %v rname=%v ",
 			"ndm.blockdevice.deactivate.failure", "Unable to deactivate blockdevice",

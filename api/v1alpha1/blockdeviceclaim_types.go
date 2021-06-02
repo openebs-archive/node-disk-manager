@@ -141,7 +141,6 @@ const (
 
 // BlockDeviceClaim is the Schema for the blockdeviceclaims API
 //+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Namespaced,shortName=bdc
 // +kubebuilder:printcolumn:name="BlockDeviceName",type="string",JSONPath=`.spec.blockDeviceName`
 // +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=`.status.phase`
