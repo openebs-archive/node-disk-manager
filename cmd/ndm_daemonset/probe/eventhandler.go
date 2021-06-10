@@ -34,7 +34,7 @@ const (
 	// DetachEA is detach disk event name
 	DetachEA EventAction = libudevwrapper.UDEV_ACTION_REMOVE
 	// MountEA is mount-point/fs change event
-	MountEA EventAction = "mountch"
+	MountEA EventAction = "mount-change"
 )
 
 // ProbeEvent struct contain a copy of controller it will update disk resources
@@ -136,6 +136,34 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 	if !isDeactivated && !isGPTBasedUUIDEnabled {
 		go Rescan(pe.Controller)
 	}
+}
+
+func (pe *ProbeEvent) changeBlockDeviceEvent(msg controller.EventMessage) {
+	var err error
+
+	if msg.AllBlockDevices {
+		for _, bd := range pe.Controller.BDHierarchy {
+			if !pe.Controller.ApplyFilter(&bd) {
+				continue
+			}
+			err = pe.changeBlockDevice(&bd)
+			if err != nil {
+				klog.Errorf("failed to update blockdevice: %v", err)
+			}
+		}
+		return
+	}
+
+	for _, bd := range msg.Devices {
+		if !pe.Controller.ApplyFilter(bd) {
+			continue
+		}
+		err = pe.changeBlockDevice(bd)
+		if err != nil {
+			klog.Errorf("failed to update blockdevice: %v", err)
+		}
+	}
+
 }
 
 // isParentOrSlaveDevice check if any of the errored device is a parent / slave to the
