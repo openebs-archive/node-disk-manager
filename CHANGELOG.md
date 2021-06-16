@@ -1,3 +1,10 @@
+v1.5.0 / 2021-06-16
+========================
+* fix tests in probe and syspath packages ([#593](https://github.com/openebs/node-disk-manager/pull/593),[@z0marlin](https://github.com/z0marlin))
+* update mount utility to fetch all mount points for a given device ([#590](https://github.com/openebs/node-disk-manager/pull/590),[@z0marlin](https://github.com/z0marlin))
+
+
+
 v1.4.0 / 2021-04-14
 ========================
 * updated the apiextension version to v1 and moved the installation of crds from operator deployment to the operator yaml ([#559](https://github.com/openebs/node-disk-manager/pull/559),[@shubham14bajpai](https://github.com/shubham14bajpai))
