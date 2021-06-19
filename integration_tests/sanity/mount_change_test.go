@@ -21,17 +21,16 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"k8s.io/klog"
 
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
 )
 
-var _ = Describe("Mount-point and fs type change detection tests", func() {
+var _ = FDescribe("Mount-point and fs type change detection tests", func() {
 	var err error
 	var k8sClient k8s.K8sClient
 	physicalDisk := udev.NewDisk(DiskImageSize)
-
-	defer GinkgoRecover()
 
 	mountpath, err := ioutil.TempDir("", "ndm-integration-tests")
 	if err != nil {
@@ -68,7 +67,9 @@ var _ = Describe("Mount-point and fs type change detection tests", func() {
 			bdlist, err := k8sClient.ListBlockDevices()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(bdlist).ToNot(BeNil())
+			klog.Info("want ", physicalDisk.Name)
 			for _, bd := range bdlist.Items {
+				klog.Info(bd.Name, bd.Spec.Path)
 				if bd.Spec.Path == physicalDisk.Name {
 					found = true
 					bdName = bd.Name
