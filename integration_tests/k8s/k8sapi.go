@@ -95,6 +95,19 @@ func (c K8sClient) GetBlockDeviceClaim(NameSpace, Name string) (*apis.BlockDevic
 	return bdc, nil
 }
 
+// GetBlockDevice with Name in Namespace
+func (c K8sClient) GetBlockDevice(Name, Namesapce string) (*apis.BlockDevice, error) {
+	bd := apis.BlockDevice{}
+	err := c.RunTimeClient.Get(context.TODO(), client.ObjectKey{
+		Name:      Name,
+		Namespace: Namesapce,
+	}, &bd)
+	if err != nil {
+		return nil, err
+	}
+	return &bd, nil
+}
+
 // ListBlockDeviceClaims returns list of BlockDeviceClaims in the cluster
 func (c K8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
 	bdcList := &apis.BlockDeviceClaimList{
