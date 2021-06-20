@@ -27,8 +27,9 @@ import (
 
 // EventMessage struct contains attribute of event message info.
 type EventMessage struct {
-	Action  string                     // Action is event action like attach/detach
-	Devices []*blockdevice.BlockDevice // list of block device details
+	Action        string                     // Action is event action like attach/detach
+	Devices       []*blockdevice.BlockDevice // list of block device details
+	AllowedProbes []string                   // List of probes (given as probe names) to be run for this event. Optional
 }
 
 // Probe contains name, state and probeinterface
@@ -85,24 +86,35 @@ func (c *Controller) AddNewProbe(probe *Probe) {
 	klog.Info("configured ", probe.Name, " : state ", util.StateStatus(probe.State))
 }
 
-// ListProbe returns list of active probe associated with controller object
-func (c *Controller) ListProbe() []*Probe {
+// ListProbe returns list of active probe associated with controller object.
+// optinally pass a list of probe names to select only from the passed probes.
+func (c *Controller) ListProbe(probes ...string) []*Probe {
 	c.Lock()
 	defer c.Unlock()
+	requestedProbes := make(map[string]struct{})
+	allProbes := false
+	if len(probes) == 0 {
+		allProbes = true
+	}
+	for _, probe := range probes {
+		requestedProbes[probe] = struct{}{}
+	}
 	listProbe := make([]*Probe, 0)
 	for _, probe := range c.Probes {
 		if probe.State {
-			listProbe = append(listProbe, probe)
+			if _, ok := requestedProbes[probe.Name]; allProbes || ok {
+				listProbe = append(listProbe, probe)
+			}
 		}
 	}
 	return listProbe
 }
 
 // FillBlockDeviceDetails lists registered probes and fills details from each probe
-func (c *Controller) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice) {
+func (c *Controller) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice, probes ...string) {
 	blockDevice.NodeAttributes = c.NodeAttributes
-	probes := c.ListProbe()
-	for _, probe := range probes {
+	selectedProbes := c.ListProbe(probes...)
+	for _, probe := range selectedProbes {
 		probe.FillBlockDeviceDetails(blockDevice)
 		klog.Info("details filled by ", probe.Name)
 	}
