@@ -50,7 +50,7 @@ type BlockDevice struct {
 // DeviceSpec defines the properties and runtime status of a BlockDevice
 type DeviceSpec struct {
 
-	// AggregateDevice was intended to store the hierachical
+	// AggregateDevice was intended to store the hierarchical
 	// information in cases of LVM. However this is currently
 	// not implemented and may need to be re-looked into for
 	// better design. To be deprecated

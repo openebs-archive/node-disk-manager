@@ -1,6 +1,6 @@
 ## Introduction
 
-This chart bootstraps OpenEBS NDM deployment on a [Kubernetes](http://kubernetes.io) cluster using the 
+This chart bootstraps OpenEBS NDM deployment on a [Kubernetes](http://kubernetes.io) cluster using the
 [Helm](https://helm.sh) package manager.
 
 ## Installation
@@ -33,7 +33,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndm.tolerations`                       | NDM daemonset's pod toleration values         | `""`                                      |
 | `ndm.securityContext`                   | Seurity context for container                 | `""`                                      |
 | `ndm.filters.enableOsDiskExcludeFilter` | Enable filters of OS disk exclude             | `true`                                    |
-| `ndm.filters.osDiskExcludePaths`        | Paths/Mountpoints to be excluded by OS Disk Filter| `/,/etc/hosts,/boot`                           || `ndm.filters.enableVendorFilter`        | Enable filters of venders                     | `true`                                    |
+| `ndm.filters.osDiskExcludePaths`        | Paths/Mountpoints to be excluded by OS Disk Filter| `/,/etc/hosts,/boot`                           || `ndm.filters.enableVendorFilter`        | Enable filters of vendors                     | `true`                                    |
 | `ndm.filters.excludeVendors`            | Exclude devices with specified vendor         | `CLOUDBYT,OpenEBS`                        |
 | `ndm.filters.enablePathFilter`          | Enable filters of paths                       | `true`                                    |
 | `ndm.filters.includePaths`              | Include devices with specified path patterns  | `""`                                      |
@@ -76,7 +76,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
 
 ```bash
-helm install <release-name> -f values.yaml ndm/openebs-ndm 
+helm install <release-name> -f values.yaml ndm/openebs-ndm
 ```
 
 > **Tip**: You can use the default [values.yaml](values.yaml)
