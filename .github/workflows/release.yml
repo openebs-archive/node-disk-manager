@@ -17,11 +17,10 @@ on:
   release:
     types:
       - "created"
-    tags:
-      - 'v*'
 
 jobs:
   ndm-daemonset:
+    if: contains(github.ref, 'tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -100,6 +99,7 @@ jobs:
             RELEASE_TAG=${{ env.RELEASE_TAG }}
 
   ndm-exporter:
+    if: contains(github.ref, 'tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -178,6 +178,7 @@ jobs:
             RELEASE_TAG=${{ env.RELEASE_TAG }}
 
   ndm-operator:
+    if: contains(github.ref, 'tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
