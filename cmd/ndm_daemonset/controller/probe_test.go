@@ -80,7 +80,6 @@ func TestAddNewProbe(t *testing.T) {
 //Add some new probes and get the list of the probes and match them
 func TestListProbe(t *testing.T) {
 	probes := make([]*Probe, 0)
-	expectedProbeList := make([]*Probe, 0)
 	mutex := &sync.Mutex{}
 	fakeController := &Controller{
 		Probes: probes,
@@ -88,26 +87,51 @@ func TestListProbe(t *testing.T) {
 	}
 	testProbe := &fakeProbe{}
 	probe1 := &Probe{
-		Priority:  2,
+		Priority:  3,
 		Name:      "probe1",
 		State:     true,
 		Interface: testProbe,
 	}
 	probe2 := &Probe{
-		Priority:  1,
+		Priority:  2,
 		Name:      "probe2",
 		State:     true,
 		Interface: testProbe,
 	}
+	probe3 := &Probe{
+		Priority:  4,
+		Name:      "probe3",
+		State:     false,
+		Interface: testProbe,
+	}
+	probe4 := &Probe{
+		Priority:  1,
+		Name:      "probe4",
+		State:     true,
+		Interface: testProbe,
+	}
+
 	fakeController.AddNewProbe(probe1)
 	fakeController.AddNewProbe(probe2)
-	expectedProbeList = append(expectedProbeList, probe2)
-	expectedProbeList = append(expectedProbeList, probe1)
+	fakeController.AddNewProbe(probe3)
+	fakeController.AddNewProbe(probe4)
+
 	tests := map[string]struct {
 		actualProbeList   []*Probe
 		expectedProbeList []*Probe
 	}{
-		"add some probes and check if they are present or not": {actualProbeList: fakeController.ListProbe(), expectedProbeList: expectedProbeList},
+		"list all enabled probes": {
+			actualProbeList:   fakeController.ListProbe(),
+			expectedProbeList: []*Probe{probe4, probe2, probe1},
+		},
+		"list selective probes, all required probes enabled": {
+			actualProbeList:   fakeController.ListProbe("probe1", "probe2"),
+			expectedProbeList: []*Probe{probe2, probe1},
+		},
+		"list selective probes, some disabled": {
+			actualProbeList:   fakeController.ListProbe("probe2", "probe4", "probe3"),
+			expectedProbeList: []*Probe{probe4, probe2},
+		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

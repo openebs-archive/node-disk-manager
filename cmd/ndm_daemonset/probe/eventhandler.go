@@ -58,7 +58,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 	// iterate through each block device and perform the add/update operation
 	for _, device := range msg.Devices {
 		klog.Infof("Processing details for %s", device.DevPath)
-		pe.Controller.FillBlockDeviceDetails(device)
+		pe.Controller.FillBlockDeviceDetails(device, msg.RequestedProbes...)
 
 		// add all devices to the hierarchy cache, irrespective of whether they will be
 		// filtered at a later stage. This is done so that a complete disk hierarchy is available
