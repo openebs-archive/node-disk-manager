@@ -23,8 +23,8 @@ import (
 	"k8s.io/klog"
 )
 
-func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice) error {
-	pe.Controller.FillBlockDeviceDetails(bd)
+func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedProbes ...string) error {
+	pe.Controller.FillBlockDeviceDetails(bd, requestedProbes...)
 	if bd.UUID == "" {
 		uuid, ok := generateUUID(*bd)
 		if !ok {
@@ -34,6 +34,9 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice) error {
 		bd.UUID = uuid
 	}
 	pe.addBlockDeviceToHierarchyCache(*bd)
+	if !pe.Controller.ApplyFilter(bd) {
+		return nil
+	}
 	apiBlockdevice := pe.Controller.NewDeviceInfoFromBlockDevice(bd).ToDevice()
 	apiBlockdevice.SetNamespace(pe.Controller.Namespace)
 	klog.Info("updating bd: ", apiBlockdevice.GetName())

@@ -143,10 +143,7 @@ func (pe *ProbeEvent) changeBlockDeviceEvent(msg controller.EventMessage) {
 
 	if msg.AllBlockDevices {
 		for _, bd := range pe.Controller.BDHierarchy {
-			if !pe.Controller.ApplyFilter(&bd) {
-				continue
-			}
-			err = pe.changeBlockDevice(&bd)
+			err = pe.changeBlockDevice(&bd, msg.RequestedProbes...)
 			if err != nil {
 				klog.Errorf("failed to update blockdevice: %v", err)
 			}
@@ -155,10 +152,17 @@ func (pe *ProbeEvent) changeBlockDeviceEvent(msg controller.EventMessage) {
 	}
 
 	for _, bd := range msg.Devices {
-		if !pe.Controller.ApplyFilter(bd) {
-			continue
+		// The bd in `msg.Devices` mostly doesn't contain any information other than the
+		// DevPath. Get corresponding bd from cache since cache will have latest info
+		// for the bd.
+		cacheBD, ok := pe.Controller.BDHierarchy[bd.DevPath]
+		if ok {
+			err = pe.changeBlockDevice(&cacheBD, msg.RequestedProbes...)
+		} else {
+			// Device not in heiracrhy cache. this shouldn't happen, but to recover
+			// We use the mostly empty bd and run it through all probes
+			err = pe.changeBlockDevice(bd)
 		}
-		err = pe.changeBlockDevice(bd)
 		if err != nil {
 			klog.Errorf("failed to update blockdevice: %v", err)
 		}

@@ -23,6 +23,7 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/epoll"
 	"github.com/openebs/node-disk-manager/pkg/features"
+	"github.com/openebs/node-disk-manager/pkg/libmount"
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
@@ -38,6 +39,7 @@ type mountProbe struct {
 	epoll           *epoll.Epoll
 	destination     chan controller.EventMessage
 	mountsFileName  string
+	mountTable      *libmount.MountTab
 }
 
 const (
@@ -112,6 +114,12 @@ func (mp *mountProbe) Start() {
 		klog.Errorf("failed to setup epoll: %v", err)
 		return
 	}
+	mt, err := mp.newMountTable()
+	if err != nil {
+		klog.Errorf("failed to generate mount table")
+		return
+	}
+	mp.mountTable = mt
 	go mp.listen()
 }
 
@@ -154,13 +162,62 @@ func (mp *mountProbe) listen() {
 	}
 	defer mp.epoll.Stop()
 	klog.Info("started mount change detection loop")
-	msg := controller.EventMessage{
+	defaultMsg := controller.EventMessage{
 		Action:          string(MountEA),
 		Devices:         nil,
 		AllBlockDevices: true,
 	}
 
 	for range eventCh {
-		mp.destination <- msg
+		// regenerate mounts table and get the changes
+		newMountTable, err := mp.newMountTable()
+		if err != nil {
+			klog.Error("failed to generate mounts table.")
+			mp.destination <- defaultMsg
+		}
+		mtDiff := libmount.GenerateDiff(mp.mountTable, newMountTable)
+		mp.processDiff(mtDiff)
 	}
+}
+
+func (mp *mountProbe) newMountTable() (*libmount.MountTab, error) {
+	return libmount.NewMountTab(libmount.FromFile(mp.mountsFileName,
+		libmount.MNT_FMT_FSTAB),
+		libmount.WithAllowFilter(libmount.FilterByTargetContains("/dev/")),
+		libmount.WithDenyFilter(libmount.FilterByTargetContains("docker")))
+}
+
+func (mp *mountProbe) processDiff(diff libmount.MountTabDiff) {
+	changedDevices := make(map[string]struct{})
+	var dev string
+	klog.Info("processing mount tab diff")
+	for _, change := range diff {
+		switch change.GetAction() {
+		case libmount.MountActionMount,
+			libmount.MountActionRemount,
+			libmount.MountActionMove:
+			dev = change.GetNewFs().GetSource()
+
+		case libmount.MountActionUmount:
+			dev = change.GetOldFs().GetSource()
+		}
+		if _, ok := changedDevices[dev]; !ok {
+			klog.Info("detected change in ", dev)
+			changedDevices[dev] = struct{}{}
+		}
+	}
+
+	devices := make([]*blockdevice.BlockDevice, 0)
+	for dev = range changedDevices {
+		bd := new(blockdevice.BlockDevice)
+		bd.DevPath = dev
+		devices = append(devices, bd)
+	}
+
+	mp.destination <- controller.EventMessage{
+		Action:          string(MountEA),
+		Devices:         devices,
+		RequestedProbes: []string{mountProbeName},
+	}
+
 }
