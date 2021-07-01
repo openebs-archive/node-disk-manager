@@ -21,109 +21,154 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"k8s.io/klog"
+	"github.com/onsi/gomega/types"
 
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
 )
 
 var _ = FDescribe("Mount-point and fs type change detection tests", func() {
-	var err error
 	var k8sClient k8s.K8sClient
 	physicalDisk := udev.NewDisk(DiskImageSize)
 
-	mountpath, err := ioutil.TempDir("", "ndm-integration-tests")
-	if err != nil {
-		Fail("setup failed")
+	var bdName, bdNamespace, mountPath string
+
+	BeforeEach(setUp(&k8sClient, &physicalDisk, &bdName, &bdNamespace, &mountPath))
+	AfterEach(tearDown(&k8sClient, &physicalDisk))
+
+	It("should pass mount-umount flow", func() {
+		// Mount flow
+		By("Running mount flow")
+		By("Mounting disk", mountDisk(&physicalDisk, mountPath))
+		By("Waiting for etcd update", k8s.WaitForStateChange)
+		By("Verifying bd mount point update in etcd",
+			verifyMountPointUpdate(&k8sClient, bdName, bdNamespace,
+				Equal(mountPath)))
+
+		// Umount flow
+		By("Running umount flow")
+		By("Umounting disk", umountDisk(&physicalDisk))
+		By("Waiting for etcd update", k8s.WaitForStateChange)
+		By("Verifying bd mount point update in etcd",
+			verifyMountPointUpdate(&k8sClient, bdName, bdNamespace,
+				BeEmpty()))
+	})
+})
+
+func setUp(kcli *k8s.K8sClient, disk *udev.Disk, bdName, bdNamespace, mountPath *string) func() {
+	return func() {
+		By("initializing up k8s cli", initK8sCli(kcli))
+		By("creating up ndm daemonset", createNDMDaemonset(kcli))
+		By("setting up fs on disk", setupPhysicalDisk(disk))
+		By("attaching disk", attachDisk(disk))
+		By("generating random mount path", generateMountPath(mountPath))
+		By("waiting for etcd update", k8s.WaitForStateChange)
+		By("verifying disk added to etcd", verifyDiskAddedToEtcd(kcli, disk.Name,
+			bdName, bdNamespace))
 	}
-	err = physicalDisk.CreateFileSystem()
-	if err != nil {
-		Fail("setup failed")
+}
+
+func tearDown(kcli *k8s.K8sClient, disk *udev.Disk) func() {
+	return func() {
+		By("detaching disk", detachDisk(disk))
+		By("destroying ndm daemonset", destoyingDaemonset(kcli))
 	}
 
-	k8sClient, err = k8s.GetClientSet()
-	if err != nil {
-		Fail("setup failed")
-	}
+}
 
-	It("should create ndm daemonset", func() {
-		err = k8sClient.CreateNDMDaemonSet()
+func generateMountPath(mountPath *string) func() {
+	return func() {
+		mp, err := ioutil.TempDir("", "ndm-integration-tests")
+		Expect(err).ToNot(HaveOccurred())
+		*mountPath = mp
+	}
+}
+
+func initK8sCli(cli *k8s.K8sClient) func() {
+	return func() {
+		kcli, err := k8s.GetClientSet()
+		Expect(err).ToNot(HaveOccurred())
+		*cli = kcli
+	}
+}
+
+func setupPhysicalDisk(disk *udev.Disk) func() {
+	return func() {
+		Expect(disk.CreateFileSystem()).ToNot(HaveOccurred())
+	}
+}
+
+func createNDMDaemonset(cli *k8s.K8sClient) func() {
+	return func() {
+		err := cli.CreateNDMDaemonSet()
 		Expect(err).ToNot(HaveOccurred())
 
 		ok := WaitForPodToBeRunningEventually(DaemonSetPodPrefix)
 		Expect(ok).To(BeTrue())
-	})
+	}
+}
 
-	Context("Device attached", func() {
-		var bdName, bdNamespace string
-
-		It("should attach disk", func() {
-			err := physicalDisk.AttachDisk()
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("should be added to etcd", func() {
-			found := false
-			bdlist, err := k8sClient.ListBlockDevices()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(bdlist).ToNot(BeNil())
-			klog.Info("want ", physicalDisk.Name)
-			for _, bd := range bdlist.Items {
-				klog.Info(bd.Name, bd.Spec.Path)
-				if bd.Spec.Path == physicalDisk.Name {
-					found = true
-					bdName = bd.Name
-					bdNamespace = bd.Namespace
-				}
-			}
-			Expect(found).To(BeTrue())
-		})
-
-		Context("mounting device", func() {
-			It("device should mount", func() {
-				Expect(physicalDisk.Mount(mountpath)).ToNot(HaveOccurred())
-				k8s.WaitForStateChange()
-			})
-
-			It("should add mount-point to blockdevice", func() {
-				bd, err := k8sClient.GetBlockDevice(bdName, bdNamespace)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(bd).ToNot(BeNil())
-				Expect(bd.Name).To(Equal(bdName))
-				Expect(bd.Namespace).To(Equal(bdNamespace))
-				Expect(bd.Spec.FileSystem.Mountpoint).To(Equal(mountpath))
-			})
-		})
-
-		Context("unmounting device", func() {
-			It("should unmount", func() {
-				Expect(physicalDisk.Unmount()).ToNot(HaveOccurred())
-				k8s.WaitForStateChange()
-			})
-
-			It("should remove mount-point from blockdevice", func() {
-				bd, err := k8sClient.GetBlockDevice(bdName, bdNamespace)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(bd).ToNot(BeNil())
-				Expect(bd.Name).To(Equal(bdName))
-				Expect(bd.Namespace).To(Equal(bdNamespace))
-				Expect(bd.Spec.FileSystem.Mountpoint).To(BeEmpty())
-			})
-
-			It("should detach and delete disk", func() {
-				Expect(physicalDisk.DetachAndDeleteDisk()).ToNot(HaveOccurred())
-			})
-		})
-	})
-
-	It("should delete ndm daemonset", func() {
+func destoyingDaemonset(cli *k8s.K8sClient) func() {
+	return func() {
 		k8s.WaitForReconciliation()
 
-		err := k8sClient.DeleteNDMDaemonSet()
+		err := cli.DeleteNDMDaemonSet()
 		Expect(err).ToNot(HaveOccurred())
 
 		ok := WaitForPodToBeDeletedEventually(DaemonSetPodPrefix)
 		Expect(ok).To(BeTrue())
-	})
+	}
+}
 
-})
+func verifyMountPointUpdate(cli *k8s.K8sClient, bdName, bdNamespace string,
+	matcher types.GomegaMatcher) func() {
+	return func() {
+		bd, err := cli.GetBlockDevice(bdName, bdNamespace)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(bd).ToNot(BeNil())
+		Expect(bd.Name).To(Equal(bdName))
+		Expect(bd.Namespace).To(Equal(bdNamespace))
+		Expect(bd.Spec.FileSystem.Mountpoint).To(matcher)
+	}
+}
+
+func mountDisk(disk *udev.Disk, mountPath string) func() {
+	return func() {
+		Expect(disk.Mount(mountPath)).ToNot(HaveOccurred())
+	}
+}
+
+func umountDisk(disk *udev.Disk) func() {
+	return func() {
+		Expect(disk.Unmount()).ToNot(HaveOccurred())
+	}
+}
+
+func attachDisk(disk *udev.Disk) func() {
+	return func() {
+		Expect(disk.AttachDisk()).ToNot(HaveOccurred())
+	}
+}
+
+func detachDisk(disk *udev.Disk) func() {
+	return func() {
+		Expect(disk.DetachAndDeleteDisk()).ToNot(HaveOccurred())
+	}
+}
+
+func verifyDiskAddedToEtcd(cli *k8s.K8sClient, diskName string, bdName *string, bdNamespace *string) func() {
+	return func() {
+		found := false
+		bdlist, err := cli.ListBlockDevices()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(bdlist).ToNot(BeNil())
+		for _, bd := range bdlist.Items {
+			if bd.Spec.Path == diskName {
+				found = true
+				*bdName = bd.Name
+				*bdNamespace = bd.Namespace
+			}
+		}
+		Expect(found).To(BeTrue())
+	}
+}
