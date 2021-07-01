@@ -132,6 +132,13 @@ func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 	mountProbe := newMountProbe(blockDevice.DevPath)
 	basicMountInfo, err := mountProbe.MountIdentifier.DeviceBasicMountInfo(mount.HostMountsFilePath)
 	if err != nil {
+		if err == mount.ErrAttributesNotFound {
+			klog.Infof("no mount point found for %s. clearing mount points if any",
+				blockDevice.DevPath)
+			blockDevice.FSInfo.MountPoint = nil
+			blockDevice.FSInfo.FileSystem = ""
+			return
+		}
 		klog.Error(err)
 		return
 	}
@@ -176,6 +183,7 @@ func (mp *mountProbe) listen() {
 			mp.destination <- defaultMsg
 		}
 		mtDiff := libmount.GenerateDiff(mp.mountTable, newMountTable)
+		mp.mountTable = newMountTable
 		mp.processDiff(mtDiff)
 	}
 }
