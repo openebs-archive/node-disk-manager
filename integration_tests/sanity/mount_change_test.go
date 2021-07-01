@@ -27,7 +27,7 @@ import (
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
 )
 
-var _ = FDescribe("Mount-point and fs type change detection tests", func() {
+var _ = Describe("Mount-point and fs type change detection tests", func() {
 	var k8sClient k8s.K8sClient
 	physicalDisk := udev.NewDisk(DiskImageSize)
 
