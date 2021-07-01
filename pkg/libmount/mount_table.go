@@ -34,7 +34,8 @@ type MountTabFormat int
 type MountTabOpt func(*MountTab) error
 
 type MountTab struct {
-	format MountTabFormat
+	format   MountTabFormat
+	fileName string
 	/* skipped entries
 	int		comms;
 	char		*comm_intro;
@@ -53,6 +54,12 @@ func NewMountTab(opts ...MountTabOpt) (*MountTab, error) {
 	for _, opt := range opts {
 		opt(&mt)
 	}
+	if mt.fileName != "" {
+		err := mt.parseFile()
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &mt, nil
 }
 
@@ -63,7 +70,8 @@ func FromFile(fileName string, format MountTabFormat) MountTabOpt {
 			return err
 		}
 		mt.format = format
-		return mt.parseFile(fileName)
+		mt.fileName = fileName
+		return nil
 	}
 }
 
@@ -145,8 +153,8 @@ func (mt *MountTab) Entries() []*Filesystem {
 	return mt.entries
 }
 
-func (mt *MountTab) parseFile(fileName string) error {
-	file, err := os.Open(fileName)
+func (mt *MountTab) parseFile() error {
+	file, err := os.Open(mt.fileName)
 	if err != nil {
 		return err
 	}
