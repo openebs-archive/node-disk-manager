@@ -183,8 +183,9 @@ func (mp *mountProbe) listen() {
 func (mp *mountProbe) newMountTable() (*libmount.MountTab, error) {
 	return libmount.NewMountTab(libmount.FromFile(mp.mountsFileName,
 		libmount.MNT_FMT_FSTAB),
-		libmount.WithAllowFilter(libmount.TargetContainsFilter("/dev/")),
-		libmount.WithDenyFilter(libmount.TargetContainsFilter("docker")))
+		libmount.WithAllowFilter(libmount.SourceContainsFilter("/dev/")),
+		libmount.WithDenyFilter(libmount.SourceFilter("overlay")),
+		libmount.WithDenyFilter(libmount.TargetContainsFilter("/var/lib/kubelet/pod")))
 }
 
 func (mp *mountProbe) processDiff(diff libmount.MountTabDiff) {
