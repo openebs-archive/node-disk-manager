@@ -80,7 +80,7 @@ func GenerateDiff(oldTab *MountTab, newTab *MountTab) MountTabDiff {
 
 	// Search newly mounted or modified entries
 	for _, newFs := range newTab.entries {
-		oldFs := oldTab.Find(FilterBySource(newFs.GetSource()), FilterByTarget(newFs.GetTarget()))
+		oldFs := oldTab.Find(SourceFilter(newFs.GetSource()), TargetFilter(newFs.GetTarget()))
 		if oldFs == nil {
 			diffTable = diffTable.AddDiffEntry(nil, newFs, MountActionMount)
 		} else if oldFs.GetVFSOptions() != newFs.GetVFSOptions() ||
@@ -91,7 +91,7 @@ func GenerateDiff(oldTab *MountTab, newTab *MountTab) MountTabDiff {
 
 	// Search umounted or moved entries
 	for _, oldFs := range oldTab.entries {
-		newFs := newTab.Find(FilterBySource(oldFs.GetSource()), FilterByTarget(oldFs.GetTarget()))
+		newFs := newTab.Find(SourceFilter(oldFs.GetSource()), TargetFilter(oldFs.GetTarget()))
 		if newFs == nil {
 			de := diffTable.getMountEntry(oldFs.GetSource(), oldFs.GetID())
 			// fs umounted

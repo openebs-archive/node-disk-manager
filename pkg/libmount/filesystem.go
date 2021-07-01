@@ -103,25 +103,25 @@ func (fs *Filesystem) SetMountTable(tab *MountTab) {
 	fs.tab = tab
 }
 
-func FilterBySource(source string) FsFilter {
+func SourceFilter(source string) FsFilter {
 	return func(f *Filesystem) bool {
 		return f != nil && f.source == source
 	}
 }
 
-func FilterByTarget(target string) FsFilter {
+func TargetFilter(target string) FsFilter {
 	return func(f *Filesystem) bool {
 		return f != nil && f.target == target
 	}
 }
 
-func FilterByID(id int) FsFilter {
+func IDFilter(id int) FsFilter {
 	return func(f *Filesystem) bool {
 		return f != nil && f.id == id
 	}
 }
 
-func FilterByTargetContains(substr string) FsFilter {
+func TargetContainsFilter(substr string) FsFilter {
 	return func(f *Filesystem) bool {
 		return f != nil && strings.Contains(f.target, substr)
 	}
