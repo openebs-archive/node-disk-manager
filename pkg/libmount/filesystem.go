@@ -126,3 +126,9 @@ func TargetContainsFilter(substr string) FsFilter {
 		return f != nil && strings.Contains(f.target, substr)
 	}
 }
+
+func SourceContainsFilter(substr string) FsFilter {
+	return func(f *Filesystem) bool {
+		return f != nil && strings.Contains(f.source, substr)
+	}
+}
