@@ -17,14 +17,12 @@ limitations under the License.
 package sanity
 
 import (
-	"strings"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
-	"k8s.io/klog"
+	"strings"
 )
 
 var _ = Describe("Device Discovery Tests", func() {
@@ -57,28 +55,28 @@ var _ = Describe("Device Discovery Tests", func() {
 		Expect(ok).To(BeTrue())
 	})
 
-	// Context("Setup with no external disk", func() {
+	Context("Setup with no external disk", func() {
 
-	// 	It("should have one sparse block device", func() {
-	// 		By("regenerating the client set")
-	// 		_ = k8sClient.RegenerateClient()
+		It("should have one sparse block device", func() {
+			By("regenerating the client set")
+			_ = k8sClient.RegenerateClient()
 
-	// 		By("listing all blockdevices")
-	// 		bdList, err := k8sClient.ListBlockDevices()
-	// 		Expect(err).NotTo(HaveOccurred())
+			By("listing all blockdevices")
+			bdList, err := k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
 
-	// 		noOfSparseBlockDevices := 0
-	// 		// Get the no.of sparse block devices from block device list
-	// 		By("counting the number of sparse BDs")
-	// 		for _, blockDevice := range bdList.Items {
-	// 			if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
-	// 				Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
-	// 				noOfSparseBlockDevices++
-	// 			}
-	// 		}
-	// 		Expect(noOfSparseBlockDevices).To(Equal(1))
-	// 	})
-	// })
+			noOfSparseBlockDevices := 0
+			// Get the no.of sparse block devices from block device list
+			By("counting the number of sparse BDs")
+			for _, blockDevice := range bdList.Items {
+				if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
+					Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
+					noOfSparseBlockDevices++
+				}
+			}
+			Expect(noOfSparseBlockDevices).To(Equal(1))
+		})
+	})
 
 	Context("Setup with a single external disk already attached", func() {
 		var physicalDisk udev.Disk
@@ -102,13 +100,11 @@ var _ = Describe("Device Discovery Tests", func() {
 			// Get no.of sparse blockdevices and physical blockdevices from bdList
 			By("counting the number of active sparse and blockdevices")
 			for _, blockDevice := range bdList.Items {
-				klog.Info(blockDevice.Name)
 				if strings.Contains(blockDevice.Name, BlockDeviceName) && blockDevice.Spec.Path == physicalDisk.Name {
 					noOfPhysicalBlockDeviceCR++
 				} else if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
 					noOfSparseBlockDeviceCR++
 				}
-				klog.Info(blockDevice.Status.State)
 				Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
 			}
 
@@ -133,7 +129,6 @@ var _ = Describe("Device Discovery Tests", func() {
 			for _, bd := range bdList.Items {
 				if strings.Contains(bd.Name, BlockDeviceName) && bd.Spec.Path == physicalDisk.Name {
 					noOfPhysicalBlockDeviceCR++
-					klog.Info(bd.Status.State)
 					Expect(bd.Status.State).To(Equal(v1alpha1.BlockDeviceInactive))
 				}
 			}
