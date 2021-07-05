@@ -39,9 +39,7 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) error {
 	blockDevice.SetNamespace(c.Namespace)
 
 	blockDeviceCopy := blockDevice.DeepCopy()
-	err := c.Clientset.Create(context.TODO(), blockDeviceCopy, &client.CreateOptions{
-		FieldManager: "NDM",
-	})
+	err := c.Clientset.Create(context.TODO(), blockDeviceCopy)
 	if err == nil {
 		klog.Infof("eventcode=%s msg=%s rname=%v",
 			"ndm.blockdevice.create.success", "Created blockdevice object in etcd",
@@ -86,63 +84,52 @@ func (c *Controller) CreateBlockDevice(blockDevice apis.BlockDevice) error {
 // UpdateBlockDevice update the BlockDevice resource in etcd
 func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDevice *apis.BlockDevice) error {
 	var err error
-	tempBD := new(apis.BlockDevice)
 
+	blockDeviceCopy := blockDevice.DeepCopy()
 	if oldBlockDevice == nil {
-		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
-			Namespace: blockDevice.Namespace,
-			Name:      blockDevice.Name}, tempBD)
-		if err != nil {
-			klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
-				"ndm.blockdevice.update.failure",
-				"Failed to update block device : unable to get blockdevice object",
-				blockDevice.ObjectMeta.Name, err, blockDevice.ObjectMeta.Name)
-			return err
-		}
-	} else {
+		oldBlockDevice = blockDevice.DeepCopy()
 		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
 			Namespace: oldBlockDevice.Namespace,
-			Name:      oldBlockDevice.Name}, tempBD)
+			Name:      oldBlockDevice.Name}, oldBlockDevice)
 		if err != nil {
 			klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
 				"ndm.blockdevice.update.failure",
 				"Failed to update block device : unable to get blockdevice object",
-				oldBlockDevice.ObjectMeta.Name, err, blockDevice.ObjectMeta.Name)
+				oldBlockDevice.ObjectMeta.Name, err, blockDeviceCopy.ObjectMeta.Name)
 			return err
 		}
-
 	}
 
-	// Ensure that the patch doesn't change the resourceVersion field.
-	blockDevice.ObjectMeta.ResourceVersion = tempBD.ObjectMeta.ResourceVersion
-	err = c.Clientset.Patch(context.TODO(), &blockDevice, client.MergeFrom(tempBD))
+	blockDeviceCopy = mergeBlockDeviceData(*blockDeviceCopy, *oldBlockDevice)
+
+	err = c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
 		klog.Errorf("eventcode=%s msg=%s : %v rname=%v",
 			"ndm.blockdevice.update.failure", "Unable to update blockdevice object",
-			err, blockDevice.ObjectMeta.Name)
+			err, blockDeviceCopy.ObjectMeta.Name)
 		return err
 	}
 	klog.Infof("eventcode=%s msg=%s rname=%v",
 		"ndm.blockdevice.update.success", "Updated blockdevice object",
-		blockDevice.ObjectMeta.Name)
+		blockDeviceCopy.ObjectMeta.Name)
 	return nil
 }
 
 // DeactivateBlockDevice API is used to set blockdevice status to "inactive" state in etcd
 func (c *Controller) DeactivateBlockDevice(blockDevice apis.BlockDevice) {
 
-	patch := client.MergeFrom(blockDevice.DeepCopy())
-	blockDevice.Status.State = NDMInactive
-	err := c.Clientset.Patch(context.TODO(), &blockDevice, patch)
+	blockDeviceCopy := blockDevice.DeepCopy()
+	blockDeviceCopy.Status.State = NDMInactive
+	err := c.Clientset.Update(context.TODO(), blockDeviceCopy)
 	if err != nil {
 		klog.Errorf("eventcode=%s msg=%s : %v rname=%v ",
 			"ndm.blockdevice.deactivate.failure", "Unable to deactivate blockdevice",
-			err, blockDevice.ObjectMeta.Name)
+			err, blockDeviceCopy.ObjectMeta.Name)
 		return
 	}
 	klog.Infof("eventcode=%s msg=%s rname=%v",
 		"ndm.blockdevice.deactivate.success", "Deactivated blockdevice",
-		blockDevice.ObjectMeta.Name)
+		blockDeviceCopy.ObjectMeta.Name)
 }
 
 // GetBlockDevice get Disk resource from etcd
@@ -279,12 +266,12 @@ func (c *Controller) MarkBlockDeviceStatusToUnknown() {
 		return
 	}
 	for _, item := range blockDeviceList.Items {
-		patch := client.MergeFrom(item.DeepCopy())
-		item.Status.State = NDMUnknown
-		err := c.Clientset.Patch(context.TODO(), &item, patch)
+		blockDeviceCopy := item.DeepCopy()
+		blockDeviceCopy.Status.State = NDMUnknown
+		err := c.Clientset.Update(context.TODO(), blockDeviceCopy)
 		if err == nil {
 			klog.Error("Status marked unknown for blockdevice object: ",
-				item.ObjectMeta.Name)
+				blockDeviceCopy.ObjectMeta.Name)
 		}
 	}
 }
