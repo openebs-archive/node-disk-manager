@@ -21,35 +21,13 @@ import "strings"
 type Filesystem struct {
 	tab      *MountTab
 	id       int
-	parent   int
-	devno    uint32
-	bindSrc  string
 	source   string
 	tagName  string
 	tagValue string
-	root     string
 	target   string
 	fsType   string
-	options  string
 	vfsOpts  string
 	fsOpts   string
-	/* skipped fields
-	char		*opt_fields;
-	char		*user_optstr;
-	*/
-	attrs  string
-	freq   int
-	passNo int
-
-	swapType string
-	size     int
-	usedSize int
-	priority int
-	flags    int
-	tid      int
-	comment  string
-	// void *userdata
-
 }
 
 type FsFilter func(*Filesystem) bool

@@ -55,23 +55,29 @@ func (md MountTabDiff) getMountEntry(source string, id int) *MountTabDiffEntry {
 }
 
 func GenerateDiff(oldTab *MountTab, newTab *MountTab) MountTabDiff {
-	no := oldTab.Size()
-	nn := newTab.Size()
+	diffTable := NewMountTabDiff()
+	if oldTab == nil {
+		oldTab = &MountTab{}
+	}
+	if newTab == nil {
+		newTab = &MountTab{}
+	}
+	oldTabSize := oldTab.Size()
+	newTabSize := newTab.Size()
 
 	// Both tables empty
-	if nn == 0 && no == 0 {
-		return nil
+	if newTabSize == 0 && oldTabSize == 0 {
+		return diffTable
 	}
-	diffTable := NewMountTabDiff()
 	// Old table empty => all entries in new table are new mounts
-	if no == 0 {
+	if oldTabSize == 0 {
 		for _, entry := range newTab.entries {
 			diffTable = diffTable.AddDiffEntry(nil, entry, MountActionMount)
 		}
 		return diffTable
 	}
 	// New table empty => all entries in old table were unmounted
-	if nn == 0 {
+	if newTabSize == 0 {
 		for _, entry := range oldTab.entries {
 			diffTable = diffTable.AddDiffEntry(entry, nil, MountActionUmount)
 		}
@@ -113,11 +119,17 @@ func (mde *MountTabDiffEntry) GetAction() MountAction {
 }
 
 func (mde *MountTabDiffEntry) GetOldFs() *Filesystem {
+	if mde.oldFs == nil {
+		return nil
+	}
 	fs := *mde.oldFs
 	return &fs
 }
 
 func (mde *MountTabDiffEntry) GetNewFs() *Filesystem {
+	if mde.newFs == nil {
+		return nil
+	}
 	fs := *mde.newFs
 	return &fs
 }

@@ -42,7 +42,7 @@ func NewMountInfoParser() Parser {
 
 func NewParser(format MountTabFormat) Parser {
 	switch format {
-	case MNT_FMT_MOUNTINFO:
+	case MntFmtMountInfo:
 		return NewMountInfoParser()
 	default:
 		return NewMountsParser()

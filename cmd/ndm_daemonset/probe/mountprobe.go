@@ -190,7 +190,7 @@ func (mp *mountProbe) listen() {
 
 func (mp *mountProbe) newMountTable() (*libmount.MountTab, error) {
 	return libmount.NewMountTab(libmount.FromFile(mp.mountsFileName,
-		libmount.MNT_FMT_FSTAB),
+		libmount.MntFmtFstab),
 		libmount.WithAllowFilter(libmount.SourceContainsFilter("/dev/")),
 		libmount.WithDenyFilter(libmount.SourceFilter("overlay")),
 		libmount.WithDenyFilter(libmount.TargetContainsFilter("/var/lib/kubelet/pod")))

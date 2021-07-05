@@ -18,41 +18,41 @@ package libmount
 
 import (
 	"bufio"
+	"errors"
 	"os"
-)
-
-const (
-	MNT_FMT_GUESS MountTabFormat = iota
-	MNT_FMT_FSTAB
-	MNT_FMT_MOUNTINFO
-	MNT_FMT_UTAB
-	MNT_FMT_SWAPS
-	MNT_FMT_MTAB = MNT_FMT_FSTAB
 )
 
 type MountTabFormat int
 type MountTabOpt func(*MountTab) error
-
 type MountTab struct {
-	format   MountTabFormat
-	fileName string
-	/* skipped entries
-	int		comms;
-	char		*comm_intro;
-	char		*comm_tail;
-	struct libmnt_cache *cache;
-	void		*fltrcb_data;
-	*/
+	format       MountTabFormat
+	fileName     string
 	entries      []*Filesystem
 	allowFilters []FsFilter
 	denyFilters  []FsFilter
-	// void		*userdata;
 }
+
+const (
+	MntFmtGuess MountTabFormat = iota
+	MntFmtFstab
+	MntFmtMountInfo
+	MntFmtUtab
+	MntFmtSwaps
+	MntFmtMtab = MntFmtFstab
+)
+
+var (
+	ErrInvalidArgument error = errors.New("invalid argument provided")
+	ErrFilesystemBusy  error = errors.New("filesystem busy")
+	ErrDeniedByFilters error = errors.New("fs denied by filters")
+)
 
 func NewMountTab(opts ...MountTabOpt) (*MountTab, error) {
 	mt := MountTab{}
 	for _, opt := range opts {
-		opt(&mt)
+		if err := opt(&mt); err != nil {
+			return nil, err
+		}
 	}
 	if mt.fileName != "" {
 		err := mt.parseFile()
@@ -110,18 +110,15 @@ func (mt *MountTab) applyFilters(fs *Filesystem) bool {
 
 func (mt *MountTab) AddFilesystem(fs *Filesystem) error {
 	if fs == nil {
-		// TODO: return EINVAL
-		return nil
+		return ErrInvalidArgument
 	}
 
 	if fs.GetMountTable() != nil {
-		// TODO: return EFSBUSY
-		return nil
+		return ErrFilesystemBusy
 	}
 
 	if !mt.applyFilters(fs) {
-		// TODO: return denied by filter error
-		return nil
+		return ErrDeniedByFilters
 	}
 
 	mt.entries = append(mt.entries, fs)
