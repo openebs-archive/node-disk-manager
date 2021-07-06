@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	InvalidTokenError error = errors.New("invalid token error")
+	ErrInvalidToken error = errors.New("invalid token error")
 )
 
 type Parser interface {
@@ -83,7 +83,7 @@ func (p mountsParser) parseSourceToken(fs *Filesystem, token string) {
 func parseTagString(token string) (string, string, error) {
 	tv := strings.SplitN(token, "=", 2)
 	if len(tv) < 2 {
-		return "", "", InvalidTokenError
+		return "", "", ErrInvalidToken
 	}
 	return tv[0], tv[1], nil
 }
