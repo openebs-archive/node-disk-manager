@@ -27,19 +27,24 @@ const (
 	MountActionRemount
 )
 
+// MountTabDiffEntry represents a single change entry in the MounTabDiff
 type MountTabDiffEntry struct {
 	oldFs  *Filesystem
 	newFs  *Filesystem
 	action MountAction
 }
 
+// MountTabDiff is the list of all changes between two mount tabs.
 type MountTabDiff []*MountTabDiffEntry
 
+// NewMountTabDiff returns a new and empty MountTabDiff
 func NewMountTabDiff() MountTabDiff {
 	tabDiff := make(MountTabDiff, 0)
 	return tabDiff
 }
 
+// AddDiffEntry returns a new MountTabDiff containing all the entries
+// of the current MountTabDiff and a new entry appended based on the parametrs.
 func (md MountTabDiff) AddDiffEntry(oldFs *Filesystem, newFs *Filesystem, action MountAction) MountTabDiff {
 	return append(md, &MountTabDiffEntry{oldFs, newFs, action})
 }
@@ -56,6 +61,10 @@ func (md MountTabDiff) getMountEntry(source string, id int) *MountTabDiffEntry {
 	return nil
 }
 
+// GenerateDiff returns a list of changes between the old mount tab
+// and the new mount tab in the form of a MountTabDiff. A nil value
+// for any of the parameters is valid and is treated as a mount tab
+// with no entries.
 func GenerateDiff(oldTab *MountTab, newTab *MountTab) MountTabDiff {
 	diffTable := NewMountTabDiff()
 	if oldTab == nil {
@@ -116,10 +125,12 @@ func GenerateDiff(oldTab *MountTab, newTab *MountTab) MountTabDiff {
 	return diffTable
 }
 
+// GetAction returns the type of change - mount, umount, move, remount
 func (mde *MountTabDiffEntry) GetAction() MountAction {
 	return mde.action
 }
 
+// GetOldFs returns a pointer to the old filesystem that changed
 func (mde *MountTabDiffEntry) GetOldFs() *Filesystem {
 	if mde.oldFs == nil {
 		return nil
@@ -128,6 +139,8 @@ func (mde *MountTabDiffEntry) GetOldFs() *Filesystem {
 	return &fs
 }
 
+// GetNewFs returns a pointer to the new filesystem that the old filesystem
+// changed to.
 func (mde *MountTabDiffEntry) GetNewFs() *Filesystem {
 	if mde.newFs == nil {
 		return nil

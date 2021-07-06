@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package libmount provides utilties to parse and operate on
+// the various mount files (fstab, mtab, mounts, mountinfo, etc.).
+// This package is a pure go implementation of the util-linux/libmount
+// C library - https://github.com/karelzak/util-linux/tree/master/libmount
 package libmount
 
 import (
@@ -24,6 +28,9 @@ import (
 
 type MountTabFormat int
 type MountTabOpt func(*MountTab) error
+
+// MountTab represents a mount table that may contain multiple
+// filesystem entries
 type MountTab struct {
 	format       MountTabFormat
 	fileName     string
@@ -47,6 +54,8 @@ var (
 	ErrDeniedByFilters error = errors.New("fs denied by filters")
 )
 
+// NewMountTab initializes and returns a new mount tab configured
+// with the given options
 func NewMountTab(opts ...MountTabOpt) (*MountTab, error) {
 	mt := MountTab{}
 	for _, opt := range opts {
@@ -63,6 +72,8 @@ func NewMountTab(opts ...MountTabOpt) (*MountTab, error) {
 	return &mt, nil
 }
 
+// FromFile option tells NewMountTab to fill the mount tab from the
+// specified file.
 func FromFile(fileName string, format MountTabFormat) MountTabOpt {
 	return func(mt *MountTab) error {
 		_, err := os.Stat(fileName)
@@ -75,6 +86,8 @@ func FromFile(fileName string, format MountTabFormat) MountTabOpt {
 	}
 }
 
+// WithAllowFilter option tells NewMountTab to add the given filter
+// to mount tab as an allow filter.
 func WithAllowFilter(filter FsFilter) MountTabOpt {
 	return func(mt *MountTab) error {
 		mt.allowFilters = append(mt.allowFilters, filter)
@@ -82,6 +95,8 @@ func WithAllowFilter(filter FsFilter) MountTabOpt {
 	}
 }
 
+// WithDenyFilter option tells NewMountTab to add the given filter
+// to mount tab as a deny filter.
 func WithDenyFilter(filter FsFilter) MountTabOpt {
 	return func(mt *MountTab) error {
 		mt.denyFilters = append(mt.denyFilters, filter)
@@ -108,6 +123,7 @@ func (mt *MountTab) applyFilters(fs *Filesystem) bool {
 	return !isDenied && isAllowed
 }
 
+// AddFilesystem adds a filesystem to the mount tab.
 func (mt *MountTab) AddFilesystem(fs *Filesystem) error {
 	if fs == nil {
 		return ErrInvalidArgument
@@ -126,10 +142,13 @@ func (mt *MountTab) AddFilesystem(fs *Filesystem) error {
 	return nil
 }
 
+// Size returns the number of filesystems present in the mount tab
 func (mt *MountTab) Size() int {
 	return len(mt.entries)
 }
 
+// Find returns the first filesystem entry in the mount tab that
+// passes all the given filters.
 func (mt *MountTab) Find(filters ...FsFilter) *Filesystem {
 	if len(filters) == 0 {
 		return nil
@@ -146,6 +165,7 @@ func (mt *MountTab) Find(filters ...FsFilter) *Filesystem {
 	return nil
 }
 
+// Entries returns all the filesystem entries in the mount tab.
 func (mt *MountTab) Entries() []*Filesystem {
 	return mt.entries
 }
