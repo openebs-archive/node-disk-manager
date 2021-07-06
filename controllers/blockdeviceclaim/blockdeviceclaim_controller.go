@@ -46,7 +46,7 @@ type BlockDeviceClaimReconciler struct {
 	Client   client.Client
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
-	recorder record.EventRecorder
+	Recorder record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=openebs.io,resources=blockdeviceclaims,verbs=get;list;watch;create;update;patch;delete
@@ -130,7 +130,7 @@ func (r *BlockDeviceClaimReconciler) claimDeviceForBlockDeviceClaim(instance *ap
 		// Get the capacity requested in the claim
 		_, err := verify.GetRequestedCapacity(instance.Spec.Resources.Requests)
 		if err != nil {
-			r.recorder.Eventf(instance, corev1.EventTypeWarning, "InvalidCapacity", "Invalid Capacity requested")
+			r.Recorder.Eventf(instance, corev1.EventTypeWarning, "InvalidCapacity", "Invalid Capacity requested")
 			//Update deviceClaim CR with pending status
 			instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 			err1 := r.updateClaimStatus(instance.Status.Phase, instance)
@@ -155,7 +155,7 @@ func (r *BlockDeviceClaimReconciler) claimDeviceForBlockDeviceClaim(instance *ap
 	selectedDevice, err := config.Filter(bdList)
 	if err != nil {
 		klog.Errorf("Error selecting device for %s: %v", instance.Name, err)
-		r.recorder.Eventf(instance, corev1.EventTypeWarning, "SelectionFailed", err.Error())
+		r.Recorder.Eventf(instance, corev1.EventTypeWarning, "SelectionFailed", err.Error())
 		instance.Status.Phase = apis.BlockDeviceClaimStatusPending
 	} else {
 		instance.Spec.BlockDeviceName = selectedDevice.Name
@@ -164,8 +164,8 @@ func (r *BlockDeviceClaimReconciler) claimDeviceForBlockDeviceClaim(instance *ap
 		if err != nil {
 			return err
 		}
-		r.recorder.Eventf(selectedDevice, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice claimed by %v", instance.Name)
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice: %v claimed", instance.Spec.BlockDeviceName)
+		r.Recorder.Eventf(selectedDevice, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice claimed by %v", instance.Name)
+		r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimed", "BlockDevice: %v claimed", instance.Spec.BlockDeviceName)
 	}
 
 	return r.updateClaimStatus(instance.Status.Phase, instance)
@@ -189,13 +189,13 @@ func (r *BlockDeviceClaimReconciler) FinalizerHandling(instance *apis.BlockDevic
 				instance.Spec.BlockDeviceName, instance.Name, err)
 			return err
 		}
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceReleased", "BlockDevice: %v is released", instance.Spec.BlockDeviceName)
+		r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceReleased", "BlockDevice: %v is released", instance.Spec.BlockDeviceName)
 
 		// Remove finalizer from list and update it.
 		instance.ObjectMeta.Finalizers = util.RemoveString(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer)
 		if err := r.Client.Update(context.TODO(), instance); err != nil {
 			klog.Errorf("Error removing finalizer from %s", instance.Name)
-			r.recorder.Eventf(instance, corev1.EventTypeWarning, "UpdateOperationFailed", "Unable to remove Finalizer, due to error: %v", err.Error())
+			r.Recorder.Eventf(instance, corev1.EventTypeWarning, "UpdateOperationFailed", "Unable to remove Finalizer, due to error: %v", err.Error())
 			return err
 		}
 	}
@@ -208,7 +208,7 @@ func (r *BlockDeviceClaimReconciler) updateClaimStatus(phase apis.DeviceClaimPha
 	switch phase {
 	case apis.BlockDeviceClaimStatusDone:
 		instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer)
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimBound", "BlockDeviceClaim is bound to %v", instance.Spec.BlockDeviceName)
+		r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimBound", "BlockDeviceClaim is bound to %v", instance.Spec.BlockDeviceName)
 
 	}
 	// Update BlockDeviceClaim CR
@@ -271,7 +271,7 @@ func (r *BlockDeviceClaimReconciler) releaseClaimedBlockDevice(
 	// If this check is not performed, the NDM operator will continuously crash, because it
 	// will try to release a non existent BD.
 	if claimedBd == nil {
-		r.recorder.Eventf(instance, corev1.EventTypeWarning, "BlockDeviceNotFound", "BlockDevice %s not found for releasing", instance.Spec.BlockDeviceName)
+		r.Recorder.Eventf(instance, corev1.EventTypeWarning, "BlockDeviceNotFound", "BlockDevice %s not found for releasing", instance.Spec.BlockDeviceName)
 		klog.Errorf("could not find blockdevice for claim: %s", instance.Name)
 		return fmt.Errorf("blockdevice: %s not found for releasing from bdc: %s", instance.Spec.BlockDeviceName, instance.Name)
 	}
@@ -285,7 +285,7 @@ func (r *BlockDeviceClaimReconciler) releaseClaimedBlockDevice(
 		klog.Errorf("Error updating ClaimRef of %s: %v", dvr.Name, err)
 		return err
 	}
-	r.recorder.Eventf(dvr, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "Released from BDC: %v", instance.Name)
+	r.Recorder.Eventf(dvr, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "Released from BDC: %v", instance.Name)
 
 	return nil
 }

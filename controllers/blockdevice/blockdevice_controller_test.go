@@ -63,7 +63,7 @@ func TestDeviceController(t *testing.T) {
 	cl, s := CreateFakeClient(t)
 
 	// Create a ReconcileBlockDevice object with the scheme and fake client.
-	r := &BlockDeviceReconciler{Client: cl, Scheme: s, recorder: fakeRecorder}
+	r := &BlockDeviceReconciler{Client: cl, Scheme: s, Recorder: fakeRecorder}
 
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .

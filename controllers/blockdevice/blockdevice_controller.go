@@ -41,7 +41,7 @@ type BlockDeviceReconciler struct {
 	Client   client.Client
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
-	recorder record.EventRecorder
+	Recorder record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=openebs.io,resources=blockdevices,verbs=get;list;watch;create;update;patch;delete
@@ -81,11 +81,11 @@ func (r *BlockDeviceReconciler) Reconcile(ctx context.Context, request ctrl.Requ
 		ok, err := bdCleaner.Clean(instance)
 		if err != nil {
 			klog.Errorf("Error while cleaning %s: %v", instance.Name, err)
-			r.recorder.Eventf(instance, corev1.EventTypeWarning, "BlockDeviceCleanUp", "CleanUp unsuccessful, due to error: %v", err)
+			r.Recorder.Eventf(instance, corev1.EventTypeWarning, "BlockDeviceCleanUp", "CleanUp unsuccessful, due to error: %v", err)
 			break
 		}
 		if ok {
-			r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceReleased", "CleanUp Completed")
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceReleased", "CleanUp Completed")
 			// remove the finalizer string from BlockDevice resource
 			instance.Finalizers = util.RemoveString(instance.Finalizers, controllerutil.BlockDeviceFinalizer)
 			klog.Infof("Cleanup completed for %s", instance.Name)
@@ -93,9 +93,9 @@ func (r *BlockDeviceReconciler) Reconcile(ctx context.Context, request ctrl.Requ
 			if err != nil {
 				klog.Errorf("Failed to mark %s as Unclaimed: %v", instance.Name, err)
 			}
-			r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceUnclaimed", "BD now marked as Unclaimed")
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceUnclaimed", "BD now marked as Unclaimed")
 		} else {
-			r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "CleanUp is in progress")
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "CleanUp is in progress")
 		}
 	case apis.BlockDeviceClaimed:
 		if !util.Contains(instance.GetFinalizers(), controllerutil.BlockDeviceFinalizer) {
@@ -106,7 +106,7 @@ func (r *BlockDeviceReconciler) Reconcile(ctx context.Context, request ctrl.Requ
 				klog.Errorf("Error updating finalizer on %s: %v", instance.Name, err)
 			}
 			klog.Infof("%s updated with %s finalizer", instance.Name, controllerutil.BlockDeviceFinalizer)
-			r.recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimed", "BD Claimed, and finalizer added")
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimed", "BD Claimed, and finalizer added")
 		}
 		// if finalizer is already present. do nothing
 	}

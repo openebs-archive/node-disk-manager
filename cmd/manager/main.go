@@ -72,7 +72,7 @@ func main() {
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "2f6e2121.openebs.io",
+		LeaderElectionID:       "node-disk-operator.openebs.io",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -80,17 +80,19 @@ func main() {
 	}
 
 	if err = (&blockdeviceclaim.BlockDeviceClaimReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("BlockDeviceClaim"),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("BlockDeviceClaim"),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("blockdeviceclaim-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "BlockDeviceClaim")
 		os.Exit(1)
 	}
 	if err = (&blockdevice.BlockDeviceReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("BlockDevice"),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("BlockDevice"),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("blockdevice-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "BlockDevice")
 		os.Exit(1)
