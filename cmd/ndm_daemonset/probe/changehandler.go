@@ -39,6 +39,6 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 	}
 	apiBlockdevice := pe.Controller.NewDeviceInfoFromBlockDevice(bd).ToDevice()
 	apiBlockdevice.SetNamespace(pe.Controller.Namespace)
-	klog.V(4).Info("updating bd: ", apiBlockdevice.GetName())
+	klog.Info("updating bd: ", apiBlockdevice.GetName())
 	return pe.Controller.UpdateBlockDevice(apiBlockdevice, nil)
 }
