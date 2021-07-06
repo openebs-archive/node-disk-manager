@@ -16,6 +16,8 @@ limitations under the License.
 
 package libmount
 
+import "sort"
+
 type MountAction uint8
 
 const (
@@ -132,4 +134,30 @@ func (mde *MountTabDiffEntry) GetNewFs() *Filesystem {
 	}
 	fs := *mde.newFs
 	return &fs
+}
+
+// ListSources lists all affected sources in the diff, i.e., all
+// sources that were mounted/umounted/remounted/moved in the diff.
+func (md MountTabDiff) ListSources() []string {
+	var src string
+	uniqueSources := make(map[string]struct{})
+	sourcesList := make([]string, 0)
+
+	for _, diff := range md {
+		if diff.action == MountActionUmount {
+			src = diff.oldFs.GetSource()
+		} else {
+			src = diff.newFs.GetSource()
+		}
+		if _, ok := uniqueSources[src]; !ok {
+			uniqueSources[src] = struct{}{}
+		}
+	}
+
+	for src = range uniqueSources {
+		sourcesList = append(sourcesList, src)
+	}
+	sort.Strings(sourcesList)
+
+	return sourcesList
 }

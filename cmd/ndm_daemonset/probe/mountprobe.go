@@ -197,27 +197,9 @@ func (mp *mountProbe) newMountTable() (*libmount.MountTab, error) {
 }
 
 func (mp *mountProbe) processDiff(diff libmount.MountTabDiff) {
-	changedDevices := make(map[string]struct{})
-	var dev string
-	klog.Info("processing mount tab diff")
-	for _, change := range diff {
-		switch change.GetAction() {
-		case libmount.MountActionMount,
-			libmount.MountActionRemount,
-			libmount.MountActionMove:
-			dev = change.GetNewFs().GetSource()
-
-		case libmount.MountActionUmount:
-			dev = change.GetOldFs().GetSource()
-		}
-		if _, ok := changedDevices[dev]; !ok {
-			klog.Info("detected change in ", dev)
-			changedDevices[dev] = struct{}{}
-		}
-	}
-
 	devices := make([]*blockdevice.BlockDevice, 0)
-	for dev = range changedDevices {
+	changedDevices := diff.ListSources()
+	for _, dev := range changedDevices {
 		bd := new(blockdevice.BlockDevice)
 		bd.DevPath = dev
 		devices = append(devices, bd)

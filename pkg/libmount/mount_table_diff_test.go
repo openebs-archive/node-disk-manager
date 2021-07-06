@@ -271,3 +271,51 @@ func TestMountTabDiffEntry_GetNewFs(t *testing.T) {
 		})
 	}
 }
+
+func TestMountTabDiff_ListSources(t *testing.T) {
+	fs1 := NewFilesystem()
+	fs2 := NewFilesystem()
+	fs3 := NewFilesystem()
+
+	fs1.SetSource("src1")
+	fs2.SetSource("src2")
+	fs3.SetSource("src3")
+
+	tests := []struct {
+		name string
+		md   MountTabDiff
+		want []string
+	}{
+		{
+			name: "list sources",
+			md: MountTabDiff{
+				{
+					action: MountActionMount,
+					newFs:  fs1,
+				},
+				{
+					action: MountActionUmount,
+					oldFs:  fs1,
+				},
+				{
+					action: MountActionMove,
+					newFs:  fs2,
+					oldFs:  fs2,
+				},
+				{
+					action: MountActionRemount,
+					newFs:  fs3,
+					oldFs:  fs3,
+				},
+			},
+			want: []string{"src1", "src2", "src3"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.md.ListSources(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MountTabDiff.ListSources() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
