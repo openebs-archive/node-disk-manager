@@ -447,11 +447,16 @@ func TestDeleteBlockDevice(t *testing.T) {
 				cl.Create(context.TODO(), &bdAPI)
 			}
 
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
+			}
+
 			pe := &ProbeEvent{
 				Controller: ctrl,
 			}
 
-			if err := pe.deleteBlockDevice(bd, bdAPIList); (err != nil) != tt.wantErr {
+			if err = pe.deleteBlockDevice(bd, bdAPIList); (err != nil) != tt.wantErr {
 				t.Errorf("deleteBlockDevice() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

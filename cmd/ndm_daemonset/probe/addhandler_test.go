@@ -1033,6 +1033,11 @@ func TestCreateBlockDeviceResourceIfNoHolders(t *testing.T) {
 				cl.Create(context.TODO(), &bdAPI)
 			}
 
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
+			}
+
 			ctrl := &controller.Controller{
 				Clientset: cl,
 			}
@@ -1443,6 +1448,11 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 			// initialize client with all the bd resources
 			for _, bdAPI := range tt.bdAPIList.Items {
 				cl.Create(context.TODO(), &bdAPI)
+			}
+
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
 			}
 
 			ctrl := &controller.Controller{
@@ -1864,6 +1874,11 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 				cl.Create(context.TODO(), &bdAPI)
 			}
 
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
+			}
+
 			ctrl := &controller.Controller{
 				Clientset:   cl,
 				BDHierarchy: tt.bdCache,
@@ -2108,6 +2123,11 @@ func TestUpgradeBD(t *testing.T) {
 			// initialize client with all the bd resources
 			for _, bdAPI := range tt.bdAPIList.Items {
 				cl.Create(context.TODO(), &bdAPI)
+			}
+
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
 			}
 
 			ctrl := &controller.Controller{
@@ -2611,6 +2631,11 @@ func TestAddBlockDevice(t *testing.T) {
 				cl.Create(context.TODO(), &bdAPI)
 			}
 
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
+			}
+
 			ctrl := &controller.Controller{
 				Clientset:   cl,
 				BDHierarchy: tt.bdCache,
@@ -2618,7 +2643,7 @@ func TestAddBlockDevice(t *testing.T) {
 			pe := &ProbeEvent{
 				Controller: ctrl,
 			}
-			err := pe.addBlockDevice(tt.bd, tt.bdAPIList)
+			err = pe.addBlockDevice(tt.bd, tt.bdAPIList)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("addBlockDevice() error = %v, wantErr %v", err, tt.wantErr)
