@@ -18,7 +18,10 @@ package main
 
 import (
 	"flag"
+	"k8s.io/klog"
+	"k8s.io/klog/klogr"
 	"os"
+	env "runtime"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -29,11 +32,11 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	openebsiov1alpha1 "github.com/openebs/node-disk-manager/api/v1alpha1"
-	blockdevice "github.com/openebs/node-disk-manager/controllers/blockdevice"
-	blockdeviceclaim "github.com/openebs/node-disk-manager/controllers/blockdeviceclaim"
+	openebsv1alpha1 "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/controllers/blockdevice"
+	"github.com/openebs/node-disk-manager/controllers/blockdeviceclaim"
+	"github.com/openebs/node-disk-manager/pkg/version"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -45,31 +48,36 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(openebsiov1alpha1.AddToScheme(scheme))
+	utilruntime.Must(openebsv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
+}
+
+func printVersion() {
+	klog.Infof("Go Version: %s", env.Version())
+	klog.Infof("Go OS/Arch: %s/%s", env.GOOS, env.GOARCH)
+	klog.Infof("Version Tag: %s", version.GetVersion())
+	klog.Infof("Git Commit: %s", version.GetGitCommit())
 }
 
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8484", "The address the metric endpoint binds to.")
+	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8585", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	opts := zap.Options{
-		Development: true,
-	}
-	opts.BindFlags(flag.CommandLine)
+	klog.InitFlags(nil)
+
 	flag.Parse()
 
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	ctrl.SetLogger(klogr.New())
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
+		Port:                   8787,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "node-disk-operator.openebs.io",
