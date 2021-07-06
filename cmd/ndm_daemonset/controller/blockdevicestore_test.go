@@ -192,10 +192,11 @@ func TestDeactivateDevice(t *testing.T) {
 	dr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
 	dr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	fakeController.CreateBlockDevice(dr)
-	fakeController.DeactivateBlockDevice(dr)
+	cdr1, err1 := fakeController.GetBlockDevice(fakeDeviceUID)
+	fakeController.DeactivateBlockDevice(*cdr1)
 
 	// Retrieve blockdevice resource
-	cdr1, err1 := fakeController.GetBlockDevice(fakeDeviceUID)
+	cdr1, err1 = fakeController.GetBlockDevice(fakeDeviceUID)
 
 	// Deactivate one resource which is not present it should return error
 	dr1 := newFakeDevice
@@ -204,11 +205,12 @@ func TestDeactivateDevice(t *testing.T) {
 	fakeController.DeactivateBlockDevice(dr1)
 
 	// Create another resource and deactivate it.
-	newDr := newFakeDevice
-	newDr.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
-	newDr.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
-	fakeController.CreateBlockDevice(newDr)
-	fakeController.DeactivateBlockDevice(newDr)
+	fakeResource := newFakeDevice
+	fakeResource.ObjectMeta.Labels[KubernetesHostNameLabel] = fakeController.NodeAttributes[HostNameKey]
+	fakeResource.ObjectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
+	fakeController.CreateBlockDevice(fakeResource)
+	newDr, err2 := fakeController.GetBlockDevice(fakeResource.Name)
+	fakeController.DeactivateBlockDevice(*newDr)
 
 	// Retrieve blockdevice resource
 	cdr2, err2 := fakeController.GetBlockDevice(newFakeDeviceUID)
@@ -220,7 +222,7 @@ func TestDeactivateDevice(t *testing.T) {
 		expectedError  error
 	}{
 		"deactivate dr resource":    {actualDevice: *cdr1, actualError: err1, expectedDevice: dr, expectedError: nil},
-		"deactivate newDr resource": {actualDevice: *cdr2, actualError: err2, expectedDevice: newDr, expectedError: nil},
+		"deactivate newDr resource": {actualDevice: *cdr2, actualError: err2, expectedDevice: *newDr, expectedError: nil},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
