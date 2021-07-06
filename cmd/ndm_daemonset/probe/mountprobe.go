@@ -102,9 +102,8 @@ func newMountProbe(devPath string) *mountProbe {
 	return mountProbe
 }
 
-// Start is mainly used for one time activities such as monitoring.
-// It is a part of probe interface but here we does not require to perform
-// such activities, hence empty implementation
+// Start initializes moutprobe and sets up necessary watchers
+// for mount change detection
 func (mp *mountProbe) Start() {
 	if !features.FeatureGates.
 		IsEnabled(features.MountChangeDetection) {
@@ -136,7 +135,6 @@ func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 			klog.Infof("no mount point found for %s. clearing mount points if any",
 				blockDevice.DevPath)
 			blockDevice.FSInfo.MountPoint = nil
-			blockDevice.FSInfo.FileSystem = ""
 			return
 		}
 		klog.Error(err)
@@ -193,7 +191,9 @@ func (mp *mountProbe) newMountTable() (*libmount.MountTab, error) {
 		libmount.MntFmtFstab),
 		libmount.WithAllowFilter(libmount.SourceContainsFilter("/dev/")),
 		libmount.WithDenyFilter(libmount.SourceFilter("overlay")),
-		libmount.WithDenyFilter(libmount.TargetContainsFilter("/var/lib/kubelet/pod")))
+		libmount.WithDenyFilter(libmount.TargetContainsFilter("/var/lib/kubelet/pod")),
+		libmount.WithDenyFilter(libmount.TargetContainsFilter("/var/lib/docker")),
+		libmount.WithDenyFilter(libmount.TargetContainsFilter("/run/docker")))
 }
 
 func (mp *mountProbe) processDiff(diff libmount.MountTabDiff) {
