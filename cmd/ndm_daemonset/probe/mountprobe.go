@@ -23,8 +23,8 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/epoll"
 	"github.com/openebs/node-disk-manager/pkg/features"
-	"github.com/openebs/node-disk-manager/pkg/libmount"
 	"github.com/openebs/node-disk-manager/pkg/mount"
+	"github.com/openebs/node-disk-manager/pkg/mount/libmount"
 	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
