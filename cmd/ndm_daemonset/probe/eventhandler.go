@@ -143,6 +143,7 @@ func (pe *ProbeEvent) changeBlockDeviceEvent(msg controller.EventMessage) {
 
 	if msg.AllBlockDevices {
 		for _, bd := range pe.Controller.BDHierarchy {
+			klog.Infof("Processing changes for %s", bd.DevPath)
 			err = pe.changeBlockDevice(&bd, msg.RequestedProbes...)
 			if err != nil {
 				klog.Errorf("failed to update blockdevice: %v", err)
@@ -156,6 +157,7 @@ func (pe *ProbeEvent) changeBlockDeviceEvent(msg controller.EventMessage) {
 		// DevPath. Get corresponding bd from cache since cache will have latest info
 		// for the bd.
 		cacheBD, ok := pe.Controller.BDHierarchy[bd.DevPath]
+		klog.Infof("Processing changes for %s", cacheBD.DevPath)
 		if ok {
 			err = pe.changeBlockDevice(&cacheBD, msg.RequestedProbes...)
 		} else {
