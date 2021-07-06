@@ -184,12 +184,14 @@ func (mt *MountTab) parseFile() error {
 		line := stream.Text()
 		fs, err := parser.Parse(line)
 		if err != nil {
-			// TODO: deal with error. Two possibilities - recoverable error, irrecoverable error
 			return err
 		}
 		err = mt.AddFilesystem(fs)
 		if err != nil {
-			// TODO: treat this error as irrecoverable?
+			// this is a recoverable error. continue parsing further
+			if err == ErrDeniedByFilters {
+				continue
+			}
 			return err
 		}
 	}
