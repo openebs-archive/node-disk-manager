@@ -19,6 +19,7 @@ package blockdeviceclaim
 import (
 	"context"
 	"fmt"
+	util2 "github.com/openebs/node-disk-manager/pkg/controllers/util"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -34,7 +35,6 @@ import (
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	controllerutil "github.com/openebs/node-disk-manager/controllers/util"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/pkg/select/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/select/verify"
@@ -182,7 +182,7 @@ func (r *BlockDeviceClaimReconciler) FinalizerHandling(instance *apis.BlockDevic
 	// was deleted by the owner itself, and NDM can proceed with releasing the BD and
 	// removing the NDM finalizer
 	if len(instance.ObjectMeta.Finalizers) == 1 &&
-		util.Contains(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer) {
+		util.Contains(instance.ObjectMeta.Finalizers, util2.BlockDeviceClaimFinalizer) {
 		// Finalizer is set, lets handle external dependency
 		if err := r.releaseClaimedBlockDevice(instance); err != nil {
 			klog.Errorf("Error releasing claimed block device %s from %s: %v",
@@ -192,7 +192,7 @@ func (r *BlockDeviceClaimReconciler) FinalizerHandling(instance *apis.BlockDevic
 		r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceReleased", "BlockDevice: %v is released", instance.Spec.BlockDeviceName)
 
 		// Remove finalizer from list and update it.
-		instance.ObjectMeta.Finalizers = util.RemoveString(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer)
+		instance.ObjectMeta.Finalizers = util.RemoveString(instance.ObjectMeta.Finalizers, util2.BlockDeviceClaimFinalizer)
 		if err := r.Client.Update(context.TODO(), instance); err != nil {
 			klog.Errorf("Error removing finalizer from %s", instance.Name)
 			r.Recorder.Eventf(instance, corev1.EventTypeWarning, "UpdateOperationFailed", "Unable to remove Finalizer, due to error: %v", err.Error())
@@ -207,7 +207,7 @@ func (r *BlockDeviceClaimReconciler) updateClaimStatus(phase apis.DeviceClaimPha
 	instance *apis.BlockDeviceClaim) error {
 	switch phase {
 	case apis.BlockDeviceClaimStatusDone:
-		instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, controllerutil.BlockDeviceClaimFinalizer)
+		instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, util2.BlockDeviceClaimFinalizer)
 		r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimBound", "BlockDeviceClaim is bound to %v", instance.Spec.BlockDeviceName)
 
 	}
@@ -297,7 +297,7 @@ func (r *BlockDeviceClaimReconciler) claimBlockDevice(bd *apis.BlockDevice, inst
 		return fmt.Errorf("error getting claim reference for BDC:%s, %v", instance.ObjectMeta.Name, err)
 	}
 	// add finalizer to BlockDevice to prevent accidental deletion of BD
-	bd.Finalizers = append(bd.Finalizers, controllerutil.BlockDeviceFinalizer)
+	bd.Finalizers = append(bd.Finalizers, util2.BlockDeviceFinalizer)
 	bd.Spec.ClaimRef = claimRef
 	bd.Status.ClaimState = apis.BlockDeviceClaimed
 	err = r.Client.Update(context.TODO(), bd)

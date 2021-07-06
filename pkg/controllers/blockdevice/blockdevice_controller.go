@@ -18,6 +18,7 @@ package blockdevice
 
 import (
 	"context"
+	util2 "github.com/openebs/node-disk-manager/pkg/controllers/util"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +32,6 @@ import (
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	controllerutil "github.com/openebs/node-disk-manager/controllers/util"
 	"github.com/openebs/node-disk-manager/pkg/cleaner"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
@@ -87,7 +87,7 @@ func (r *BlockDeviceReconciler) Reconcile(ctx context.Context, request ctrl.Requ
 		if ok {
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceReleased", "CleanUp Completed")
 			// remove the finalizer string from BlockDevice resource
-			instance.Finalizers = util.RemoveString(instance.Finalizers, controllerutil.BlockDeviceFinalizer)
+			instance.Finalizers = util.RemoveString(instance.Finalizers, util2.BlockDeviceFinalizer)
 			klog.Infof("Cleanup completed for %s", instance.Name)
 			err := r.updateBDStatus(apis.BlockDeviceUnclaimed, instance)
 			if err != nil {
@@ -98,14 +98,14 @@ func (r *BlockDeviceReconciler) Reconcile(ctx context.Context, request ctrl.Requ
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceCleanUpInProgress", "CleanUp is in progress")
 		}
 	case apis.BlockDeviceClaimed:
-		if !util.Contains(instance.GetFinalizers(), controllerutil.BlockDeviceFinalizer) {
+		if !util.Contains(instance.GetFinalizers(), util2.BlockDeviceFinalizer) {
 			// finalizer is not present, may be a BlockDevice claimed from previous release
-			instance.Finalizers = append(instance.Finalizers, controllerutil.BlockDeviceFinalizer)
+			instance.Finalizers = append(instance.Finalizers, util2.BlockDeviceFinalizer)
 			err := r.Client.Update(context.TODO(), instance)
 			if err != nil {
 				klog.Errorf("Error updating finalizer on %s: %v", instance.Name, err)
 			}
-			klog.Infof("%s updated with %s finalizer", instance.Name, controllerutil.BlockDeviceFinalizer)
+			klog.Infof("%s updated with %s finalizer", instance.Name, util2.BlockDeviceFinalizer)
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, "BlockDeviceClaimed", "BD Claimed, and finalizer added")
 		}
 		// if finalizer is already present. do nothing
