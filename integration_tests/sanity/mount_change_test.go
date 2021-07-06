@@ -58,7 +58,7 @@ var _ = Describe("Mount-point and fs type change detection tests", func() {
 func setUp(kcli *k8s.K8sClient, disk *udev.Disk, bdName, bdNamespace, mountPath *string) func() {
 	return func() {
 		By("initializing up k8s cli", initK8sCli(kcli))
-		By("creating up ndm daemonset", createNDMDaemonset(kcli))
+		By("creating up ndm daemonset", createAndStartNDMDaemonset(kcli))
 		By("setting up fs on disk", setupPhysicalDisk(disk))
 		By("attaching disk", attachDisk(disk))
 		By("generating random mount path", generateMountPath(mountPath))
@@ -71,7 +71,7 @@ func setUp(kcli *k8s.K8sClient, disk *udev.Disk, bdName, bdNamespace, mountPath 
 func tearDown(kcli *k8s.K8sClient, disk *udev.Disk) func() {
 	return func() {
 		By("detaching disk", detachDisk(disk))
-		By("destroying ndm daemonset", destoyingDaemonset(kcli))
+		By("destroying ndm daemonset", stopAndDeleteNDMDaemonset(kcli))
 	}
 
 }
@@ -98,7 +98,7 @@ func setupPhysicalDisk(disk *udev.Disk) func() {
 	}
 }
 
-func createNDMDaemonset(cli *k8s.K8sClient) func() {
+func createAndStartNDMDaemonset(cli *k8s.K8sClient) func() {
 	return func() {
 		err := cli.CreateNDMDaemonSet()
 		Expect(err).ToNot(HaveOccurred())
@@ -108,7 +108,7 @@ func createNDMDaemonset(cli *k8s.K8sClient) func() {
 	}
 }
 
-func destoyingDaemonset(cli *k8s.K8sClient) func() {
+func stopAndDeleteNDMDaemonset(cli *k8s.K8sClient) func() {
 	return func() {
 		k8s.WaitForReconciliation()
 
