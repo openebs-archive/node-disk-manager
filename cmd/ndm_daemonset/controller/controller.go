@@ -137,8 +137,6 @@ func NewController() (*Controller, error) {
 		return controller, err
 	}
 
-	s := mgr.GetScheme()
-	fmt.Println(s)
 	// Setup Scheme for all resources
 	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
 		return controller, err
@@ -247,7 +245,7 @@ func (c *Controller) WaitForBlockDeviceCRD() {
 			time.Sleep(CRDRetryInterval)
 			_, err := c.newClientSet()
 			if err != nil {
-				klog.Errorf("unable to set clientset field in controller struct, Error: %v",err)
+				klog.Errorf("unable to set clientset field in controller struct, Error: %v", err)
 			}
 			continue
 		}
