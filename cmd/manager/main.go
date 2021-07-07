@@ -18,12 +18,9 @@ package main
 
 import (
 	"flag"
-	blockdevice2 "github.com/openebs/node-disk-manager/pkg/controllers/blockdevice"
-	blockdeviceclaim2 "github.com/openebs/node-disk-manager/pkg/controllers/blockdeviceclaim"
-	"k8s.io/klog"
-	"k8s.io/klog/klogr"
+	"github.com/openebs/node-disk-manager/pkg/env"
 	"os"
-	env "runtime"
+	goruntime "runtime"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -32,10 +29,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/klog"
+	"k8s.io/klog/klogr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 
 	openebsv1alpha1 "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/pkg/controllers/blockdevice"
+	"github.com/openebs/node-disk-manager/pkg/controllers/blockdeviceclaim"
 	"github.com/openebs/node-disk-manager/pkg/version"
 	//+kubebuilder:scaffold:imports
 )
@@ -53,8 +54,8 @@ func init() {
 }
 
 func printVersion() {
-	klog.Infof("Go Version: %s", env.Version())
-	klog.Infof("Go OS/Arch: %s/%s", env.GOOS, env.GOARCH)
+	klog.Infof("Go Version: %s", goruntime.Version())
+	klog.Infof("Go OS/Arch: %s/%s", goruntime.GOOS, goruntime.GOARCH)
 	klog.Infof("Version Tag: %s", version.GetVersion())
 	klog.Infof("Git Commit: %s", version.GetGitCommit())
 }
@@ -74,7 +75,14 @@ func main() {
 
 	ctrl.SetLogger(klogr.New())
 
+	ns, err := env.GetWatchNamespace()
+	if err != nil {
+		setupLog.Error(err, "unable to get watch namespace")
+		os.Exit(1)
+	}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+		Namespace:              ns,
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
 		Port:                   8787,
@@ -87,7 +95,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&blockdeviceclaim2.BlockDeviceClaimReconciler{
+	if err = (&blockdeviceclaim.BlockDeviceClaimReconciler{
 		Client:   mgr.GetClient(),
 		Log:      ctrl.Log.WithName("controllers").WithName("BlockDeviceClaim"),
 		Scheme:   mgr.GetScheme(),
@@ -96,7 +104,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "BlockDeviceClaim")
 		os.Exit(1)
 	}
-	if err = (&blockdevice2.BlockDeviceReconciler{
+	if err = (&blockdevice.BlockDeviceReconciler{
 		Client:   mgr.GetClient(),
 		Log:      ctrl.Log.WithName("controllers").WithName("BlockDevice"),
 		Scheme:   mgr.GetScheme(),

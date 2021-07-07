@@ -639,10 +639,8 @@ spec:
           value: "node-disk-operator"
         - name: CLEANUP_JOB_IMAGE
           value: "openebs/linux-utils:ci"
-        - name: OPENEBS_IO_INSTALL_CRD
-          value: "false"
-        #OPENEBS_IO_IMAGE_PULL_SECRETS environment variable is used to pass the image pull secrets
-        #to the cleanup pod launched by NDM operator
+        # OPENEBS_IO_IMAGE_PULL_SECRETS environment variable is used to pass the image pull secrets
+        # to the cleanup pod launched by NDM operator
         #- name: OPENEBS_IO_IMAGE_PULL_SECRETS
         #  value: ""
         livenessProbe:
