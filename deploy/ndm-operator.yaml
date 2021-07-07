@@ -65,7 +65,7 @@ spec:
             description: DeviceSpec defines the properties and runtime status of a BlockDevice
             properties:
               aggregateDevice:
-                description: AggregateDevice was intended to store the hierachical information in cases of LVM. However this is currently not implemented and may need to be re-looked into for better design. To be deprecated
+                description: AggregateDevice was intended to store the hierarchical information in cases of LVM. However this is currently not implemented and may need to be re-looked into for better design. To be deprecated
                 type: string
               capacity:
                 description: Capacity
@@ -641,10 +641,22 @@ spec:
           value: "openebs/linux-utils:ci"
         - name: OPENEBS_IO_INSTALL_CRD
           value: "false"
-       # OPENEBS_IO_IMAGE_PULL_SECRETS environment variable is used to pass the image pull secrets
-       # to the cleanup pod launched by NDM operator
-       #- name: OPENEBS_IO_IMAGE_PULL_SECRETS
-       #  value: ""
+        #OPENEBS_IO_IMAGE_PULL_SECRETS environment variable is used to pass the image pull secrets
+        #to the cleanup pod launched by NDM operator
+        #- name: OPENEBS_IO_IMAGE_PULL_SECRETS
+        #  value: ""
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8585
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8585
+          initialDelaySeconds: 5
+          periodSeconds: 10
 ---
 # Create NDM cluster exporter deployment.
 # This is an optional component and is not required for the basic

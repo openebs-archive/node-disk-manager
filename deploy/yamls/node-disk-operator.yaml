@@ -44,8 +44,20 @@ spec:
           value: "openebs/linux-utils:ci"
         - name: OPENEBS_IO_INSTALL_CRD
           value: "false"
-       # OPENEBS_IO_IMAGE_PULL_SECRETS environment variable is used to pass the image pull secrets
-       # to the cleanup pod launched by NDM operator
-       #- name: OPENEBS_IO_IMAGE_PULL_SECRETS
-       #  value: ""
+        # OPENEBS_IO_IMAGE_PULL_SECRETS environment variable is used to pass the image pull secrets
+        # to the cleanup pod launched by NDM operator
+        #- name: OPENEBS_IO_IMAGE_PULL_SECRETS
+        #  value: ""
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8585
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8585
+          initialDelaySeconds: 5
+          periodSeconds: 10
 ---
