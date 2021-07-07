@@ -42,7 +42,7 @@ const (
 
 	// NoOfLogicalBlocksForGPTHeader is the no. of logical blocks for the GPT header.
 	NoOfLogicalBlocksForGPTHeader = 1
-	
+
 	// OpenEBSNDMPartitionName is the name meta info for openEBS created partitions.
 	OpenEBSNDMPartitionName = "OpenEBS_NDM"
 )

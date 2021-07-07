@@ -16,23 +16,23 @@ limitations under the License.
 
 package setup
 
-import "fmt"
+// import "fmt"
 
-// Install installs the components based on configuration provided
-func (sc Config) Install() error {
+// // Install installs the components based on configuration provided
+// func (sc Config) Install() error {
 
-	var err error
-	// delete disk CRD
-	if err = sc.deleteDiskCRD(); err != nil {
-		return fmt.Errorf("disk CRD deletion failed : %v", err)
-	}
-	// create CRDs
-	if err = sc.createBlockDeviceCRD(); err != nil {
-		return fmt.Errorf("block device CRD creation failed : %v", err)
-	}
-	if err = sc.createBlockDeviceClaimCRD(); err != nil {
-		return fmt.Errorf("block device claim CRD creation failed : %v", err)
-	}
+// 	var err error
+// 	// delete disk CRD
+// 	if err = sc.deleteDiskCRD(); err != nil {
+// 		return fmt.Errorf("disk CRD deletion failed : %v", err)
+// 	}
+// 	// create CRDs
+// 	if err = sc.createBlockDeviceCRD(); err != nil {
+// 		return fmt.Errorf("block device CRD creation failed : %v", err)
+// 	}
+// 	if err = sc.createBlockDeviceClaimCRD(); err != nil {
+// 		return fmt.Errorf("block device claim CRD creation failed : %v", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

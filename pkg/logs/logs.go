@@ -32,7 +32,7 @@ var logFlushFreq = pflag.Duration("log-flush-frequency", 5*time.Second, "Maximum
 func init() {
 	err := flag.Set("logtostderr", "true")
 	if err != nil {
-		klog.Errorf("unable to set flag, Error: %v",err)
+		klog.Errorf("unable to set flag, Error: %v", err)
 	}
 }
 

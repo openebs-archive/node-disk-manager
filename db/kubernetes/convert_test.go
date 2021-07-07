@@ -19,8 +19,8 @@ package kubernetes
 import (
 	"testing"
 
+	api "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
-	api "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/stretchr/testify/assert"
 )
 

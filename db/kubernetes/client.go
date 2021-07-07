@@ -19,14 +19,15 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/pkg/apis"
-	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+
+	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -143,7 +144,7 @@ func (cl *Client) setNamespace() error {
 // ListBlockDevice lists the block device from etcd based on
 // the filters used
 func (cl *Client) ListBlockDevice(filters ...interface{}) ([]blockdevice.BlockDevice, error) {
-	bdList := &v1alpha1.BlockDeviceList{
+	bdList := &apis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",

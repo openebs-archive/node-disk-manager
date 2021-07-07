@@ -24,8 +24,8 @@ import (
 	"sync"
 	"time"
 
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
-	"github.com/openebs/node-disk-manager/pkg/apis"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
@@ -33,7 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
 
 const (
@@ -245,7 +245,7 @@ func (c *Controller) WaitForBlockDeviceCRD() {
 			time.Sleep(CRDRetryInterval)
 			_, err := c.newClientSet()
 			if err != nil {
-				klog.Errorf("unable to set clientset field in controller struct, Error: %v",err)
+				klog.Errorf("unable to set clientset field in controller struct, Error: %v", err)
 			}
 			continue
 		}
@@ -258,8 +258,8 @@ func (c *Controller) WaitForBlockDeviceCRD() {
 func (c *Controller) Start() {
 	c.InitializeSparseFiles()
 	// set up signals so we handle the first shutdown signal gracefully
-	stopCh := signals.SetupSignalHandler()
-	if err := c.run(2, stopCh); err != nil {
+	ctx := signals.SetupSignalHandler()
+	if err := c.run(2, ctx); err != nil {
 		klog.Fatalf("error running controller: %s", err.Error())
 	}
 }
@@ -278,10 +278,13 @@ func (c *Controller) Broadcast() {
 }
 
 // run waits until it gets any interrupt signals
-func (c *Controller) run(threadiness int, stopCh <-chan struct{}) error {
+func (c *Controller) run(threadiness int, ctx context.Context) error {
 	klog.Info("started the controller")
-	<-stopCh
-	klog.Info("changing the state to unknown before shutting down.")
+
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	<-ctx.Done()
 	// Changing the state to unknown before shutting down. Similar as when one pod is
 	// running and you stopped kubelet it will make pod status unknown.
 	c.MarkBlockDeviceStatusToUnknown()

@@ -19,7 +19,7 @@ package v041_042
 import (
 	"context"
 
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

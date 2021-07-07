@@ -17,8 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

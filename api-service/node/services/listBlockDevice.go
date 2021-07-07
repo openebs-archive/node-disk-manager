@@ -18,8 +18,8 @@ import (
 	"strings"
 
 	"github.com/openebs/node-disk-manager/api-service/node"
+	"github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/sysfs"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
