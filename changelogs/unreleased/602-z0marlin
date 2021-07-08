@@ -1,0 +1,2 @@
+fix add-handler to update controller blockdevice cache after generating uuid
+

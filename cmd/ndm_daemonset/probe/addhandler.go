@@ -126,6 +126,8 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 	} else {
 		bd.UUID = uuid
 		klog.V(4).Infof("uuid: %s has been generated for device: %s", uuid, bd.DevPath)
+		// update cache after generating uuid
+		pe.addBlockDeviceToHierarchyCache(bd)
 		bdAPI, err := pe.Controller.GetBlockDevice(uuid)
 
 		if errors.IsNotFound(err) {
