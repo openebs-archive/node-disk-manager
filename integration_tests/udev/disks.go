@@ -18,11 +18,17 @@ package udev
 
 import (
 	"fmt"
-	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	"math/rand" // nosec G404
 	"os"
+	"path/filepath"
 	"strconv"
+	"syscall"
 	"time"
+
+	"github.com/diskfs/go-diskfs"
+	"github.com/diskfs/go-diskfs/disk"
+	"github.com/diskfs/go-diskfs/filesystem"
+	"github.com/openebs/node-disk-manager/integration_tests/utils"
 )
 
 // Disk and system attributes corresponding to backing image and
@@ -43,6 +49,8 @@ type Disk struct {
 	// the disk name
 	// eg: /dev/loop9002
 	Name string
+	// mount point if any
+	MountPoints []string
 }
 
 // NewDisk creates a Disk struct, with a specified size. Also the
@@ -57,9 +65,7 @@ func NewDisk(size int64) Disk {
 	return disk
 }
 
-// Create a fake disk. The function creates a file backed loop
-// device and udev add event will also be triggered
-func (disk *Disk) createAndAttachDisk() error {
+func (disk *Disk) createDiskImage() error {
 	// no of blocks
 	/*count := disk.Size / blockSize
 	createImageCommand := "dd if=/dev/zero of=" + disk.imageName + " bs=" + strconv.Itoa(blockSize) + " count=" + strconv.Itoa(int(count))
@@ -71,6 +77,18 @@ func (disk *Disk) createAndAttachDisk() error {
 	err = f.Truncate(disk.Size)
 	if err != nil {
 		return fmt.Errorf("error truncating disk image. Error : %v", err)
+	}
+
+	return nil
+}
+
+func (disk *Disk) createLoopDevice() error {
+	var err error
+	if _, err = os.Stat(disk.imageName); err != nil {
+		err = disk.createDiskImage()
+		if err != nil {
+			return err
+		}
 	}
 
 	deviceName := getLoopDevName()
@@ -137,7 +155,9 @@ func getLoopDevName() string {
 // device is created and event is triggered
 func (disk *Disk) AttachDisk() error {
 	if disk.Name == "" {
-		return disk.createAndAttachDisk()
+		if err := disk.createLoopDevice(); err != nil {
+			return err
+		}
 	}
 	return TriggerEvent(UdevEventAdd, syspath, disk.Name)
 }
@@ -145,4 +165,52 @@ func (disk *Disk) AttachDisk() error {
 // DetachDisk triggers a udev remove event for the disk
 func (disk *Disk) DetachDisk() error {
 	return TriggerEvent(UdevEventRemove, syspath, disk.Name)
+}
+
+func (di *Disk) CreateFileSystem() error {
+	var err error
+	if _, err = os.Stat(di.imageName); err != nil {
+		err = di.createDiskImage()
+		if err != nil {
+			return err
+		}
+	}
+
+	d, err := diskfs.Open(di.imageName)
+	defer d.File.Close()
+	if err != nil {
+		return err
+	}
+
+	_, err = d.CreateFilesystem(disk.FilesystemSpec{
+		Partition: 0,
+		FSType:    filesystem.TypeFat32,
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to create file system: %v", err)
+	}
+	return nil
+}
+
+func (disk *Disk) Mount(path string) error {
+	path = filepath.Clean(path)
+	err := syscall.Mount(disk.Name, path, "vfat", 0, "")
+	if err != nil {
+		return err
+	}
+
+	disk.MountPoints = append(disk.MountPoints, path)
+	return nil
+}
+
+func (disk *Disk) Unmount() error {
+	var lastErr error = nil
+	for _, mp := range disk.MountPoints {
+		err := syscall.Unmount(mp, 0)
+		if err != nil {
+			lastErr = err
+		}
+	}
+	return lastErr
 }

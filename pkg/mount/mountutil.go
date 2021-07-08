@@ -34,6 +34,9 @@ const (
 	hostProcCmdLine = "/host" + procCmdLine
 )
 
+var ErrAttributesNotFound error = fmt.Errorf("could not get device mount " +
+	"attributes, Path/MountPoint not present in mounts file")
+
 // DiskMountUtil contains the mountfile path, devpath/mountpoint which can be used to
 // detect partition of a mountpoint or mountpoint of a partition.
 type DiskMountUtil struct {
@@ -107,7 +110,7 @@ func (m DiskMountUtil) getDeviceMountAttr(fn getMountData) (DeviceMountAttr, err
 	if found {
 		return mountAttr, nil
 	}
-	return mountAttr, fmt.Errorf("could not get device mount attributes, Path/MountPoint not present in mounts file")
+	return mountAttr, ErrAttributesNotFound
 }
 
 //	getPartitionDevPath takes disk/partition name as input (sda, sda1, sdb, sdb2 ...) and
