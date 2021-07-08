@@ -125,7 +125,6 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 			return nil
 		}
 	} else {
-		// FIXME: update controller cache after setting uuid
 		bd.UUID = uuid
 		klog.V(4).Infof("uuid: %s has been generated for device: %s", uuid, bd.DevPath)
 		// update cache after generating uuid
