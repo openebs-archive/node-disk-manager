@@ -28,33 +28,67 @@ rootfs / rootfs rw 0 0
 
 Whenever a block device is (un)mounted or the fs type changes, the changes are reflected in the mounts file. This proposal introduces a change to the existing _**mount-probe**_ in NDM. Similar to how _udev-probe_ listens to udev events by starting a loop in its `Start()`, a loop is started by _mount-probe_ that watches for changes in the mounts file and triggers updation when a change is detected. The *epoll* API is used to watch the mounts file for changes. The *epoll* API is provided by the Linux kernel for the userspace programs to monitor file descriptors and get notifications about I/O events happening on them. Whenever the mounts file changes, the events `EPOLLPRI` and `EPOLLERR` are emitted. This behaviour has been documented [here](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=31b07093c44a7a442394d44423e21d783f5523b8) (additional links - [\[1\]](https://lkml.org/lkml/2006/2/22/169), [\[2\]](http://lkml.iu.edu/hypermail/linux/kernel/1012.1/02246.html)).
 
-An important thing to note here is that while this approach can tell that the mounts file has changed, we cannot determine what changed. We cannot determine which block device is the change related to or whether the change is even related to a block device. Also, filesystem changes can be detected only once a device is mounted. Formatting filesystem on an unmounted device will not result in any updates.
-
-The listen loop continously waits for the `EPOLLPRI` and `EPOLLERR` events. On receving such an event, a `EventMessage` is generated and pushed to `udevevent.UdevEventMessageChannel` channel. The message
-contains information about what blockdevices to check (all existing blockdevices in this case). The message also
+A new package `libmount` is introduced for parsing the mounts file. The package `libmount` is a pure go implementation of the C library with same name (see [util-linux/libmount](https://github.com/karelzak/util-linux/tree/master/libmount)). This package also provides utility to compare two mount tables and get a diff data structure which can be used to tell the changes between the two tables. Initially on start-up *mount-probe* parses the mounts file and stores the mount table in memory. On receving an event from epoll, the mounts file is parsed again to get the new mount table. This new mount table is then compared with the older mount table stored to generate a diff, which is used to get the list of devices that changed mount-points or filesystems. An `EventMessage` is generated containing the list of changed devices and pushed to `udevevent.UdevEventMessageChannel`. The message contains information about what blockdevices to check (the list of changed device). The message also
 has additional information regarding what probes are to be run and specifies that only _mount-probe_ needs to be run for the event. This is done since _mount-probe_ alone can fetch the new mounts and fs data for the blockdevices. Running the probes selectively helps us optimize the updation process.
-The message is then received by the loop in `udevProbe.listen()` and sent further down to the `ProbeEvent` update handler.
+The message is then received by the loop in `udevProbe.listen()` and sent further down to the `ProbeEvent` change handler.
+
+For every blockdevice listed in the `EventMessage`, the change handler first fetches the latest copy of the blockdevice from the controller blockdevice cache (`controller.BDHeirarchyCache`) and then runs the it though the requested probes which are also provided in the message. Once the blockdevice is run through all the probes, the cache is updated and an update request is send to the kuebrnetes api server to upate the corresponding blocdevice CR.
 
 &nbsp;
 
 ``` text
-+---------------------+                                                                    +------------------------+
-|                     |                                                                    |                        |
-|      Epoll Api      |                                                                    |       ProbeEvent       |
-|                     |                                                                    |                        |
-+----------+----------+                                                                    |     Update Handler     |
-           |                                                                               |                        |
-           |                                                                               +------------^-----------+
-           |                                                                                            |
-           |   (EPOLLPRI & EPOLLERR)                                                                    |
-           |                                                                                            |
-           |                                                                               EventMessage |
-           |                                                                                            |
-+----------v----------+                                                                                 |
-|                     |                       -------------------------------------                     |
-|     mountprobe     |     EventMessage                                                                |
-|                     +---------------------->  udevevent.UdevEventMessageChannel  ---------------------+
-|     listen loop     |
-|                     |                       -------------------------------------
-+---------------------+
++----------------------------------+
+|                                  |
+|                                  |
+|                                  |
+|                                  |
+|             Epoll API            |
+|                                  |
+|                                  |
+|                                  |
++-----------------+----------------+
+                  |
+                  |
+                  |
+                  |
+                  |
+                  |
+                  |           Event
+                  |   (EPOLLPRI & EPOLLERR)
+                  |
+                  |
+                  |
+                  |                                                                                                                 Updated       +------------------------+
+                  |                                                                                                               Blockdevice     |                        |
+                  |                                                                                                           +------------------->       Controller       |
+                  |                                                                                                           |                   |    Blockdevice Cache   |
+                  |                                                                                                           |                   |                        |
++-----------------v----------------+                    -----------------------------------------                 +-----------+-----------+       +------------------------+
+|                                  |                                                                              |                       |
+|                                  |                                                                              |                       |       +------------------------+
+|                                  |                                                                              |                       +------->                        |
+|            mount probe           |    EventMessage                                                EventMessage  |      Probe Event      |       |         Probes         |
+|                                  +------------------->    udevevent.UdevEventMessageChannel   ------------------>                       |       |  - update Blockdevice  |
+|            listen loop           |                                                                              |     Change Handler    <-------+                        |
+|                                  |                                                                              |                       |       +------------------------+
+|                                  |                                                                              |                       |
++-------------+------^-------------+                    -----------------------------------------                 +-----------+-----------+       +------------------------+
+              |      |                                                                                                        |                   |                        |
+              |      |                                                                                                        |                   |       Kubernetes       |
+              |      |                                                                                                        +------------------->          etcd          |
+              |      |                                                                                                               Updated      |                        |
+              |      |                                                                                                            Blockdevice CR  +------------------------+
+              |      |
+              |      |
+              |      |
+              |      |
+ +------------v------+--------------+
+ |                                  |
+ |                                  |
+ |            libmount              |
+ |                                  |
+ |        - parse mounts file       |
+ |        - generate diff           |
+ |                                  |
+ +----------------------------------+
 ```
