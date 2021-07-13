@@ -21,6 +21,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/env"
 	"os"
 	goruntime "runtime"
+	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -44,6 +45,9 @@ import (
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+
+	// reconciliation interval for the resources
+	reconInterval = 30 * time.Second
 )
 
 func init() {
@@ -86,6 +90,7 @@ func main() {
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
 		Port:                   8787,
+		SyncPeriod:             &reconInterval,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "node-disk-operator.openebs.io",
