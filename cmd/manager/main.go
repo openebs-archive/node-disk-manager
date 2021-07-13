@@ -47,7 +47,7 @@ var (
 	setupLog = ctrl.Log.WithName("setup")
 
 	// reconciliation interval for the resources
-	reconInterval = 5 * time.Second
+	reconInterval = 30 * time.Second
 )
 
 func init() {
