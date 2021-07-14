@@ -1,3 +1,12 @@
+v1.6.0 / 2021-07-14
+========================
+* update k8s to 1.20.2 and controller runtime to 0.8.2 version ([#561](https://github.com/openebs/node-disk-manager/pull/561),[@RealHarshThakur](https://github.com/RealHarshThakur))
+* fix add-handler to update controller blockdevice cache after generating uuid ([#602](https://github.com/openebs/node-disk-manager/pull/602),[@z0marlin](https://github.com/z0marlin))
+* add support for detecting changes to mount points and filesystems without restarting ([#595](https://github.com/openebs/node-disk-manager/pull/595),[@z0marlin](https://github.com/z0marlin))
+* add probe allowlist in event message to selectively run probes when filling blockdevice details ([#601](https://github.com/openebs/node-disk-manager/pull/601),[@z0marlin](https://github.com/z0marlin))
+
+
+
 v1.5.0 / 2021-06-16
 ========================
 * fix tests in probe and syspath packages ([#593](https://github.com/openebs/node-disk-manager/pull/593),[@z0marlin](https://github.com/z0marlin))
