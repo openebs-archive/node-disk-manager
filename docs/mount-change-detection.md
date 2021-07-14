@@ -32,7 +32,7 @@ A new package `libmount` is introduced for parsing the mounts file. The package 
 has additional information regarding what probes are to be run and specifies that only _mount-probe_ needs to be run for the event. This is done since _mount-probe_ alone can fetch the new mounts and fs data for the blockdevices. Running the probes selectively helps us optimize the updation process.
 The message is then received by the loop in `udevProbe.listen()` and sent further down to the `ProbeEvent` change handler.
 
-For every blockdevice listed in the `EventMessage`, the change handler first fetches the latest copy of the blockdevice from the controller blockdevice cache (`controller.BDHeirarchyCache`) and then runs the it though the requested probes which are also provided in the message. Once the blockdevice is run through all the probes, the cache is updated and an update request is send to the kuebrnetes api server to upate the corresponding blocdevice CR.
+For every blockdevice listed in the `EventMessage`, the change handler first fetches the latest copy of the blockdevice from the controller blockdevice cache (`controller.BDHierarchyCache`) and then runs the it though the requested probes which are also provided in the message. Once the blockdevice is run through all the probes, the cache is updated and an update request is send to the kuebrnetes api server to upate the corresponding blocdevice CR.
 
 &nbsp;
 
