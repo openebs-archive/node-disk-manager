@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 release:
-  version: "1.5.0"
+  version: "1.6.0"
 
 imagePullSecrets:
 #  - name: "image-pull-secret"
@@ -17,7 +17,7 @@ ndm:
     repository: openebs/node-disk-manager
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.5.0
+    tag: 1.6.0
   sparse:
     path: "/var/openebs/sparse"
     size: "10737418240"
@@ -63,7 +63,7 @@ ndmOperator:
     repository: openebs/node-disk-operator
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.5.0
+    tag: 1.6.0
   podLabels:
     name: openebs-ndm-operator
   annotations: {}
@@ -73,12 +73,11 @@ ndmOperator:
   securityContext: {}
   tolerations: []
   healthCheck:
-    initialDelaySeconds: 30
-    periodSeconds: 60
+    initialDelaySeconds: 15
+    periodSeconds: 20
   readinessCheck:
-    initialDelaySeconds: 4
+    initialDelaySeconds: 5
     periodSeconds: 10
-    failureThreshold: 1
   replicas: 1
   upgradeStrategy: Recreate
 
@@ -88,7 +87,7 @@ helperPod:
     repository: openebs/linux-utils
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 2.10.0
+    tag: 2.11.0
 
 crd:
   enableInstall: false
@@ -99,12 +98,15 @@ featureGates:
     enabled: true
     featureGateFlag: "GPTBasedUUID"
   APIService:
-    enabled: true
+    enabled: false
     featureGateFlag: "APIService"
     address: "0.0.0.0:9115"
   UseOSDisk:
     enabled: false
     featureGateFlag: "UseOSDisk"
+  MountChangeDetection:
+    enabled: false
+    featureGateFlag: "MountChangeDetection"
 
 # Directory used by the OpenEBS to store debug information and so forth
 # that are generated in the course of running OpenEBS containers.

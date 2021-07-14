@@ -33,7 +33,8 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndm.tolerations`                       | NDM daemonset's pod toleration values         | `""`                                      |
 | `ndm.securityContext`                   | Seurity context for container                 | `""`                                      |
 | `ndm.filters.enableOsDiskExcludeFilter` | Enable filters of OS disk exclude             | `true`                                    |
-| `ndm.filters.osDiskExcludePaths`        | Paths/Mountpoints to be excluded by OS Disk Filter| `/,/etc/hosts,/boot`                           || `ndm.filters.enableVendorFilter`        | Enable filters of vendors                     | `true`                                    |
+| `ndm.filters.osDiskExcludePaths`        | Paths/Mountpoints to be excluded by OS Disk Filter| `/,/etc/hosts,/boot`                           |
+| `ndm.filters.enableVendorFilter`        | Enable filters of vendors                     | `true`                                    |
 | `ndm.filters.excludeVendors`            | Exclude devices with specified vendor         | `CLOUDBYT,OpenEBS`                        |
 | `ndm.filters.enablePathFilter`          | Enable filters of paths                       | `true`                                    |
 | `ndm.filters.includePaths`              | Include devices with specified path patterns  | `""`                                      |
@@ -41,8 +42,6 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndm.probes.enableSeachest`             | Enable Seachest probe for NDM                 | `false`                                    |
 | `ndm.probes.enableUdevProbe`            | Enable Udev probe for NDM                     | `true`                                    |
 | `ndm.probes.enableSmartProbe`           | Enable Smart probe for NDM                    | `true`                                    |
-| `ndm.healthCheck.initialDelaySeconds`   | Delay before liveness probe is initiated      | `30`                                      |
-| `ndm.healthCheck.periodSeconds`         | How often to perform the liveness probe       | `60`                                      |
 | `ndmOperator.enabled`                   | Enable NDM Operator                           | `true`                                    |
 | `ndmOperator.replica`                   | Pod replica count for NDM operator            | `1`                                       |
 | `ndmOperator.upgradeStrategy`           | Update strategy NDM operator                  | `"Recreate"`                              |
@@ -57,11 +56,9 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndmOperator.nodeSelector`              | Nodeselector for operator pods                | `""`                                      |
 | `ndmOperator.tolerations`               | NDM operator's pod toleration values          | `""`                                      |
 | `ndmOperator.securityContext`           | Seurity context for container                 | `""`                                      |
-| `ndmOperator.healthCheck.initialDelaySeconds`   | Delay before liveness probe is initiated      | `30`                              |
-| `ndmOperator.healthCheck.periodSeconds`         | How often to perform the liveness probe       | `60`                              |
-| `ndmOperator.readinessCheck.initialDelaySeconds`| Delay before readiness probe is initiated     | `4`                               |
-| `ndmOperator.readinessCheck.periodSeconds`      | How often to perform the readiness probe      | `10`                              |
-| `ndmOperator.readinessCheck.failureThreshold`   | Failure threshold for the readiness probe     | `1`                               |
+| `featureGates.APIService.enabled`       | Enable the gRPC API service of NDM            | `false`                                   |
+| `featureGates.UseOSDisk.enabled`        | Enable feature-gate to use free space on OS disk | `false`                                   |
+| `featureGates.MountChangeDetection.enabled` | Enable feature-gate to detect mountpoint/filesystem changes | `false`                                   |
 | `helperPod.image.registry`              | Registry for helper image                     | `""`                                      |
 | `helperPod.image.repository`            | Image for helper pod                          | `openebs/linux-utils`                     |
 | `helperPod.image.pullPolicy`            | Pull policy for helper pod                    | `IfNotPresent`                            |
