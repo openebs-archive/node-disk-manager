@@ -27,6 +27,8 @@ and 2 optional components:
 
 The design of the project is covered under this [design proposal](./docs/design.md)
 
+The feedback of users / organizations currently using OpenEBS can be found [here](https://github.com/openebs/openebs/tree/master/adopters) 
+
 ## Project Status
 Currently, the NDM project is in beta.
 
