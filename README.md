@@ -5,6 +5,7 @@
 [![Go Report](https://goreportcard.com/badge/github.com/openebs/node-disk-manager)](https://goreportcard.com/report/github.com/openebs/node-disk-manager)
 [![codecov](https://codecov.io/gh/openebs/node-disk-manager/branch/master/graph/badge.svg)](https://codecov.io/gh/openebs/node-disk-manager)
 [![Slack](https://img.shields.io/badge/chat!!!-slack-ff1493.svg?style=flat-square)](https://kubernetes.slack.com/messages/openebs)
+[![Community Meetings](https://img.shields.io/badge/Community-Meetings-blue)](https://openebs.io/community)
 [![BCH compliance](https://bettercodehub.com/edge/badge/openebs/node-disk-manager?branch=master)](https://bettercodehub.com/results/openebs/node-disk-manager)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager?ref=badge_shield)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1953/badge)](https://bestpractices.coreinfrastructure.org/projects/1953)
@@ -26,29 +27,39 @@ and 2 optional components:
 
 The design of the project is covered under this [design proposal](./docs/design.md)
 
+The feedback of users / organizations currently using OpenEBS can be found [here](https://github.com/openebs/openebs/tree/master/adopters) 
+
 ## Project Status
 Currently, the NDM project is in beta.
 
 # Usage
 A detailed usage documentation is maintained in the [wiki](https://github.com/openebs/node-disk-manager/wiki).
 
-## Start Node Disk Manager
+- [FAQ](https://docs.openebs.io/docs/next/ugndm.html) and [Troubleshooting](https://docs.openebs.io/docs/next/t-ndm.html)
+
+### Minimum Supported version
+K8S : 1.18+
+
+### Start Node Disk Manager
 * Edit [ndm-operator.yaml](deploy/ndm-operator.yaml) to fit your environment: Set the `namespace`, `serviceAccount`, configure filters in the `node-disk-manager-config-map`.
 * Switch to Cluster Admin context and create the components with `kubectl create -f ndm-operator.yaml`.
 * This will install the daemon, operator and the exporters
 
-## Using `kubectl` to fetch BlockDevice Information
+### Using `kubectl` to fetch BlockDevice Information
 * `kubectl get blockdevices` displays the blockdevices across the cluster, with `NODENAME` showing the node to which disk is attached,
   `CLAIMSTATE` showing whether the device is currently in use and `STATE` showing whether the device is connected to the node.
 * `kubectl get blockdevices -o wide` displays the blockdevice along with the path at which the device is attached on the node.
 * `kubectl get blockdevices <blockdevice-cr-name> -o yaml` displays all the details of the disk captured by `ndm` for given disk resource.
 
-## Building, Testing and Pushing Image
+### Building, Testing and Pushing Image
 Before building the image locally, you need to setup your development environment. The detailed instructions for setting up development environment, building and testing are available [here](./BUILD.md).
 
-#### Push Image
-By default Github Action pushes the docker image to `openebs/node-disk-manager`, with *ci* tags. 
-You can push to your custom registry and modify the ndm-operator.yaml file for your testing. 
+## Contributing
+
+OpenEBS welcomes your feedback and contributions in any form possible.
+- [Contributing Guide]( https://github.com/openebs/node-disk-manager/blob/master/CONTRIBUTING.md)
+- [Project Roadmap](https://github.com/orgs/openebs/projects/2)
+
 
 # License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fopenebs%2Fnode-disk-manager?ref=badge_large)
