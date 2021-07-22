@@ -20,20 +20,39 @@ import (
 	"errors"
 	"syscall"
 
-	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	"k8s.io/klog"
+
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
-	"k8s.io/klog"
 )
 
-// UdevEventMessageChannel used to send event message
-var UdevEventMessageChannel = make(chan controller.EventMessage)
+type UdevEventType uint
 
 // monitor contains udev and udevmonitor struct
 type monitor struct {
 	udev        *libudevwrapper.Udev
 	udevMonitor *libudevwrapper.UdevMonitor
 }
+
+type UdevEvent struct {
+	*libudevwrapper.UdevDevice
+	eventType UdevEventType
+}
+
+type Subscription struct {
+	targetChannel   chan UdevEvent
+	subscribedTypes []UdevEventType
+}
+
+const (
+	EventTypeAdd UdevEventType = iota
+	EventTypeRemove
+	EventTypeChange
+)
+
+var subscriptions []*Subscription
+
+var ErrInvalidSubscription = errors.New("invailid subscription")
 
 // newMonitor returns monitor struct in success
 // we can get fd and monitor using this struct
@@ -98,10 +117,33 @@ func (m *monitor) process(fd int) error {
 		device.UdevDeviceUnref()
 		return nil
 	}
-	event := newEvent()
-	event.process(device)
-	event.send()
+	var eventType UdevEventType
+	switch device.GetAction() {
+	case libudevwrapper.UDEV_ACTION_ADD:
+		eventType = EventTypeAdd
+	case libudevwrapper.UDEV_ACTION_REMOVE:
+		eventType = EventTypeRemove
+	default:
+		eventType = EventTypeChange
+	}
+	event := UdevEvent{device, eventType}
+	dispatchEvent(event)
 	return nil
+}
+
+func dispatchEvent(event UdevEvent) {
+	for _, sub := range subscriptions {
+		hasType := false
+		for _, eventType := range sub.subscribedTypes {
+			if eventType == event.eventType {
+				hasType = true
+				break
+			}
+		}
+		if hasType {
+			sub.targetChannel <- event
+		}
+	}
 }
 
 //Monitor start monitoring on udev source
@@ -120,5 +162,63 @@ func Monitor() {
 		if err != nil {
 			klog.Error(err)
 		}
+	}
+}
+
+func Subscribe(eventTypes ...UdevEventType) *Subscription {
+	if len(eventTypes) == 0 {
+		eventTypes = []UdevEventType{EventTypeAdd, EventTypeRemove, EventTypeChange}
+	}
+	subscription := Subscription{
+		targetChannel:   make(chan UdevEvent),
+		subscribedTypes: eventTypes,
+	}
+	subscriptions = append(subscriptions, &subscription)
+	return &subscription
+}
+
+func Unsubscribe(sub *Subscription) error {
+	if sub == nil || sub.targetChannel == nil || sub.subscribedTypes == nil {
+		return ErrInvalidSubscription
+	}
+	var deleteIndex = -1
+	for idx, subscription := range subscriptions {
+		if subscription == sub {
+			deleteIndex = idx
+		}
+	}
+	close(sub.targetChannel)
+	if deleteIndex == len(subscriptions)-1 {
+		subscriptions = subscriptions[:deleteIndex]
+	} else if deleteIndex == 0 {
+		subscriptions = subscriptions[1:]
+	} else {
+		subscriptions = append(subscriptions[:deleteIndex], subscriptions[deleteIndex+1:]...)
+	}
+	return nil
+}
+
+func (s *Subscription) Events() <-chan UdevEvent {
+	return s.targetChannel
+}
+
+func (u UdevEvent) GetType() UdevEventType {
+	return u.eventType
+}
+
+func (u UdevEvent) GetAction() UdevEventType {
+	return u.eventType
+}
+
+func (uevt UdevEventType) String() string {
+	switch uevt {
+	case EventTypeAdd:
+		return "add"
+	case EventTypeRemove:
+		return "remove"
+	case EventTypeChange:
+		return "change"
+	default:
+		return "unknown"
 	}
 }

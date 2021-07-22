@@ -25,7 +25,6 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/features"
 	"github.com/openebs/node-disk-manager/pkg/mount"
 	"github.com/openebs/node-disk-manager/pkg/mount/libmount"
-	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
@@ -86,7 +85,7 @@ func newMountProbeForRegistration(c *controller.Controller) *mountProbe {
 	return &mountProbe{
 		Controller:     c,
 		mountsFileName: mount.HostMountsFilePath,
-		destination:    udevevent.UdevEventMessageChannel,
+		destination:    controller.EventMessageChannel,
 	}
 }
 

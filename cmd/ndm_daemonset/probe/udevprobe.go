@@ -70,10 +70,11 @@ var udevProbeRegister = func() {
 // udevProbe contains require variables for scan , populate diskInfo and push
 // resource in etcd
 type udevProbe struct {
-	controller    *controller.Controller
-	udev          *libudevwrapper.Udev
-	udevDevice    *libudevwrapper.UdevDevice
-	udevEnumerate *libudevwrapper.UdevEnumerate
+	controller            *controller.Controller
+	udev                  *libudevwrapper.Udev
+	udevDevice            *libudevwrapper.UdevDevice
+	udevEnumerate         *libudevwrapper.UdevEnumerate
+	udeveventSubscription *udevevent.Subscription
 }
 
 // newUdevProbe returns udevProbe struct which helps to setup probe listen and scan
@@ -118,7 +119,10 @@ func newUdevProbeForFillDiskDetails(sysPath string) (*udevProbe, error) {
 // Start setup udev probe listener and make a single scan of system
 func (up *udevProbe) Start() {
 	go up.listen()
+	up.udeveventSubscription = udevevent.Subscribe(udevevent.EventTypeAdd,
+		udevevent.EventTypeRemove)
 	go udevevent.Monitor()
+	go up.listenUdevEventMonitor()
 	probeEvent := newUdevProbe(up.controller)
 	err := probeEvent.scan()
 	if err != nil {
@@ -253,7 +257,7 @@ func (up *udevProbe) scan() error {
 		Action:  libudevwrapper.UDEV_ACTION_ADD,
 		Devices: diskInfo,
 	}
-	udevevent.UdevEventMessageChannel <- eventDetails
+	controller.EventMessageChannel <- eventDetails
 	return nil
 }
 
@@ -336,7 +340,7 @@ func (up *udevProbe) listen() {
 	}
 	klog.Info("starting udev probe listener")
 	for {
-		msg := <-udevevent.UdevEventMessageChannel
+		msg := <-controller.EventMessageChannel
 		switch msg.Action {
 		case string(AttachEA):
 			probeEvent.addBlockDeviceEvent(msg)
@@ -359,4 +363,80 @@ func (up *udevProbe) free() {
 	if up.udevEnumerate != nil {
 		up.udevEnumerate.UnrefUdevEnumerate()
 	}
+}
+
+func (up *udevProbe) listenUdevEventMonitor() {
+	for {
+		event := <-up.udeveventSubscription.Events()
+		controller.EventMessageChannel <- processUdevEvent(event)
+	}
+}
+
+func processUdevEvent(event udevevent.UdevEvent) controller.EventMessage {
+	defer event.UdevDeviceUnref()
+	diskInfo := make([]*blockdevice.BlockDevice, 0)
+	uuid := event.GetUid()
+	path := event.GetPath()
+	action := event.GetAction()
+	klog.Infof("processing new event for (%s) action type %s", path, action)
+	deviceDetails := &blockdevice.BlockDevice{}
+	deviceDetails.UUID = uuid
+	deviceDetails.SysPath = event.GetSyspath()
+	deviceDetails.DevPath = path
+
+	// fields used for UUID. These fields will be filled always. But used only if the
+	// GPTBasedUUID feature-gate is enabled.
+	deviceDetails.DeviceAttributes.DeviceType = event.GetPropertyValue(libudevwrapper.UDEV_DEVTYPE)
+	deviceDetails.DeviceAttributes.WWN = event.GetPropertyValue(libudevwrapper.UDEV_WWN)
+	deviceDetails.DeviceAttributes.Serial = event.GetPropertyValue(libudevwrapper.UDEV_SERIAL)
+
+	// The below 3 fields are used only for legacy uuid generation. But they are filled in here,
+	// so as to handle upgrade cases from legacy to gpt
+	deviceDetails.DeviceAttributes.Model = event.GetPropertyValue(libudevwrapper.UDEV_MODEL)
+	deviceDetails.DeviceAttributes.Vendor = event.GetPropertyValue(libudevwrapper.UDEV_VENDOR)
+	deviceDetails.DeviceAttributes.IDType = event.GetPropertyValue(libudevwrapper.UDEV_TYPE)
+
+	deviceDetails.PartitionInfo.PartitionTableUUID = event.GetPropertyValue(libudevwrapper.UDEV_PARTITION_TABLE_UUID)
+	deviceDetails.PartitionInfo.PartitionEntryUUID = event.GetPropertyValue(libudevwrapper.UDEV_PARTITION_UUID)
+	deviceDetails.FSInfo.FileSystemUUID = event.GetPropertyValue(libudevwrapper.UDEV_FS_UUID)
+
+	deviceDetails.DMInfo.DMUUID = event.GetPropertyValue(libudevwrapper.UDEV_DM_UUID)
+
+	// fields used for dependents. dependents cannot be obtained while
+	// removing the device since sysfs entry will be absent
+	if action != udevevent.EventTypeRemove {
+		sysfsDevice, err := sysfs.NewSysFsDeviceFromDevPath(deviceDetails.DevPath)
+		if err != nil {
+			klog.Errorf("could not get sysfs device for %s, err: %v", deviceDetails.DevPath, err)
+		} else {
+			dependents, err := sysfsDevice.GetDependents()
+			// TODO if error occurs need to do a scan from the beginning
+			if err != nil {
+				klog.Errorf("could not get dependents for %s, %v", deviceDetails.DevPath, err)
+			} else {
+				deviceDetails.DependentDevices = dependents
+				klog.V(4).Infof("Dependents of %s : %+v", deviceDetails.DevPath, dependents)
+			}
+			udevDeviceType := deviceDetails.DeviceAttributes.DeviceType
+			deviceType, err := sysfsDevice.GetDeviceType(udevDeviceType)
+			if err != nil {
+				klog.Errorf("could not get device type for %s, falling back to udev reported type: %s", deviceDetails.DevPath, udevDeviceType)
+				deviceType = udevDeviceType
+			}
+			deviceDetails.DeviceAttributes.DeviceType = deviceType
+			klog.Infof("Device: %s is of type: %s", deviceDetails.DevPath, deviceDetails.DeviceAttributes.DeviceType)
+		}
+	}
+
+	diskInfo = append(diskInfo, deviceDetails)
+	eventMessage := controller.EventMessage{}
+	switch action {
+	case udevevent.EventTypeAdd:
+		eventMessage.Action = string(AttachEA)
+	case udevevent.EventTypeRemove:
+		eventMessage.Action = string(DetachEA)
+	}
+	eventMessage.Devices = diskInfo
+
+	return eventMessage
 }
