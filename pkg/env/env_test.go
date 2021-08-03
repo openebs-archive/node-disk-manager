@@ -25,42 +25,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIsInstallCRDEnabled(t *testing.T) {
-	tests := map[string]struct {
-		setEnv   bool
-		envValue string
-		want     bool
-	}{
-		"when INSTALL_CRD_ENV is set to true": {
-			setEnv:   true,
-			envValue: "true",
-			want:     true,
-		},
-		"when INSTALL_CRD_ENV is set to false": {
-			setEnv:   true,
-			envValue: "false",
-		},
-		"when INSTALL_CRD_ENV is not set": {
-			setEnv: false,
-			want:   true,
-		},
-		"when INSTALL_CRD is set to empty": {
-			setEnv:   true,
-			envValue: "",
-			want:     true,
-		},
-	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			if tt.setEnv {
-				os.Setenv(INSTALL_CRD_ENV, tt.envValue)
-			}
-			assert.Equal(t, tt.want, IsInstallCRDEnabled())
-			_ = os.Unsetenv(INSTALL_CRD_ENV)
-		})
-	}
-}
-
 func TestGetOpenEBSImagePullSecrets(t *testing.T) {
 	tests := map[string]struct {
 		envValue string

@@ -17,37 +17,20 @@ limitations under the License.
 package env
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
-
-	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 const (
-	// INSTALL_CRD_ENV is the environment variable used to check if
-	// CRDs need to be installed by NDM or not.
-	INSTALL_CRD_ENV = "OPENEBS_IO_INSTALL_CRD"
-
-	// installCRDEnvDefaultValue is the default value for the INSTALL_CRD_ENV
-	installCRDEnvDefaultValue = true
-
 	// IMAGE_PULL_SECRETS_ENV is the environment variable used to pass the image pull secrets
 	IMAGE_PULL_SECRETS_ENV = "OPENEBS_IO_IMAGE_PULL_SECRETS"
+
+	// WATCH_NAMESPACE is the namespace to watch for resources
+	WATCH_NAMESPACE_ENV = "WATCH_NAMESPACE"
 )
-
-// IsInstallCRDEnabled is used to check whether the CRDs need to be installed
-func IsInstallCRDEnabled() bool {
-	val := os.Getenv(INSTALL_CRD_ENV)
-
-	// if empty return the default value
-	if len(val) == 0 {
-		return installCRDEnvDefaultValue
-	}
-
-	return util.CheckTruthy(val)
-}
 
 // GetOpenEBSImagePullSecrets is used to get the image pull secrets from the environment variable
 func GetOpenEBSImagePullSecrets() []v1.LocalObjectReference {
@@ -66,4 +49,13 @@ func GetOpenEBSImagePullSecrets() []v1.LocalObjectReference {
 		}
 	}
 	return list
+}
+
+// GetWatchNamespace gets the namespace to watch for resources
+func GetWatchNamespace() (string, error) {
+	ns := strings.TrimSpace(os.Getenv(WATCH_NAMESPACE_ENV))
+	if len(ns) == 0 {
+		return "", fmt.Errorf("WATCH_NAMESPACE env not set")
+	}
+	return ns, nil
 }

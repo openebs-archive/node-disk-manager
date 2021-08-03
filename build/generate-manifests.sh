@@ -24,7 +24,7 @@ then
   exit 1;
 fi
 
-$CONTROLLER_GEN crd:trivialVersions=false,preserveUnknownFields=false paths=./pkg/apis/... output:crd:artifacts:config=deploy/crds
+$CONTROLLER_GEN crd:trivialVersions=false,preserveUnknownFields=false paths=./api/... output:crd:artifacts:config=deploy/crds
 
 ## create the operator file using all the yamls
 

@@ -10,7 +10,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   name: blockdevices.openebs.io
 spec:
@@ -51,40 +51,31 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: BlockDevice is the Schema used to represent a BlockDevice CR
+        description: BlockDevice is the Schema for the blockdevices API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
           spec:
-            description: DeviceSpec defines the properties and runtime status of a
-              BlockDevice
+            description: DeviceSpec defines the properties and runtime status of a BlockDevice
             properties:
               aggregateDevice:
-                description: AggregateDevice was intended to store the hierachical
-                  information in cases of LVM. However this is currently not implemented
-                  and may need to be re-looked into for better design. To be deprecated
+                description: AggregateDevice was intended to store the hierarchical information in cases of LVM. However this is currently not implemented and may need to be re-looked into for better design. To be deprecated
                 type: string
               capacity:
                 description: Capacity
                 properties:
                   logicalSectorSize:
-                    description: LogicalSectorSize is blockdevice logical-sector size
-                      in bytes
+                    description: LogicalSectorSize is blockdevice logical-sector size in bytes
                     format: int32
                     type: integer
                   physicalSectorSize:
-                    description: PhysicalSectorSize is blockdevice physical-Sector
-                      size in bytes
+                    description: PhysicalSectorSize is blockdevice physical-Sector size in bytes
                     format: int32
                     type: integer
                   storage:
@@ -95,24 +86,13 @@ spec:
                 - storage
                 type: object
               claimRef:
-                description: ClaimRef is the reference to the BDC which has claimed
-                  this BD
+                description: ClaimRef is the reference to the BDC which has claimed this BD
                 properties:
                   apiVersion:
                     description: API version of the referent.
                     type: string
                   fieldPath:
-                    description: 'If referring to a piece of an object instead of
-                      an entire object, this string should contain a valid JSON/Go
-                      field access statement, such as desiredState.manifest.containers[2].
-                      For example, if the object reference is to a container within
-                      a pod, this would take on a value like: "spec.containers{name}"
-                      (where "name" refers to the name of the container that triggered
-                      the event) or if no container name is specified "spec.containers[2]"
-                      (container with index 2 in this pod). This syntax is chosen
-                      only to have some well-defined way of referencing a part of
-                      an object. TODO: this design is not final and this field is
-                      subject to change in the future.'
+                    description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object. TODO: this design is not final and this field is subject to change in the future.'
                     type: string
                   kind:
                     description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
@@ -124,24 +104,20 @@ spec:
                     description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
                     type: string
                   resourceVersion:
-                    description: 'Specific resourceVersion to which this reference
-                      is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                    description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
                     type: string
                   uid:
                     description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                     type: string
                 type: object
               details:
-                description: Details contain static attributes of BD like model,serial,
-                  and so forth
+                description: Details contain static attributes of BD like model,serial, and so forth
                 properties:
                   compliance:
-                    description: Compliance is standards/specifications version implemented
-                      by device firmware  such as SPC-1, SPC-2, etc
+                    description: Compliance is standards/specifications version implemented by device firmware  such as SPC-1, SPC-2, etc
                     type: string
                   deviceType:
-                    description: DeviceType represents the type of device like sparse,
-                      disk, partition, lvm, crypt
+                    description: DeviceType represents the type of device like sparse, disk, partition, lvm, crypt
                     enum:
                     - disk
                     - partition
@@ -164,21 +140,18 @@ spec:
                     description: FirmwareRevision is the disk firmware revision
                     type: string
                   hardwareSectorSize:
-                    description: HardwareSectorSize is the hardware sector size in
-                      bytes
+                    description: HardwareSectorSize is the hardware sector size in bytes
                     format: int32
                     type: integer
                   logicalBlockSize:
-                    description: LogicalBlockSize is the logical block size in bytes
-                      reported by /sys/class/block/sda/queue/logical_block_size
+                    description: LogicalBlockSize is the logical block size in bytes reported by /sys/class/block/sda/queue/logical_block_size
                     format: int32
                     type: integer
                   model:
                     description: Model is model of disk
                     type: string
                   physicalBlockSize:
-                    description: PhysicalBlockSize is the physical block size in bytes
-                      reported by /sys/class/block/sda/queue/physical_block_size
+                    description: PhysicalBlockSize is the physical block size in bytes reported by /sys/class/block/sda/queue/physical_block_size
                     format: int32
                     type: integer
                   serial:
@@ -189,11 +162,9 @@ spec:
                     type: string
                 type: object
               devlinks:
-                description: DevLinks contains soft links of a block device like /dev/by-id/...
-                  /dev/by-uuid/...
+                description: DevLinks contains soft links of a block device like /dev/by-id/... /dev/by-uuid/...
                 items:
-                  description: DeviceDevLink holds the mapping between type and links
-                    like by-id type or by-path type link
+                  description: DeviceDevLink holds the mapping between type and links like by-id type or by-path type link
                   properties:
                     kind:
                       description: Kind is the type of link like by-id or by-path.
@@ -212,31 +183,24 @@ spec:
                 description: FileSystem contains mountpoint and filesystem type
                 properties:
                   fsType:
-                    description: Type represents the FileSystem type of the block
-                      device
+                    description: Type represents the FileSystem type of the block device
                     type: string
                   mountPoint:
-                    description: MountPoint represents the mountpoint of the block
-                      device.
+                    description: MountPoint represents the mountpoint of the block device.
                     type: string
                 type: object
               nodeAttributes:
-                description: NodeAttributes has the details of the node on which BD
-                  is attached
+                description: NodeAttributes has the details of the node on which BD is attached
                 properties:
                   nodeName:
-                    description: NodeName is the name of the Kubernetes node resource
-                      on which the device is attached
+                    description: NodeName is the name of the Kubernetes node resource on which the device is attached
                     type: string
                 type: object
               parentDevice:
-                description: "ParentDevice was intended to store the UUID of the parent
-                  Block Device as is the case for partitioned block devices. \n For
-                  example: /dev/sda is the parent for /dev/sda1 To be deprecated"
+                description: "ParentDevice was intended to store the UUID of the parent Block Device as is the case for partitioned block devices. \n For example: /dev/sda is the parent for /dev/sda1 To be deprecated"
                 type: string
               partitioned:
-                description: Partitioned represents if BlockDevice has partitions
-                  or not (Yes/No) Currently always default to No. To be deprecated
+                description: Partitioned represents if BlockDevice has partitions or not (Yes/No) Currently always default to No. To be deprecated
                 enum:
                 - "Yes"
                 - "No"
@@ -287,7 +251,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   name: blockdeviceclaims.openebs.io
 spec:
@@ -314,17 +278,13 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: BlockDeviceClaim is the Schema for the BlockDeviceClaim CR
+        description: BlockDeviceClaim is the Schema for the blockdeviceclaims API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -332,55 +292,40 @@ spec:
             description: DeviceClaimSpec defines the request details for a BlockDevice
             properties:
               blockDeviceName:
-                description: BlockDeviceName is the reference to the block-device
-                  backing this claim
+                description: BlockDeviceName is the reference to the block-device backing this claim
                 type: string
               blockDeviceNodeAttributes:
-                description: BlockDeviceNodeAttributes is the attributes on the node
-                  from which a BD should be selected for this claim. It can include
-                  nodename, failure domain etc.
+                description: BlockDeviceNodeAttributes is the attributes on the node from which a BD should be selected for this claim. It can include nodename, failure domain etc.
                 properties:
                   hostName:
-                    description: HostName represents the hostname of the Kubernetes
-                      node resource where the BD should be present
+                    description: HostName represents the hostname of the Kubernetes node resource where the BD should be present
                     type: string
                   nodeName:
-                    description: NodeName represents the name of the Kubernetes node
-                      resource where the BD should be present
+                    description: NodeName represents the name of the Kubernetes node resource where the BD should be present
                     type: string
                 type: object
               deviceClaimDetails:
                 description: Details of the device to be claimed
                 properties:
                   allowPartition:
-                    description: AllowPartition represents whether to claim a full
-                      block device or a device that is a partition
+                    description: AllowPartition represents whether to claim a full block device or a device that is a partition
                     type: boolean
                   blockVolumeMode:
-                    description: 'BlockVolumeMode represents whether to claim a device
-                      in Block mode or Filesystem mode. These are use cases of BlockVolumeMode:
-                      1) Not specified: VolumeMode check will not be effective 2)
-                      VolumeModeBlock: BD should not have any filesystem or mountpoint
-                      3) VolumeModeFileSystem: BD should have a filesystem and mountpoint.
-                      If DeviceFormat is    specified then the format should match
-                      with the FSType in BD'
+                    description: 'BlockVolumeMode represents whether to claim a device in Block mode or Filesystem mode. These are use cases of BlockVolumeMode: 1) Not specified: VolumeMode check will not be effective 2) VolumeModeBlock: BD should not have any filesystem or mountpoint 3) VolumeModeFileSystem: BD should have a filesystem and mountpoint. If DeviceFormat is    specified then the format should match with the FSType in BD'
                     type: string
                   formatType:
                     description: Format of the device required, eg:ext4, xfs
                     type: string
                 type: object
               deviceType:
-                description: DeviceType represents the type of drive like SSD, HDD
-                  etc.,
+                description: DeviceType represents the type of drive like SSD, HDD etc.,
                 nullable: true
                 type: string
               hostName:
-                description: Node name from where blockdevice has to be claimed. To
-                  be deprecated. Use NodeAttributes.HostName instead
+                description: Node name from where blockdevice has to be claimed. To be deprecated. Use NodeAttributes.HostName instead
                 type: string
               resources:
-                description: Resources will help with placing claims on Capacity,
-                  IOPS
+                description: Resources will help with placing claims on Capacity, IOPS
                 properties:
                   requests:
                     additionalProperties:
@@ -389,40 +334,27 @@ spec:
                       - type: string
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
-                    description: 'Requests describes the minimum resources required.
-                      eg: if storage resource of 10G is requested minimum capacity
-                      of 10G should be available TODO for validating'
+                    description: 'Requests describes the minimum resources required. eg: if storage resource of 10G is requested minimum capacity of 10G should be available TODO for validating'
                     type: object
                 required:
                 - requests
                 type: object
               selector:
-                description: Selector is used to find block devices to be considered
-                  for claiming
+                description: Selector is used to find block devices to be considered for claiming
                 properties:
                   matchExpressions:
-                    description: matchExpressions is a list of label selector requirements.
-                      The requirements are ANDed.
+                    description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
                     items:
-                      description: A label selector requirement is a selector that
-                        contains values, a key, and an operator that relates the key
-                        and values.
+                      description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
                       properties:
                         key:
-                          description: key is the label key that the selector applies
-                            to.
+                          description: key is the label key that the selector applies to.
                           type: string
                         operator:
-                          description: operator represents a key's relationship to
-                            a set of values. Valid operators are In, NotIn, Exists
-                            and DoesNotExist.
+                          description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
                           type: string
                         values:
-                          description: values is an array of string values. If the
-                            operator is In or NotIn, the values array must be non-empty.
-                            If the operator is Exists or DoesNotExist, the values
-                            array must be empty. This array is replaced during a strategic
-                            merge patch.
+                          description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
                           items:
                             type: string
                           type: array
@@ -434,11 +366,7 @@ spec:
                   matchLabels:
                     additionalProperties:
                       type: string
-                    description: matchLabels is a map of {key,value} pairs. A single
-                      {key,value} in the matchLabels map is equivalent to an element
-                      of matchExpressions, whose key field is "key", the operator
-                      is "In", and the values array contains only "value". The requirements
-                      are ANDed.
+                    description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
                     type: object
                 type: object
             type: object
@@ -591,6 +519,9 @@ spec:
         - -v=4
         - --feature-gates="GPTBasedUUID"
         - --feature-gates="APIService"
+        # Detect mount point and filesystem changes wihtout restart.
+        # Uncomment the line below to enable the feature.
+        # --feature-gates="MountChangeDetection"
         # Default address is 0.0.0.0:9115, do not use quotes around the address
         # - --api-service-address=0.0.0.0:9115
         - --feature-gates="UseOSDisk"
@@ -693,14 +624,6 @@ spec:
         - containerPort: 8080
           name: liveness
         imagePullPolicy: IfNotPresent
-        readinessProbe:
-          exec:
-            command:
-            - stat
-            - /tmp/operator-sdk-ready
-          initialDelaySeconds: 4
-          periodSeconds: 10
-          failureThreshold: 1
         env:
         - name: WATCH_NAMESPACE
           valueFrom:
@@ -719,12 +642,22 @@ spec:
           value: "node-disk-operator"
         - name: CLEANUP_JOB_IMAGE
           value: "openebs/linux-utils:ci"
-        - name: OPENEBS_IO_INSTALL_CRD
-          value: "false"
-       # OPENEBS_IO_IMAGE_PULL_SECRETS environment variable is used to pass the image pull secrets
-       # to the cleanup pod launched by NDM operator
-       #- name: OPENEBS_IO_IMAGE_PULL_SECRETS
-       #  value: ""
+        # OPENEBS_IO_IMAGE_PULL_SECRETS environment variable is used to pass the image pull secrets
+        # to the cleanup pod launched by NDM operator
+        #- name: OPENEBS_IO_IMAGE_PULL_SECRETS
+        #  value: ""
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8585
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8585
+          initialDelaySeconds: 5
+          periodSeconds: 10
 ---
 # Create NDM cluster exporter deployment.
 # This is an optional component and is not required for the basic

@@ -21,9 +21,9 @@ import (
 	"sync"
 	"testing"
 
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 
 	"github.com/stretchr/testify/assert"
@@ -103,8 +103,8 @@ func CreateFakeClient(t *testing.T) client.Client {
 	}
 
 	s := scheme.Scheme
-	s.AddKnownTypes(apis.SchemeGroupVersion, deviceR)
-	s.AddKnownTypes(apis.SchemeGroupVersion, deviceList)
+	s.AddKnownTypes(apis.GroupVersion, deviceR)
+	s.AddKnownTypes(apis.GroupVersion, deviceList)
 
 	fakeNdmClient := ndmFakeClientset.NewFakeClient()
 	if fakeNdmClient == nil {

@@ -33,6 +33,8 @@ const (
 	AttachEA EventAction = libudevwrapper.UDEV_ACTION_ADD
 	// DetachEA is detach disk event name
 	DetachEA EventAction = libudevwrapper.UDEV_ACTION_REMOVE
+	// MountEA is mount-point/fs change event
+	MountEA EventAction = "mount-change"
 )
 
 // ProbeEvent struct contain a copy of controller it will update disk resources
@@ -58,7 +60,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 	// iterate through each block device and perform the add/update operation
 	for _, device := range msg.Devices {
 		klog.Infof("Processing details for %s", device.DevPath)
-		pe.Controller.FillBlockDeviceDetails(device)
+		pe.Controller.FillBlockDeviceDetails(device, msg.RequestedProbes...)
 
 		// add all devices to the hierarchy cache, irrespective of whether they will be
 		// filtered at a later stage. This is done so that a complete disk hierarchy is available
@@ -134,6 +136,42 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 	if !isDeactivated && !isGPTBasedUUIDEnabled {
 		go Rescan(pe.Controller)
 	}
+}
+
+func (pe *ProbeEvent) changeBlockDeviceEvent(msg controller.EventMessage) {
+	var err error
+
+	if msg.AllBlockDevices {
+		for _, bd := range pe.Controller.BDHierarchy {
+			klog.Infof("Processing changes for %s", bd.DevPath)
+			err = pe.changeBlockDevice(&bd, msg.RequestedProbes...)
+			if err != nil {
+				klog.Errorf("failed to update blockdevice: %v", err)
+			}
+		}
+		return
+	}
+
+	for _, bd := range msg.Devices {
+		// The bd in `msg.Devices` mostly doesn't contain any information other than the
+		// DevPath. Get corresponding bd from cache since cache will have latest info
+		// for the bd.
+		cacheBD, ok := pe.Controller.BDHierarchy[bd.DevPath]
+		klog.Infof("Processing changes for %s", cacheBD.DevPath)
+		if ok {
+			err = pe.changeBlockDevice(&cacheBD, msg.RequestedProbes...)
+		} else {
+			// Device not in heiracrhy cache. this shouldn't happen, but to recover
+			// We use the mostly empty bd and run it through all probes
+			klog.V(4).Info("could not find bd in heirarchy cache. ",
+				"This shouldn't happen. Will try to recover.")
+			err = pe.changeBlockDevice(bd)
+		}
+		if err != nil {
+			klog.Errorf("failed to update blockdevice: %v", err)
+		}
+	}
+
 }
 
 // isParentOrSlaveDevice check if any of the errored device is a parent / slave to the

@@ -20,10 +20,10 @@ import (
 	"context"
 	"testing"
 
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"github.com/stretchr/testify/assert"
@@ -365,8 +365,8 @@ func TestDeviceInUseByZFSLocalPV(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -922,8 +922,8 @@ func TestHandleUnmanagedDevices(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
@@ -1024,13 +1024,18 @@ func TestCreateBlockDeviceResourceIfNoHolders(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
 			for _, bdAPI := range tt.bdAPIList.Items {
 				cl.Create(context.TODO(), &bdAPI)
+			}
+
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
 			}
 
 			ctrl := &controller.Controller{
@@ -1436,13 +1441,18 @@ func TestUpgradeDeviceInUseByCStor(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
 			for _, bdAPI := range tt.bdAPIList.Items {
 				cl.Create(context.TODO(), &bdAPI)
+			}
+
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
 			}
 
 			ctrl := &controller.Controller{
@@ -1855,13 +1865,18 @@ func TestUpgradeDeviceInUseByLocalPV(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
 			for _, bdAPI := range tt.bdAPIList.Items {
 				cl.Create(context.TODO(), &bdAPI)
+			}
+
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
 			}
 
 			ctrl := &controller.Controller{
@@ -2101,13 +2116,18 @@ func TestUpgradeBD(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
 			for _, bdAPI := range tt.bdAPIList.Items {
 				cl.Create(context.TODO(), &bdAPI)
+			}
+
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
 			}
 
 			ctrl := &controller.Controller{
@@ -2602,13 +2622,18 @@ func TestAddBlockDevice(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with all the bd resources
 			for _, bdAPI := range tt.bdAPIList.Items {
 				cl.Create(context.TODO(), &bdAPI)
+			}
+
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
 			}
 
 			ctrl := &controller.Controller{
@@ -2618,7 +2643,7 @@ func TestAddBlockDevice(t *testing.T) {
 			pe := &ProbeEvent{
 				Controller: ctrl,
 			}
-			err := pe.addBlockDevice(tt.bd, tt.bdAPIList)
+			err = pe.addBlockDevice(tt.bd, tt.bdAPIList)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("addBlockDevice() error = %v, wantErr %v", err, tt.wantErr)
@@ -2704,8 +2729,8 @@ func TestProbeEvent_createOrUpdateWithFSUUID(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with the bd resource
@@ -2807,8 +2832,8 @@ func TestProbeEvent_createOrUpdateWithPartitionUUID(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with the bd resource
@@ -2914,8 +2939,8 @@ func TestCreateOrUpdateWithAnnotation(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 
 			// initialize client with the bd resource

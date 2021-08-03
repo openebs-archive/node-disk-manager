@@ -20,9 +20,9 @@ import (
 	"context"
 	"testing"
 
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"github.com/stretchr/testify/assert"
@@ -431,8 +431,8 @@ func TestDeleteBlockDevice(t *testing.T) {
 			bd := tt.bd
 			bdAPIList := tt.bdAPIList
 			s := scheme.Scheme
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDevice{})
-			s.AddKnownTypes(apis.SchemeGroupVersion, &apis.BlockDeviceList{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
 			cl := fake.NewFakeClientWithScheme(s)
 			ctrl := &controller.Controller{
 				Clientset:   cl,
@@ -447,11 +447,16 @@ func TestDeleteBlockDevice(t *testing.T) {
 				cl.Create(context.TODO(), &bdAPI)
 			}
 
+			err := cl.List(context.TODO(), tt.bdAPIList)
+			if err != nil {
+				t.Errorf("error updating the resource API List %v", err)
+			}
+
 			pe := &ProbeEvent{
 				Controller: ctrl,
 			}
 
-			if err := pe.deleteBlockDevice(bd, bdAPIList); (err != nil) != tt.wantErr {
+			if err = pe.deleteBlockDevice(bd, bdAPIList); (err != nil) != tt.wantErr {
 				t.Errorf("deleteBlockDevice() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

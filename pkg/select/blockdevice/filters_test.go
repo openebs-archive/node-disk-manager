@@ -18,8 +18,10 @@ package blockdevice
 
 import (
 	"fmt"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"

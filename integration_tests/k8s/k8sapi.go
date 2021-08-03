@@ -22,10 +22,10 @@ import (
 	"strings"
 	"time"
 
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apiextensionsV1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,7 +42,7 @@ const k8sReconcileTime = 10 * time.Second
 // with their status
 func (c K8sClient) ListPodStatus() (map[string]string, error) {
 	pods := make(map[string]string)
-	podList, err := c.ClientSet.CoreV1().Pods(Namespace).List(metav1.ListOptions{})
+	podList, err := c.ClientSet.CoreV1().Pods(Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (c K8sClient) ListPodStatus() (map[string]string, error) {
 // their status
 func (c K8sClient) ListNodeStatus() (map[string]string, error) {
 	nodes := make(map[string]string)
-	nodeList, err := c.ClientSet.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := c.ClientSet.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +95,19 @@ func (c K8sClient) GetBlockDeviceClaim(NameSpace, Name string) (*apis.BlockDevic
 	return bdc, nil
 }
 
+// GetBlockDevice with Name in Namespace
+func (c K8sClient) GetBlockDevice(Name, Namesapce string) (*apis.BlockDevice, error) {
+	bd := apis.BlockDevice{}
+	err := c.RunTimeClient.Get(context.TODO(), client.ObjectKey{
+		Name:      Name,
+		Namespace: Namesapce,
+	}, &bd)
+	if err != nil {
+		return nil, err
+	}
+	return &bd, nil
+}
+
 // ListBlockDeviceClaims returns list of BlockDeviceClaims in the cluster
 func (c K8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
 	bdcList := &apis.BlockDeviceClaimList{
@@ -118,7 +131,7 @@ func (c K8sClient) RestartPod(name string) error {
 	}
 	for pod := range pods {
 		if strings.Contains(pod, name) {
-			return c.ClientSet.CoreV1().Pods(Namespace).Delete(pod, &metav1.DeleteOptions{})
+			return c.ClientSet.CoreV1().Pods(Namespace).Delete(context.Background(), pod, metav1.DeleteOptions{})
 		}
 	}
 	return fmt.Errorf("could not find given pod")
@@ -177,45 +190,45 @@ func (c K8sClient) CreateServiceAccount(serviceAccount corev1.ServiceAccount) er
 	return err
 }
 
-// DeleteServiceAc[2050]:4589616count deletes the service account
+// DeleteServiceAccount deletes the service account
 func (c K8sClient) DeleteServiceAccount(serviceAccount corev1.ServiceAccount) error {
 	err := c.RunTimeClient.Delete(context.Background(), &serviceAccount)
 	return err
 }
 
 // CreateClusterRole creates a cluster role
-func (c K8sClient) CreateClusterRole(clusterRole rbacv1beta1.ClusterRole) error {
+func (c K8sClient) CreateClusterRole(clusterRole rbacv1.ClusterRole) error {
 	err := c.RunTimeClient.Create(context.Background(), &clusterRole)
 	return err
 }
 
 // DeleteClusterRole deletes the cluster role
-func (c K8sClient) DeleteClusterRole(clusterRole rbacv1beta1.ClusterRole) error {
+func (c K8sClient) DeleteClusterRole(clusterRole rbacv1.ClusterRole) error {
 	err := c.RunTimeClient.Delete(context.Background(), &clusterRole)
 	return err
 }
 
 // CreateClusterRoleBinding creates a rolebinding
-func (c K8sClient) CreateClusterRoleBinding(clusterRoleBinding rbacv1beta1.ClusterRoleBinding) error {
+func (c K8sClient) CreateClusterRoleBinding(clusterRoleBinding rbacv1.ClusterRoleBinding) error {
 	err := c.RunTimeClient.Create(context.Background(), &clusterRoleBinding)
 	return err
 }
 
 // DeleteClusterRoleBinding deletes the role binding
-func (c K8sClient) DeleteClusterRoleBinding(clusterrolebinding rbacv1beta1.ClusterRoleBinding) error {
+func (c K8sClient) DeleteClusterRoleBinding(clusterrolebinding rbacv1.ClusterRoleBinding) error {
 	err := c.RunTimeClient.Delete(context.Background(), &clusterrolebinding)
 	return err
 }
 
 // CreateCustomResourceDefinition creates a CRD
 func (c K8sClient) CreateCustomResourceDefinition(customResourceDefinition apiextensionsV1.CustomResourceDefinition) error {
-	_, err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Create(&customResourceDefinition)
+	_, err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Create(context.Background(), &customResourceDefinition, metav1.CreateOptions{})
 	return err
 }
 
 // DeleteCustomResourceDefinition deletes the CRD
 func (c K8sClient) DeleteCustomResourceDefinition(customResourceDefinition apiextensionsV1.CustomResourceDefinition) error {
-	err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Delete(customResourceDefinition.Name, &metav1.DeleteOptions{})
+	err := c.APIextClient.ApiextensionsV1().CustomResourceDefinitions().Delete(context.Background(), customResourceDefinition.Name, metav1.DeleteOptions{})
 	return err
 }
 
