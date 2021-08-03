@@ -121,8 +121,8 @@ func (up *udevProbe) Start() {
 	go up.listen()
 	up.udeveventSubscription = udevevent.Subscribe(udevevent.EventTypeAdd,
 		udevevent.EventTypeRemove)
-	go udevevent.Monitor()
-	go up.listenUdevEventMonitor()
+	errChan := udevevent.Monitor()
+	go up.listenUdevEventMonitor(errChan)
 	probeEvent := newUdevProbe(up.controller)
 	err := probeEvent.scan()
 	if err != nil {
@@ -365,10 +365,15 @@ func (up *udevProbe) free() {
 	}
 }
 
-func (up *udevProbe) listenUdevEventMonitor() {
+func (up *udevProbe) listenUdevEventMonitor(errChan <-chan error) {
+	eventChan := up.udeveventSubscription.Events()
 	for {
-		event := <-up.udeveventSubscription.Events()
-		controller.EventMessageChannel <- processUdevEvent(event)
+		select {
+		case event := <-eventChan:
+			controller.EventMessageChannel <- processUdevEvent(event)
+		case err := <-errChan:
+			klog.Error(err)
+		}
 	}
 }
 

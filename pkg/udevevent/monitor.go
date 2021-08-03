@@ -20,8 +20,6 @@ import (
 	"errors"
 	"syscall"
 
-	"k8s.io/klog"
-
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
@@ -147,22 +145,26 @@ func dispatchEvent(event UdevEvent) {
 }
 
 //Monitor start monitoring on udev source
-func Monitor() {
-	monitor, err := newMonitor()
-	if err != nil {
-		klog.Error(err)
-	}
-	defer monitor.free()
-	fd, err := monitor.setup()
-	if err != nil {
-		klog.Error(err)
-	}
-	for {
-		err := monitor.process(fd)
+func Monitor() <-chan error {
+	errChan := make(chan error)
+	go func() {
+		monitor, err := newMonitor()
 		if err != nil {
-			klog.Error(err)
+			errChan <- err
 		}
-	}
+		defer monitor.free()
+		fd, err := monitor.setup()
+		if err != nil {
+			errChan <- err
+		}
+		for {
+			err := monitor.process(fd)
+			if err != nil {
+				errChan <- err
+			}
+		}
+	}()
+	return errChan
 }
 
 func Subscribe(eventTypes ...UdevEventType) *Subscription {
