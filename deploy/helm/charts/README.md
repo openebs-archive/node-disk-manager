@@ -62,6 +62,18 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndmOperator.readinessCheck.initialDelaySeconds`| Delay before readiness probe is initiated     | `4`                               |
 | `ndmOperator.readinessCheck.periodSeconds`      | How often to perform the readiness probe      | `10`                              |
 | `ndmOperator.readinessCheck.failureThreshold`   | Failure threshold for the readiness probe     | `1`                               |
+| `ndmExporter.enabled`                   | Enable NDM Exporters                          | `false`                                   |
+| `ndmExporter.image.registry`            | Registry for NDM Exporters image              | `""`                                      |
+| `ndmExporter.repository`                | Image repository for NDM Exporters            | `openebs/node-disk-exporter`              |
+| `ndmExporter.pullPolicy`                | Image pull policy for NDM Exporters           | `IfNotPresent`                            |
+| `ndmExporter.tag`                       | Image tag for NDM Exporters                   | `ci`                                      |
+| `ndmExporter.nodeExporter.name`         | Name of the NDM node exporter                 | `node-exporter`                           |
+| `ndmExporter.nodeExporter.podLabels`    | Appends labels to the ndm node exporter daemonset pods  | `name: openebs-ndm-node-exporter` |
+| `ndmExporter.nodeExporter.metricsPort`  | The TCP port number used for exposing NDM node exporter metrics    | `9101`               |
+| `ndmExporter.clusterExporter.name`      | Name of the NDM node exporter                 | `cluster-exporter`                        |
+| `ndmExporter.clusterExporter.podLabels` | Appends labels to the ndm cluster exporter deployment pods  | `name: openebs-ndm-cluster-exporter` |
+| `ndmExporter.clusterExporter.metricsPort`       | The TCP port number used for exposing NDM cluster exporter metrics  | `9100`      |
+| `ndmExporter.clusterExporter.replicas`  | Pod replica count for NDM cluster exporter    | `1`                                       |
 | `helperPod.image.registry`              | Registry for helper image                     | `""`                                      |
 | `helperPod.image.repository`            | Image for helper pod                          | `openebs/linux-utils`                     |
 | `helperPod.image.pullPolicy`            | Pull policy for helper pod                    | `IfNotPresent`                            |
