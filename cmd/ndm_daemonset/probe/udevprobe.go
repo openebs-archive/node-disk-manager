@@ -385,6 +385,7 @@ func processUdevEvent(event udevevent.UdevEvent) controller.EventMessage {
 	action := event.GetAction()
 	klog.Infof("processing new event for (%s) action type %s", path, action)
 	deviceDetails := &blockdevice.BlockDevice{}
+	// This is the legacy uuid. It will be overwritten in the event handler.
 	deviceDetails.UUID = uuid
 	deviceDetails.SysPath = event.GetSyspath()
 	deviceDetails.DevPath = path

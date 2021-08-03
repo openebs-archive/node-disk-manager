@@ -32,11 +32,13 @@ type monitor struct {
 	udevMonitor *libudevwrapper.UdevMonitor
 }
 
+// UdevEvent is a wrapper for an event received from udev
 type UdevEvent struct {
 	*libudevwrapper.UdevDevice
 	eventType UdevEventType
 }
 
+// Subscription is used to receive events from udev
 type Subscription struct {
 	targetChannel   chan UdevEvent
 	subscribedTypes []UdevEventType
@@ -121,8 +123,10 @@ func (m *monitor) process(fd int) error {
 		eventType = EventTypeAdd
 	case libudevwrapper.UDEV_ACTION_REMOVE:
 		eventType = EventTypeRemove
-	default:
+	case libudevwrapper.UDEV_ACTION_CHANGE:
 		eventType = EventTypeChange
+	default:
+		return errors.New("unknown udev action")
 	}
 	event := UdevEvent{device, eventType}
 	dispatchEvent(event)
@@ -167,6 +171,8 @@ func Monitor() <-chan error {
 	return errChan
 }
 
+// Subscribe to udev events. Optionally pass eventTypes to filter the events
+// based on their type
 func Subscribe(eventTypes ...UdevEventType) *Subscription {
 	if len(eventTypes) == 0 {
 		eventTypes = []UdevEventType{EventTypeAdd, EventTypeRemove, EventTypeChange}
@@ -179,6 +185,7 @@ func Subscribe(eventTypes ...UdevEventType) *Subscription {
 	return &subscription
 }
 
+// Usubscribe from an active subscription
 func Unsubscribe(sub *Subscription) error {
 	if sub == nil || sub.targetChannel == nil || sub.subscribedTypes == nil {
 		return ErrInvalidSubscription
@@ -215,11 +222,11 @@ func (u UdevEvent) GetAction() UdevEventType {
 func (uevt UdevEventType) String() string {
 	switch uevt {
 	case EventTypeAdd:
-		return "add"
+		return libudevwrapper.UDEV_ACTION_ADD
 	case EventTypeRemove:
-		return "remove"
+		return libudevwrapper.UDEV_ACTION_REMOVE
 	case EventTypeChange:
-		return "change"
+		return libudevwrapper.UDEV_ACTION_CHANGE
 	default:
 		return "unknown"
 	}
