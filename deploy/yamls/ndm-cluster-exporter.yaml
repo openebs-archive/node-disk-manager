@@ -27,7 +27,7 @@ spec:
         args:
         - "start"
         - "--mode=cluster"
-        - "--port=:9100"
+        - "--port==$(METRICS_LISTEN_PORT)"
         - "--metrics=/metrics"
         ports:
         - containerPort: 9100
@@ -39,4 +39,24 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: METRICS_LISTEN_PORT
+          value: :9100
+---
+# Create NDM cluster exporter service
+# This is optional and required only when
+# ndm-cluster-exporter deployment is used
+apiVersion: v1
+kind: Service
+metadata:
+  name: ndm-cluster-exporter-service
+  labels:
+    name: openebs-ndm-cluster-exporter
+spec:
+  clusterIP: None
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: 9100
+  selector:
+    name: ndm-cluster-exporter
 ---

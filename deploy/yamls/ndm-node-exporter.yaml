@@ -26,7 +26,7 @@ spec:
         args:
         - "start"
         - "--mode=node"
-        - "--port=:9101"
+        - "--port==$(METRICS_LISTEN_PORT)"
         - "--metrics=/metrics"
         ports:
         - containerPort: 9101
@@ -40,4 +40,24 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: METRICS_LISTEN_PORT
+          value: :9101
+---
+# Create NDM node exporter service
+# This is optional and required only when
+# ndm-node-exporter daemonset is used
+apiVersion: v1
+kind: Service
+metadata:
+  name: ndm-node-exporter-service
+  labels:
+    name: openebs-ndm-node-exporter
+spec:
+  clusterIP: None
+  ports:
+    - name: metrics
+      port: 9101
+      targetPort: 9101
+  selector:
+    name: ndm-node-exporter
 ---
