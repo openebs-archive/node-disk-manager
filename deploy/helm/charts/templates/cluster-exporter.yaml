@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "openebs-ndm.cluster-exporter.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.ndmExporter.clusterExporter.replicas }}
+  replicas: 1
   strategy:
     type: Recreate
   selector:

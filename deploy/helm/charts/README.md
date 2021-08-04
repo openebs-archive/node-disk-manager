@@ -56,23 +56,13 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndmOperator.nodeSelector`              | Nodeselector for operator pods                | `""`                                      |
 | `ndmOperator.tolerations`               | NDM operator's pod toleration values          | `""`                                      |
 | `ndmOperator.securityContext`           | Seurity context for container                 | `""`                                      |
-| `ndmOperator.healthCheck.initialDelaySeconds`   | Delay before liveness probe is initiated      | `30`                              |
-| `ndmOperator.healthCheck.periodSeconds`         | How often to perform the liveness probe       | `60`                              |
-| `ndmOperator.readinessCheck.initialDelaySeconds`| Delay before readiness probe is initiated     | `4`                               |
-| `ndmOperator.readinessCheck.periodSeconds`      | How often to perform the readiness probe      | `10`                              |
-| `ndmOperator.readinessCheck.failureThreshold`   | Failure threshold for the readiness probe     | `1`                               |
 | `ndmExporter.enabled`                   | Enable NDM Exporters                          | `false`                                   |
 | `ndmExporter.image.registry`            | Registry for NDM Exporters image              | `""`                                      |
 | `ndmExporter.repository`                | Image repository for NDM Exporters            | `openebs/node-disk-exporter`              |
 | `ndmExporter.pullPolicy`                | Image pull policy for NDM Exporters           | `IfNotPresent`                            |
-| `ndmExporter.tag`                       | Image tag for NDM Exporters                   | `ci`                                      |
-| `ndmExporter.nodeExporter.name`         | Name of the NDM node exporter                 | `node-exporter`                           |
-| `ndmExporter.nodeExporter.podLabels`    | Appends labels to the ndm node exporter daemonset pods  | `name: openebs-ndm-node-exporter` |
+| `ndmExporter.tag`                       | Image tag for NDM Exporters                   | `1.6.0`                                   |
 | `ndmExporter.nodeExporter.metricsPort`  | The TCP port number used for exposing NDM node exporter metrics    | `9101`               |
-| `ndmExporter.clusterExporter.name`      | Name of the NDM node exporter                 | `cluster-exporter`                        |
-| `ndmExporter.clusterExporter.podLabels` | Appends labels to the ndm cluster exporter deployment pods  | `name: openebs-ndm-cluster-exporter` |
-| `ndmExporter.clusterExporter.metricsPort`       | The TCP port number used for exposing NDM cluster exporter metrics  | `9100`      |
-| `ndmExporter.clusterExporter.replicas`  | Pod replica count for NDM cluster exporter    | `1`                                       |
+| `ndmExporter.clusterExporter.metricsPort`   | The TCP port number used for exposing NDM cluster exporter metrics  | `9100`          |
 | `featureGates.APIService.enabled`       | Enable the gRPC API service of NDM            | `false`                                   |
 | `featureGates.UseOSDisk.enabled`        | Enable feature-gate to use free space on OS disk | `false`                                   |
 | `featureGates.MountChangeDetection.enabled` | Enable feature-gate to detect mountpoint/filesystem changes | `false`                                   |

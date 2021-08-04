@@ -701,7 +701,26 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: METRICS_LISTEN_PORT
-            value: :9100
+          value: :9100
+---
+# Create NDM cluster exporter service
+# This is optional and required only when
+# ndm-cluster-exporter deployment is used
+apiVersion: v1
+kind: Service
+metadata:
+  name: ndm-cluster-exporter-service
+  labels:
+    name: openebs-ndm-exporter
+    component: openebs-ndm-cluster-exporter
+spec:
+  clusterIP: None
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: 9100
+  selector:
+    name: ndm-cluster-exporter
 ---
 # Create NDM node exporter daemonset.
 # This is an optional component used for getting disk level
@@ -746,25 +765,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: METRICS_LISTEN_PORT
-            value: :9101
----
-# Create NDM cluster exporter service
-# This is optional and required only when
-# ndm-cluster-exporter deployment is used
-apiVersion: v1
-kind: Service
-metadata:
-  name: ndm-cluster-exporter-service
-  labels:
-    name: openebs-ndm-cluster-exporter
-spec:
-  clusterIP: None
-  ports:
-    - name: metrics
-      port: 9100
-      targetPort: 9100
-  selector:
-    name: ndm-cluster-exporter
+          value: :9101
 ---
 # Create NDM node exporter service
 # This is optional and required only when
@@ -774,7 +775,8 @@ kind: Service
 metadata:
   name: ndm-node-exporter-service
   labels:
-    name: openebs-ndm-node-exporter
+    name: openebs-ndm-exporter
+    component: openebs-ndm-node-exporter
 spec:
   clusterIP: None
   ports:

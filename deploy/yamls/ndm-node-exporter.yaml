@@ -51,7 +51,8 @@ kind: Service
 metadata:
   name: ndm-node-exporter-service
   labels:
-    name: openebs-ndm-node-exporter
+    name: openebs-ndm-exporter
+    component: openebs-ndm-node-exporter
 spec:
   clusterIP: None
   ports:

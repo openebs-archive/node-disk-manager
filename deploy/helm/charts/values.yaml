@@ -88,7 +88,7 @@ ndmExporter:
     repository: openebs/node-disk-exporter
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ci
+    tag: 1.6.0
   nodeExporter:
     name: node-exporter
     podLabels:
@@ -101,7 +101,6 @@ ndmExporter:
     name: cluster-exporter
     podLabels:
       name: openebs-ndm-cluster-exporter
-    replicas: 1
     # The TCP port number used for exposing ndm-cluster-exporter metrics.
     # If not set, service will not be created to expose metrics endpoint to serviceMonitor
     # and listen-port flag will not be set and container port will be empty.

@@ -84,6 +84,12 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 {{- end }}
 
+{{- define "openebs-ndm.exporter.name" -}}
+{{- $ndmName := default .Chart.Name .Values.ndmExporter.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- $componentName := "exporter" | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" $ndmName $componentName | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
 {{- define "openebs-ndm.node-exporter.name" -}}
 {{- $ndmName := default .Chart.Name .Values.ndmExporter.nodeExporter.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- $componentName := .Values.ndmExporter.nodeExporter.name | trunc 63 | trimSuffix "-" }}
@@ -196,6 +202,7 @@ component: {{ default (include "openebs-ndm.cluster-exporter.name" .) .Values.nd
 Create component labels for ndm cluster exporter component
 */}}
 {{- define "openebs-ndm.cluster-exporter.componentLabels" -}}
+name: {{ template "openebs-ndm.exporter.name" . }}
 openebs.io/component-name: {{ default (include "openebs-ndm.cluster-exporter.name" .) .Values.ndmExporter.clusterExporter.componentName }}
 {{- end -}}
 
@@ -222,6 +229,7 @@ component: {{ default (include "openebs-ndm.node-exporter.name" .) .Values.ndmEx
 Create component labels for ndm node exporter component
 */}}
 {{- define "openebs-ndm.node-exporter.componentLabels" -}}
+name: {{ template "openebs-ndm.exporter.name" . }}
 openebs.io/component-name: {{ default (include "openebs-ndm.node-exporter.name" .) .Values.ndmExporter.nodeExporter.componentName }}
 {{- end -}}
 
