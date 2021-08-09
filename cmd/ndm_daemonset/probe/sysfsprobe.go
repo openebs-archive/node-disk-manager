@@ -27,6 +27,7 @@ import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/sysfs"
+	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/klog"
 )
@@ -70,6 +71,7 @@ var sysfsProbeRegister = func() {
 // sysfsProbe fills the logical sector size,
 // physical sector size, drive type(ssd or hdd) of the disk
 type sysfsProbe struct {
+	udevSubscription *udevevent.Subscription
 }
 
 func newSysFSProbe() *sysfsProbe {
@@ -77,7 +79,10 @@ func newSysFSProbe() *sysfsProbe {
 }
 
 // It is part of probe interface. Hence, empty implementation.
-func (cp *sysfsProbe) Start() {}
+func (cp *sysfsProbe) Start() {
+	cp.udevSubscription = udevevent.Subscribe(udevevent.EventTypeChange)
+	go cp.listenUdevChanges()
+}
 
 // FillBlockDeviceDetails updates the logical sector size,
 // physical sector size, drive type(ssd or hdd) of the disk
@@ -162,5 +167,14 @@ func (cp *sysfsProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 		blockDevice.DeviceAttributes.DriveType = driveType
 		klog.V(4).Infof("blockdevice path: %s drive type :%s filled by sysfs probe.",
 			blockDevice.DevPath, blockDevice.DeviceAttributes.DriveType)
+	}
+}
+
+func (cp *sysfsProbe) listenUdevChanges() {
+	eventChan := cp.udevSubscription.Events()
+	for evt := range eventChan {
+		msg := processUdevEvent(evt)
+		msg.RequestedProbes = []string{sysfsProbeName}
+		controller.EventMessageChannel <- msg
 	}
 }

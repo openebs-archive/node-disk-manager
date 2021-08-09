@@ -348,6 +348,8 @@ func (up *udevProbe) listen() {
 			probeEvent.deleteBlockDeviceEvent(msg)
 		case string(MountEA):
 			probeEvent.changeBlockDeviceEvent(msg)
+		case string(ChangeEA):
+			probeEvent.changeBlockDeviceEvent(msg)
 		}
 	}
 }
@@ -441,6 +443,8 @@ func processUdevEvent(event udevevent.UdevEvent) controller.EventMessage {
 		eventMessage.Action = string(AttachEA)
 	case udevevent.EventTypeRemove:
 		eventMessage.Action = string(DetachEA)
+	case udevevent.EventTypeChange:
+		eventMessage.Action = string(ChangeEA)
 	}
 	eventMessage.Devices = diskInfo
 
