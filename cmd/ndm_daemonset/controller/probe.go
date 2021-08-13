@@ -19,10 +19,10 @@ package controller
 import (
 	"sort"
 
+	"k8s.io/klog"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
-
-	"k8s.io/klog"
 )
 
 // EventMessage struct contains attribute of event message info.
@@ -32,6 +32,8 @@ type EventMessage struct {
 	RequestedProbes []string                   // List of probes (given as probe names) to be run for this event. Optional
 	AllBlockDevices bool                       // If true, ignore Devices list and iterate through all block devices present in the hierarchy cache.
 }
+
+var EventMessageChannel = make(chan EventMessage)
 
 // Probe contains name, state and probeinterface
 type Probe struct {

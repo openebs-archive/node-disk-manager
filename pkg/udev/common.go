@@ -52,6 +52,7 @@ const (
 	UDEV_ACTION               = "UDEV_ACTION"          // udev attribute to get monitor device action
 	UDEV_ACTION_ADD           = "add"                  // udev attribute constant for add action
 	UDEV_ACTION_REMOVE        = "remove"               // udev attribute constant for remove action
+	UDEV_ACTION_CHANGE        = "change"               // udev attribute constant for change action
 	UDEV_DEVTYPE              = "DEVTYPE"              // udev attribute to get device device type ie - disk or part
 	UDEV_SOURCE               = "udev"                 // udev source constant
 	UDEV_SYSPATH_PREFIX       = "/sys/dev/block/"      // udev syspath prefix
