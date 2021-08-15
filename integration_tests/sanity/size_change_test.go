@@ -27,7 +27,7 @@ import (
 
 const newDiskCapacity int64 = 500 * 1024 * 1024
 
-var _ = Describe("Mount-point and fs type change detection tests", func() {
+var _ = Describe("Size change detection tests", func() {
 	var kcli k8s.K8sClient
 	disk := udev.NewDisk(DiskImageSize)
 
@@ -46,12 +46,12 @@ var _ = Describe("Mount-point and fs type change detection tests", func() {
 		By("destroying ndm daemonset", stopAndDeleteNDMDaemonset(&kcli))
 	})
 
-	It("should pass mount-umount flow", func() {
+	It("should detect size change and update bd capacity", func() {
 		By("Changing disk size", changeDiskSize(&disk))
 		By("Waiting for etcd update", k8s.WaitForStateChange)
 		By("Verifying bd capacity update in etcd",
 			verifyDiskCapacityUpdate(&kcli, bdName, bdNamespace,
-				Equal(newDiskCapacity)))
+				Equal(uint64(newDiskCapacity))))
 
 	})
 })
