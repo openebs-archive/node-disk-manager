@@ -214,3 +214,12 @@ func (disk *Disk) Unmount() error {
 	}
 	return lastErr
 }
+
+func (disk *Disk) Resize(size int64) error {
+	err := utils.RunCommand(fmt.Sprintf("dd if=/dev/zero of=%s bs=1 size=%d",
+		disk.imageName, size))
+	if err != nil {
+		return err
+	}
+	return utils.RunCommandWithSudo("losetup -c " + disk.Name)
+}
