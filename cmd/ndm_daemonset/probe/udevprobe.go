@@ -120,7 +120,8 @@ func newUdevProbeForFillDiskDetails(sysPath string) (*udevProbe, error) {
 func (up *udevProbe) Start() {
 	go up.listen()
 	up.udeveventSubscription = udevevent.Subscribe(udevevent.EventTypeAdd,
-		udevevent.EventTypeRemove)
+		udevevent.EventTypeRemove,
+		udevevent.EventTypeChange)
 	errChan := udevevent.Monitor()
 	go up.listenUdevEventMonitor(errChan)
 	probeEvent := newUdevProbe(up.controller)
@@ -387,10 +388,19 @@ func processUdevEvent(event udevevent.UdevEvent) controller.EventMessage {
 	action := event.GetAction()
 	klog.Infof("processing new event for (%s) action type %s", path, action)
 	deviceDetails := &blockdevice.BlockDevice{}
+	eventMessage := controller.EventMessage{}
+
+	deviceDetails.DevPath = path
+	// The change event handler discards the devices sent in the event message
+	// and only uses the dev path field to fetch the bd from the controller cache.
+	// Fill only dev path and do not process further in case of change events.
+	if action == udevevent.EventTypeChange {
+		eventMessage.RequestedProbes = []string{sysfsProbeName, udevProbeName}
+		goto event_dispatch
+	}
 	// This is the legacy uuid. It will be overwritten in the event handler.
 	deviceDetails.UUID = uuid
 	deviceDetails.SysPath = event.GetSyspath()
-	deviceDetails.DevPath = path
 
 	// fields used for UUID. These fields will be filled always. But used only if the
 	// GPTBasedUUID feature-gate is enabled.
@@ -436,8 +446,8 @@ func processUdevEvent(event udevevent.UdevEvent) controller.EventMessage {
 		}
 	}
 
+event_dispatch:
 	diskInfo = append(diskInfo, deviceDetails)
-	eventMessage := controller.EventMessage{}
 	switch action {
 	case udevevent.EventTypeAdd:
 		eventMessage.Action = string(AttachEA)
@@ -447,6 +457,5 @@ func processUdevEvent(event udevevent.UdevEvent) controller.EventMessage {
 		eventMessage.Action = string(ChangeEA)
 	}
 	eventMessage.Devices = diskInfo
-
 	return eventMessage
 }
