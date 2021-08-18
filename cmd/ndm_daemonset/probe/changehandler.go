@@ -20,10 +20,14 @@ import (
 	"errors"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/pkg/util"
+
 	"k8s.io/klog"
 )
 
 func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedProbes ...string) error {
+	bdCopy := *bd
+	equalMountPoints := true
 	pe.Controller.FillBlockDeviceDetails(bd, requestedProbes...)
 	if bd.UUID == "" {
 		uuid, ok := generateUUID(*bd)
@@ -33,6 +37,34 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 		}
 		bd.UUID = uuid
 	}
+
+	// Check if the mount-points have changed
+	if len(bdCopy.FSInfo.MountPoint) != len(bd.FSInfo.MountPoint) {
+		equalMountPoints = false
+	} else {
+		for _, mountPoint := range bd.FSInfo.MountPoint {
+			if !util.Contains(bdCopy.FSInfo.MountPoint, mountPoint) {
+				equalMountPoints = false
+				break
+			}
+		}
+	}
+	/*
+	 * Change detection is only employed for detecting changes in:
+	 * 1. Size
+	 * 2. Filesystem
+	 * 3. Mount-points
+	 *
+	 * Check if any of these have actually changed. This prevents unnecessary
+	 * calls to the k8s api server.
+	 */
+	if bdCopy.Capacity.Storage == bd.Capacity.Storage &&
+		bdCopy.FSInfo.FileSystem == bd.FSInfo.FileSystem &&
+		equalMountPoints {
+		klog.Infof("no changes in %s. Skipping update", bd.DevPath)
+		return nil
+	}
+
 	pe.addBlockDeviceToHierarchyCache(*bd)
 	if !pe.Controller.ApplyFilter(bd) {
 		return nil
