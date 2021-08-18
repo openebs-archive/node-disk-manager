@@ -119,9 +119,15 @@ func newUdevProbeForFillDiskDetails(sysPath string) (*udevProbe, error) {
 // Start setup udev probe listener and make a single scan of system
 func (up *udevProbe) Start() {
 	go up.listen()
-	up.udeveventSubscription = udevevent.Subscribe(udevevent.EventTypeAdd,
-		udevevent.EventTypeRemove,
-		udevevent.EventTypeChange)
+	if features.FeatureGates.IsEnabled(features.SizeChangeDetection) ||
+		features.FeatureGates.IsEnabled(features.MountChangeDetection) {
+		up.udeveventSubscription = udevevent.Subscribe(udevevent.EventTypeAdd,
+			udevevent.EventTypeRemove,
+			udevevent.EventTypeChange)
+	} else {
+		up.udeveventSubscription = udevevent.Subscribe(udevevent.EventTypeAdd,
+			udevevent.EventTypeRemove)
+	}
 	errChan := udevevent.Monitor()
 	go up.listenUdevEventMonitor(errChan)
 	probeEvent := newUdevProbe(up.controller)
@@ -395,7 +401,12 @@ func processUdevEvent(event udevevent.UdevEvent) controller.EventMessage {
 	// and only uses the dev path field to fetch the bd from the controller cache.
 	// Fill only dev path and do not process further in case of change events.
 	if action == udevevent.EventTypeChange {
-		eventMessage.RequestedProbes = []string{sysfsProbeName, udevProbeName}
+		if features.FeatureGates.IsEnabled(features.SizeChangeDetection) {
+			eventMessage.RequestedProbes = []string{udevProbeName,
+				sysfsProbeName}
+		} else {
+			eventMessage.RequestedProbes = []string{udevProbeName}
+		}
 		goto event_dispatch
 	}
 	// This is the legacy uuid. It will be overwritten in the event handler.

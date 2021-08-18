@@ -47,9 +47,13 @@ const (
 
 	UseOSDisk Feature = "UseOSDisk"
 
-	// MountChangeDetection feature flag is used to enable/disable
+	// MountChangeDetection feature flag is used to enable
 	// mount point and fs type change detection for block devices
-	MountChangeDetection = "MountChangeDetection"
+	MountChangeDetection Feature = "MountChangeDetection"
+
+	// SizeChangeDetection feature flag is used to enable size
+	// change detection for block devices
+	SizeChangeDetection Feature = "SizeChangeDetection"
 )
 
 // supportedFeatures is the list of supported features. This is used while parsing the
@@ -59,6 +63,7 @@ var supportedFeatures = []Feature{
 	APIService,
 	UseOSDisk,
 	MountChangeDetection,
+	SizeChangeDetection,
 }
 
 // defaultFeatureGates is the default features that will be applied to the application
@@ -67,6 +72,7 @@ var defaultFeatureGates = map[Feature]bool{
 	APIService:           false,
 	UseOSDisk:            false,
 	MountChangeDetection: false,
+	SizeChangeDetection:  false,
 }
 
 // featureFlag is a map representing the flag and its state
