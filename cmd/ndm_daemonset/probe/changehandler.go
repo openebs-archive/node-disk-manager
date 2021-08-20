@@ -27,7 +27,7 @@ import (
 
 func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedProbes ...string) error {
 	bdCopy := *bd
-	equalMountPoints := true
+	haveEqualMountPoints := true
 	pe.Controller.FillBlockDeviceDetails(bd, requestedProbes...)
 	if bd.UUID == "" {
 		uuid, ok := generateUUID(*bd)
@@ -40,11 +40,11 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 
 	// Check if the mount-points have changed
 	if len(bdCopy.FSInfo.MountPoint) != len(bd.FSInfo.MountPoint) {
-		equalMountPoints = false
+		haveEqualMountPoints = false
 	} else {
 		for _, mountPoint := range bd.FSInfo.MountPoint {
 			if !util.Contains(bdCopy.FSInfo.MountPoint, mountPoint) {
-				equalMountPoints = false
+				haveEqualMountPoints = false
 				break
 			}
 		}
@@ -60,7 +60,7 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 	 */
 	if bdCopy.Capacity.Storage == bd.Capacity.Storage &&
 		bdCopy.FSInfo.FileSystem == bd.FSInfo.FileSystem &&
-		equalMountPoints {
+		haveEqualMountPoints {
 		klog.Infof("no changes in %s. Skipping update", bd.DevPath)
 		return nil
 	}
