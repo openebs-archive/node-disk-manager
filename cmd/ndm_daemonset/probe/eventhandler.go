@@ -33,9 +33,9 @@ const (
 	AttachEA EventAction = libudevwrapper.UDEV_ACTION_ADD
 	// DetachEA is detach disk event name
 	DetachEA EventAction = libudevwrapper.UDEV_ACTION_REMOVE
-	// MountEA is mount-point/fs change event
-	MountEA  EventAction = "mount-change"
-	ChangeEA EventAction = "change"
+	// ChangeEA event is generated whenever some property of the blockdevice
+	// changes in udev
+	ChangeEA EventAction = libudevwrapper.UDEV_ACTION_CHANGE
 )
 
 // ProbeEvent struct contain a copy of controller it will update disk resources

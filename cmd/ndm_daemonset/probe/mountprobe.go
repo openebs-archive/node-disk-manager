@@ -167,7 +167,7 @@ func (mp *mountProbe) listen() {
 	defer mp.epoll.Stop()
 	klog.Info("started mount change detection loop")
 	defaultMsg := controller.EventMessage{
-		Action:          string(MountEA),
+		Action:          string(ChangeEA),
 		Devices:         nil,
 		AllBlockDevices: true,
 	}
@@ -205,7 +205,7 @@ func (mp *mountProbe) processDiff(diff libmount.MountTabDiff) {
 	}
 
 	mp.destination <- controller.EventMessage{
-		Action:          string(MountEA),
+		Action:          string(ChangeEA),
 		Devices:         devices,
 		RequestedProbes: []string{mountProbeName},
 	}
