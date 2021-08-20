@@ -105,7 +105,7 @@ func newMountProbe(devPath string) *mountProbe {
 // for mount change detection
 func (mp *mountProbe) Start() {
 	if !features.FeatureGates.
-		IsEnabled(features.MountChangeDetection) {
+		IsEnabled(features.ChangeDetection) {
 		return
 	}
 	if err := mp.setupEpoll(); err != nil {
