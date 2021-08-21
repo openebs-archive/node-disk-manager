@@ -120,12 +120,16 @@ func newUdevProbeForFillDiskDetails(sysPath string) (*udevProbe, error) {
 func (up *udevProbe) Start() {
 	go up.listen()
 	if features.FeatureGates.IsEnabled(features.ChangeDetection) {
-		up.udeveventSubscription = udevevent.Subscribe(udevevent.EventTypeAdd,
+		up.udeveventSubscription = udevevent.Subscribe(
+		        udevevent.EventTypeAdd,
 			udevevent.EventTypeRemove,
-			udevevent.EventTypeChange)
+			udevevent.EventTypeChange,
+		)
 	} else {
-		up.udeveventSubscription = udevevent.Subscribe(udevevent.EventTypeAdd,
-			udevevent.EventTypeRemove)
+		up.udeveventSubscription = udevevent.Subscribe(
+		        udevevent.EventTypeAdd,
+			udevevent.EventTypeRemove,
+		)
 	}
 	errChan := udevevent.Monitor()
 	go up.listenUdevEventMonitor(errChan)
