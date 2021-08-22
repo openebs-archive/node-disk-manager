@@ -34,9 +34,9 @@ spec:
         - -v=4
         - --feature-gates="GPTBasedUUID"
         - --feature-gates="APIService"
-        # Detect changes to device size, filesystem and mount-points wihtout restart.
+        # Detect changes to device size, filesystem and mount-points without restart.
         # Uncomment the line below to enable the feature.
-        # --feature-gates="ChangeDetection"
+        # - --feature-gates="ChangeDetection"
         # Default address is 0.0.0.0:9115, do not use quotes around the address
         # - --api-service-address=0.0.0.0:9115
         - --feature-gates="UseOSDisk"
