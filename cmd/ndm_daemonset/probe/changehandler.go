@@ -33,7 +33,7 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 		uuid, ok := generateUUID(*bd)
 		if !ok {
 			klog.Error("could no generate uuid for device. aborting")
-			return errors.New("could not indentify device uniquely")
+			return errors.New("could not identify device uniquely")
 		}
 		bd.UUID = uuid
 	}
