@@ -165,8 +165,7 @@ func (pe *ProbeEvent) changeBlockDeviceEvent(msg controller.EventMessage) {
 			// Device not in heiracrhy cache. this shouldn't happen, but to recover
 			// We use the mostly empty bd and run it through all probes
 			klog.V(4).Info("could not find bd in heirarchy cache. ",
-				"This shouldn't happen. Will try to recover.")
-			err = pe.changeBlockDevice(bd)
+				"This shouldn't happen. Abandoning change.")
 		}
 		if err != nil {
 			klog.Errorf("failed to update blockdevice: %v", err)
