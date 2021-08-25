@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -49,6 +50,8 @@ const (
 	openEBSLabelPrefix = "openebs.io/"
 	// HostNameKey is the key for hostname
 	HostNameKey = "hostname"
+	// LabelTypeNode is the key present in an ENV variable(containing comma separated string value)
+	LabelTypeNode = "node-attributes"
 	// NodeNameKey is the node name label prefix
 	NodeNameKey = "nodename"
 	// KubernetesHostNameLabel is the hostname label used by k8s
@@ -223,13 +226,29 @@ func (c *Controller) setNodeLabels() error {
 		c.NodeAttributes[HostNameKey] = hostName
 	}
 
-	// Fill the blockdevice labels with all the topological labels of the node
-	// to which it is attached to
-	for key, value := range node.Labels {
-		if value != "" {
-			c.NodeAttributes[key] = value
+	labelList, err := getLabelList()
+	if err != nil {
+		return err
+	}
+	if labelList != "" {
+		labels := make([]string, 0)
+		labels = strings.Split(labelList, ",")
+		for _, label := range labels {
+			// check if the node-attribute label is present in the list
+			// If present then add all the node labels to the controller node attributes
+			if label == LabelTypeNode {
+				// Fill the blockdevice labels with all the topological labels of the node
+				// to which it is attached to
+				for key, value := range node.Labels {
+					if value != "" {
+						c.NodeAttributes[key] = value
+					}
+				}
+				break
+			}
 		}
 	}
+
 	return nil
 }
 
