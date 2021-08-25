@@ -33,6 +33,9 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 		}
 		bd.UUID = uuid
 	}
+	// add labels to block device that may be helpful for filtering the block device
+	// based on some/generic attributes like drive-type, model, vendor etc.
+	pe.addBlockDeviceLabels(*bd)
 	pe.addBlockDeviceToHierarchyCache(*bd)
 	if !pe.Controller.ApplyFilter(bd) {
 		return nil

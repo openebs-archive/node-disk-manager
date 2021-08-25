@@ -103,6 +103,8 @@ type Controller struct {
 	config *rest.Config // config is the generated config using kubeconfig/incluster config
 	// Namespace is the namespace in which NDM is installed
 	Namespace string
+	//
+	LabelList string
 	// Clientset is the client used to interface with API server
 	Clientset client.Client
 	NDMConfig *NodeDiskManagerConfig // NDMConfig contains custom config for ndm
@@ -131,6 +133,13 @@ func NewController() (*Controller, error) {
 		return controller, err
 	}
 	controller.Namespace = ns
+
+	// get the namespace in which NDM is installed
+	labelList, err := getLabelList()
+	if err != nil {
+		return controller, err
+	}
+	controller.LabelList = labelList
 
 	mgr, err := manager.New(controller.config, manager.Options{Namespace: controller.Namespace, MetricsBindAddress: "0"})
 	if err != nil {
@@ -188,15 +197,15 @@ func (c *Controller) setNodeAttributes() error {
 	c.NodeAttributes[NodeNameKey] = nodeName
 
 	// set the hostname label
-	if err = c.setHostName(); err != nil {
+	if err = c.setNodeLabels(); err != nil {
 		return fmt.Errorf("unable to set node attributes:%v", err)
 	}
 	return nil
 }
 
-// setHostName set NodeAttribute field in Controller struct
+// setNodeLabels set NodeAttribute field in Controller struct
 // from the labels in node object
-func (c *Controller) setHostName() error {
+func (c *Controller) setNodeLabels() error {
 	nodeName := c.NodeAttributes[NodeNameKey]
 	// get the node object and fetch the hostname label from the
 	// node object
@@ -212,6 +221,14 @@ func (c *Controller) setHostName() error {
 		c.NodeAttributes[HostNameKey] = nodeName
 	} else {
 		c.NodeAttributes[HostNameKey] = hostName
+	}
+
+	// Fill the blockdevice labels with all the topological labels of the node
+	// to which it is attached to
+	for key, value := range node.Labels {
+		if value != "" {
+			c.NodeAttributes[key] = value
+		}
 	}
 	return nil
 }
@@ -233,6 +250,17 @@ func getNamespace() (string, error) {
 		return "", errors.New("error getting namespace")
 	}
 	return ns, nil
+}
+
+
+// getLabelList get list of labels to be added to the blockdevice from env,
+// else it returns error
+func getLabelList() (string, error) {
+	labelList, ok := os.LookupEnv("LABEL_LIST")
+	if !ok {
+		return "", errors.New("error getting the list of labels")
+	}
+	return labelList, nil
 }
 
 // WaitForBlockDeviceCRD will block till the CRDs are loaded

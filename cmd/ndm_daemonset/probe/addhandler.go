@@ -18,6 +18,7 @@ package probe
 
 import (
 	"fmt"
+	"strings"
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
@@ -34,6 +35,20 @@ const (
 	gptUUIDScheme                   = "gpt"
 	internalFSUUIDAnnotation        = "internal.openebs.io/fsuuid"
 	internalPartitionUUIDAnnotation = "internal.openebs.io/partition-uuid"
+
+	LabelTypeVendor = "vendor"
+	LabelTypeModel = "model"
+	LabelTypeDriveType = "drive-type"
+	LabelTypeFilesystem = "fs"
+
+	// NDMVendorKey specifies the block device vendor
+	NDMVendorKey = "ndm.io/vendor"
+	// NDMModelKey specifies block device model
+	NDMModelKey = "ndm.io/model"
+	// NDMDriveType specifies the block device type (SSD/HDD/NVMe...)
+	NDMDriveType = "ndm.io/drive-type"
+	// NDMFilesystemType specifies the file system present on the block device
+	NDMFilesystemType = "ndm.io/filesystem-type"
 )
 
 // addBlockDeviceToHierarchyCache adds the given block device to the hierarchy of devices.
@@ -245,6 +260,32 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 		return nil
 	}
 	return nil
+}
+
+// addBlockDeviceLabels adds labels to the blockdevice resource
+func (pe *ProbeEvent) addBlockDeviceLabels(bd blockdevice.BlockDevice) {
+	// get the list of labels to be added
+	labelList := pe.Controller.LabelList
+	if labelList != "" {
+		labels := make([]string, 0)
+		labels = strings.Split(labelList, ",")
+		for _, label := range labels {
+			if len(label) == 0 {
+				switch label {
+				case LabelTypeVendor:
+					bd.Labels[NDMVendorKey] =  bd.DeviceAttributes.Vendor
+				case LabelTypeModel:
+					bd.Labels[NDMModelKey] = bd.DeviceAttributes.Model
+				case LabelTypeDriveType:
+					bd.Labels[NDMDriveType] = bd.DeviceAttributes.DriveType
+				case LabelTypeFilesystem:
+					bd.Labels[NDMFilesystemType] = bd.FSInfo.FileSystem
+				default:
+					// do nothing
+				}
+			}
+		}
+	}
 }
 
 // createBlockDeviceResourceIfNoHolders creates/updates a blockdevice resource if it does not have any

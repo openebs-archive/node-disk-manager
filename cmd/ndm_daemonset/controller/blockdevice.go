@@ -85,7 +85,8 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 		Annotations: make(map[string]string),
 		Name:        di.UUID,
 	}
-	objectMeta.Labels[KubernetesHostNameLabel] = di.NodeAttributes[HostNameKey]
+	//objectMeta.Labels[KubernetesHostNameLabel] = di.NodeAttributes[HostNameKey]
+	objectMeta.Labels = di.NodeAttributes
 	objectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	objectMeta.Labels[NDMManagedKey] = TrueString
 	// adding custom labels
