@@ -122,6 +122,104 @@ func TestAddBlockDeviceToHierarchyCache(t *testing.T) {
 	}
 }
 
+func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
+	tests := map[string]struct {
+		labelList string
+		bd blockdevice.BlockDevice
+		labels map[string]string
+	}{
+		"1": {
+			labelList: LabelTypeVendor,
+			bd: blockdevice.BlockDevice{
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Vendor: "OpenEBS",
+				},
+			},
+			labels: map[string]string{
+				NDMVendorKey: "OpenEBS",
+			},
+		},
+		"2": {
+			labelList: LabelTypeModel,
+			bd: blockdevice.BlockDevice{
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Model: "EphemeralDisk",
+				},
+			},
+			labels: map[string]string{
+				NDMModelKey: "EphemeralDisk",
+			},
+		},
+		"3": {
+			labelList: LabelTypeDriveType,
+			bd: blockdevice.BlockDevice{
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DriveType: "SSD",
+				},
+			},
+			labels: map[string]string{
+				NDMDriveType: "SSD",
+			},
+		},
+		"4": {
+			labelList: LabelTypeFilesystem,
+			bd: blockdevice.BlockDevice{
+				FSInfo: blockdevice.FileSystemInformation{
+					FileSystem: "ext4",
+				},
+			},
+			labels: map[string]string{
+				NDMFilesystemType: "ext4",
+			},
+		},
+		"5": {
+			labelList: "wrong-label",
+			bd: blockdevice.BlockDevice{},
+			labels: map[string]string{},
+		},
+		"6": {
+			labelList: "vendor,model,drive-type,fs",
+			bd: blockdevice.BlockDevice{
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Vendor: "OpenEBS",
+					Model: "EphemeralDisk",
+					DriveType: "SSD",
+				},
+				FSInfo: blockdevice.FileSystemInformation{
+					FileSystem: "ext4",
+				},
+			},
+			labels: map[string]string{
+				NDMVendorKey: "OpenEBS",
+				NDMModelKey: "EphemeralDisk",
+				NDMDriveType: "SSD",
+				NDMFilesystemType: "ext4",
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			pe := &ProbeEvent{
+				Controller: &controller.Controller{
+					LabelList: tt.labelList,
+				},
+			}
+			pe.addBlockDeviceLabels(tt.bd)
+			if len(tt.labels) == 0 && len(tt.bd.Labels) != 0 {
+				t.Errorf("addBlockDeviceLabels() error, want = %v, got = %v", tt.labels, tt.bd.Labels)
+				return
+			} else {
+				for k,v := range tt.labels {
+					if tt.bd.Labels[k] != v {
+						t.Errorf("addBlockDeviceLabels() error, want label value = %v, got label value = %v", v, tt.bd.Labels[k])
+						break
+					}
+				}
+			}
+		})
+	}
+}
+
 func TestDeviceInUseByMayastor(t *testing.T) {
 	tests := map[string]struct {
 		bd        blockdevice.BlockDevice
