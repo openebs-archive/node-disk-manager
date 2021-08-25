@@ -431,6 +431,9 @@ const (
 
 	// Jiva
 	Jiva StorageEngine = "jiva"
+
+	// LVMLocalPV
+	LVMLocalPV StorageEngine = "lvm-localpv"
 )
 
 // Status is used to represent the status of the blockdevice
