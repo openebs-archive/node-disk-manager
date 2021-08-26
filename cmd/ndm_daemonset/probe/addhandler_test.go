@@ -126,11 +126,20 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 	tests := map[string]struct {
 		labelList string
 		bd *blockdevice.BlockDevice
+		ExpectedBD *blockdevice.BlockDevice
 		labels map[string]string
 	}{
 		"Label list containing only vendor label": {
 			labelList: LabelTypeVendor,
 			bd: &blockdevice.BlockDevice{
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Vendor: "OpenEBS",
+				},
+			},
+			ExpectedBD: &blockdevice.BlockDevice{
+				Labels: map[string]string{
+					NDMVendorKey: "OpenEBS",
+				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
 				},
@@ -146,6 +155,14 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 					Model: "EphemeralDisk",
 				},
 			},
+			ExpectedBD: &blockdevice.BlockDevice{
+				Labels: map[string]string{
+					NDMModelKey: "EphemeralDisk",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Vendor: "OpenEBS",
+				},
+			},
 			labels: map[string]string{
 				NDMModelKey: "EphemeralDisk",
 			},
@@ -155,6 +172,14 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					DriveType: "SSD",
+				},
+			},
+			ExpectedBD: &blockdevice.BlockDevice{
+				Labels: map[string]string{
+					NDMDriveType: "SSD",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Vendor: "OpenEBS",
 				},
 			},
 			labels: map[string]string{
@@ -168,6 +193,14 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 					FileSystem: "ext4",
 				},
 			},
+			ExpectedBD: &blockdevice.BlockDevice{
+				Labels: map[string]string{
+					NDMFilesystemType: "ext4",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Vendor: "OpenEBS",
+				},
+			},
 			labels: map[string]string{
 				NDMFilesystemType: "ext4",
 			},
@@ -175,7 +208,8 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 		"Label list is containing a label that has no significance": {
 			labelList: "wrong-label",
 			bd: &blockdevice.BlockDevice{},
-			labels: map[string]string{},
+			ExpectedBD: &blockdevice.BlockDevice{},
+			labels: nil,
 		},
 		"Label list containing comma separated different labels": {
 			labelList: "vendor,model,drive-type,fs",
@@ -187,6 +221,17 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				},
 				FSInfo: blockdevice.FileSystemInformation{
 					FileSystem: "ext4",
+				},
+			},
+			ExpectedBD: &blockdevice.BlockDevice{
+				Labels: map[string]string{
+					NDMVendorKey: "OpenEBS",
+					NDMModelKey: "EphemeralDisk",
+					NDMDriveType: "SSD",
+					NDMFilesystemType: "ext4",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Vendor: "OpenEBS",
 				},
 			},
 			labels: map[string]string{
@@ -205,17 +250,7 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				},
 			}
 			pe.addBlockDeviceLabels(tt.bd)
-			if len(tt.labels) != len(tt.bd.Labels) {
-				t.Errorf("addBlockDeviceLabels() error, want = %v, got = %v", tt.labels, tt.bd.Labels)
-				return
-			} else {
-				for k,v := range tt.labels {
-					if tt.bd.Labels[k] != v {
-						t.Errorf("addBlockDeviceLabels() error, want label value = %v, got label value = %v", v, tt.bd.Labels[k])
-						break
-					}
-				}
-			}
+			assert.Equal(t, tt.ExpectedBD.Labels, tt.labels)
 		})
 	}
 }
