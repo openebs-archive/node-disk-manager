@@ -124,10 +124,10 @@ func TestAddBlockDeviceToHierarchyCache(t *testing.T) {
 
 func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 	tests := map[string]struct {
-		labelList string
-		bd *blockdevice.BlockDevice
+		labelList  string
+		bd         *blockdevice.BlockDevice
 		ExpectedBD *blockdevice.BlockDevice
-		labels map[string]string
+		labels     map[string]string
 	}{
 		"Label list containing only vendor label": {
 			labelList: LabelTypeVendor,
@@ -206,17 +206,17 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 		},
 		"Label list is containing a label that has no significance": {
-			labelList: "wrong-label",
-			bd: &blockdevice.BlockDevice{},
+			labelList:  "wrong-label",
+			bd:         &blockdevice.BlockDevice{},
 			ExpectedBD: &blockdevice.BlockDevice{},
-			labels: nil,
+			labels:     nil,
 		},
 		"Label list containing comma separated different labels": {
 			labelList: "vendor,model,drive-type,fs",
 			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
-					Vendor: "OpenEBS",
-					Model: "EphemeralDisk",
+					Vendor:    "OpenEBS",
+					Model:     "EphemeralDisk",
 					DriveType: "SSD",
 				},
 				FSInfo: blockdevice.FileSystemInformation{
@@ -225,9 +225,9 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMVendorKey: "OpenEBS",
-					NDMModelKey: "EphemeralDisk",
-					NDMDriveType: "SSD",
+					NDMVendorKey:      "OpenEBS",
+					NDMModelKey:       "EphemeralDisk",
+					NDMDriveType:      "SSD",
 					NDMFilesystemType: "ext4",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
@@ -235,9 +235,9 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				},
 			},
 			labels: map[string]string{
-				NDMVendorKey: "OpenEBS",
-				NDMModelKey: "EphemeralDisk",
-				NDMDriveType: "SSD",
+				NDMVendorKey:      "OpenEBS",
+				NDMModelKey:       "EphemeralDisk",
+				NDMDriveType:      "SSD",
 				NDMFilesystemType: "ext4",
 			},
 		},

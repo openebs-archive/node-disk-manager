@@ -36,9 +36,9 @@ const (
 	internalFSUUIDAnnotation        = "internal.openebs.io/fsuuid"
 	internalPartitionUUIDAnnotation = "internal.openebs.io/partition-uuid"
 
-	LabelTypeVendor = "vendor"
-	LabelTypeModel = "model"
-	LabelTypeDriveType = "drive-type"
+	LabelTypeVendor     = "vendor"
+	LabelTypeModel      = "model"
+	LabelTypeDriveType  = "drive-type"
 	LabelTypeFilesystem = "fs"
 
 	// NDMVendorKey specifies the block device vendor
@@ -267,8 +267,7 @@ func (pe *ProbeEvent) addBlockDeviceLabels(bd *blockdevice.BlockDevice) {
 	// get the list of labels to be added
 	labelList := pe.Controller.LabelList
 	if labelList != "" {
-		labels := make([]string, 0)
-		labels = strings.Split(labelList, ",")
+		labels := strings.Split(labelList, ",")
 		bd.Labels = make(map[string]string, 0)
 		for _, label := range labels {
 			if len(label) != 0 {
@@ -285,8 +284,8 @@ func (pe *ProbeEvent) addBlockDeviceLabels(bd *blockdevice.BlockDevice) {
 					// do nothing
 				}
 			}
-			klog.V(4).Infof("Added device attributes labels: %v to the device: %v with uuid: %v", bd.Labels, bd.DevPath, bd.UUID)
 		}
+		klog.V(4).Infof("Added device attributes labels: %v to the device: %v with uuid: %v", bd.Labels, bd.DevPath, bd.UUID)
 	}
 }
 

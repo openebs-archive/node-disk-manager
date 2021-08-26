@@ -231,8 +231,7 @@ func (c *Controller) setNodeLabels() error {
 		return err
 	}
 	if labelList != "" {
-		labels := make([]string, 0)
-		labels = strings.Split(labelList, ",")
+		labels := strings.Split(labelList, ",")
 		for _, label := range labels {
 			// check if the node-attribute label is present in the list
 			// If present then add all the node labels to the controller node attributes
@@ -240,6 +239,9 @@ func (c *Controller) setNodeLabels() error {
 				// Fill the blockdevice labels with all the topological labels of the node
 				// to which it is attached to
 				for key, value := range node.Labels {
+					if strings.Contains(key, "openebs.io") {
+						continue
+					}
 					if value != "" {
 						c.NodeAttributes[key] = value
 					}
@@ -270,7 +272,6 @@ func getNamespace() (string, error) {
 	}
 	return ns, nil
 }
-
 
 // getLabelList get list of labels to be added to the blockdevice from env,
 // else it returns error

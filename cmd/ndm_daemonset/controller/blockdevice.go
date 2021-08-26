@@ -86,7 +86,7 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 		Name:        di.UUID,
 	}
 	//objectMeta.Labels[KubernetesHostNameLabel] = di.NodeAttributes[HostNameKey]
-	for k,v := range di.NodeAttributes {
+	for k, v := range di.NodeAttributes {
 		if k == HostNameKey {
 			objectMeta.Labels[KubernetesHostNameLabel] = v
 		} else {
