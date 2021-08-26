@@ -263,17 +263,18 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 }
 
 // addBlockDeviceLabels adds labels to the blockdevice resource
-func (pe *ProbeEvent) addBlockDeviceLabels(bd blockdevice.BlockDevice) {
+func (pe *ProbeEvent) addBlockDeviceLabels(bd *blockdevice.BlockDevice) {
 	// get the list of labels to be added
 	labelList := pe.Controller.LabelList
 	if labelList != "" {
 		labels := make([]string, 0)
 		labels = strings.Split(labelList, ",")
+		bd.Labels = make(map[string]string, 0)
 		for _, label := range labels {
-			if len(label) == 0 {
+			if len(label) != 0 {
 				switch label {
 				case LabelTypeVendor:
-					bd.Labels[NDMVendorKey] =  bd.DeviceAttributes.Vendor
+					bd.Labels[NDMVendorKey] = bd.DeviceAttributes.Vendor
 				case LabelTypeModel:
 					bd.Labels[NDMModelKey] = bd.DeviceAttributes.Model
 				case LabelTypeDriveType:
@@ -284,6 +285,7 @@ func (pe *ProbeEvent) addBlockDeviceLabels(bd blockdevice.BlockDevice) {
 					// do nothing
 				}
 			}
+			klog.V(4).Infof("Added device attributes labels: %v to the device: %v with uuid: %v", bd.Labels, bd.DevPath, bd.UUID)
 		}
 	}
 }

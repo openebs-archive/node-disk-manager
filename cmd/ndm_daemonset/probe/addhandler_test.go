@@ -125,12 +125,12 @@ func TestAddBlockDeviceToHierarchyCache(t *testing.T) {
 func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 	tests := map[string]struct {
 		labelList string
-		bd blockdevice.BlockDevice
+		bd *blockdevice.BlockDevice
 		labels map[string]string
 	}{
-		"1": {
+		"Label list containing only vendor label": {
 			labelList: LabelTypeVendor,
-			bd: blockdevice.BlockDevice{
+			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
 				},
@@ -139,9 +139,9 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				NDMVendorKey: "OpenEBS",
 			},
 		},
-		"2": {
+		"Label list containing only model label": {
 			labelList: LabelTypeModel,
-			bd: blockdevice.BlockDevice{
+			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Model: "EphemeralDisk",
 				},
@@ -150,9 +150,9 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				NDMModelKey: "EphemeralDisk",
 			},
 		},
-		"3": {
+		"Label list containing only drive-type label": {
 			labelList: LabelTypeDriveType,
-			bd: blockdevice.BlockDevice{
+			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					DriveType: "SSD",
 				},
@@ -161,9 +161,9 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				NDMDriveType: "SSD",
 			},
 		},
-		"4": {
+		"Label list containing only fs label": {
 			labelList: LabelTypeFilesystem,
-			bd: blockdevice.BlockDevice{
+			bd: &blockdevice.BlockDevice{
 				FSInfo: blockdevice.FileSystemInformation{
 					FileSystem: "ext4",
 				},
@@ -172,14 +172,14 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				NDMFilesystemType: "ext4",
 			},
 		},
-		"5": {
+		"Label list is containing a label that has no significance": {
 			labelList: "wrong-label",
-			bd: blockdevice.BlockDevice{},
+			bd: &blockdevice.BlockDevice{},
 			labels: map[string]string{},
 		},
-		"6": {
+		"Label list containing comma separated different labels": {
 			labelList: "vendor,model,drive-type,fs",
-			bd: blockdevice.BlockDevice{
+			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
 					Model: "EphemeralDisk",
@@ -205,7 +205,7 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				},
 			}
 			pe.addBlockDeviceLabels(tt.bd)
-			if len(tt.labels) == 0 && len(tt.bd.Labels) != 0 {
+			if len(tt.labels) != len(tt.bd.Labels) {
 				t.Errorf("addBlockDeviceLabels() error, want = %v, got = %v", tt.labels, tt.bd.Labels)
 				return
 			} else {

@@ -64,7 +64,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 
 		// add labels to block device that may be helpful for filtering the block device
 		// based on some/generic attributes like drive-type, model, vendor etc.
-		pe.addBlockDeviceLabels(*device)
+		pe.addBlockDeviceLabels(device)
 
 		// add all devices to the hierarchy cache, irrespective of whether they will be
 		// filtered at a later stage. This is done so that a complete disk hierarchy is available
