@@ -106,7 +106,7 @@ type Controller struct {
 	config *rest.Config // config is the generated config using kubeconfig/incluster config
 	// Namespace is the namespace in which NDM is installed
 	Namespace string
-	//
+	// LabelList is the list of labels to be discovered and added to the block device
 	LabelList string
 	// Clientset is the client used to interface with API server
 	Clientset client.Client

@@ -20,11 +20,13 @@ import (
 	"fmt"
 	"testing"
 
-	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ndmFakeClientset "sigs.k8s.io/controller-runtime/pkg/client/fake"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 )
 
 const (
@@ -133,12 +135,23 @@ func CreateFakeClient(t *testing.T) client.Client {
 		},
 	}
 
+	node := &corev1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				"kubernetes.io/hostname": fakeHostName,
+				"kubernetes.io/arch": "fake-arch",
+				"openebs.io/node-name": fakeHostName,
+			},
+			Name: fakeHostName,
+		},
+	}
+
 	s := scheme.Scheme
 
 	s.AddKnownTypes(apis.GroupVersion, deviceR)
 	s.AddKnownTypes(apis.GroupVersion, deviceList)
 
-	fakeNdmClient := ndmFakeClientset.NewFakeClient()
+	fakeNdmClient := ndmFakeClientset.NewFakeClient(node)
 	if fakeNdmClient == nil {
 		fmt.Println("NDMClient is not created")
 	}
