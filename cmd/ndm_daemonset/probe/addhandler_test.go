@@ -405,6 +405,143 @@ func TestDeviceInUseByZFSLocalPV(t *testing.T) {
 	}
 }
 
+func TestProbeEvent_deviceInUseByLVMLocalPV(t *testing.T) {
+	fakeFsID := "fake-fs-uuid"
+	fakeBD := blockdevice.BlockDevice{
+		FSInfo: blockdevice.FileSystemInformation{
+			FileSystemUUID: fakeFsID,
+		},
+	}
+	fakeUUID, _ := generateUUID(fakeBD)
+
+	tests := map[string]struct {
+		bd      blockdevice.BlockDevice
+		bdAPIList *apis.BlockDeviceList
+		createdOrUpdatedBDName string
+		want    bool
+		wantErr bool
+	}{
+		"device not in use": {
+			bd: blockdevice.BlockDevice{
+				DevUse: blockdevice.DeviceUsage{
+					InUse: false,
+				},
+			},
+			bdAPIList:              &apis.BlockDeviceList{},
+			createdOrUpdatedBDName: "",
+			want:                   true,
+			wantErr:                false,
+		},
+		"device in use, not by lvm localPV": {
+			bd: blockdevice.BlockDevice{
+				DevUse: blockdevice.DeviceUsage{
+					InUse:  true,
+					UsedBy: blockdevice.CStor,
+				},
+
+			},
+			bdAPIList:              &apis.BlockDeviceList{},
+			createdOrUpdatedBDName: "",
+			want:                   true,
+			wantErr:                false,
+		},
+		"deviceType disk, used by lvm PV and is connected to the cluster for the first time": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeDisk,
+				},
+				DevUse: blockdevice.DeviceUsage{
+					InUse:  true,
+					UsedBy: blockdevice.LVMLocalPV,
+				},
+				FSInfo: blockdevice.FileSystemInformation{
+					FileSystemUUID: fakeFsID,
+				},
+			},
+			bdAPIList:              &apis.BlockDeviceList{},
+			createdOrUpdatedBDName: fakeUUID,
+			want:                   false,
+			wantErr:                false,
+		},
+		"deviceType disk, used by lvm PV and is moved from disconnected and reconnected to the node at a different path": {
+			bd: blockdevice.BlockDevice{
+				Identifier: blockdevice.Identifier{
+					DevPath: "/dev/sda",
+				},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					DeviceType: blockdevice.BlockDeviceTypeDisk,
+				},
+				DevUse: blockdevice.DeviceUsage{
+					InUse:  true,
+					UsedBy: blockdevice.LVMLocalPV,
+				},
+				FSInfo: blockdevice.FileSystemInformation{
+					FileSystemUUID: fakeFsID,
+				},
+			},
+			bdAPIList: &apis.BlockDeviceList{
+				Items: []apis.BlockDevice{
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: fakeUUID,
+						},
+						Spec: apis.DeviceSpec{
+							Path: "/dev/sdb",
+						},
+					},
+				},
+			},
+			createdOrUpdatedBDName: fakeUUID,
+			want:                   false,
+			wantErr:                false,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			s := scheme.Scheme
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDevice{})
+			s.AddKnownTypes(apis.GroupVersion, &apis.BlockDeviceList{})
+			cl := fake.NewFakeClientWithScheme(s)
+
+			// initialize client with all the bd resources
+			for _, bdAPI := range tt.bdAPIList.Items {
+				cl.Create(context.TODO(), &bdAPI)
+			}
+
+			ctrl := &controller.Controller{
+				Clientset:   cl,
+			}
+			pe := &ProbeEvent{
+				Controller: ctrl,
+			}
+			got, err := pe.deviceInUseByLVMLocalPV(tt.bd, tt.bdAPIList)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("deviceInUseByLVMLocalPV() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("deviceInUseByLVMLocalPV() got = %v, want %v", got, tt.want)
+			}
+
+			// check if a BD has been created or updated
+			if len(tt.createdOrUpdatedBDName) != 0 {
+				gotBDAPI := &apis.BlockDevice{}
+				err := cl.Get(context.TODO(), client.ObjectKey{Name: tt.createdOrUpdatedBDName}, gotBDAPI)
+				if err != nil {
+					t.Errorf("error in getting blockdevice %s", tt.createdOrUpdatedBDName)
+				}
+				// verify the block-device-tag on the resource, also verify the path and node name
+				assert.Equal(t, string(blockdevice.LVMLocalPV), gotBDAPI.GetLabels()[kubernetes.BlockDeviceTagLabel])
+				assert.Equal(t, tt.bd.DevPath, gotBDAPI.Spec.Path)
+				assert.Equal(t, tt.bd.NodeAttributes[blockdevice.NodeName], gotBDAPI.Spec.NodeAttributes.NodeName)
+			}
+		})
+	}
+}
+
 func TestIsParentDeviceInUse(t *testing.T) {
 	cache := map[string]blockdevice.BlockDevice{
 		"/dev/sda": {
