@@ -85,15 +85,15 @@ func TestController_setNodeLabels(t *testing.T) {
 	os.Setenv("LABEL_LIST", "fake-label,node-attributes")
 	tests := map[string]struct {
 		ExpectedController *Controller
-		wantErr bool
+		wantErr            bool
 	}{
-		"1" : {
+		"1": {
 			ExpectedController: &Controller{
 				NodeAttributes: map[string]string{
-					NodeNameKey: fakeHostName,
+					NodeNameKey:              fakeHostName,
 					"kubernetes.io/hostname": fakeHostName,
-					"kubernetes.io/arch": "fake-arch",
-					HostNameKey: fakeHostName,
+					"kubernetes.io/arch":     "fake-arch",
+					HostNameKey:              fakeHostName,
 				},
 			},
 			wantErr: false,
@@ -108,6 +108,7 @@ func TestController_setNodeLabels(t *testing.T) {
 		})
 	}
 }
+
 /*
 	Broadcast start broadcasting controller pointer in ControllerBroadcastChannel channel
 	In this test case read ControllerBroadcastChannel channel and match controller pointer

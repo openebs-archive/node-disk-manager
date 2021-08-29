@@ -139,8 +139,8 @@ func CreateFakeClient(t *testing.T) client.Client {
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
 				"kubernetes.io/hostname": fakeHostName,
-				"kubernetes.io/arch": "fake-arch",
-				"openebs.io/node-name": fakeHostName,
+				"kubernetes.io/arch":     "fake-arch",
+				"openebs.io/node-name":   fakeHostName,
 			},
 			Name: fakeHostName,
 		},

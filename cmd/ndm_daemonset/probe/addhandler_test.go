@@ -137,7 +137,7 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMLabelPrefix+"Vendor": "OpenEBS",
+					NDMLabelPrefix + "Vendor": "OpenEBS",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
@@ -153,7 +153,7 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMLabelPrefix+"Model": "EphemeralDisk",
+					NDMLabelPrefix + "Model": "EphemeralDisk",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Model: "EphemeralDisk",
@@ -183,7 +183,7 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMLabelPrefix+"DriveType": "SSD",
+					NDMLabelPrefix + "DriveType": "SSD",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					DriveType: "SSD",
@@ -199,7 +199,7 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMLabelPrefix+"FileSystem": "ext4",
+					NDMLabelPrefix + "FileSystem": "ext4",
 				},
 				FSInfo: blockdevice.FileSystemInformation{
 					FileSystem: "ext4",
@@ -207,8 +207,8 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 		},
 		"Label list is containing a label that has no significance": {
-			labelList:  "wrong-label",
-			bd:         &blockdevice.BlockDevice{},
+			labelList: "wrong-label",
+			bd:        &blockdevice.BlockDevice{},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{},
 			},
@@ -227,10 +227,10 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMLabelPrefix+"Vendor":      "OpenEBS",
-					NDMLabelPrefix+"Model":       "EphemeralDisk",
-					NDMLabelPrefix+"DriveType":      "SSD",
-					NDMLabelPrefix+"FileSystem": "ext4",
+					NDMLabelPrefix + "Vendor":     "OpenEBS",
+					NDMLabelPrefix + "Model":      "EphemeralDisk",
+					NDMLabelPrefix + "DriveType":  "SSD",
+					NDMLabelPrefix + "FileSystem": "ext4",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor:    "OpenEBS",
