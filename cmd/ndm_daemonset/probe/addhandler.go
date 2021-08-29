@@ -18,6 +18,7 @@ package probe
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
@@ -41,14 +42,8 @@ const (
 	LabelTypeDriveType  = "drive-type"
 	LabelTypeFilesystem = "fs"
 
-	// NDMVendorKey specifies the block device vendor
-	NDMVendorKey = "ndm.io/vendor"
-	// NDMModelKey specifies block device model
-	NDMModelKey = "ndm.io/model"
-	// NDMDriveType specifies the block device type (SSD/HDD/NVMe...)
-	NDMDriveType = "ndm.io/drive-type"
-	// NDMFilesystemType specifies the file system present on the block device
-	NDMFilesystemType = "ndm.io/filesystem-type"
+	// NDMLabelPrefix is the label prefix for ndm labels
+	NDMLabelPrefix = "ndm.io/"
 )
 
 // addBlockDeviceToHierarchyCache adds the given block device to the hierarchy of devices.
@@ -270,23 +265,33 @@ func (pe *ProbeEvent) addBlockDeviceLabels(bd *blockdevice.BlockDevice) {
 		labels := strings.Split(labelList, ",")
 		bd.Labels = make(map[string]string, 0)
 		for _, label := range labels {
-			if len(label) != 0 {
-				switch label {
-				case LabelTypeVendor:
-					bd.Labels[NDMVendorKey] = bd.DeviceAttributes.Vendor
-				case LabelTypeModel:
-					bd.Labels[NDMModelKey] = bd.DeviceAttributes.Model
-				case LabelTypeDriveType:
-					bd.Labels[NDMDriveType] = bd.DeviceAttributes.DriveType
-				case LabelTypeFilesystem:
-					bd.Labels[NDMFilesystemType] = bd.FSInfo.FileSystem
-				default:
-					// do nothing
-				}
+			// Get the value of the label from blockdevice device attributes
+			labelValue := getField(bd.DeviceAttributes, label)
+
+			// If the label value is empty check for filesystem information
+			if labelValue == "" {
+				labelValue = getField(bd.FSInfo, label)
+			}
+
+			// Add the ndm label to the blockdevice if it is not empty
+			if labelValue != "" {
+				bd.Labels[NDMLabelPrefix+label] = labelValue
 			}
 		}
 		klog.V(4).Infof("Added device attributes labels: %v to the device: %v with uuid: %v", bd.Labels, bd.DevPath, bd.UUID)
 	}
+}
+
+// getField helps to access struct property by names dynamically
+func getField(obj interface{}, field string) string {
+	r := reflect.ValueOf(obj)
+	if r.Kind() == reflect.Struct {
+		f := reflect.Indirect(r).FieldByName(field)
+		if f.IsValid() {
+			return f.String()
+		}
+	}
+	return ""
 }
 
 // createBlockDeviceResourceIfNoHolders creates/updates a blockdevice resource if it does not have any

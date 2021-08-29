@@ -130,7 +130,7 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 		labels     map[string]string
 	}{
 		"Label list containing only vendor label": {
-			labelList: LabelTypeVendor,
+			labelList: "Vendor",
 			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
@@ -138,18 +138,18 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMVendorKey: "OpenEBS",
+					NDMLabelPrefix+"Vendor": "OpenEBS",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
 				},
 			},
 			labels: map[string]string{
-				NDMVendorKey: "OpenEBS",
+				NDMLabelPrefix+"Vendor": "OpenEBS",
 			},
 		},
 		"Label list containing only model label": {
-			labelList: LabelTypeModel,
+			labelList: "Model",
 			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Model: "EphemeralDisk",
@@ -157,18 +157,18 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMModelKey: "EphemeralDisk",
+					NDMLabelPrefix+"Model": "EphemeralDisk",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
 				},
 			},
 			labels: map[string]string{
-				NDMModelKey: "EphemeralDisk",
+				NDMLabelPrefix+"Model": "EphemeralDisk",
 			},
 		},
 		"Label list containing only drive-type label": {
-			labelList: LabelTypeDriveType,
+			labelList: "DriveType",
 			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					DriveType: "SSD",
@@ -176,18 +176,18 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMDriveType: "SSD",
+					NDMLabelPrefix+"DriveType": "SSD",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
 				},
 			},
 			labels: map[string]string{
-				NDMDriveType: "SSD",
+				NDMLabelPrefix+"DriveType": "SSD",
 			},
 		},
 		"Label list containing only fs label": {
-			labelList: LabelTypeFilesystem,
+			labelList: "FileSystem",
 			bd: &blockdevice.BlockDevice{
 				FSInfo: blockdevice.FileSystemInformation{
 					FileSystem: "ext4",
@@ -195,14 +195,14 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMFilesystemType: "ext4",
+					NDMLabelPrefix+"FileSystem": "ext4",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
 				},
 			},
 			labels: map[string]string{
-				NDMFilesystemType: "ext4",
+				NDMLabelPrefix+"FileSystem": "ext4",
 			},
 		},
 		"Label list is containing a label that has no significance": {
@@ -212,7 +212,7 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			labels:     nil,
 		},
 		"Label list containing comma separated different labels": {
-			labelList: "vendor,model,drive-type,fs",
+			labelList: "Vendor,Model,DriveType,FileSystem",
 			bd: &blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor:    "OpenEBS",
@@ -225,20 +225,20 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 			},
 			ExpectedBD: &blockdevice.BlockDevice{
 				Labels: map[string]string{
-					NDMVendorKey:      "OpenEBS",
-					NDMModelKey:       "EphemeralDisk",
-					NDMDriveType:      "SSD",
-					NDMFilesystemType: "ext4",
+					NDMLabelPrefix+"Vendor":      "OpenEBS",
+					NDMLabelPrefix+"Model":       "EphemeralDisk",
+					NDMLabelPrefix+"DriveType":      "SSD",
+					NDMLabelPrefix+"FileSystem": "ext4",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
 					Vendor: "OpenEBS",
 				},
 			},
 			labels: map[string]string{
-				NDMVendorKey:      "OpenEBS",
-				NDMModelKey:       "EphemeralDisk",
-				NDMDriveType:      "SSD",
-				NDMFilesystemType: "ext4",
+				NDMLabelPrefix+"Vendor":      "OpenEBS",
+				NDMLabelPrefix+"Model":       "EphemeralDisk",
+				NDMLabelPrefix+"DriveType":      "SSD",
+				NDMLabelPrefix+"FileSystem": "ext4",
 			},
 		},
 	}
