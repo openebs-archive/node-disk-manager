@@ -127,7 +127,6 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 		labelList  string
 		bd         *blockdevice.BlockDevice
 		ExpectedBD *blockdevice.BlockDevice
-		labels     map[string]string
 	}{
 		"Label list containing only vendor label": {
 			labelList: "Vendor",
@@ -144,9 +143,6 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 					Vendor: "OpenEBS",
 				},
 			},
-			labels: map[string]string{
-				NDMLabelPrefix+"Vendor": "OpenEBS",
-			},
 		},
 		"Label list containing only model label": {
 			labelList: "Model",
@@ -160,11 +156,22 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 					NDMLabelPrefix+"Model": "EphemeralDisk",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
-					Vendor: "OpenEBS",
+					Model: "EphemeralDisk",
 				},
 			},
-			labels: map[string]string{
-				NDMLabelPrefix+"Model": "EphemeralDisk",
+		},
+		"Label list containing only model label with empty value": {
+			labelList: "Model",
+			bd: &blockdevice.BlockDevice{
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Model: "",
+				},
+			},
+			ExpectedBD: &blockdevice.BlockDevice{
+				Labels: map[string]string{},
+				DeviceAttributes: blockdevice.DeviceAttribute{
+					Model: "",
+				},
 			},
 		},
 		"Label list containing only drive-type label": {
@@ -179,11 +186,8 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 					NDMLabelPrefix+"DriveType": "SSD",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
-					Vendor: "OpenEBS",
+					DriveType: "SSD",
 				},
-			},
-			labels: map[string]string{
-				NDMLabelPrefix+"DriveType": "SSD",
 			},
 		},
 		"Label list containing only fs label": {
@@ -197,19 +201,17 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				Labels: map[string]string{
 					NDMLabelPrefix+"FileSystem": "ext4",
 				},
-				DeviceAttributes: blockdevice.DeviceAttribute{
-					Vendor: "OpenEBS",
+				FSInfo: blockdevice.FileSystemInformation{
+					FileSystem: "ext4",
 				},
-			},
-			labels: map[string]string{
-				NDMLabelPrefix+"FileSystem": "ext4",
 			},
 		},
 		"Label list is containing a label that has no significance": {
 			labelList:  "wrong-label",
 			bd:         &blockdevice.BlockDevice{},
-			ExpectedBD: &blockdevice.BlockDevice{},
-			labels:     nil,
+			ExpectedBD: &blockdevice.BlockDevice{
+				Labels: map[string]string{},
+			},
 		},
 		"Label list containing comma separated different labels": {
 			labelList: "Vendor,Model,DriveType,FileSystem",
@@ -231,14 +233,13 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 					NDMLabelPrefix+"FileSystem": "ext4",
 				},
 				DeviceAttributes: blockdevice.DeviceAttribute{
-					Vendor: "OpenEBS",
+					Vendor:    "OpenEBS",
+					Model:     "EphemeralDisk",
+					DriveType: "SSD",
 				},
-			},
-			labels: map[string]string{
-				NDMLabelPrefix+"Vendor":      "OpenEBS",
-				NDMLabelPrefix+"Model":       "EphemeralDisk",
-				NDMLabelPrefix+"DriveType":      "SSD",
-				NDMLabelPrefix+"FileSystem": "ext4",
+				FSInfo: blockdevice.FileSystemInformation{
+					FileSystem: "ext4",
+				},
 			},
 		},
 	}
@@ -250,7 +251,7 @@ func TestProbeEvent_addBlockDeviceLabels(t *testing.T) {
 				},
 			}
 			pe.addBlockDeviceLabels(tt.bd)
-			assert.Equal(t, tt.ExpectedBD.Labels, tt.labels)
+			assert.Equal(t, tt.ExpectedBD.Labels, tt.bd.Labels)
 		})
 	}
 }
