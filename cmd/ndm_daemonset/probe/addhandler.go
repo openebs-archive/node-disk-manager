@@ -37,11 +37,6 @@ const (
 	internalFSUUIDAnnotation        = "internal.openebs.io/fsuuid"
 	internalPartitionUUIDAnnotation = "internal.openebs.io/partition-uuid"
 
-	LabelTypeVendor     = "vendor"
-	LabelTypeModel      = "model"
-	LabelTypeDriveType  = "drive-type"
-	LabelTypeFilesystem = "fs"
-
 	// NDMLabelPrefix is the label prefix for ndm labels
 	NDMLabelPrefix = "ndm.io/"
 )

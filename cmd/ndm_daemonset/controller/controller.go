@@ -137,7 +137,7 @@ func NewController() (*Controller, error) {
 	}
 	controller.Namespace = ns
 
-	// get the namespace in which NDM is installed
+	// get the list of labels to be added to blockdevice
 	labelList, err := getLabelList()
 	if err != nil {
 		return controller, err
@@ -199,7 +199,7 @@ func (c *Controller) setNodeAttributes() error {
 	}
 	c.NodeAttributes[NodeNameKey] = nodeName
 
-	// set the hostname label
+	// set the node labels
 	if err = c.setNodeLabels(); err != nil {
 		return fmt.Errorf("unable to set node attributes:%v", err)
 	}
