@@ -122,6 +122,10 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 		if isGPTBasedUUIDEnabled {
 			_ = pe.deleteBlockDevice(*device, bdAPIList)
 		} else {
+			if device.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION {
+				klog.Info("GPTBasedUUID disabled. skip delete block device resource for partition.")
+				continue
+			}
 			existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, device.UUID)
 			if existingBlockDeviceResource == nil {
 				// do nothing, may be the disk was filtered, or it was not created
