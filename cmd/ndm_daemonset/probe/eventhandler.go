@@ -17,6 +17,7 @@ limitations under the License.
 package probe
 
 import (
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/features"
@@ -122,7 +123,13 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 		if isGPTBasedUUIDEnabled {
 			_ = pe.deleteBlockDevice(*device, bdAPIList)
 		} else {
-			existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, device.UUID)
+			var existingBlockDeviceResource *apis.BlockDevice
+			for _, item := range bdAPIList.Items {
+				if device.UUID == item.ObjectMeta.Name && device.DevPath == item.Spec.Path {
+					existingBlockDeviceResource = &item
+					break
+				}
+			}
 			if existingBlockDeviceResource == nil {
 				// do nothing, may be the disk was filtered, or it was not created
 				isDeactivated = false
