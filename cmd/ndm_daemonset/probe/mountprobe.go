@@ -147,7 +147,9 @@ func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 }
 
 func (mp *mountProbe) setupEpoll() error {
-	ep, err := epoll.New()
+	// create a buffered epoll so that we don't miss any change events
+	// due to slow consumption downstream
+	ep, err := epoll.New(epoll.BufferSize(10))
 	if err != nil {
 		return err
 	}
