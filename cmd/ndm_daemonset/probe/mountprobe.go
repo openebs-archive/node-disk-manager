@@ -203,7 +203,10 @@ func (mp *mountProbe) processDiff(diff libmount.MountTabDiff) {
 		bd.DevPath = dev
 		devices = append(devices, bd)
 	}
-
+	if len(devices) == 0 {
+		return
+	}
+	klog.V(4).Infof("detected mount/fs changes in %d devices", len(devices))
 	mp.destination <- controller.EventMessage{
 		Action:          string(ChangeEA),
 		Devices:         devices,
