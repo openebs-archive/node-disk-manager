@@ -46,6 +46,7 @@ type Epoll struct {
 	fileToWatcher map[string]*Watcher
 	fdToWatcher   map[int32]*Watcher
 	eventChan     chan Event
+	eventChanSize int
 	epfd          int
 	active        bool
 }
@@ -65,17 +66,30 @@ type Watcher struct {
 	EventTypes []EventType
 }
 
-func New() (Epoll, error) {
+type NewOpt func(*Epoll)
+
+func BufferSize(size int) NewOpt {
+	return func(e *Epoll) {
+		e.eventChanSize = size
+	}
+}
+
+func New(opts ...NewOpt) (Epoll, error) {
 	epfd, err := syscall.EpollCreate(1)
 	if err != nil {
 		return Epoll{}, err
 	}
-	return Epoll{
+	e := Epoll{
 		watchers:      make([]Watcher, 0),
 		fileToWatcher: make(map[string]*Watcher),
 		fdToWatcher:   make(map[int32]*Watcher),
 		epfd:          epfd,
-	}, nil
+		eventChanSize: 0,
+	}
+	for _, opt := range opts {
+		opt(&e)
+	}
+	return e, nil
 }
 
 func (e *Epoll) Start() (<-chan Event, error) {
@@ -86,7 +100,7 @@ func (e *Epoll) Start() (<-chan Event, error) {
 	if e.active {
 		return nil, errors.New("epoll already started")
 	}
-	e.eventChan = make(chan Event)
+	e.eventChan = make(chan Event, e.eventChanSize)
 	e.active = true
 	go e.listen()
 	return e.eventChan, nil

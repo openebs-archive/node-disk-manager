@@ -105,7 +105,7 @@ func newMountProbe(devPath string) *mountProbe {
 // for mount change detection
 func (mp *mountProbe) Start() {
 	if !features.FeatureGates.
-		IsEnabled(features.MountChangeDetection) {
+		IsEnabled(features.ChangeDetection) {
 		return
 	}
 	if err := mp.setupEpoll(); err != nil {
@@ -147,7 +147,9 @@ func (mp *mountProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevic
 }
 
 func (mp *mountProbe) setupEpoll() error {
-	ep, err := epoll.New()
+	// create a buffered epoll so that we don't miss any change events
+	// due to slow consumption downstream
+	ep, err := epoll.New(epoll.BufferSize(10))
 	if err != nil {
 		return err
 	}
@@ -167,7 +169,7 @@ func (mp *mountProbe) listen() {
 	defer mp.epoll.Stop()
 	klog.Info("started mount change detection loop")
 	defaultMsg := controller.EventMessage{
-		Action:          string(MountEA),
+		Action:          string(ChangeEA),
 		Devices:         nil,
 		AllBlockDevices: true,
 	}
@@ -203,9 +205,12 @@ func (mp *mountProbe) processDiff(diff libmount.MountTabDiff) {
 		bd.DevPath = dev
 		devices = append(devices, bd)
 	}
-
+	if len(devices) == 0 {
+		return
+	}
+	klog.V(4).Infof("detected mount/fs changes in %d devices", len(devices))
 	mp.destination <- controller.EventMessage{
-		Action:          string(MountEA),
+		Action:          string(ChangeEA),
 		Devices:         devices,
 		RequestedProbes: []string{mountProbeName},
 	}

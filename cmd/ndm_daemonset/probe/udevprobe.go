@@ -119,8 +119,18 @@ func newUdevProbeForFillDiskDetails(sysPath string) (*udevProbe, error) {
 // Start setup udev probe listener and make a single scan of system
 func (up *udevProbe) Start() {
 	go up.listen()
-	up.udeveventSubscription = udevevent.Subscribe(udevevent.EventTypeAdd,
-		udevevent.EventTypeRemove)
+	if features.FeatureGates.IsEnabled(features.ChangeDetection) {
+		up.udeveventSubscription = udevevent.Subscribe(
+		        udevevent.EventTypeAdd,
+			udevevent.EventTypeRemove,
+			udevevent.EventTypeChange,
+		)
+	} else {
+		up.udeveventSubscription = udevevent.Subscribe(
+		        udevevent.EventTypeAdd,
+			udevevent.EventTypeRemove,
+		)
+	}
 	errChan := udevevent.Monitor()
 	go up.listenUdevEventMonitor(errChan)
 	probeEvent := newUdevProbe(up.controller)
@@ -346,7 +356,7 @@ func (up *udevProbe) listen() {
 			probeEvent.addBlockDeviceEvent(msg)
 		case string(DetachEA):
 			probeEvent.deleteBlockDeviceEvent(msg)
-		case string(MountEA):
+		case string(ChangeEA):
 			probeEvent.changeBlockDeviceEvent(msg)
 		}
 	}
@@ -385,10 +395,19 @@ func processUdevEvent(event udevevent.UdevEvent) controller.EventMessage {
 	action := event.GetAction()
 	klog.Infof("processing new event for (%s) action type %s", path, action)
 	deviceDetails := &blockdevice.BlockDevice{}
+	eventMessage := controller.EventMessage{}
+
+	deviceDetails.DevPath = path
+	// The change event handler discards the devices sent in the event message
+	// and only uses the dev path field to fetch the bd from the controller cache.
+	// Fill only dev path and do not process further in case of change events.
+	if action == udevevent.EventTypeChange {
+		eventMessage.RequestedProbes = []string{udevProbeName, sysfsProbeName}
+		goto event_dispatch
+	}
 	// This is the legacy uuid. It will be overwritten in the event handler.
 	deviceDetails.UUID = uuid
 	deviceDetails.SysPath = event.GetSyspath()
-	deviceDetails.DevPath = path
 
 	// fields used for UUID. These fields will be filled always. But used only if the
 	// GPTBasedUUID feature-gate is enabled.
@@ -434,15 +453,16 @@ func processUdevEvent(event udevevent.UdevEvent) controller.EventMessage {
 		}
 	}
 
+event_dispatch:
 	diskInfo = append(diskInfo, deviceDetails)
-	eventMessage := controller.EventMessage{}
 	switch action {
 	case udevevent.EventTypeAdd:
 		eventMessage.Action = string(AttachEA)
 	case udevevent.EventTypeRemove:
 		eventMessage.Action = string(DetachEA)
+	case udevevent.EventTypeChange:
+		eventMessage.Action = string(ChangeEA)
 	}
 	eventMessage.Devices = diskInfo
-
 	return eventMessage
 }

@@ -1,0 +1,2 @@
+add support to detect changes to block device size without restarting NDM
+
