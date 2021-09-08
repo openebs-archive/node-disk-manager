@@ -6,7 +6,7 @@ NDM uses the standard GitHub pull requests process to review and accept contribu
 * If you want to file an issue for a bug or feature request, please see [Filing a issue](#filing-an-issue)
 * If you have documentation improvement ideas, go ahead and create a pull request. See [Pull Request checklist](#pull-request-checklist)
 * If you would like to make code contributions, please start with [Setting up the Development Environment](#setting-up-your-development-environment).
-* If you would like to work on something more involved, please connect with the OpenEBS Contributors. See [OpenEBS Community](https://github.com/openebs/openebs/tree/master/community)
+* If you would like to work on something more involved, please connect with the OpenEBS Contributors. See [OpenEBS Community](https://github.com/openebs/openebs/tree/main/community)
 
 ## Steps to Contribute
 
@@ -15,10 +15,10 @@ NDM is an Apache 2.0 Licensed project and all your commits should be signed with
 * Find an issue to work on or create a new issue. The issues are maintained at [openebs/openebs](https://github.com/openebs/openebs/issues?q=is%3Aissue+is%3Aopen+label%3Andm). You can pick up from a list of [good-first-issues](https://github.com/openebs/node-disk-manager/labels/good%20first%20issue).
 * Claim your issue by commenting your intent to work on it to avoid duplication of efforts. 
 * Fork the repository on GitHub.
-* Create a branch from where you want to base your work (usually master).
+* Create a branch from where you want to base your work (usually develop).
 * Make your changes. If you are working on code contributions, please see [Setting up the Development Environment](#setting-up-your-development-environment).
 * Relevant coding style guidelines are the [Go Code Review Comments](https://code.google.com/p/go-wiki/wiki/CodeReviewComments) and the _Formatting and style_ section of Peter Bourgon's [Go: Best Practices for Production Environments](http://peter.bourgon.org/go-in-production/#formatting-and-style).
-* Commit your changes by making sure the commit messages convey the need and notes about the commit. The commit message format followed for OpenEBS projects can be found [here](https://github.com/openebs/openebs/blob/master/contribute/git-commit-message.md).
+* Commit your changes by making sure the commit messages convey the need and notes about the commit. The commit message format followed for OpenEBS projects can be found [here](https://github.com/openebs/openebs/blob/main/contribute/git-commit-message.md).
 * Push your changes to the branch in your fork of the repository.
 * Submit a pull request to the original repository. See [Pull Request checklist](#pull-request-checklist)
 
@@ -57,7 +57,7 @@ When filing an issue, make sure to answer these seven questions:
 **If you want to introduce a new label then you need to raise a PR to update this document with the new label details.**
 
 ## Pull Request Checklist
-* Rebase to the current master branch before submitting your pull request.
+* Rebase to the current develop branch before submitting your pull request.
 * Commits should be as small as possible. Each commit should follow the checklist below:
   - For code changes, add tests relevant to the fixed bug or new feature.
   - Pass the compilation and tests - includes spell checks, formatting, etc.
@@ -87,14 +87,14 @@ When filing an issue, make sure to answer these seven questions:
     * `style`       - formatting, missing semi colons, linting fix etc; no significant production code changes
     * `test`        - adding missing tests, refactoring tests; no production code change
     * `refactor`    - refactoring production code, eg. renaming a variable or function name, there should not be any significant production code changes
-    * `cherry-pick` - if PR is merged in master branch and raised to release branch(like v0.4.x)
+    * `cherry-pick` - if PR is merged in develop branch and raised to release branch(like v0.4.x)
 
-* If your PR is not getting reviewed, or you need a specific person to review it, please reach out to the OpenEBS Contributors. See [OpenEBS Community](https://github.com/openebs/openebs/tree/master/community)
+* If your PR is not getting reviewed, or you need a specific person to review it, please reach out to the OpenEBS Contributors. See [OpenEBS Community](https://github.com/openebs/openebs/tree/main/community)
 
 ## Code Reviews
 All submissions, including submissions by project members, require review. We use GitHub pull requests for this purpose. Consult [GitHub Help](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests) for more information on using pull requests.
 
-* If your PR is not getting reviewed or you need a specific person to review it, please reach out to the OpenEBS Contributors. See [OpenEBS Community](https://github.com/openebs/openebs/tree/master/community)
+* If your PR is not getting reviewed or you need a specific person to review it, please reach out to the OpenEBS Contributors. See [OpenEBS Community](https://github.com/openebs/openebs/tree/main/community)
 
 * If PR is fixing any issues from [github-issues](https://github.com/openebs/openebs/issues) then you need to mention the issue number with link in PR description. like : _fixes https://github.com/openebs/openebs/issues/2961_
 
