@@ -50,6 +50,7 @@ jobs:
           images: |
             ${{ env.IMAGE_ORG }}/node-disk-manager
             quay.io/${{ env.IMAGE_ORG }}/node-disk-manager
+            ghcr.io/${{ env.IMAGE_ORG }}/node-disk-manager
           tag-latest: true
           tag-semver: |
             {{version}}
@@ -129,6 +130,7 @@ jobs:
           images: |
             ${{ env.IMAGE_ORG }}/node-disk-exporter
             quay.io/${{ env.IMAGE_ORG }}/node-disk-exporter
+            ghcr.io/${{ env.IMAGE_ORG }}/node-disk-exporter
           tag-latest: true
           tag-semver: |
             {{version}}
@@ -208,6 +210,7 @@ jobs:
           images: |
             ${{ env.IMAGE_ORG }}/node-disk-operator
             quay.io/${{ env.IMAGE_ORG }}/node-disk-operator
+            ghcr.io/${{ env.IMAGE_ORG }}/node-disk-operator
           tag-latest: true
           tag-semver: |
             {{version}}

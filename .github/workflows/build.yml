@@ -100,6 +100,7 @@ jobs:
           images: |
             ${{ env.IMAGE_ORG }}/node-disk-manager
             quay.io/${{ env.IMAGE_ORG }}/node-disk-manager
+            ghcr.io/${{ env.IMAGE_ORG }}/node-disk-manager
           tag-latest: false
           tag-custom-only: true
           tag-custom: |
@@ -182,6 +183,7 @@ jobs:
           images: |
             ${{ env.IMAGE_ORG }}/node-disk-exporter
             quay.io/${{ env.IMAGE_ORG }}/node-disk-exporter
+            ghcr.io/${{ env.IMAGE_ORG }}/node-disk-exporter
           tag-latest: false
           tag-custom-only: true
           tag-custom: |
@@ -264,6 +266,7 @@ jobs:
           images: |
             ${{ env.IMAGE_ORG }}/node-disk-operator
             quay.io/${{ env.IMAGE_ORG }}/node-disk-operator
+            ghcr.io/${{ env.IMAGE_ORG }}/node-disk-operator
           tag-latest: false
           tag-custom-only: true
           tag-custom: |
