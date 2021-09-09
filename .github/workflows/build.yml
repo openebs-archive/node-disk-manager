@@ -23,7 +23,9 @@ on:
       - 'docs/**'
       - 'changelogs/**'
       - 'deploy/helm/**'
-      - 'CHANGELOG.md'
+      - '*.md'
+      - 'LICENSE'
+      - 'MAINTAINERS'
 
 jobs:
   lint:
