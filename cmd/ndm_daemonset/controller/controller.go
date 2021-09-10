@@ -73,6 +73,8 @@ const (
 	NDMDeviceTypeKey = "ndm.io/blockdevice-type"
 	// NDMManagedKey specifies blockdevice cr should be managed by ndm or not.
 	NDMManagedKey = "ndm.io/managed"
+	// NDMZpoolName specifies the zpool name
+	NDMZpoolName = "ndm.io/zpool-name"
 )
 
 const (
