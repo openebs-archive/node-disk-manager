@@ -214,3 +214,21 @@ func (disk *Disk) Unmount() error {
 	}
 	return lastErr
 }
+
+func (disk *Disk) Resize(size int64) error {
+	units := [4]string{"", "K", "M", "G"}
+	currUnit := -1
+	var maxExp int64 = 1
+	for maxExp <= size {
+		maxExp *= 1024
+		currUnit++
+	}
+	maxExp /= 1024
+	size /= maxExp
+	err := utils.RunCommand(fmt.Sprintf("dd if=/dev/zero of=%s bs=1%s count=%d",
+		disk.imageName, units[currUnit], size))
+	if err != nil {
+		return err
+	}
+	return utils.RunCommandWithSudo("losetup -c " + disk.Name)
+}

@@ -102,10 +102,11 @@ var _ = Describe("Device Discovery Tests", func() {
 			for _, blockDevice := range bdList.Items {
 				if strings.Contains(blockDevice.Name, BlockDeviceName) && blockDevice.Spec.Path == physicalDisk.Name {
 					noOfPhysicalBlockDeviceCR++
+					Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
 				} else if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
 					noOfSparseBlockDeviceCR++
+					Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
 				}
-				Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
 			}
 
 			Expect(noOfSparseBlockDeviceCR).To(Equal(1))

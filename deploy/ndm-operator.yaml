@@ -519,9 +519,9 @@ spec:
         - -v=4
         - --feature-gates="GPTBasedUUID"
         - --feature-gates="APIService"
-        # Detect mount point and filesystem changes wihtout restart.
+        # Detect changes to device size, filesystem and mount-points without restart.
         # Uncomment the line below to enable the feature.
-        # --feature-gates="MountChangeDetection"
+        # - --feature-gates="ChangeDetection"
         # Default address is 0.0.0.0:9115, do not use quotes around the address
         # - --api-service-address=0.0.0.0:9115
         - --feature-gates="UseOSDisk"
@@ -710,6 +710,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ndm-cluster-exporter-service
+  namespace: openebs
   labels:
     name: openebs-ndm-exporter
     component: openebs-ndm-cluster-exporter
@@ -774,6 +775,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ndm-node-exporter-service
+  namespace: openebs
   labels:
     name: openebs-ndm-exporter
     component: openebs-ndm-node-exporter

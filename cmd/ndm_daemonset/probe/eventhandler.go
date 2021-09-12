@@ -33,8 +33,9 @@ const (
 	AttachEA EventAction = libudevwrapper.UDEV_ACTION_ADD
 	// DetachEA is detach disk event name
 	DetachEA EventAction = libudevwrapper.UDEV_ACTION_REMOVE
-	// MountEA is mount-point/fs change event
-	MountEA EventAction = "mount-change"
+	// ChangeEA event is generated whenever some property of the blockdevice
+	// changes in udev
+	ChangeEA EventAction = libudevwrapper.UDEV_ACTION_CHANGE
 )
 
 // ProbeEvent struct contain a copy of controller it will update disk resources
@@ -168,8 +169,8 @@ func (pe *ProbeEvent) changeBlockDeviceEvent(msg controller.EventMessage) {
 			// Device not in heiracrhy cache. this shouldn't happen, but to recover
 			// We use the mostly empty bd and run it through all probes
 			klog.V(4).Info("could not find bd in heirarchy cache. ",
-				"This shouldn't happen. Will try to recover.")
-			err = pe.changeBlockDevice(bd)
+				"This shouldn't happen. Abandoning change.")
+			err = nil
 		}
 		if err != nil {
 			klog.Errorf("failed to update blockdevice: %v", err)
