@@ -19,7 +19,6 @@ package probe
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
@@ -36,9 +35,6 @@ const (
 	gptUUIDScheme                   = "gpt"
 	internalFSUUIDAnnotation        = "internal.openebs.io/fsuuid"
 	internalPartitionUUIDAnnotation = "internal.openebs.io/partition-uuid"
-
-	// NDMLabelPrefix is the label prefix for ndm labels
-	NDMLabelPrefix = "ndm.io/"
 )
 
 // addBlockDeviceToHierarchyCache adds the given block device to the hierarchy of devices.
@@ -252,31 +248,6 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 	return nil
 }
 
-// addBlockDeviceLabels adds labels to the blockdevice resource
-func (pe *ProbeEvent) addBlockDeviceLabels(bd *blockdevice.BlockDevice) {
-	// get the list of labels to be added
-	labelList := pe.Controller.LabelList
-	if labelList != "" {
-		labels := strings.Split(labelList, ",")
-		bd.Labels = make(map[string]string, 0)
-		for _, label := range labels {
-			// Get the value of the label from blockdevice device attributes
-			labelValue := getField(bd.DeviceAttributes, label)
-
-			// If the label value is empty check for filesystem information
-			if labelValue == "" {
-				labelValue = getField(bd.FSInfo, label)
-			}
-
-			// Add the ndm label to the blockdevice if it is not empty
-			if labelValue != "" {
-				bd.Labels[NDMLabelPrefix+label] = labelValue
-			}
-		}
-		klog.V(4).Infof("Added device attributes labels: %v to the device: %v with uuid: %v", bd.Labels, bd.DevPath, bd.UUID)
-	}
-}
-
 // getField helps to access struct property by names dynamically
 func getField(obj interface{}, field string) string {
 	r := reflect.ValueOf(obj)
@@ -414,10 +385,14 @@ func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIL
 	bd.UUID = uuid
 
 	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-	bdAPI := deviceInfo.ToDevice()
+	bdAPI, err := deviceInfo.ToDevice()
+	if err != nil {
+		klog.Error("Failed to create a block device resource CR, Error: ", err)
+		return true, err
+	}
 	bdAPI.Labels[kubernetes.BlockDeviceTagLabel] = string(blockdevice.ZFSLocalPV)
 
-	err := pe.Controller.CreateBlockDevice(bdAPI)
+	err = pe.Controller.CreateBlockDevice(bdAPI)
 	if err != nil {
 		klog.Errorf("unable to push %s (%s) to etcd", bd.UUID, bd.DevPath)
 		return false, err
@@ -624,11 +599,13 @@ func (pe *ProbeEvent) createOrUpdateWithPartitionUUID(bd blockdevice.BlockDevice
 // createOrUpdateWithAnnotation creates or updates a resource in etcd with given annotation.
 func (pe *ProbeEvent) createOrUpdateWithAnnotation(annotation map[string]string, bd blockdevice.BlockDevice, existingBD *apis.BlockDevice) error {
 	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-	bdAPI := deviceInfo.ToDevice()
-
+	bdAPI, err := deviceInfo.ToDevice()
+	if err != nil {
+		klog.Error("Failed to create a block device resource CR, Error: ", err)
+		return err
+	}
 	bdAPI.Annotations = annotation
 
-	var err error
 	if existingBD != nil {
 		err = pe.Controller.UpdateBlockDevice(bdAPI, existingBD)
 	} else {

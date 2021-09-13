@@ -17,9 +17,17 @@ limitations under the License.
 package controller
 
 import (
+	"fmt"
+	"strings"
+
+	"k8s.io/klog"
+
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/jsonpath"
+	"k8s.io/kubectl/pkg/cmd/get"
 )
 
 // DeviceInfo contains details of blockdevice which can be converted into api.BlockDevice
@@ -67,13 +75,87 @@ type FSInfo struct {
 
 // ToDevice convert deviceInfo struct to api.BlockDevice
 // type which will be pushed to etcd
-func (di *DeviceInfo) ToDevice() apis.BlockDevice {
+func (di *DeviceInfo) ToDevice() (apis.BlockDevice, error) {
 	blockDevice := apis.BlockDevice{}
 	blockDevice.Spec = di.getDeviceSpec()
 	blockDevice.ObjectMeta = di.getObjectMeta()
 	blockDevice.TypeMeta = di.getTypeMeta()
 	blockDevice.Status = di.getStatus()
-	return blockDevice
+	err := addBdLabels(&blockDevice)
+	if err != nil {
+		return blockDevice, fmt.Errorf("error in adding labels to the blockdevice: %v",err)
+	}
+	return blockDevice, nil
+}
+
+// addBdLabels add labels to block device that may be helpful for filtering the block device
+// based on some/generic attributes like drive-type, model, vendor etc.
+func addBdLabels(bd *apis.BlockDevice) error {
+	ctrl := <-ControllerBroadcastChannel
+	if ctrl == nil {
+		return fmt.Errorf("controller not found")
+	}
+
+	var JsonPathFields []string
+
+	// get the labels to be added from the configmap
+	if ctrl.NDMConfig != nil {
+		for _, metaConfig := range ctrl.NDMConfig.MetaConfigs {
+			if metaConfig.Key == deviceLabelsKey {
+				JsonPathFields = strings.Split(metaConfig.Type, ",")
+			}
+		}
+	}
+
+	for _, jsonPath := range JsonPathFields {
+		// Parse jsonpath
+		fields, err := get.RelaxedJSONPathExpression(strings.TrimSpace(jsonPath))
+		if err != nil {
+			klog.Errorf("Error converting into a valid jsonpath expression: %+v", err)
+			return err
+		}
+
+		j := jsonpath.New(jsonPath)
+		if err := j.Parse(fields); err != nil {
+			klog.Errorf("Error parsing jsonpath: %s, error: %+v", fields, err)
+			return err
+		}
+
+		values, err := j.FindResults(bd)
+		if err != nil {
+			klog.Errorf("Error finding results for jsonpath: %s, error: %+v", fields, err)
+			return err
+		}
+
+		valueStrings := []string{}
+		var jsonPathFieldValue string
+
+		if len(values) != 0 || len(values[0]) != 0 {
+			for arrIx := range values {
+				for valIx := range values[arrIx] {
+					valueStrings = append(valueStrings, fmt.Sprintf("%v", values[arrIx][valIx].Interface()))
+				}
+			}
+
+			// convert the string array into a single string
+			jsonPathFieldValue = strings.Join(valueStrings, ",")
+			jsonPathFieldValue = strings.TrimSuffix(jsonPathFieldValue, ",")
+
+			// the length of the above string formed should not be greater than 63 characters
+			// according to the k8s label rules.
+			// Check this link for more info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+			if len(jsonPathFieldValue) > 63 {
+				jsonPathFieldValue = jsonPathFieldValue[:63]
+			}
+
+			jsonPathFields := strings.Split(jsonPath, ".")
+			if len(jsonPathFields) > 0 && jsonPathFields[len(jsonPathFields)-1] != "" && jsonPathFieldValue != "" {
+				bd.Labels[NDMLabelPrefix+jsonPathFields[len(jsonPathFields)-1]] = jsonPathFieldValue
+			}
+		}
+	}
+	klog.V(4).Infof("successfully added device labels")
+	return nil
 }
 
 // getObjectMeta returns ObjectMeta struct which contains

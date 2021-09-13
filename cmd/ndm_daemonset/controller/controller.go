@@ -25,9 +25,6 @@ import (
 	"sync"
 	"time"
 
-	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
-	"github.com/openebs/node-disk-manager/blockdevice"
-
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
@@ -35,6 +32,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 const (
@@ -76,6 +77,12 @@ const (
 	NDMDeviceTypeKey = "ndm.io/blockdevice-type"
 	// NDMManagedKey specifies blockdevice cr should be managed by ndm or not.
 	NDMManagedKey = "ndm.io/managed"
+	// nodeLabelsKey is the meta config key name for adding node labels
+	nodeLabelsKey = "node-labels"
+	// deviceLabelsKey is the meta config key name for adding device labels
+	deviceLabelsKey = "device-labels"
+	// NDMLabelPrefix is the label prefix for ndm labels
+	NDMLabelPrefix = "ndm.io/"
 )
 
 const (
@@ -106,8 +113,6 @@ type Controller struct {
 	config *rest.Config // config is the generated config using kubeconfig/incluster config
 	// Namespace is the namespace in which NDM is installed
 	Namespace string
-	// LabelList is the list of labels to be discovered and added to the block device
-	LabelList string
 	// Clientset is the client used to interface with API server
 	Clientset client.Client
 	NDMConfig *NodeDiskManagerConfig // NDMConfig contains custom config for ndm
@@ -136,13 +141,6 @@ func NewController() (*Controller, error) {
 		return controller, err
 	}
 	controller.Namespace = ns
-
-	// get the list of labels to be added to blockdevice
-	labelList, err := getLabelList()
-	if err != nil {
-		return controller, err
-	}
-	controller.LabelList = labelList
 
 	mgr, err := manager.New(controller.config, manager.Options{Namespace: controller.Namespace, MetricsBindAddress: "0"})
 	if err != nil {
@@ -226,27 +224,28 @@ func (c *Controller) setNodeLabels() error {
 		c.NodeAttributes[HostNameKey] = hostName
 	}
 
-	labelList, err := getLabelList()
-	if err != nil {
-		return err
+	var labelPattern []string
+
+	// Get the list of node label patterns to be added from the configmap
+	if c.NDMConfig != nil {
+		for _, metaConfig := range c.NDMConfig.MetaConfigs {
+			if metaConfig.Key == nodeLabelsKey {
+				labelPattern = strings.Split(metaConfig.Pattern, ",")
+			}
+		}
 	}
-	if labelList != "" {
-		labels := strings.Split(labelList, ",")
-		for _, label := range labels {
-			// check if the node-attribute label is present in the list
-			// If present then add all the node labels to the controller node attributes
-			if label == LabelTypeNode {
-				// Fill the blockdevice labels with all the topological labels of the node
-				// to which it is attached to
-				for key, value := range node.Labels {
-					if strings.Contains(key, "openebs.io") {
-						continue
-					}
+
+	if len(labelPattern) > 0 {
+		// Add only those node labels that matches the pattern specified in the
+		// node-labels meta config
+		for key, value := range node.Labels {
+			for _, pattern := range labelPattern {
+				if util.IsMatchRegex(pattern, key) {
 					if value != "" {
 						c.NodeAttributes[key] = value
+						break
 					}
 				}
-				break
 			}
 		}
 	}
@@ -271,16 +270,6 @@ func getNamespace() (string, error) {
 		return "", errors.New("error getting namespace")
 	}
 	return ns, nil
-}
-
-// getLabelList get list of labels to be added to the blockdevice from env,
-// else it returns error
-func getLabelList() (string, error) {
-	labelList, ok := os.LookupEnv("LABEL_LIST")
-	if !ok {
-		return "", errors.New("error getting the list of labels")
-	}
-	return labelList, nil
 }
 
 // WaitForBlockDeviceCRD will block till the CRDs are loaded

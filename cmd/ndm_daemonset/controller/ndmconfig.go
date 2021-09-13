@@ -36,6 +36,8 @@ type NodeDiskManagerConfig struct {
 	FilterConfigs []FilterConfig `json:"filterconfigs"` // FilterConfigs contains configs of Filters
 	// TagConfigs contains configs for tags
 	TagConfigs []TagConfig `json:"tagconfigs"`
+	// MetaConfig contains configs for device labels
+	MetaConfigs []MetaConfig `json:"metaconfigs"`
 }
 
 // ProbeConfig contains configs of Probe
@@ -59,6 +61,13 @@ type TagConfig struct {
 	Type    string `json:"type"`
 	Pattern string `json:"pattern"`
 	TagName string `json:"tag"`
+}
+
+type MetaConfig struct {
+	Key     string `json:"key"`
+	Name  string `json:"name"`
+	Type    string `json:"type"`
+	Pattern string `json:"pattern"`
 }
 
 // SetNDMConfig sets config for probes and filters which user provides via configmap. If

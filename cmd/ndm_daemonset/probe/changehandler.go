@@ -38,10 +38,6 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 		bd.UUID = uuid
 	}
 
-	// add labels to block device that may be helpful for filtering the block device
-	// based on some/generic attributes like drive-type, model, vendor etc.
-	pe.addBlockDeviceLabels(bd)
-
 	// Check if the mount-points have changed
 	if len(bdCopy.FSInfo.MountPoint) != len(bd.FSInfo.MountPoint) {
 		haveEqualMountPoints = false
@@ -72,7 +68,11 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 	if !pe.Controller.ApplyFilter(bd) {
 		return nil
 	}
-	apiBlockdevice := pe.Controller.NewDeviceInfoFromBlockDevice(bd).ToDevice()
+	apiBlockdevice, err := pe.Controller.NewDeviceInfoFromBlockDevice(bd).ToDevice()
+	if err != nil {
+		klog.Error("Failed to create a block device resource CR, Error: ", err)
+		return err
+	}
 	apiBlockdevice.SetNamespace(pe.Controller.Namespace)
 	klog.Info("updating bd: ", apiBlockdevice.GetName())
 	return pe.Controller.UpdateBlockDevice(apiBlockdevice, nil)

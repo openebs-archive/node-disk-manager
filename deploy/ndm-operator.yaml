@@ -436,6 +436,13 @@ data:
         state: true
         include: ""
         exclude: "/dev/loop,/dev/fd0,/dev/sr0,/dev/ram,/dev/md,/dev/dm-,/dev/rbd,/dev/zd"
+    metaconfigs:
+      - key: node-labels
+        name: node labels
+        pattern: kubernetes.io*,beta.kubernetes.io*
+      - key: device-labels
+        name: device labels
+        type: .spec.details.vendor,.spec.details.model,.spec.details.driveType,.spec.filesystem.fsType
 ---
 # Create NDM Service Account
 apiVersion: v1
