@@ -74,41 +74,6 @@ func TestSetNamespace(t *testing.T) {
 	}
 }
 
-func TestController_setNodeLabels(t *testing.T) {
-	fakeNdmClient := CreateFakeClient(t)
-	nodeAttributes := make(map[string]string, 0)
-	nodeAttributes[NodeNameKey] = fakeHostName
-	fakeController := &Controller{
-		NodeAttributes: nodeAttributes,
-		Clientset:      fakeNdmClient,
-	}
-	os.Setenv("LABEL_LIST", "fake-label,node-attributes")
-	tests := map[string]struct {
-		ExpectedController *Controller
-		wantErr            bool
-	}{
-		"1": {
-			ExpectedController: &Controller{
-				NodeAttributes: map[string]string{
-					NodeNameKey:              fakeHostName,
-					"kubernetes.io/hostname": fakeHostName,
-					"kubernetes.io/arch":     "fake-arch",
-					HostNameKey:              fakeHostName,
-				},
-			},
-			wantErr: false,
-		},
-	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			if err := fakeController.setNodeLabels(); (err != nil) != tt.wantErr {
-				t.Errorf("setNodeLabels() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			assert.Equal(t, tt.ExpectedController.NodeAttributes, fakeController.NodeAttributes)
-		})
-	}
-}
-
 /*
 	Broadcast start broadcasting controller pointer in ControllerBroadcastChannel channel
 	In this test case read ControllerBroadcastChannel channel and match controller pointer
