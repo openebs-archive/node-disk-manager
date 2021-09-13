@@ -130,7 +130,7 @@ func addBdLabels(bd *apis.BlockDevice) error {
 		valueStrings := []string{}
 		var jsonPathFieldValue string
 
-		if len(values) != 0 || len(values[0]) != 0 {
+		if len(values) > 0 || len(values[0]) > 0 {
 			for arrIx := range values {
 				for valIx := range values[arrIx] {
 					valueStrings = append(valueStrings, fmt.Sprintf("%v", values[arrIx][valIx].Interface()))
