@@ -91,11 +91,6 @@ func (di *DeviceInfo) ToDevice(controller *Controller) (apis.BlockDevice, error)
 // addBdLabels add labels to block device that may be helpful for filtering the block device
 // based on some/generic attributes like drive-type, model, vendor etc.
 func addBdLabels(bd *apis.BlockDevice, ctrl *Controller) error {
-	/*ctrl := <-ControllerBroadcastChannel
-	if ctrl == nil {
-		return fmt.Errorf("controller not found")
-	}*/
-
 	var JsonPathFields []string
 
 	// get the labels to be added from the configmap

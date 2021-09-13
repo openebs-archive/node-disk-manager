@@ -45,8 +45,8 @@ data:
     metaconfigs:
       - key: node-labels
         name: node labels
-        pattern: kubernetes.io*,beta.kubernetes.io*
+        pattern: "kubernetes.io*,beta.kubernetes.io*"
       - key: device-labels
         name: device labels
-        type: .spec.details.vendor,.spec.details.model,.spec.details.driveType,.spec.filesystem.fsType
+        type: ".spec.details.vendor,.spec.details.model,.spec.details.driveType,.spec.filesystem.fsType"
 ---
