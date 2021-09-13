@@ -121,13 +121,13 @@ func (up *udevProbe) Start() {
 	go up.listen()
 	if features.FeatureGates.IsEnabled(features.ChangeDetection) {
 		up.udeveventSubscription = udevevent.Subscribe(
-		        udevevent.EventTypeAdd,
+			udevevent.EventTypeAdd,
 			udevevent.EventTypeRemove,
 			udevevent.EventTypeChange,
 		)
 	} else {
 		up.udeveventSubscription = udevevent.Subscribe(
-		        udevevent.EventTypeAdd,
+			udevevent.EventTypeAdd,
 			udevevent.EventTypeRemove,
 		)
 	}

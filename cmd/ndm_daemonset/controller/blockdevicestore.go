@@ -251,7 +251,7 @@ func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
 func (c *Controller) PushBlockDeviceResource(oldBlockDevice *apis.BlockDevice,
 	deviceDetails *DeviceInfo) error {
 	deviceDetails.NodeAttributes = c.NodeAttributes
-	deviceAPI, err := deviceDetails.ToDevice()
+	deviceAPI, err := deviceDetails.ToDevice(c)
 	if err != nil {
 		klog.Error("Failed to create a block device resource CR, Error: ", err)
 		return err

@@ -68,7 +68,7 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 	if !pe.Controller.ApplyFilter(bd) {
 		return nil
 	}
-	apiBlockdevice, err := pe.Controller.NewDeviceInfoFromBlockDevice(bd).ToDevice()
+	apiBlockdevice, err := pe.Controller.NewDeviceInfoFromBlockDevice(bd).ToDevice(pe.Controller)
 	if err != nil {
 		klog.Error("Failed to create a block device resource CR, Error: ", err)
 		return err

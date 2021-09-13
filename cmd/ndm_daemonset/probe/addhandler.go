@@ -18,7 +18,6 @@ package probe
 
 import (
 	"fmt"
-	"reflect"
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
@@ -248,18 +247,6 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 	return nil
 }
 
-// getField helps to access struct property by names dynamically
-func getField(obj interface{}, field string) string {
-	r := reflect.ValueOf(obj)
-	if r.Kind() == reflect.Struct {
-		f := reflect.Indirect(r).FieldByName(field)
-		if f.IsValid() {
-			return f.String()
-		}
-	}
-	return ""
-}
-
 // createBlockDeviceResourceIfNoHolders creates/updates a blockdevice resource if it does not have any
 // holder devices
 func (pe *ProbeEvent) createBlockDeviceResourceIfNoHolders(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) error {
@@ -385,7 +372,7 @@ func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIL
 	bd.UUID = uuid
 
 	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-	bdAPI, err := deviceInfo.ToDevice()
+	bdAPI, err := deviceInfo.ToDevice(pe.Controller)
 	if err != nil {
 		klog.Error("Failed to create a block device resource CR, Error: ", err)
 		return true, err
@@ -599,7 +586,7 @@ func (pe *ProbeEvent) createOrUpdateWithPartitionUUID(bd blockdevice.BlockDevice
 // createOrUpdateWithAnnotation creates or updates a resource in etcd with given annotation.
 func (pe *ProbeEvent) createOrUpdateWithAnnotation(annotation map[string]string, bd blockdevice.BlockDevice, existingBD *apis.BlockDevice) error {
 	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-	bdAPI, err := deviceInfo.ToDevice()
+	bdAPI, err := deviceInfo.ToDevice(pe.Controller)
 	if err != nil {
 		klog.Error("Failed to create a block device resource CR, Error: ", err)
 		return err

@@ -75,26 +75,26 @@ type FSInfo struct {
 
 // ToDevice convert deviceInfo struct to api.BlockDevice
 // type which will be pushed to etcd
-func (di *DeviceInfo) ToDevice() (apis.BlockDevice, error) {
+func (di *DeviceInfo) ToDevice(controller *Controller) (apis.BlockDevice, error) {
 	blockDevice := apis.BlockDevice{}
 	blockDevice.Spec = di.getDeviceSpec()
 	blockDevice.ObjectMeta = di.getObjectMeta()
 	blockDevice.TypeMeta = di.getTypeMeta()
 	blockDevice.Status = di.getStatus()
-	err := addBdLabels(&blockDevice)
+	err := addBdLabels(&blockDevice, controller)
 	if err != nil {
-		return blockDevice, fmt.Errorf("error in adding labels to the blockdevice: %v",err)
+		return blockDevice, fmt.Errorf("error in adding labels to the blockdevice: %v", err)
 	}
 	return blockDevice, nil
 }
 
 // addBdLabels add labels to block device that may be helpful for filtering the block device
 // based on some/generic attributes like drive-type, model, vendor etc.
-func addBdLabels(bd *apis.BlockDevice) error {
-	ctrl := <-ControllerBroadcastChannel
+func addBdLabels(bd *apis.BlockDevice, ctrl *Controller) error {
+	/*ctrl := <-ControllerBroadcastChannel
 	if ctrl == nil {
 		return fmt.Errorf("controller not found")
-	}
+	}*/
 
 	var JsonPathFields []string
 

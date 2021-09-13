@@ -220,7 +220,7 @@ func (c *Controller) MarkSparseBlockDeviceStateActive(sparseFile string, sparseF
 
 	//If a BlockDevice CR already exits, update it. If not create a new one.
 	klog.Info("Updating the BlockDevice CR for Sparse file: ", BlockDeviceDetails.UUID)
-	bd, err := BlockDeviceDetails.ToDevice()
+	bd, err := BlockDeviceDetails.ToDevice(c)
 	if err != nil {
 		klog.Error("Failed to create a block device resource CR, Error: ", err)
 		return

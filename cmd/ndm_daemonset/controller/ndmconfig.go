@@ -65,7 +65,7 @@ type TagConfig struct {
 
 type MetaConfig struct {
 	Key     string `json:"key"`
-	Name  string `json:"name"`
+	Name    string `json:"name"`
 	Type    string `json:"type"`
 	Pattern string `json:"pattern"`
 }
