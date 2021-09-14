@@ -18,12 +18,14 @@ on:
   pull_request:
     paths-ignore:
       - 'docs/**'
-      - 'deploy/helm/**'
       - 'changelogs/**'
-      - 'CHANGELOG.md'
+      - 'deploy/helm/**'
+      - '*.md'
+      - 'LICENSE'
+      - 'MAINTAINERS'
     branches:
-      # on pull requests to master and release branches
-      - master
+      # on pull requests to develop and release branches
+      - develop
       - 'v*'
 
 jobs:

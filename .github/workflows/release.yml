@@ -50,6 +50,7 @@ jobs:
           images: |
             ${{ env.IMAGE_ORG }}/node-disk-manager
             quay.io/${{ env.IMAGE_ORG }}/node-disk-manager
+            ghcr.io/${{ env.IMAGE_ORG }}/node-disk-manager
           tag-latest: true
           tag-semver: |
             {{version}}
@@ -82,6 +83,13 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push Image
         uses: docker/build-push-action@v2
@@ -129,6 +137,7 @@ jobs:
           images: |
             ${{ env.IMAGE_ORG }}/node-disk-exporter
             quay.io/${{ env.IMAGE_ORG }}/node-disk-exporter
+            ghcr.io/${{ env.IMAGE_ORG }}/node-disk-exporter
           tag-latest: true
           tag-semver: |
             {{version}}
@@ -161,6 +170,13 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push Image
         uses: docker/build-push-action@v2
@@ -208,6 +224,7 @@ jobs:
           images: |
             ${{ env.IMAGE_ORG }}/node-disk-operator
             quay.io/${{ env.IMAGE_ORG }}/node-disk-operator
+            ghcr.io/${{ env.IMAGE_ORG }}/node-disk-operator
           tag-latest: true
           tag-semver: |
             {{version}}
@@ -240,6 +257,13 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push Image
         uses: docker/build-push-action@v2
