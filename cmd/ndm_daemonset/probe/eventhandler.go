@@ -89,7 +89,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 		} else {
 			// if GPTBasedUUID is disabled and the device type is partition,
 			// the event can be skipped.
-			if device.DeviceAttributes.DeviceType == libudevwrapper.UDEV_PARTITION {
+			if device.DeviceAttributes.DeviceType == blockdevice.BlockDeviceTypePartition {
 				klog.Info("GPTBasedUUID disabled. skip creating block device resource for partition.")
 				continue
 			}

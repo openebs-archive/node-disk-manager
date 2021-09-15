@@ -31,7 +31,6 @@ import (
 
 const (
 	fsTypeIdentifier = "TYPE"
-	labelIdentifier  = "LABEL"
 )
 
 type DeviceIdentifier struct {
@@ -41,27 +40,17 @@ type DeviceIdentifier struct {
 // GetOnDiskFileSystem returns the filesystem present on the disk by reading from the disk
 // using libblkid
 func (di *DeviceIdentifier) GetOnDiskFileSystem() string {
-	return di.GetTagValue(fsTypeIdentifier)
-}
-
-// GetOnDiskLabel returns the label present on the disk by reading from the disk
-// using libblkid
-func (di *DeviceIdentifier) GetOnDiskLabel() string {
-	return di.GetTagValue(labelIdentifier)
-}
-
-func (di *DeviceIdentifier) GetTagValue(tag string) string {
 	var blkidType *C.char
-	blkidType = C.CString(tag)
+	blkidType = C.CString(fsTypeIdentifier)
 	defer C.free(unsafe.Pointer(blkidType))
 
 	var device *C.char
 	device = C.CString(di.DevPath)
 	defer C.free(unsafe.Pointer(device))
 
-	var tagValue *C.char
-	tagValue = C.blkid_get_tag_value(nil, blkidType, device)
-	defer C.free(unsafe.Pointer(tagValue))
+	var fstype *C.char
+	fstype = C.blkid_get_tag_value(nil, blkidType, device)
+	defer C.free(unsafe.Pointer(fstype))
 
-	return C.GoString(tagValue)
+	return C.GoString(fstype)
 }
