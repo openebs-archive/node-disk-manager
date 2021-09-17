@@ -129,7 +129,7 @@ featureGates:
   UseOSDisk:
     enabled: false
     featureGateFlag: "UseOSDisk"
-  MountChangeDetection:
+  ChangeDetection:
     enabled: true
     featureGateFlag: "ChangeDetection"
 
