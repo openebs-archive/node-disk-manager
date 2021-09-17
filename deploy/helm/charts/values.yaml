@@ -131,7 +131,7 @@ featureGates:
     featureGateFlag: "UseOSDisk"
   MountChangeDetection:
     enabled: true
-    featureGateFlag: "MountChangeDetection"
+    featureGateFlag: "ChangeDetection"
 
 # Directory used by the OpenEBS to store debug information and so forth
 # that are generated in the course of running OpenEBS containers.
