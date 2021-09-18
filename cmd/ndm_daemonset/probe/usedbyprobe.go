@@ -129,10 +129,11 @@ func (sp *usedbyProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevi
 
 		// check for ZFS file system
 		fstype := usedByProbe.BlkidIdentifier.GetOnDiskFileSystem()
-
+		zpool := usedByProbe.BlkidIdentifier.GetOnDiskLabel()
 		if fstype == zfsFileSystemLabel {
 			blockDevice.DevUse.InUse = true
-
+			blockDevice.FSInfo.FileSystem = zfsFileSystemLabel
+			blockDevice.Labels[controller.NDMZpoolName] = zpool
 			// the disk can either be in use by cstor or zfs local PV
 			ok, err := isBlockDeviceInUseByKernel(blockDevice.DevPath)
 
