@@ -1,3 +1,8 @@
+v1.7.0 / 2021-09-17
+========================
+* add support to detect changes to block device size without restarting NDM ([#616](https://github.com/openebs/node-disk-manager/pull/616),[@z0marlin](https://github.com/z0marlin))
+
+
 v1.6.0 / 2021-07-14
 ========================
 * update k8s to 1.20.2 and controller runtime to 0.8.2 version ([#561](https://github.com/openebs/node-disk-manager/pull/561),[@RealHarshThakur](https://github.com/RealHarshThakur))
