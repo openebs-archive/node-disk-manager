@@ -1,0 +1,1 @@
+mount /dev directory from host inside container so that wipefs gets reflected immediately on the host
