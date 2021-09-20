@@ -15,9 +15,9 @@ spec:
     metadata:
       labels:
         {{- include "openebs-ndm.node-exporter.labels" . | nindent 8 }}
-          {{- with .Values.ndmExporter.nodeExporter.podLabels }}
-          {{ toYaml . | nindent 8 }}
-          {{- end }}
+        {{- with .Values.ndmExporter.nodeExporter.podLabels }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ template "openebs-ndm.serviceAccountName" . }}
       containers:

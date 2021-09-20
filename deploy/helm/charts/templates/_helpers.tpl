@@ -193,7 +193,7 @@ Create labels for ndm operator component
 Create match labels for ndm cluster exporter deployment
 */}}
 {{- define "openebs-ndm.cluster-exporter.matchLabels" -}}
-app: {{ template "openebs-ndm.cluster-exporter.name" . }}
+app: {{ template "openebs-ndm.exporter.name" . }}
 release: {{ .Release.Name }}
 component: {{ default (include "openebs-ndm.cluster-exporter.name" .) .Values.ndmExporter.clusterExporter.componentName }}
 {{- end -}}
@@ -202,7 +202,6 @@ component: {{ default (include "openebs-ndm.cluster-exporter.name" .) .Values.nd
 Create component labels for ndm cluster exporter component
 */}}
 {{- define "openebs-ndm.cluster-exporter.componentLabels" -}}
-name: {{ template "openebs-ndm.exporter.name" . }}
 openebs.io/component-name: {{ default (include "openebs-ndm.cluster-exporter.name" .) .Values.ndmExporter.clusterExporter.componentName }}
 {{- end -}}
 
@@ -220,7 +219,7 @@ Create labels for ndm cluster exporter component
 Create match labels for ndm node exporter deployment
 */}}
 {{- define "openebs-ndm.node-exporter.matchLabels" -}}
-app: {{ template "openebs-ndm.node-exporter.name" . }}
+app: {{ template "openebs-ndm.exporter.name" . }}
 release: {{ .Release.Name }}
 component: {{ default (include "openebs-ndm.node-exporter.name" .) .Values.ndmExporter.nodeExporter.componentName }}
 {{- end -}}
@@ -229,7 +228,6 @@ component: {{ default (include "openebs-ndm.node-exporter.name" .) .Values.ndmEx
 Create component labels for ndm node exporter component
 */}}
 {{- define "openebs-ndm.node-exporter.componentLabels" -}}
-name: {{ template "openebs-ndm.exporter.name" . }}
 openebs.io/component-name: {{ default (include "openebs-ndm.node-exporter.name" .) .Values.ndmExporter.nodeExporter.componentName }}
 {{- end -}}
 
