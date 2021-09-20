@@ -85,7 +85,7 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{- define "openebs-ndm.exporter.name" -}}
-{{- $ndmName := default .Chart.Name .Values.ndmExporter.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- $ndmName := .Chart.Name | trunc 63 | trimSuffix "-" }}
 {{- $componentName := "exporter" | trunc 63 | trimSuffix "-" }}
 {{- printf "%s-%s" $ndmName $componentName | trunc 63 | trimSuffix "-" }}
 {{- end }}
