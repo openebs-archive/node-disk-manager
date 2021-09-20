@@ -520,7 +520,7 @@ spec:
         - --feature-gates="GPTBasedUUID"
         - --feature-gates="APIService"
         # Detect changes to device size, filesystem and mount-points without restart.
-        - --feature-gates="ChangeDetection"
+        #- --feature-gates="ChangeDetection"
         # Default address is 0.0.0.0:9115, do not use quotes around the address
         # - --api-service-address=0.0.0.0:9115
         - --feature-gates="UseOSDisk"

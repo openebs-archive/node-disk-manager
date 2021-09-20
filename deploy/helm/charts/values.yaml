@@ -130,7 +130,7 @@ featureGates:
     enabled: false
     featureGateFlag: "UseOSDisk"
   ChangeDetection:
-    enabled: true
+    enabled: false
     featureGateFlag: "ChangeDetection"
 
 # Directory used by the OpenEBS to store debug information and so forth
