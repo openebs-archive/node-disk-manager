@@ -23,6 +23,7 @@ package cleaner
 import (
 	"context"
 	"fmt"
+
 	"github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -116,13 +117,22 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, tolerations []v
 
 		jobContainer.Args = []string{args}
 
+		var volume v1.Volume
+		var volumeMount v1.VolumeMount
+
 		// in case of sparse disk, need to mount the sparse file directory
 		// and clear the sparse file
 		if bd.Spec.Details.DeviceType == blockdevice.SparseBlockDeviceType {
-			volume, volumeMount := getVolumeMounts(bd.Spec.Path, bd.Spec.Path, mountName)
-			jobContainer.VolumeMounts = []v1.VolumeMount{volumeMount}
-			podSpec.Volumes = []v1.Volume{volume}
+			volume, volumeMount = getVolumeMounts(bd.Spec.Path, bd.Spec.Path, mountName)
+		} else {
+			// for a non sparse disk, mount the /dev directory so that wipefs inside the container
+			// gets reflected outside the container also. When this is done a correspnding change
+			// event is also generated from udev
+			volume, volumeMount = getVolumeMounts("/dev", "/dev", mountName)
 		}
+
+		jobContainer.VolumeMounts = []v1.VolumeMount{volumeMount}
+		podSpec.Volumes = []v1.Volume{volume}
 
 	} else if volMode == VolumeModeFileSystem {
 		jobContainer.Command = []string{"/bin/sh", "-c"}
