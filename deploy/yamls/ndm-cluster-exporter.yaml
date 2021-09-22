@@ -51,8 +51,7 @@ metadata:
   name: ndm-cluster-exporter-service
   namespace: openebs
   labels:
-    name: openebs-ndm-exporter
-    component: openebs-ndm-cluster-exporter
+    app: openebs-ndm-exporter
 spec:
   clusterIP: None
   ports:
