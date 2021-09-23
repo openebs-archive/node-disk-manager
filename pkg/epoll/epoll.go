@@ -20,6 +20,8 @@ import (
 	"errors"
 	"os"
 	"syscall"
+
+	"k8s.io/klog"
 )
 
 const (
@@ -189,6 +191,7 @@ func (e *Epoll) dispatchEvent(ev *syscall.EpollEvent) {
 	if !ok {
 		return
 	}
+	klog.V(4).Infof("epoll event for file %s dispatched", w.FileName)
 
 	e.eventChan <- Event{
 		fileName: w.FileName,
@@ -200,7 +203,9 @@ func (e *Epoll) listen() {
 	events := make([]syscall.EpollEvent, 2)
 	for e.active {
 		// TODO: Handle errors here
+		klog.Info("waiting for epoll events...")
 		count, _ := syscall.EpollWait(e.epfd, events, timeout)
+		klog.Infof("received %d events from epoll. dispatching...", count)
 		for i := 0; e.active && i < count; i++ {
 			e.dispatchEvent(&events[i])
 		}
