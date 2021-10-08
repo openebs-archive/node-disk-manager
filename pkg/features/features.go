@@ -69,9 +69,7 @@ var defaultFeatureGates = map[Feature]bool{
 	ChangeDetection: false,
 }
 
-var featureDependencies = map[Feature][]Feature{
-
-}
+var featureDependencies = map[Feature][]Feature{}
 
 // featureFlag is a map representing the flag and its state
 type featureFlag map[Feature]bool
