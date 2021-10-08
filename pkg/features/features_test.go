@@ -142,3 +142,112 @@ func TestSetFeatureFlag(t *testing.T) {
 		})
 	}
 }
+
+func TestFeatureDependencies(t *testing.T) {
+	firstFeature := Feature("FeatureGate1")
+	secondFeature := Feature("FeatureGate2")
+	featureDependsOnFirst := Feature("FeatureGateNeeds1")
+	featureDependsOnSecond := Feature("FeatureGateNeeds2")
+	featureDependsOnBoth := Feature("FeatureGateNeeds1And2");
+
+	supportedFeatures = []Feature{
+		firstFeature, 
+		secondFeature, 
+		featureDependsOnFirst, 
+		featureDependsOnSecond, 
+		featureDependsOnBoth,
+	}
+
+	featureDependencies = map[Feature][]Feature{
+		featureDependsOnFirst: { firstFeature },
+		featureDependsOnSecond: { secondFeature },
+		featureDependsOnBoth: { firstFeature, secondFeature },
+	}
+
+	type args struct {
+		features []string
+	}
+
+	tests := map[string]struct {
+		args    args
+		want    featureFlag
+		wantErr bool
+	}{
+		"unmet dependency should fail": {
+			args: args{
+				features: []string{string(featureDependsOnFirst)},
+			},
+			want: map[Feature]bool{
+				featureDependsOnFirst: false,
+			},
+			wantErr: true,
+		},
+		"met dependency should succeed": {
+			args: args{
+				features: []string{string(firstFeature), string(featureDependsOnFirst)},
+			},
+			want: map[Feature]bool{
+				firstFeature: true,
+				featureDependsOnFirst: true,
+			},
+			wantErr: false,
+		},
+		"one of two unmet dependency should fail": {
+			args: args{
+				features: []string{string(firstFeature), string(featureDependsOnBoth)},
+			},
+			want: map[Feature]bool{
+				firstFeature: true,
+				featureDependsOnBoth: false,
+			},
+			wantErr: true,
+		},
+		"all dependencies met should succeed": {
+			args: args{
+				features: []string{
+					string(firstFeature), 
+					string(secondFeature), 
+					string(featureDependsOnBoth)},
+			},
+			want: map[Feature]bool{
+				firstFeature: true,
+				secondFeature: true,
+				featureDependsOnBoth: true,
+			},
+			wantErr: false,
+		},
+		"multiple features can have same dependencies": {
+			args: args{
+				features: []string{
+					string(firstFeature), 
+					string(secondFeature), 
+					string(featureDependsOnFirst), 
+					string(featureDependsOnSecond), 
+					string(featureDependsOnBoth)},
+			},
+			want: map[Feature]bool{
+				firstFeature: true,
+				secondFeature: true,
+				featureDependsOnFirst: true,
+				featureDependsOnSecond: true,
+				featureDependsOnBoth: true,
+			},
+			wantErr: false,
+		},
+	}
+	
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			flags := make(featureFlag)
+			err := flags.SetFeatureFlag(test.args.features);
+			if (err != nil) != test.wantErr {
+				t.Errorf("SetFeatureFlag() error = %v, wantErr %v", err, test.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(flags, test.want) {
+				t.Errorf("SetFeatureFlag() got = %v, want %v", flags, test.want)
+			}
+		})
+	}
+	
+}

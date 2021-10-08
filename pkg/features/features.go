@@ -69,6 +69,10 @@ var defaultFeatureGates = map[Feature]bool{
 	ChangeDetection: false,
 }
 
+var featureDependencies = map[Feature][]Feature{
+
+}
+
 // featureFlag is a map representing the flag and its state
 type featureFlag map[Feature]bool
 
@@ -120,6 +124,18 @@ func (fg featureFlag) SetFeatureFlag(features []string) error {
 		// supported features
 		if !containsFeature(supportedFeatures, f) {
 			return fmt.Errorf("unknown feature flag %s", f)
+		}
+		// check if the feature has dependencies
+		dependencies, hasDependencies := featureDependencies[f]
+		// if the feature is being set to true, we need to ensure dependencies are met
+		if hasDependencies && isEnabled {
+			for _, dependency := range dependencies {
+				missingDependency := !fg[dependency]
+				if missingDependency {
+					fg[f] = false
+					return fmt.Errorf("Feature %s has unmet dependency %s - enable that first", feature, dependency)
+				}
+			}
 		}
 		fg[f] = isEnabled
 	}
