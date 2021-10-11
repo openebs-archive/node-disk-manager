@@ -36,6 +36,6 @@ Where:
     * `style`       - formatting, missing semi colons, linting fix etc; no significant production code changes
     * `test`        - adding missing tests, refactoring tests; no production code change
     * `refactor`    - refactoring production code, eg. renaming a variable or function name, there should not be any significant production code changes
-    * `cherry-pick` - if PR is merged in master branch and raised to release branch(like v0.4.x)
+    * `cherry-pick` - if PR is merged in develop branch and raised to release branch(like v0.4.x)
     
 IMPORTANT: Please review the [CONTRIBUTING.md](../CONTRIBUTING.md) file for detailed contributing guidelines.

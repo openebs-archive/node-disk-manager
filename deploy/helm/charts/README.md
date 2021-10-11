@@ -67,7 +67,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndmExporter.clusterExporter.metricsPort`   | The TCP port number used for exposing NDM cluster exporter metrics  | `9100`          |
 | `featureGates.APIService.enabled`       | Enable the gRPC API service of NDM            | `false`                                   |
 | `featureGates.UseOSDisk.enabled`        | Enable feature-gate to use free space on OS disk | `false`                                   |
-| `featureGates.MountChangeDetection.enabled` | Enable feature-gate to detect mountpoint/filesystem changes | `false`                                   |
+| `featureGates.ChangeDetection.enabled` | Enable feature-gate to detect mountpoint/filesystem/size changes | `true`                                   |
 | `helperPod.image.registry`              | Registry for helper image                     | `""`                                      |
 | `helperPod.image.repository`            | Image for helper pod                          | `openebs/linux-utils`                     |
 | `helperPod.image.pullPolicy`            | Pull policy for helper pod                    | `IfNotPresent`                            |

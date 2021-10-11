@@ -83,6 +83,8 @@ const (
 	deviceLabelsKey = "device-labels"
 	// NDMLabelPrefix is the label prefix for ndm labels
 	NDMLabelPrefix = "ndm.io/"
+	// NDMZpoolName specifies the zpool name
+	NDMZpoolName = "ndm.io/zpool-name"
 )
 
 const (
