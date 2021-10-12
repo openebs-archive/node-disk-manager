@@ -143,7 +143,7 @@ func TestSetFeatureFlag(t *testing.T) {
 	}
 }
 
-func TestFeatureDependencies(t *testing.T) {
+func TestBasicFeatureDependencies(t *testing.T) {
 	firstFeature := Feature("FeatureGate1")
 	secondFeature := Feature("FeatureGate2")
 	featureDependsOnFirst := Feature("FeatureGateNeeds1")
@@ -171,7 +171,6 @@ func TestFeatureDependencies(t *testing.T) {
 	tests := map[string]struct {
 		args    args
 		want    featureFlag
-		wantErr bool
 	}{
 		"unmet dependency should fail": {
 			args: args{
@@ -180,7 +179,6 @@ func TestFeatureDependencies(t *testing.T) {
 			want: map[Feature]bool{
 				featureDependsOnFirst: false,
 			},
-			wantErr: true,
 		},
 		"met dependency should succeed": {
 			args: args{
@@ -190,7 +188,6 @@ func TestFeatureDependencies(t *testing.T) {
 				firstFeature:          true,
 				featureDependsOnFirst: true,
 			},
-			wantErr: false,
 		},
 		"one of two unmet dependency should fail": {
 			args: args{
@@ -200,7 +197,6 @@ func TestFeatureDependencies(t *testing.T) {
 				firstFeature:         true,
 				featureDependsOnBoth: false,
 			},
-			wantErr: true,
 		},
 		"all dependencies met should succeed": {
 			args: args{
@@ -214,7 +210,6 @@ func TestFeatureDependencies(t *testing.T) {
 				secondFeature:        true,
 				featureDependsOnBoth: true,
 			},
-			wantErr: false,
 		},
 		"multiple features can have same dependencies": {
 			args: args{
@@ -232,7 +227,6 @@ func TestFeatureDependencies(t *testing.T) {
 				featureDependsOnSecond: true,
 				featureDependsOnBoth:   true,
 			},
-			wantErr: false,
 		},
 	}
 
@@ -240,11 +234,143 @@ func TestFeatureDependencies(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			flags := make(featureFlag)
 			err := flags.SetFeatureFlag(test.args.features)
-			if (err != nil) != test.wantErr {
-				t.Errorf("SetFeatureFlag() error = %v, wantErr %v", err, test.wantErr)
+			if (err != nil) {
+				t.Errorf("SetFeatureFlag() error = %v", err)
 				return
 			}
 			if !reflect.DeepEqual(flags, test.want) {
+				t.Errorf("SetFeatureFlag() got = %v, want %v", flags, test.want)
+			}
+		})
+	}
+
+}
+
+func TestNestedFeatureDependencies(t *testing.T) {
+	firstFeature := Feature("FeatureGate1")
+	secondFeature := Feature("FeatureGate2")
+	thirdFeatureNeedsBoth := Feature("FeatureGate3Needs1And2")
+	fourthFeatureNeedsThird := Feature("FeatureGate4Needs3")
+
+	supportedFeatures = []Feature{
+		firstFeature,
+		secondFeature,
+		thirdFeatureNeedsBoth,
+		fourthFeatureNeedsThird,
+	}
+
+	featureDependencies = map[Feature][]Feature{
+		thirdFeatureNeedsBoth:   {firstFeature, secondFeature},
+		fourthFeatureNeedsThird: {thirdFeatureNeedsBoth},
+	}
+
+	type args struct {
+		init []string
+		action []string
+	}
+
+	type want struct {
+		initResults featureFlag
+		actionResults featureFlag
+	}
+
+	tests := map[string]struct {
+		args    args
+		want    want
+	}{
+		"satisfied nested features should succeed": {
+			args: args{
+				init: []string{string(firstFeature), string(secondFeature), string(thirdFeatureNeedsBoth)},
+				action: []string{string(fourthFeatureNeedsThird)},
+			},
+			want: want{
+				initResults: map[Feature]bool{
+					firstFeature: true,
+					secondFeature: true,
+					thirdFeatureNeedsBoth: true,
+				},
+				actionResults: map[Feature]bool{
+					firstFeature: true,
+					secondFeature: true,
+					thirdFeatureNeedsBoth: true,
+					fourthFeatureNeedsThird: true,
+				},
+			},
+		},
+		"unsatisfied nested dependency should fail": {
+			args: args{
+				init: []string{string(firstFeature)},
+				action: []string{string(thirdFeatureNeedsBoth), string(fourthFeatureNeedsThird)},
+			},
+			want: want{
+				initResults: map[Feature]bool{
+					firstFeature: true,
+				},
+				actionResults: map[Feature]bool{
+					firstFeature: true,
+					thirdFeatureNeedsBoth: false,
+					fourthFeatureNeedsThird: false,
+				},
+			},
+		},
+		"turning off dependency should turn off dependant": {
+			args: args{
+				init: []string{string(firstFeature), string(secondFeature), string(thirdFeatureNeedsBoth)},
+				action: []string{string(firstFeature + "=false")},
+			},
+			want: want{
+				initResults: map[Feature]bool{
+					firstFeature: true,
+					secondFeature: true,
+					thirdFeatureNeedsBoth: true,
+				},
+				actionResults: map[Feature]bool{
+					firstFeature: false,
+					secondFeature: true,
+					thirdFeatureNeedsBoth: false,
+				},
+			},
+		},
+		"turning off dependency should turn off nested dependants": {
+			args: args{
+				init: []string{string(firstFeature), string(secondFeature), string(thirdFeatureNeedsBoth), string(fourthFeatureNeedsThird)},
+				action: []string{string(firstFeature + "=false")},
+			},
+			want: want{
+				initResults: map[Feature]bool{
+					firstFeature: true,
+					secondFeature: true,
+					thirdFeatureNeedsBoth: true,
+					fourthFeatureNeedsThird: true,
+				},
+				actionResults: map[Feature]bool{
+					firstFeature: false,
+					secondFeature: true,
+					thirdFeatureNeedsBoth: false,
+					fourthFeatureNeedsThird: false,
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			flags := make(featureFlag)
+			initErr := flags.SetFeatureFlag(test.args.init)
+			if (initErr != nil) {
+				t.Errorf("SetFeatureFlag() error initializing test = %v", initErr)
+				return
+			}
+			if !reflect.DeepEqual(flags, test.want.initResults) {
+				t.Errorf("SetFeatureFlag() initializing test got = %v, want %v", flags, test.want)
+				return
+			}
+			err := flags.SetFeatureFlag(test.args.action)
+			if (err != nil) {
+				t.Errorf("SetFeatureFlag() error = %v", err)
+				return
+			}
+			if !reflect.DeepEqual(flags, test.want.actionResults) {
 				t.Errorf("SetFeatureFlag() got = %v, want %v", flags, test.want)
 			}
 		})

@@ -123,19 +123,12 @@ func (fg featureFlag) SetFeatureFlag(features []string) error {
 		if !containsFeature(supportedFeatures, f) {
 			return fmt.Errorf("unknown feature flag %s", f)
 		}
-		// check if the feature has dependencies
-		dependencies, hasDependencies := featureDependencies[f]
-		// if the feature is being set to true, we need to ensure dependencies are met
-		if hasDependencies && isEnabled {
-			for _, dependency := range dependencies {
-				missingDependency := !fg[dependency]
-				if missingDependency {
-					fg[f] = false
-					return fmt.Errorf("Feature %s has unmet dependency %s - enable that first", feature, dependency)
-				}
-			}
-		}
 		fg[f] = isEnabled
+	}
+
+	// We make sure features are only turned on if their dependencies are met
+	for feature, _ := range fg {
+		ValidateDependencies(feature, fg)
 	}
 
 	for k, v := range fg {
@@ -143,4 +136,22 @@ func (fg featureFlag) SetFeatureFlag(features []string) error {
 	}
 
 	return nil
+}
+
+// Ensures features are disabled if their dependencies are unmet
+// Returns true if a feature is enabled after validation
+func ValidateDependencies(feature Feature, flags featureFlag) bool {
+	disabled := !flags[feature]
+	if disabled {
+		return false
+	}
+	dependencies, _ := featureDependencies[feature]
+	for _, dependency := range dependencies {
+		missingDependency := !ValidateDependencies(dependency, flags)
+		if missingDependency {
+			flags[feature] = false
+			klog.Infof("Feature %v was set to false due to missing dependency %v", feature, dependency)
+		}
+	}
+	return flags[feature]
 }
