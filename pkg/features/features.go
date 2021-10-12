@@ -127,7 +127,7 @@ func (fg featureFlag) SetFeatureFlag(features []string) error {
 	}
 
 	// We make sure features are only turned on if their dependencies are met
-	for feature, _ := range fg {
+	for feature := range fg {
 		ValidateDependencies(feature, fg)
 	}
 
