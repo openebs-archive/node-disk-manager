@@ -145,7 +145,7 @@ func ValidateDependencies(feature Feature, flags featureFlag) bool {
 	if disabled {
 		return false
 	}
-	dependencies, _ := featureDependencies[feature]
+	dependencies := featureDependencies[feature]
 	for _, dependency := range dependencies {
 		missingDependency := !ValidateDependencies(dependency, flags)
 		if missingDependency {
