@@ -17,7 +17,7 @@ spec:
       labels:
         {{- include "openebs-ndm.cluster-exporter.labels" . | nindent 8 }}
         {{- with .Values.ndmExporter.clusterExporter.podLabels }}
-        {{ toYaml . | nindent 8 }}
+        {{ toYaml . }}
         {{- end }}
     spec:
       serviceAccountName: {{ template "openebs-ndm.serviceAccountName" . }}
