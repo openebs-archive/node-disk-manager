@@ -127,8 +127,10 @@ func (fg featureFlag) SetFeatureFlag(features []string) error {
 	}
 
 	// We make sure features are only turned on if their dependencies are met
+	// We memoize values to avoid computing the same dependency twice
+	memoizedValues := make(featureFlag)
 	for feature := range fg {
-		ValidateDependencies(feature, fg)
+		ValidateDependencies(feature, fg, memoizedValues)
 	}
 
 	for k, v := range fg {
@@ -140,18 +142,21 @@ func (fg featureFlag) SetFeatureFlag(features []string) error {
 
 // Ensures features are disabled if their dependencies are unmet
 // Returns true if a feature is enabled after validation
-func ValidateDependencies(feature Feature, flags featureFlag) bool {
-	disabled := !flags[feature]
-	if disabled {
+func ValidateDependencies(feature Feature, flags featureFlag, memoizedValues featureFlag) bool {
+	if value, isMemoized := memoizedValues[feature]; isMemoized {
+		return value
+	}
+	if disabled := !flags[feature]; disabled {
 		return false
 	}
 	dependencies := featureDependencies[feature]
 	for _, dependency := range dependencies {
-		missingDependency := !ValidateDependencies(dependency, flags)
+		missingDependency := !ValidateDependencies(dependency, flags, memoizedValues)
 		if missingDependency {
 			flags[feature] = false
 			klog.Infof("Feature %v was set to false due to missing dependency %v", feature, dependency)
 		}
 	}
+	memoizedValues[feature] = flags[feature]
 	return flags[feature]
 }
