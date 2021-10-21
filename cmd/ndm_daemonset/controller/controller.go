@@ -74,9 +74,9 @@ const (
 	// NDMUnknown is constant for resource unknown status.
 	NDMUnknown = "Unknown"
 	// NDMDeviceTypeKey specifies the block device type
-	NDMDeviceTypeKey = "ndm.io/blockdevice-type"
+	NDMDeviceTypeKey = NDMLabelPrefix + "blockdevice-type"
 	// NDMManagedKey specifies blockdevice cr should be managed by ndm or not.
-	NDMManagedKey = "ndm.io/managed"
+	NDMManagedKey = NDMLabelPrefix + "managed"
 	// nodeLabelsKey is the meta config key name for adding node labels
 	nodeLabelsKey = "node-labels"
 	// deviceLabelsKey is the meta config key name for adding device labels
@@ -84,7 +84,7 @@ const (
 	// NDMLabelPrefix is the label prefix for ndm labels
 	NDMLabelPrefix = "ndm.io/"
 	// NDMZpoolName specifies the zpool name
-	NDMZpoolName = "ndm.io/zpool-name"
+	NDMZpoolName = NDMLabelPrefix + "zpool-name"
 )
 
 const (

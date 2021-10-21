@@ -20,14 +20,15 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/util/validation"
+	"k8s.io/client-go/util/jsonpath"
 	"k8s.io/klog"
+	"k8s.io/kubectl/pkg/cmd/get"
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/jsonpath"
-	"k8s.io/kubectl/pkg/cmd/get"
 )
 
 // DeviceInfo contains details of blockdevice which can be converted into api.BlockDevice
@@ -89,7 +90,7 @@ func (di *DeviceInfo) ToDevice(controller *Controller) (apis.BlockDevice, error)
 }
 
 // addBdLabels add labels to block device that may be helpful for filtering the block device
-// based on some/generic attributes like drive-type, model, vendor etc.
+// based on some generic attributes like drive-type, model, vendor etc.
 func addBdLabels(bd *apis.BlockDevice, ctrl *Controller) error {
 	var JsonPathFields []string
 
@@ -102,54 +103,57 @@ func addBdLabels(bd *apis.BlockDevice, ctrl *Controller) error {
 		}
 	}
 
-	for _, jsonPath := range JsonPathFields {
-		// Parse jsonpath
-		fields, err := get.RelaxedJSONPathExpression(strings.TrimSpace(jsonPath))
-		if err != nil {
-			klog.Errorf("Error converting into a valid jsonpath expression: %+v", err)
-			return err
-		}
+	if len(JsonPathFields) > 0 {
+		for _, jsonPath := range JsonPathFields {
+			// Parse jsonpath
+			fields, err := get.RelaxedJSONPathExpression(strings.TrimSpace(jsonPath))
+			if err != nil {
+				klog.Errorf("Error converting into a valid jsonpath expression: %+v", err)
+				return err
+			}
 
-		j := jsonpath.New(jsonPath)
-		if err := j.Parse(fields); err != nil {
-			klog.Errorf("Error parsing jsonpath: %s, error: %+v", fields, err)
-			return err
-		}
+			j := jsonpath.New(jsonPath)
+			if err := j.Parse(fields); err != nil {
+				klog.Errorf("Error parsing jsonpath: %s, error: %+v", fields, err)
+				return err
+			}
 
-		values, err := j.FindResults(bd)
-		if err != nil {
-			klog.Errorf("Error finding results for jsonpath: %s, error: %+v", fields, err)
-			return err
-		}
+			values, err := j.FindResults(bd)
+			if err != nil {
+				klog.Errorf("Error finding results for jsonpath: %s, error: %+v", fields, err)
+				return err
+			}
 
-		valueStrings := []string{}
-		var jsonPathFieldValue string
+			valueStrings := []string{}
+			var jsonPathFieldValue string
 
-		if len(values) > 0 || len(values[0]) > 0 {
-			for arrIx := range values {
-				for valIx := range values[arrIx] {
-					valueStrings = append(valueStrings, fmt.Sprintf("%v", values[arrIx][valIx].Interface()))
+			if len(values) > 0 || len(values[0]) > 0 {
+				for arrIx := range values {
+					for valIx := range values[arrIx] {
+						valueStrings = append(valueStrings, fmt.Sprintf("%v", values[arrIx][valIx].Interface()))
+					}
+				}
+
+				// convert the string array into a single string
+				jsonPathFieldValue = strings.Join(valueStrings, ",")
+				jsonPathFieldValue = strings.TrimSuffix(jsonPathFieldValue, ",")
+
+				// the above string formed should adhere to k8s label rules inorder for it to be
+				// used as a label value for blockdevice object.
+				// Check this link for more info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+				errs := validation.IsValidLabelValue(jsonPathFieldValue)
+				if len(errs) > 0 {
+					return fmt.Errorf("invalid Label found. Error: {%s}", strings.Join(errs, ","))
+				}
+
+				jsonPathFields := strings.Split(jsonPath, ".")
+				if len(jsonPathFields) > 0 && jsonPathFields[len(jsonPathFields)-1] != "" && jsonPathFieldValue != "" {
+					bd.Labels[NDMLabelPrefix+jsonPathFields[len(jsonPathFields)-1]] = jsonPathFieldValue
 				}
 			}
-
-			// convert the string array into a single string
-			jsonPathFieldValue = strings.Join(valueStrings, ",")
-			jsonPathFieldValue = strings.TrimSuffix(jsonPathFieldValue, ",")
-
-			// the length of the above string formed should not be greater than 63 characters
-			// according to the k8s label rules.
-			// Check this link for more info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-			if len(jsonPathFieldValue) > 63 {
-				jsonPathFieldValue = jsonPathFieldValue[:63]
-			}
-
-			jsonPathFields := strings.Split(jsonPath, ".")
-			if len(jsonPathFields) > 0 && jsonPathFields[len(jsonPathFields)-1] != "" && jsonPathFieldValue != "" {
-				bd.Labels[NDMLabelPrefix+jsonPathFields[len(jsonPathFields)-1]] = jsonPathFieldValue
-			}
 		}
+		klog.V(4).Infof("successfully added device labels")
 	}
-	klog.V(4).Infof("successfully added device labels")
 	return nil
 }
 

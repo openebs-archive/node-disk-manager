@@ -52,8 +52,8 @@ ndm:
     enableUdevProbe: true
     enableSmartProbe: true
   metaConfig:
-    nodeLabelPattern: "kubernetes.io*,beta.kubernetes.io*"
-    deviceLabelTypes: ".spec.details.vendor,.spec.details.model,.spec.details.driveType,.spec.filesystem.fsType"
+    nodeLabelPattern: ""
+    deviceLabelTypes: ""
   healthCheck:
     initialDelaySeconds: 30
     periodSeconds: 60
