@@ -130,7 +130,7 @@ func (fg featureFlag) SetFeatureFlag(features []string) error {
 	// We memoize values to avoid computing the same dependency twice
 	memoizedValues := make(featureFlag)
 	for feature := range fg {
-		ValidateDependencies(feature, fg, memoizedValues)
+		_ = ValidateDependencies(feature, fg, memoizedValues)
 	}
 
 	for k, v := range fg {
