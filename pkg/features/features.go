@@ -155,6 +155,7 @@ func ValidateDependencies(feature Feature, flags featureFlag, memoizedValues fea
 		if missingDependency {
 			flags[feature] = false
 			klog.Infof("Feature %v was set to false due to missing dependency %v", feature, dependency)
+			break
 		}
 	}
 	memoizedValues[feature] = flags[feature]
