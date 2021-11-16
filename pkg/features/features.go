@@ -69,6 +69,8 @@ var defaultFeatureGates = map[Feature]bool{
 	ChangeDetection: false,
 }
 
+var featureDependencies = map[Feature][]Feature{}
+
 // featureFlag is a map representing the flag and its state
 type featureFlag map[Feature]bool
 
@@ -124,9 +126,38 @@ func (fg featureFlag) SetFeatureFlag(features []string) error {
 		fg[f] = isEnabled
 	}
 
+	// We make sure features are only turned on if their dependencies are met
+	// We memoize values to avoid computing the same dependency twice
+	memoizedValues := make(featureFlag)
+	for feature := range fg {
+		_ = ValidateDependencies(feature, fg, memoizedValues)
+	}
+
 	for k, v := range fg {
 		klog.Infof("Feature gate: %s, state: %s", k, util.StateStatus(v))
 	}
 
 	return nil
+}
+
+// Ensures features are disabled if their dependencies are unmet
+// Returns true if a feature is enabled after validation
+func ValidateDependencies(feature Feature, flags featureFlag, memoizedValues featureFlag) bool {
+	if value, isMemoized := memoizedValues[feature]; isMemoized {
+		return value
+	}
+	if disabled := !flags[feature]; disabled {
+		return false
+	}
+	dependencies := featureDependencies[feature]
+	for _, dependency := range dependencies {
+		missingDependency := !ValidateDependencies(dependency, flags, memoizedValues)
+		if missingDependency {
+			flags[feature] = false
+			klog.Infof("Feature %v was set to false due to missing dependency %v", feature, dependency)
+			break
+		}
+	}
+	memoizedValues[feature] = flags[feature]
+	return flags[feature]
 }
