@@ -17,6 +17,8 @@ limitations under the License.
 package probe
 
 import (
+	"errors"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/features"
@@ -38,6 +40,10 @@ const (
 	ChangeEA EventAction = libudevwrapper.UDEV_ACTION_CHANGE
 )
 
+var (
+	ErrNeedRescan = errors.New("need rescan")
+)
+
 // ProbeEvent struct contain a copy of controller it will update disk resources
 type ProbeEvent struct {
 	Controller *controller.Controller
@@ -55,7 +61,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 
 	isGPTBasedUUIDEnabled := features.FeatureGates.IsEnabled(features.GPTBasedUUID)
 
-	isErrorDuringUpdate := false
+	isNeedRescan := false
 	erroredDevices := make([]string, 0)
 
 	// iterate through each block device and perform the add/update operation
@@ -82,9 +88,11 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 			}
 			err := pe.addBlockDevice(*device, bdAPIList)
 			if err != nil {
-				isErrorDuringUpdate = true
-				erroredDevices = append(erroredDevices, device.DevPath)
-				klog.Error(err)
+				isNeedRescan = true
+				if !errors.Is(err, ErrNeedRescan) {
+					erroredDevices = append(erroredDevices, device.DevPath)
+					klog.Error(err)
+				}
 			}
 		} else {
 			// if GPTBasedUUID is disabled and the device type is partition,
@@ -98,13 +106,13 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 			existingBlockDeviceResource := pe.Controller.GetExistingBlockDeviceResource(bdAPIList, deviceInfo.UUID)
 			err := pe.Controller.PushBlockDeviceResource(existingBlockDeviceResource, deviceInfo)
 			if err != nil {
-				isErrorDuringUpdate = true
+				isNeedRescan = true
 				klog.Error(err)
 			}
 		}
 	}
 
-	if isErrorDuringUpdate {
+	if isNeedRescan {
 		go Rescan(pe.Controller)
 	}
 }

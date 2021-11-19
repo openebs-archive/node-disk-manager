@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/pkg/features"
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,15 +31,30 @@ func TestGenerateUUID(t *testing.T) {
 	fakeSerial := "CT500MX500SSD1"
 	fakeFileSystemUUID := "149108ca-f404-4556-a263-04943e6cb0b3"
 	fakePartitionUUID := "065e2357-05"
+	fakePartitionTableUUID := "6f479331-dad4-4ccb-b146-5c359c55399b"
 	fakeLVM_DM_UUID := "LVM-j2xmqvbcVWBQK9Jdttte3CyeVTGgxtVV5VcCi3nxdwihZDxSquMOBaGL5eymBNvk"
 	fakeCRYPT_DM_UUID := "CRYPT-LUKS1-f4608c76343d4b5badaf6651d32f752b-backup"
 	loopDevicePath := "/dev/loop98"
 	hostName, _ := os.Hostname()
+	features.FeatureGates.SetFeatureFlag([]string{
+		"GPTBasedUUID=1",
+		"PartitionTableUUID=1",
+	})
 	tests := map[string]struct {
 		bd       blockdevice.BlockDevice
 		wantUUID string
 		wantOk   bool
 	}{
+		"debiceType-disk with PartitionTableUUID": {
+			bd: blockdevice.BlockDevice{
+				PartitionInfo: blockdevice.PartitionInformation{
+					PartitionTableType: "gpt",
+					PartitionTableUUID: fakePartitionTableUUID,
+				},
+			},
+			wantUUID: blockdevice.BlockDevicePrefix + util.Hash(fakePartitionTableUUID),
+			wantOk:   true,
+		},
 		"deviceType-disk with WWN": {
 			bd: blockdevice.BlockDevice{
 				DeviceAttributes: blockdevice.DeviceAttribute{

@@ -22,6 +22,7 @@ import (
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
+	"github.com/openebs/node-disk-manager/pkg/features"
 	"github.com/openebs/node-disk-manager/pkg/partition"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -111,18 +112,29 @@ func (pe *ProbeEvent) addBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis
 			len(bd.DependentDevices.Holders) > 0 {
 			klog.V(4).Infof("device: %s has holders/partitions. %+v", bd.DevPath, bd.DependentDevices)
 		} else {
-			klog.Infof("starting to create partition on device: %s", bd.DevPath)
 			d := partition.Disk{
 				DevPath:          bd.DevPath,
 				DiskSize:         bd.Capacity.Storage,
 				LogicalBlockSize: uint64(bd.DeviceAttributes.LogicalBlockSize),
 			}
-			if err := d.CreateSinglePartition(); err != nil {
-				klog.Errorf("error creating partition for %s, %v", bd.DevPath, err)
-				return err
+
+			if features.FeatureGates.IsEnabled(features.PartitionTableUUID) {
+				klog.Infof("starting to create partition table on device: %s", bd.DevPath)
+				if err := d.CreatePartitionTable(); err != nil {
+					klog.Errorf("error create partition table for %s, %v", bd.DevPath, err)
+					return err
+				}
+				klog.Infof("created new partition table in %s", bd.DevPath)
+				return ErrNeedRescan
+			} else {
+				klog.Infof("starting to create partition on device: %s", bd.DevPath)
+				if err := d.CreateSinglePartition(); err != nil {
+					klog.Errorf("error creating partition for %s, %v", bd.DevPath, err)
+					return err
+				}
+				klog.Infof("created new partition in %s", bd.DevPath)
+				return nil
 			}
-			klog.Infof("created new partition in %s", bd.DevPath)
-			return nil
 		}
 	} else {
 		bd.UUID = uuid

@@ -33,6 +33,9 @@ spec:
         args:
         - -v=4
         - --feature-gates="GPTBasedUUID"
+        # Use partition table UUID instead of create single partition to get
+        # partition UUID. Require `GPTBasedUUID` to be enabled with.
+        # - --feature-gates="PartitionTableUUID"
         - --feature-gates="APIService"
         # Detect changes to device size, filesystem and mount-points without restart.
         #- --feature-gates="ChangeDetection"

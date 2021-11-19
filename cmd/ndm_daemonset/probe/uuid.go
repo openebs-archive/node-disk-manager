@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/pkg/features"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
 	"k8s.io/klog"
@@ -83,6 +84,15 @@ func generateUUID(bd blockdevice.BlockDevice) (string, bool) {
 	case len(bd.FSInfo.FileSystemUUID) > 0:
 		klog.Infof("device(%s) has a filesystem, using filesystem UUID: %s", bd.DevPath, bd.FSInfo.FileSystemUUID)
 		uuidField = bd.FSInfo.FileSystemUUID
+		ok = true
+	case features.FeatureGates.IsEnabled(features.PartitionTableUUID) && len(bd.PartitionInfo.PartitionTableType) > 0:
+		if len(bd.PartitionInfo.PartitionTableUUID) == 0 {
+			klog.Errorf("device(%s) has a partition table, but can not get partition table uuid", bd.DevPath)
+			break
+		}
+
+		klog.Infof("device(%s) has a partition table, use partition table uuid: %s", bd.DevPath, bd.PartitionInfo.PartitionTableUUID)
+		uuidField = bd.PartitionInfo.PartitionTableUUID
 		ok = true
 	}
 

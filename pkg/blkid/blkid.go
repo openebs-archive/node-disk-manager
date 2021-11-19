@@ -1,3 +1,6 @@
+//go:build (linux && ignore) || cgo
+// +build linux,ignore cgo
+
 /*
 Copyright 2020 The OpenEBS Authors
 
@@ -14,8 +17,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +build linux, cgo
-
 package blkid
 
 /*
@@ -30,8 +31,9 @@ import (
 )
 
 const (
-	fsTypeIdentifier = "TYPE"
-	labelIdentifier  = "LABEL"
+	fsTypeIdentifier        = "TYPE"
+	labelIdentifier         = "LABEL"
+	partitionUUIDIdentifier = "PTUUID"
 )
 
 type DeviceIdentifier struct {
@@ -48,6 +50,12 @@ func (di *DeviceIdentifier) GetOnDiskFileSystem() string {
 // using libblkid
 func (di *DeviceIdentifier) GetOnDiskLabel() string {
 	return di.GetTagValue(labelIdentifier)
+}
+
+// GetPartitionUUID returns the partition UUID present on the disk by reading from the disk
+// using libblkid
+func (di *DeviceIdentifier) GetPartitionUUID() string {
+	return di.GetTagValue(partitionUUIDIdentifier)
 }
 
 func (di *DeviceIdentifier) GetTagValue(tag string) string {

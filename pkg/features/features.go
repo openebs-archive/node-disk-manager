@@ -50,6 +50,12 @@ const (
 	// ChangeDetection is used to enable detecting changes to
 	// blockdevice size, filesystem, and mount-points.
 	ChangeDetection Feature = "ChangeDetection"
+
+	// PartitionTableUUID feature flag is used to enable use a
+	// partition table uuid instead of create partition described in
+	// https://github.com/openebs/node-disk-manager/issues/621 .
+	// This feature must enabled with GPTBasedUUID.
+	PartitionTableUUID Feature = "PartitionTableUUID"
 )
 
 // supportedFeatures is the list of supported features. This is used while parsing the
@@ -59,17 +65,23 @@ var supportedFeatures = []Feature{
 	APIService,
 	UseOSDisk,
 	ChangeDetection,
+	PartitionTableUUID,
 }
 
 // defaultFeatureGates is the default features that will be applied to the application
 var defaultFeatureGates = map[Feature]bool{
-	GPTBasedUUID:    true,
-	APIService:      false,
-	UseOSDisk:       false,
-	ChangeDetection: false,
+	GPTBasedUUID:       true,
+	APIService:         false,
+	UseOSDisk:          false,
+	ChangeDetection:    false,
+	PartitionTableUUID: false,
 }
 
-var featureDependencies = map[Feature][]Feature{}
+var featureDependencies = map[Feature][]Feature{
+	PartitionTableUUID: {
+		GPTBasedUUID,
+	},
+}
 
 // featureFlag is a map representing the flag and its state
 type featureFlag map[Feature]bool
