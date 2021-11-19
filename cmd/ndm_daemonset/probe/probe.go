@@ -35,6 +35,7 @@ var RegisteredProbes = []func(){
 	sysfsProbeRegister,
 	usedbyProbeRegister,
 	customTagProbeRegister,
+	blkidProbeRegister,
 }
 
 type registerProbe struct {

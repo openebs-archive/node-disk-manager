@@ -164,3 +164,40 @@ func (d *Disk) CreateSinglePartition() error {
 	klog.Infof("created a single partition on disk %s", d.DevPath)
 	return nil
 }
+
+// CreatePartitionTable create a GPT header on the disk
+func (d *Disk) CreatePartitionTable() error {
+	fd, err := diskfs.Open(d.DevPath)
+	if err != nil {
+		return fmt.Errorf("error opening disk fd for disk %s: %v", d.DevPath, err)
+	}
+	d.disk = fd
+
+	// check for any existing partition table on the disk
+	if _, err := d.disk.GetPartitionTable(); err == nil {
+		klog.Errorf("aborting partition creation, disk %s already contains a known partition table", d.DevPath)
+		return fmt.Errorf("disk %s contains a partition table, cannot create a new partition table", d.DevPath)
+	}
+
+	// check for any existing filesystem on the disk
+	deviceIdentifier := blkid.DeviceIdentifier{
+		DevPath: d.DevPath,
+	}
+	if fs := deviceIdentifier.GetOnDiskFileSystem(); len(fs) != 0 {
+		klog.Errorf("aborting partition creation, disk %s contains a known filesystem: %s", d.DevPath, fs)
+		return fmt.Errorf("disk %s contains a known filesyste: %s, cannot create a partition table", d.DevPath, fs)
+	}
+
+	err = d.createPartitionTable()
+	if err != nil {
+		klog.Error("partition table initialization failed")
+		return err
+	}
+
+	err = d.disk.Partition(d.table)
+	if err != nil {
+		return fmt.Errorf("unable to create/write partition table. %v", err)
+	}
+	klog.Infof("created partition table on disk %s", d.DevPath)
+	return nil
+}
