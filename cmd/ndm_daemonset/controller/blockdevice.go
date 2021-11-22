@@ -18,12 +18,12 @@ package controller
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/client-go/util/jsonpath"
 	"k8s.io/klog"
-	"k8s.io/kubectl/pkg/cmd/get"
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
@@ -106,7 +106,7 @@ func addBdLabels(bd *apis.BlockDevice, ctrl *Controller) error {
 	if len(JsonPathFields) > 0 {
 		for _, jsonPath := range JsonPathFields {
 			// Parse jsonpath
-			fields, err := get.RelaxedJSONPathExpression(strings.TrimSpace(jsonPath))
+			fields, err := RelaxedJSONPathExpression(strings.TrimSpace(jsonPath))
 			if err != nil {
 				klog.Errorf("Error converting into a valid jsonpath expression: %+v", err)
 				return err
@@ -156,6 +156,36 @@ func addBdLabels(bd *apis.BlockDevice, ctrl *Controller) error {
 	}
 	return nil
 }
+
+// RelaxedJSONPathExpression attempts to be flexible with JSONPath expressions, it accepts:
+//   * metadata.name (no leading '.' or curly braces '{...}'
+//   * {metadata.name} (no leading '.')
+//   * .metadata.name (no curly braces '{...}')
+//   * {.metadata.name} (complete expression)
+// And transforms them all into a valid jsonpath expression:
+//   {.metadata.name}
+func RelaxedJSONPathExpression(pathExpression string) (string, error) {
+	var jsonRegexp = regexp.MustCompile(`^\{\.?([^{}]+)\}$|^\.?([^{}]+)$`)
+
+	if len(pathExpression) == 0 {
+		return pathExpression, nil
+	}
+	submatches := jsonRegexp.FindStringSubmatch(pathExpression)
+	if submatches == nil {
+		return "", fmt.Errorf("unexpected path string, expected a 'name1.name2' or '.name1.name2' or '{name1.name2}' or '{.name1.name2}'")
+	}
+	if len(submatches) != 3 {
+		return "", fmt.Errorf("unexpected submatch list: %v", submatches)
+	}
+	var fieldSpec string
+	if len(submatches[1]) != 0 {
+		fieldSpec = submatches[1]
+	} else {
+		fieldSpec = submatches[2]
+	}
+	return fmt.Sprintf("{.%s}", fieldSpec), nil
+}
+
 
 // getObjectMeta returns ObjectMeta struct which contains
 // labels and Name of resource. It is used to populate data
