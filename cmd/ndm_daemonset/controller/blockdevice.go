@@ -164,6 +164,8 @@ func addBdLabels(bd *apis.BlockDevice, ctrl *Controller) error {
 //   * {.metadata.name} (complete expression)
 // And transforms them all into a valid jsonpath expression:
 //   {.metadata.name}
+// NOTE: This code has been referenced from kubernetes kubectl github repo.
+//       Ref: https://github.com/kubernetes/kubectl/blob/caeb9274868c57d8a320014290cc7e3d1bcb9e46/pkg/cmd/get/customcolumn.go#L47
 func RelaxedJSONPathExpression(pathExpression string) (string, error) {
 	var jsonRegexp = regexp.MustCompile(`^\{\.?([^{}]+)\}$|^\.?([^{}]+)$`)
 
@@ -185,7 +187,6 @@ func RelaxedJSONPathExpression(pathExpression string) (string, error) {
 	}
 	return fmt.Sprintf("{.%s}", fieldSpec), nil
 }
-
 
 // getObjectMeta returns ObjectMeta struct which contains
 // labels and Name of resource. It is used to populate data
