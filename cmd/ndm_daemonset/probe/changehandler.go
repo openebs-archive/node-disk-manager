@@ -64,12 +64,15 @@ func (pe *ProbeEvent) changeBlockDevice(bd *blockdevice.BlockDevice, requestedPr
 		klog.Infof("no changes in %s. Skipping update", bd.DevPath)
 		return nil
 	}
-
 	pe.addBlockDeviceToHierarchyCache(*bd)
 	if !pe.Controller.ApplyFilter(bd) {
 		return nil
 	}
-	apiBlockdevice := pe.Controller.NewDeviceInfoFromBlockDevice(bd).ToDevice()
+	apiBlockdevice, err := pe.Controller.NewDeviceInfoFromBlockDevice(bd).ToDevice(pe.Controller)
+	if err != nil {
+		klog.Error("Failed to create a block device resource CR, Error: ", err)
+		return err
+	}
 	apiBlockdevice.SetNamespace(pe.Controller.Namespace)
 	klog.Info("updating bd: ", apiBlockdevice.GetName())
 	return pe.Controller.UpdateBlockDevice(apiBlockdevice, nil)

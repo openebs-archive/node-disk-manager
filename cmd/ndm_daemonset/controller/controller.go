@@ -21,11 +21,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
-
-	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
-	"github.com/openebs/node-disk-manager/blockdevice"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
@@ -34,6 +32,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/blockdevice"
+	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 const (
@@ -49,6 +51,8 @@ const (
 	openEBSLabelPrefix = "openebs.io/"
 	// HostNameKey is the key for hostname
 	HostNameKey = "hostname"
+	// LabelTypeNode is the key present in an ENV variable(containing comma separated string value)
+	LabelTypeNode = "node-attributes"
 	// NodeNameKey is the node name label prefix
 	NodeNameKey = "nodename"
 	// KubernetesHostNameLabel is the hostname label used by k8s
@@ -70,11 +74,17 @@ const (
 	// NDMUnknown is constant for resource unknown status.
 	NDMUnknown = "Unknown"
 	// NDMDeviceTypeKey specifies the block device type
-	NDMDeviceTypeKey = "ndm.io/blockdevice-type"
+	NDMDeviceTypeKey = NDMLabelPrefix + "blockdevice-type"
 	// NDMManagedKey specifies blockdevice cr should be managed by ndm or not.
-	NDMManagedKey = "ndm.io/managed"
+	NDMManagedKey = NDMLabelPrefix + "managed"
+	// nodeLabelsKey is the meta config key name for adding node labels
+	nodeLabelsKey = "node-labels"
+	// deviceLabelsKey is the meta config key name for adding device labels
+	deviceLabelsKey = "device-labels"
+	// NDMLabelPrefix is the label prefix for ndm labels
+	NDMLabelPrefix = "ndm.io/"
 	// NDMZpoolName specifies the zpool name
-	NDMZpoolName = "ndm.io/zpool-name"
+	NDMZpoolName = NDMLabelPrefix + "zpool-name"
 )
 
 const (
@@ -189,16 +199,16 @@ func (c *Controller) setNodeAttributes() error {
 	}
 	c.NodeAttributes[NodeNameKey] = nodeName
 
-	// set the hostname label
-	if err = c.setHostName(); err != nil {
+	// set the node labels
+	if err = c.setNodeLabels(); err != nil {
 		return fmt.Errorf("unable to set node attributes:%v", err)
 	}
 	return nil
 }
 
-// setHostName set NodeAttribute field in Controller struct
+// setNodeLabels set NodeAttribute field in Controller struct
 // from the labels in node object
-func (c *Controller) setHostName() error {
+func (c *Controller) setNodeLabels() error {
 	nodeName := c.NodeAttributes[NodeNameKey]
 	// get the node object and fetch the hostname label from the
 	// node object
@@ -215,6 +225,33 @@ func (c *Controller) setHostName() error {
 	} else {
 		c.NodeAttributes[HostNameKey] = hostName
 	}
+
+	var labelPattern []string
+
+	// Get the list of node label patterns to be added from the configmap
+	if c.NDMConfig != nil {
+		for _, metaConfig := range c.NDMConfig.MetaConfigs {
+			if metaConfig.Key == nodeLabelsKey {
+				labelPattern = strings.Split(metaConfig.Pattern, ",")
+			}
+		}
+	}
+
+	if len(labelPattern) > 0 {
+		// Add only those node labels that matches the pattern specified in the
+		// node-labels meta config
+		for key, value := range node.Labels {
+			for _, pattern := range labelPattern {
+				if util.IsMatchRegex(pattern, key) {
+					if value != "" {
+						c.NodeAttributes[key] = value
+						break
+					}
+				}
+			}
+		}
+	}
+
 	return nil
 }
 

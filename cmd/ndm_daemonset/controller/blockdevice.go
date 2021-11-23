@@ -17,8 +17,17 @@ limitations under the License.
 package controller
 
 import (
+	"fmt"
+	"regexp"
+	"strings"
+
+	"k8s.io/apimachinery/pkg/util/validation"
+	"k8s.io/client-go/util/jsonpath"
+	"k8s.io/klog"
+
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -67,13 +76,116 @@ type FSInfo struct {
 
 // ToDevice convert deviceInfo struct to api.BlockDevice
 // type which will be pushed to etcd
-func (di *DeviceInfo) ToDevice() apis.BlockDevice {
+func (di *DeviceInfo) ToDevice(controller *Controller) (apis.BlockDevice, error) {
 	blockDevice := apis.BlockDevice{}
 	blockDevice.Spec = di.getDeviceSpec()
 	blockDevice.ObjectMeta = di.getObjectMeta()
 	blockDevice.TypeMeta = di.getTypeMeta()
 	blockDevice.Status = di.getStatus()
-	return blockDevice
+	err := addBdLabels(&blockDevice, controller)
+	if err != nil {
+		return blockDevice, fmt.Errorf("error in adding labels to the blockdevice: %v", err)
+	}
+	return blockDevice, nil
+}
+
+// addBdLabels add labels to block device that may be helpful for filtering the block device
+// based on some generic attributes like drive-type, model, vendor etc.
+func addBdLabels(bd *apis.BlockDevice, ctrl *Controller) error {
+	var JsonPathFields []string
+
+	// get the labels to be added from the configmap
+	if ctrl.NDMConfig != nil {
+		for _, metaConfig := range ctrl.NDMConfig.MetaConfigs {
+			if metaConfig.Key == deviceLabelsKey {
+				JsonPathFields = strings.Split(metaConfig.Type, ",")
+			}
+		}
+	}
+
+	if len(JsonPathFields) > 0 {
+		for _, jsonPath := range JsonPathFields {
+			// Parse jsonpath
+			fields, err := RelaxedJSONPathExpression(strings.TrimSpace(jsonPath))
+			if err != nil {
+				klog.Errorf("Error converting into a valid jsonpath expression: %+v", err)
+				return err
+			}
+
+			j := jsonpath.New(jsonPath)
+			if err := j.Parse(fields); err != nil {
+				klog.Errorf("Error parsing jsonpath: %s, error: %+v", fields, err)
+				return err
+			}
+
+			values, err := j.FindResults(bd)
+			if err != nil {
+				klog.Errorf("Error finding results for jsonpath: %s, error: %+v", fields, err)
+				return err
+			}
+
+			valueStrings := []string{}
+			var jsonPathFieldValue string
+
+			if len(values) > 0 || len(values[0]) > 0 {
+				for arrIx := range values {
+					for valIx := range values[arrIx] {
+						valueStrings = append(valueStrings, fmt.Sprintf("%v", values[arrIx][valIx].Interface()))
+					}
+				}
+
+				// convert the string array into a single string
+				jsonPathFieldValue = strings.Join(valueStrings, ",")
+				jsonPathFieldValue = strings.TrimSuffix(jsonPathFieldValue, ",")
+
+				// the above string formed should adhere to k8s label rules inorder for it to be
+				// used as a label value for blockdevice object.
+				// Check this link for more info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+				errs := validation.IsValidLabelValue(jsonPathFieldValue)
+				if len(errs) > 0 {
+					return fmt.Errorf("invalid Label found. Error: {%s}", strings.Join(errs, ","))
+				}
+
+				jsonPathFields := strings.Split(jsonPath, ".")
+				if len(jsonPathFields) > 0 && jsonPathFields[len(jsonPathFields)-1] != "" && jsonPathFieldValue != "" {
+					bd.Labels[NDMLabelPrefix+jsonPathFields[len(jsonPathFields)-1]] = jsonPathFieldValue
+				}
+			}
+		}
+		klog.V(4).Infof("successfully added device labels")
+	}
+	return nil
+}
+
+// RelaxedJSONPathExpression attempts to be flexible with JSONPath expressions, it accepts:
+//   * metadata.name (no leading '.' or curly braces '{...}'
+//   * {metadata.name} (no leading '.')
+//   * .metadata.name (no curly braces '{...}')
+//   * {.metadata.name} (complete expression)
+// And transforms them all into a valid jsonpath expression:
+//   {.metadata.name}
+// NOTE: This code has been referenced from kubernetes kubectl github repo.
+//       Ref: https://github.com/kubernetes/kubectl/blob/caeb9274868c57d8a320014290cc7e3d1bcb9e46/pkg/cmd/get/customcolumn.go#L47
+func RelaxedJSONPathExpression(pathExpression string) (string, error) {
+	var jsonRegexp = regexp.MustCompile(`^\{\.?([^{}]+)\}$|^\.?([^{}]+)$`)
+
+	if len(pathExpression) == 0 {
+		return pathExpression, nil
+	}
+	submatches := jsonRegexp.FindStringSubmatch(pathExpression)
+	if submatches == nil {
+		return "", fmt.Errorf("unexpected path string, expected a 'name1.name2' or '.name1.name2' or '{name1.name2}' or '{.name1.name2}'")
+	}
+	if len(submatches) != 3 {
+		return "", fmt.Errorf("unexpected submatch list: %v", submatches)
+	}
+	var fieldSpec string
+	if len(submatches[1]) != 0 {
+		fieldSpec = submatches[1]
+	} else {
+		fieldSpec = submatches[2]
+	}
+	return fmt.Sprintf("{.%s}", fieldSpec), nil
 }
 
 // getObjectMeta returns ObjectMeta struct which contains
@@ -85,7 +197,14 @@ func (di *DeviceInfo) getObjectMeta() metav1.ObjectMeta {
 		Annotations: make(map[string]string),
 		Name:        di.UUID,
 	}
-	objectMeta.Labels[KubernetesHostNameLabel] = di.NodeAttributes[HostNameKey]
+	//objectMeta.Labels[KubernetesHostNameLabel] = di.NodeAttributes[HostNameKey]
+	for k, v := range di.NodeAttributes {
+		if k == HostNameKey {
+			objectMeta.Labels[KubernetesHostNameLabel] = v
+		} else {
+			objectMeta.Labels[k] = v
+		}
+	}
 	objectMeta.Labels[NDMDeviceTypeKey] = NDMDefaultDeviceType
 	objectMeta.Labels[NDMManagedKey] = TrueString
 	// adding custom labels

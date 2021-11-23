@@ -42,6 +42,8 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndm.probes.enableSeachest`             | Enable Seachest probe for NDM                 | `false`                                    |
 | `ndm.probes.enableUdevProbe`            | Enable Udev probe for NDM                     | `true`                                    |
 | `ndm.probes.enableSmartProbe`           | Enable Smart probe for NDM                    | `true`                                    |
+| `ndm.metaConfig.nodeLabelPattern`       | Config for adding node labels as BD labels    | `kubernetes.io*,beta.kubernetes.io*`      |
+| `ndm.metaConfig.deviceLabelTypes`       | Config for adding device attributes as BD labels | `.spec.details.vendor,.spec.details.model,.spec.details.driveType,.spec.filesystem.fsType`|
 | `ndmOperator.enabled`                   | Enable NDM Operator                           | `true`                                    |
 | `ndmOperator.replica`                   | Pod replica count for NDM operator            | `1`                                       |
 | `ndmOperator.upgradeStrategy`           | Update strategy NDM operator                  | `"Recreate"`                              |

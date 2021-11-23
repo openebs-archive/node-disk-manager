@@ -20,11 +20,12 @@ import (
 	"fmt"
 	"testing"
 
-	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ndmFakeClientset "sigs.k8s.io/controller-runtime/pkg/client/fake"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 )
 
 const (

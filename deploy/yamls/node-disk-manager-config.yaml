@@ -38,4 +38,15 @@ data:
         state: true
         include: ""
         exclude: "/dev/loop,/dev/fd0,/dev/sr0,/dev/ram,/dev/md,/dev/dm-,/dev/rbd,/dev/zd"
+    # metconfig can be used to decorate the block device with different types of labels
+    # that are available on the node or come in a device properties.
+    # node labels - the node where bd is discovered. A whitlisted label prefixes
+    # attribute labels - a property of the BD can be added as a ndm label as ndm.io/<property>=<property-value>
+    metaconfigs:
+      - key: node-labels
+        name: node labels
+        pattern: ""
+      - key: device-labels
+        name: device labels
+        type: ""
 ---

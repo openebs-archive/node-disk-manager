@@ -36,3 +36,10 @@ data:
         state: {{ .Values.ndm.filters.enablePathFilter }}
         include: "{{ .Values.ndm.filters.includePaths }}"
         exclude: "{{ .Values.ndm.filters.excludePaths }}"
+    metaconfigs:
+      - key: node-labels
+        name: node labels
+        pattern: "{{ .Values.ndm.metaConfig.nodeLabelPattern }}"
+      - key: device-labels
+        name: device labels
+        type: "{{ .Values.ndm.metaConfig.deviceLabelTypes }}"

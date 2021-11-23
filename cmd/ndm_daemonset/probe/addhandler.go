@@ -384,10 +384,14 @@ func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIL
 	bd.UUID = uuid
 
 	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-	bdAPI := deviceInfo.ToDevice()
+	bdAPI, err := deviceInfo.ToDevice(pe.Controller)
+	if err != nil {
+		klog.Error("Failed to create a block device resource CR, Error: ", err)
+		return true, err
+	}
 	bdAPI.Labels[kubernetes.BlockDeviceTagLabel] = string(blockdevice.ZFSLocalPV)
 
-	err := pe.Controller.CreateBlockDevice(bdAPI)
+	err = pe.Controller.CreateBlockDevice(bdAPI)
 	if err != nil {
 		klog.Errorf("unable to push %s (%s) to etcd", bd.UUID, bd.DevPath)
 		return false, err
@@ -594,11 +598,13 @@ func (pe *ProbeEvent) createOrUpdateWithPartitionUUID(bd blockdevice.BlockDevice
 // createOrUpdateWithAnnotation creates or updates a resource in etcd with given annotation.
 func (pe *ProbeEvent) createOrUpdateWithAnnotation(annotation map[string]string, bd blockdevice.BlockDevice, existingBD *apis.BlockDevice) error {
 	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
-	bdAPI := deviceInfo.ToDevice()
-
+	bdAPI, err := deviceInfo.ToDevice(pe.Controller)
+	if err != nil {
+		klog.Error("Failed to create a block device resource CR, Error: ", err)
+		return err
+	}
 	bdAPI.Annotations = annotation
 
-	var err error
 	if existingBD != nil {
 		err = pe.Controller.UpdateBlockDevice(bdAPI, existingBD)
 	} else {

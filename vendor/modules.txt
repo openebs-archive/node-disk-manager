@@ -13,8 +13,6 @@ github.com/Azure/go-autorest/autorest/date
 github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 github.com/Azure/go-autorest/tracing
-# github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
-## explicit
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.1.1
@@ -47,8 +45,6 @@ github.com/ghodss/yaml
 github.com/go-logr/logr
 # github.com/go-logr/zapr v0.2.0
 github.com/go-logr/zapr
-# github.com/go-openapi/validate v0.19.5
-## explicit
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
@@ -168,10 +164,6 @@ github.com/spf13/pflag
 # github.com/stretchr/testify v1.6.1
 ## explicit
 github.com/stretchr/testify/assert
-# github.com/ugorji/go v1.1.4
-## explicit
-# github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
-## explicit
 # go.uber.org/atomic v1.6.0
 go.uber.org/atomic
 # go.uber.org/multierr v1.5.0

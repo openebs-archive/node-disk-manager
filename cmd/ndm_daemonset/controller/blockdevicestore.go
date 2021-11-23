@@ -22,12 +22,13 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 
-	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
-	"github.com/openebs/node-disk-manager/pkg/util"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // CreateBlockDevice creates the BlockDevice resource in etcd
@@ -250,7 +251,11 @@ func (c *Controller) DeactivateStaleBlockDeviceResource(devices []string) {
 func (c *Controller) PushBlockDeviceResource(oldBlockDevice *apis.BlockDevice,
 	deviceDetails *DeviceInfo) error {
 	deviceDetails.NodeAttributes = c.NodeAttributes
-	deviceAPI := deviceDetails.ToDevice()
+	deviceAPI, err := deviceDetails.ToDevice(c)
+	if err != nil {
+		klog.Error("Failed to create a block device resource CR, Error: ", err)
+		return err
+	}
 	if oldBlockDevice != nil {
 		return c.UpdateBlockDevice(deviceAPI, oldBlockDevice)
 	}
