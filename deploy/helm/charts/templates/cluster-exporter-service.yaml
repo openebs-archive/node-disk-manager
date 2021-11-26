@@ -13,6 +13,6 @@ spec:
       targetPort: {{ .Values.ndmExporter.clusterExporter.metricsPort }}
   selector:
     {{- with .Values.ndmExporter.clusterExporter.podLabels }}
-      {{ toYaml . }}
-      {{- end }}
+    {{ toYaml . }}
+    {{- end }}
   {{- end }}
