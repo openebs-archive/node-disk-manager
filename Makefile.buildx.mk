@@ -61,8 +61,13 @@ docker.buildx:
 	@echo "--> Build docker image: $(DOCKERX_IMAGE_NAME)"
 	@echo
 
+# Install dependencies if NODEPINSTALL arg not passed during invocation
+ifndef NODEPINSTALL
+buildx.ndm buildx.ndo buildx.exporter: install-dep-nonsudo
+endif
+
 .PHONY: buildx.ndm
-buildx.ndm: bootstrap install-dep-nonsudo clean build.common
+buildx.ndm: bootstrap clean build.common
 	@echo '--> Building node-disk-manager binary...'
 	@pwd
 	@CTLNAME=${NODE_DISK_MANAGER} BUILDPATH=${BUILD_PATH_NDM} BUILDX=true sh -c "'$(PWD)/build/build.sh'"
@@ -75,7 +80,7 @@ docker.buildx.ndm: COMPONENT=ndm-daemonset
 docker.buildx.ndm: docker.buildx
 
 .PHONY: buildx.ndo
-buildx.ndo: bootstrap install-dep-nonsudo clean build.common
+buildx.ndo: bootstrap clean build.common
 	@echo '--> Building node-disk-operator binary...'
 	@pwd
 	@CTLNAME=${NODE_DISK_OPERATOR} BUILDPATH=${BUILD_PATH_NDO} BUILDX=true sh -c "'$(PWD)/build/build.sh'"
@@ -88,7 +93,7 @@ docker.buildx.ndo: COMPONENT=ndm-operator
 docker.buildx.ndo: docker.buildx
 
 .PHONY: buildx.exporter
-buildx.exporter: bootstrap install-dep-nonsudo clean build.common
+buildx.exporter: bootstrap clean build.common
 	@echo '--> Building node-disk-exporter binary...'
 	@pwd
 	@CTLNAME=${NODE_DISK_EXPORTER} BUILDPATH=${BUILD_PATH_EXPORTER} BUILDX=true sh -c "'$(PWD)/build/build.sh'"

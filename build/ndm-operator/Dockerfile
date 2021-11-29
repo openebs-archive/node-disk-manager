@@ -14,7 +14,7 @@
 #
 # This Dockerfile builds ndm operator
 #
-FROM golang:1.14.7 as build
+FROM ghcr.io/openebs/ndm-build-base:20211125 as build
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y make git
 
 COPY . .
 
-RUN make buildx.ndo
+RUN make NODEPINSTALL=true buildx.ndo
 
 FROM ubuntu
 
