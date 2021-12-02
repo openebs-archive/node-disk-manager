@@ -14,7 +14,7 @@
 #
 # This Dockerfile builds ndm exporter
 #
-FROM golang:1.14.7 as build
+FROM ghcr.io/openebs/ndm-build-base:20211202 as build
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -31,12 +31,9 @@ ENV GO111MODULE=on \
   RELEASE_TAG=${RELEASE_TAG}
 
 WORKDIR /go/src/github.com/openebs/node-disk-manager/
-
-RUN apt-get update && apt-get install -y make git
-
 COPY . .
 
-RUN make buildx.exporter
+RUN make NODEPINSTALL=true buildx.exporter
 
 FROM ubuntu
 
