@@ -17,6 +17,7 @@ package seachest
 
 /*
 #cgo LDFLAGS: -lopensea-operations -lopensea-transport -lopensea-common -lm
+#cgo CFLAGS: -I/usr/local/include/openSeaChest -I/usr/local/include/openSeaChest/opensea-common -I/usr/local/include/openSeaChest/opensea-operations -I/usr/local/include/openSeaChest/opensea-transport
 #cgo CFLAGS: -I../../../openSeaChest/include -I../../../openSeaChest/opensea-common/include -I../../../openSeaChest/opensea-operations/include -I../../../openSeaChest/opensea-transport/include
 #include "common.h"
 #include "openseachest_util_options.h"
