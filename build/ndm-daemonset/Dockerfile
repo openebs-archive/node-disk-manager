@@ -14,7 +14,7 @@
 #
 # This Dockerfile builds node-disk-manager daemon
 #
-FROM ghcr.io/openebs/ndm-build-base:20211125 as build
+FROM ghcr.io/openebs/ndm-build-base:20211202 as build
 
 ARG TARGETOS
 ARG TARGETARCH
