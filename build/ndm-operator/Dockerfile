@@ -31,9 +31,6 @@ ENV GO111MODULE=on \
   RELEASE_TAG=${RELEASE_TAG}
 
 WORKDIR /go/src/github.com/openebs/node-disk-manager/
-
-RUN apt-get update && apt-get install -y make git
-
 COPY . .
 
 RUN make NODEPINSTALL=true buildx.ndo
