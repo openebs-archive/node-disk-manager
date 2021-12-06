@@ -205,7 +205,7 @@ func (e *Epoll) listen() {
 		// TODO: Handle errors here
 		klog.V(4).Info("waiting for epoll events...")
 		count, _ := syscall.EpollWait(e.epfd, events, timeout)
-		klog..V(4).Infof("received %d events from epoll. dispatching...", count)
+		klog.V(4).Infof("received %d events from epoll. dispatching...", count)
 		for i := 0; e.active && i < count; i++ {
 			e.dispatchEvent(&events[i])
 		}
