@@ -88,15 +88,15 @@ func (c *Controller) UpdateBlockDevice(blockDevice apis.BlockDevice, oldBlockDev
 
 	blockDeviceCopy := blockDevice.DeepCopy()
 	if oldBlockDevice == nil {
-		oldBlockDevice = blockDevice.DeepCopy()
+		oldBlockDevice = &apis.BlockDevice{}
 		err = c.Clientset.Get(context.TODO(), client.ObjectKey{
-			Namespace: oldBlockDevice.Namespace,
-			Name:      oldBlockDevice.Name}, oldBlockDevice)
+			Namespace: blockDeviceCopy.Namespace,
+			Name:      blockDeviceCopy.Name}, oldBlockDevice)
 		if err != nil {
 			klog.Errorf("eventcode=%s msg=%s : %v, err:%v rname=%v",
 				"ndm.blockdevice.update.failure",
 				"Failed to update block device : unable to get blockdevice object",
-				oldBlockDevice.ObjectMeta.Name, err, blockDeviceCopy.ObjectMeta.Name)
+				blockDeviceCopy.ObjectMeta.Name, err, blockDeviceCopy.ObjectMeta.Name)
 			return err
 		}
 	}
@@ -327,6 +327,9 @@ func mergeMetadata(newMetadata, oldMetadata metav1.ObjectMeta) metav1.ObjectMeta
 
 	// Patch older label with new label. If there is a new key then it will be added
 	// if it is an existing key then value will be overwritten with value from new label
+	if oldMetadata.Labels == nil {
+		oldMetadata.Labels = make(map[string]string)
+	}
 	for key, value := range newMetadata.Labels {
 		oldMetadata.Labels[key] = value
 	}
