@@ -33,7 +33,8 @@ import (
 const (
 	fsTypeIdentifier        = "TYPE"
 	labelIdentifier         = "LABEL"
-	partitionUUIDIdentifier = "PTUUID"
+	partitionTableUUIDIdentifier = "PTUUID"
+	partitionEntryUUIDIdentifier = "PARTUUID"
 )
 
 type DeviceIdentifier struct {
@@ -52,10 +53,15 @@ func (di *DeviceIdentifier) GetOnDiskLabel() string {
 	return di.GetTagValue(labelIdentifier)
 }
 
-// GetPartitionUUID returns the partition UUID present on the disk by reading from the disk
+// GetPartitionTableUUID returns the partition table UUID present on the disk by reading from the disk
 // using libblkid
-func (di *DeviceIdentifier) GetPartitionUUID() string {
-	return di.GetTagValue(partitionUUIDIdentifier)
+func (di *DeviceIdentifier) GetPartitionTableUUID() string {
+	return di.GetTagValue(partitionTableUUIDIdentifier)
+}
+
+// GetPartitionEntryUUID returns the UUID of the partition, by reading from the disk using libblkid
+func (di *DeviceIdentifier) GetPartitionEntryUUID() string {
+	return di.GetTagValue(partitionEntryUUIDIdentifier)
 }
 
 func (di *DeviceIdentifier) GetTagValue(tag string) string {

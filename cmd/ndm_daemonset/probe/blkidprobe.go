@@ -69,6 +69,11 @@ func (bp *blkidProbe) FillBlockDeviceDetails(bd *blockdevice.BlockDevice) {
 	// Fortunately, the `libblkid` version in our base container (ubuntu 16.04)
 	// is `2.27.1`, will provide `PTUUID` tag, so we should fetch `PTUUID` from `blkid`.
 	if len(bd.PartitionInfo.PartitionTableUUID) == 0 {
-		bd.PartitionInfo.PartitionTableUUID = di.GetPartitionUUID()
+		bd.PartitionInfo.PartitionTableUUID = di.GetPartitionTableUUID()
+	}
+
+	// PARTUUID also is fetched using blkid, if udev is unable to get the data
+	if len(bd.PartitionInfo.PartitionEntryUUID) == 0 {
+		bd.PartitionInfo.PartitionEntryUUID = di.GetPartitionEntryUUID()
 	}
 }
