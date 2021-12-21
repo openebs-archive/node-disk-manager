@@ -50,6 +50,9 @@ spec:
 {{- if .Values.featureGates.ChangeDetection.enabled }}
           - --feature-gates={{ .Values.featureGates.ChangeDetection.featureGateFlag }}
 {{- end}}
+{{- if .Values.featureGates.PartitionTableUUID.enabled }}
+          - --feature-gates={{ .Values.featureGates.PartitionTableUUID.featureGateFlag }}
+{{- end}}
 {{- end}}
         imagePullPolicy: {{ .Values.ndm.image.pullPolicy }}
         resources:
