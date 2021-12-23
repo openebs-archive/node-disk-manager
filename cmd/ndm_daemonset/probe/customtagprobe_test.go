@@ -37,6 +37,7 @@ func TestCustomTagProbeFillBlockDeviceDetails(t *testing.T) {
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sda",
 				},
+				Labels: make(map[string]string),
 			},
 			customTags:     nil,
 			wantTagLabel:   "",
@@ -47,6 +48,7 @@ func TestCustomTagProbeFillBlockDeviceDetails(t *testing.T) {
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sda",
 				},
+				Labels: make(map[string]string),
 			},
 			customTags: []tag{
 				{
@@ -63,6 +65,7 @@ func TestCustomTagProbeFillBlockDeviceDetails(t *testing.T) {
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sdb",
 				},
+				Labels: make(map[string]string),
 			},
 			customTags: []tag{
 				{
@@ -79,6 +82,7 @@ func TestCustomTagProbeFillBlockDeviceDetails(t *testing.T) {
 				Identifier: blockdevice.Identifier{
 					DevPath: "/dev/sdb",
 				},
+				Labels: make(map[string]string),
 			},
 			customTags: []tag{
 				{
