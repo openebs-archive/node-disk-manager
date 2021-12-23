@@ -96,9 +96,6 @@ func (ctp *customTagProbe) FillBlockDeviceDetails(bd *blockdevice.BlockDevice) {
 		case tagTypePath:
 			fieldToMatch = bd.DevPath
 		}
-		if bd.Labels == nil {
-			bd.Labels = make(map[string]string)
-		}
 		if util.IsMatchRegex(tag.regex, fieldToMatch) {
 			bd.Labels[kubernetes.BlockDeviceTagLabel] = tag.label
 			klog.Infof("Device: %s Label %s:%s added by custom tag probe", bd.DevPath, kubernetes.BlockDeviceTagLabel, tag.label)
