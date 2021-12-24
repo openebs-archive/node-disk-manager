@@ -212,6 +212,7 @@ func TestFillDetails(t *testing.T) {
 
 	// create one fake Disk struct
 	expectedDr := &bd.BlockDevice{}
+	expectedDr.Labels = make(map[string]string)
 	expectedDr.DeviceAttributes.Model = fakeModel
 	expectedDr.DeviceAttributes.Serial = fakeSerial
 	expectedDr.DeviceAttributes.Vendor = fakeVendor

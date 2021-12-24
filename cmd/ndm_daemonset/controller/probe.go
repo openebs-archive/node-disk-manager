@@ -112,6 +112,7 @@ func (c *Controller) ListProbe(requestedProbes ...string) []*Probe {
 func (c *Controller) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice,
 	requestedProbes ...string) {
 	blockDevice.NodeAttributes = c.NodeAttributes
+	blockDevice.Labels = make(map[string]string)
 	selectedProbes := c.ListProbe(requestedProbes...)
 	for _, probe := range selectedProbes {
 		probe.FillBlockDeviceDetails(blockDevice)
