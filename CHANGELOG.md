@@ -1,6 +1,42 @@
+v1.8.0 / 2022-01-03
+========================
+* add device attributes and location details as blockdevice labels ([618](https://github.com/openebs/node-disk-manager/pull/618),[@Ab-hishek](https://github.com/Ab-hishek))
+* add new feature to enable NDM to use partition table UUID for generating blockdevice UUID ([635](https://github.com/openebs/node-disk-manager/pull/635),[@cospotato](https://github.com/cospotato))
+* skip delete disk partition event when GPTBasedUUID is disable ([639](https://github.com/openebs/node-disk-manager/pull/639),[@liuminjian](https://github.com/liuminjian))
+* enhance the details stored on the blockdevice when the device has zpool ([643](https://github.com/openebs/node-disk-manager/pull/643),[@liuminjian](https://github.com/liuminjian))
+* changed exporter service to use a common label for both cluster and node exporter ([647](https://github.com/openebs/node-disk-manager/pull/647),[@Ab-hishek](https://github.com/Ab-hishek))
+* update get call to use empty object instead of deepcopy object while updating the resources ([648](https://github.com/openebs/node-disk-manager/pull/648),[@akhilerm](https://github.com/akhilerm))
+* mount /dev directory from host inside container so that wipefs gets reflected immediately on the host ([649](https://github.com/openebs/node-disk-manager/pull/649),[@akhilerm](https://github.com/akhilerm))
+* add support for feature gate dependencies, to enable features that are dependent on other features ([652](https://github.com/openebs/node-disk-manager/pull/652),[@jdkramhoft](https://github.com/jdkramhoft))
+* use a base image with builtin dependencies for building the project ([655](https://github.com/openebs/node-disk-manager/pull/655),[@z0marlin](https://github.com/z0marlin))
+* use libblkid from base container to fetch partition details on CentOS 7 hosts ([657](https://github.com/openebs/node-disk-manager/pull/657),[@akhilerm](https://github.com/akhilerm))
+* fix sysfs parsing by trimming newline suffix when reading from sysfs files([666](https://github.com/openebs/node-disk-manager/pull/666),[@akhilerm](https://github.com/akhilerm))
+
+
+v1.8.0-RC2 / 2021-12-28
+========================
+* fix sysfs parsing by trimming newline suffix when reading from sysfs files([666](https://github.com/openebs/node-disk-manager/pull/666),[@akhilerm](https://github.com/akhilerm))
+
+
+v1.8.0-RC1 / 2021-12-24
+========================
+* add device attributes and location details as blockdevice labels ([618](https://github.com/openebs/node-disk-manager/pull/618),[@Ab-hishek](https://github.com/Ab-hishek))
+* add new feature to enable NDM to use partition table UUID for generating blockdevice UUID ([635](https://github.com/openebs/node-disk-manager/pull/635),[@cospotato](https://github.com/cospotato))
+* skip delete disk partition event when GPTBasedUUID is disable ([639](https://github.com/openebs/node-disk-manager/pull/639),[@liuminjian](https://github.com/liuminjian))
+* enhance the details stored on the blockdevice when the device has zpool ([643](https://github.com/openebs/node-disk-manager/pull/643),[@liuminjian](https://github.com/liuminjian))
+* changed exporter service to use a common label for both cluster and node exporter ([647](https://github.com/openebs/node-disk-manager/pull/647),[@Ab-hishek](https://github.com/Ab-hishek))
+* update get call to use empty object instead of deepcopy object while updating the resources ([648](https://github.com/openebs/node-disk-manager/pull/648),[@akhilerm](https://github.com/akhilerm))
+* mount /dev directory from host inside container so that wipefs gets reflected immediately on the host ([649](https://github.com/openebs/node-disk-manager/pull/649),[@akhilerm](https://github.com/akhilerm))
+* add support for feature gate dependencies, to enable features that are dependent on other features ([652](https://github.com/openebs/node-disk-manager/pull/652),[@jdkramhoft](https://github.com/jdkramhoft))
+* use a base image with builtin dependencies for building the project ([655](https://github.com/openebs/node-disk-manager/pull/655),[@z0marlin](https://github.com/z0marlin))
+* use libblkid from base container to fetch partition details on CentOS 7 hosts ([657](https://github.com/openebs/node-disk-manager/pull/657),[@akhilerm](https://github.com/akhilerm))
+
+
+
 v1.7.0 / 2021-09-17
 ========================
 * add support to detect changes to block device size without restarting NDM ([#616](https://github.com/openebs/node-disk-manager/pull/616),[@z0marlin](https://github.com/z0marlin))
+
 
 
 v1.6.0 / 2021-07-14
