@@ -742,6 +742,20 @@ func TestSysFsDeviceGetDeviceType(t *testing.T) {
 			want:             "raid0",
 			wantErr:          false,
 		},
+		"device is a dm device with empty uuid": {
+			sysfsDevice: &Device{
+				deviceName: "dm-16",
+				path:       "/dev/dm-16",
+				sysPath: filepath.Join(tmpDir,
+					"sys/devices/virtual/block/dm-16") + "/",
+			},
+			devType:          blockdevice.BlockDeviceTypeDisk,
+			subDirectoryName: "dm",
+			subFileName:      "uuid",
+			subFileContent:   "\n",
+			want:             blockdevice.BlockDeviceTypeDMDevice,
+			wantErr:          false,
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
