@@ -17,9 +17,10 @@ limitations under the License.
 package sysfs
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddDevPrefix(t *testing.T) {
@@ -52,6 +53,13 @@ func TestReadSysFSFileAsString(t *testing.T) {
 			path:        "/tmp/dm-0/dm/",
 			fileName:    "uuid",
 			fileContent: "LVM-OSlVs5gIXuqSKVPukc2aGPh0AeJw31TJqYIRuRHoodYg9Jwkmyvvk0QNYK4YulHt",
+			want:        "LVM-OSlVs5gIXuqSKVPukc2aGPh0AeJw31TJqYIRuRHoodYg9Jwkmyvvk0QNYK4YulHt",
+			wantErr:     false,
+		},
+		"valid sysfs path with tailing new line": {
+			path:        "/tmp/dm-0/dm/",
+			fileName:    "uuid",
+			fileContent: "LVM-OSlVs5gIXuqSKVPukc2aGPh0AeJw31TJqYIRuRHoodYg9Jwkmyvvk0QNYK4YulHt\n",
 			want:        "LVM-OSlVs5gIXuqSKVPukc2aGPh0AeJw31TJqYIRuRHoodYg9Jwkmyvvk0QNYK4YulHt",
 			wantErr:     false,
 		},

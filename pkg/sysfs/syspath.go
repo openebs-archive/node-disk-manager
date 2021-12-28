@@ -18,11 +18,12 @@ package sysfs
 
 import (
 	"fmt"
-	"github.com/openebs/node-disk-manager/blockdevice"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/openebs/node-disk-manager/blockdevice"
 )
 
 const (
