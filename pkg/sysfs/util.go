@@ -30,6 +30,7 @@ func readSysFSFileAsInt64(sysFilePath string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	// Remove tailing newline (usual in sysfs) before parsing
 	return strconv.ParseInt(strings.TrimSuffix(string(b), "\n"), 10, 64)
 }
 
@@ -38,7 +39,8 @@ func readSysFSFileAsString(sysFilePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(b), nil
+	// Remove tailing newline (usual in sysfs)
+	return strings.TrimSuffix(string(b), "\n"), nil
 }
 
 // addDevPrefix adds the /dev prefix to all the device names
