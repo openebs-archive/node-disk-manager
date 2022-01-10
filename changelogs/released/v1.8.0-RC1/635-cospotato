@@ -1,0 +1,1 @@
+add new feature to enable NDM to use partition table UUID for generating blockdevice UUID

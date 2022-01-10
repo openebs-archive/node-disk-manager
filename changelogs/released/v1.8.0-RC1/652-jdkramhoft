@@ -1,0 +1,1 @@
+add support for feature gate dependencies, to enable features that are dependent on other features
