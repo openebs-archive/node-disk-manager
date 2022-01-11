@@ -5,7 +5,7 @@ This chart bootstraps OpenEBS NDM deployment on a [Kubernetes](http://kubernetes
 
 ## Installation
 
-You can run OpenEBS NDM on any Kubernetes 1.13+ cluster in a matter of seconds.
+You can run OpenEBS NDM on any Kubernetes 1.17+ cluster in a matter of seconds.
 
 Please visit the [link](https://openebs.github.io/node-disk-manager/) for install instructions via helm3.
 
@@ -20,7 +20,7 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndm.image.registry`                    | Registry for Node Disk Manager image          | `""`                                      |
 | `ndm.image.repository`                  | Image repository for Node Disk Manager        | `openebs/node-disk-manager`               |
 | `ndm.image.pullPolicy`                  | Image pull policy for Node Disk Manager       | `IfNotPresent`                            |
-| `ndm.image.tag`                         | Image tag for Node Disk Manager               | `1.5.0`                                   |
+| `ndm.image.tag`                         | Image tag for Node Disk Manager               | `1.8.0`                                   |
 | `ndm.sparse.path`                       | Directory where Sparse files are created      | `/var/openebs/sparse`                     |
 | `ndm.sparse.size`                       | Size of the sparse file in bytes              | `10737418240`                             |
 | `ndm.sparse.count`                      | Number of sparse files to be created          | `0`                                       |
@@ -50,28 +50,29 @@ The following table lists the configurable parameters of the OpenEBS NDM chart a
 | `ndmOperator.image.registry`            | Registry for NDM operator image               | `""`                                      |
 | `ndmOperator.image.repository`          | Image repository for NDM operator             | `openebs/node-disk-operator`              |
 | `ndmOperator.image.pullPolicy`          | Image pull policy for NDM operator            | `IfNotPresent`                            |
-| `ndmOperator.image.tag`                 | Image tag for NDM operator                    | `1.5.0`                                   |
+| `ndmOperator.image.tag`                 | Image tag for NDM operator                    | `1.8.0`                                   |
 | `ndmOperator.annotations`               | Annotations for NDM operator metadata         | `""`                                      |
 | `ndmOperator.podAnnotations`            | Annotations for NDM operator's pods metadata  | `""`                                      |
 | `ndmOperator.resources`                 | Resource and request and limit for containers | `""`                                      |
 | `ndmOperator.podLabels`                 | Appends labels to the pods                    | `""`                                      |
 | `ndmOperator.nodeSelector`              | Nodeselector for operator pods                | `""`                                      |
 | `ndmOperator.tolerations`               | NDM operator's pod toleration values          | `""`                                      |
-| `ndmOperator.securityContext`           | Seurity context for container                 | `""`                                      |
+| `ndmOperator.securityContext`           | Security context for container                 | `""`                                      |
 | `ndmExporter.enabled`                   | Enable NDM Exporters                          | `false`                                   |
 | `ndmExporter.image.registry`            | Registry for NDM Exporters image              | `""`                                      |
 | `ndmExporter.repository`                | Image repository for NDM Exporters            | `openebs/node-disk-exporter`              |
 | `ndmExporter.pullPolicy`                | Image pull policy for NDM Exporters           | `IfNotPresent`                            |
-| `ndmExporter.tag`                       | Image tag for NDM Exporters                   | `1.6.0`                                   |
+| `ndmExporter.tag`                       | Image tag for NDM Exporters                   | `1.8.0`                                   |
 | `ndmExporter.nodeExporter.metricsPort`  | The TCP port number used for exposing NDM node exporter metrics    | `9101`               |
 | `ndmExporter.clusterExporter.metricsPort`   | The TCP port number used for exposing NDM cluster exporter metrics  | `9100`          |
 | `featureGates.APIService.enabled`       | Enable the gRPC API service of NDM            | `false`                                   |
 | `featureGates.UseOSDisk.enabled`        | Enable feature-gate to use free space on OS disk | `false`                                   |
-| `featureGates.ChangeDetection.enabled` | Enable feature-gate to detect mountpoint/filesystem/size changes | `true`                                   |
+| `featureGates.ChangeDetection.enabled` | Enable feature-gate to detect mountpoint/filesystem/size changes | `false`                                   |
+| `featureGates.PartitionTableUUID.enabled` | Enable feature-gate to use partition table UUID instead of creating partition | `true`                                   |
 | `helperPod.image.registry`              | Registry for helper image                     | `""`                                      |
 | `helperPod.image.repository`            | Image for helper pod                          | `openebs/linux-utils`                     |
 | `helperPod.image.pullPolicy`            | Pull policy for helper pod                    | `IfNotPresent`                            |
-| `helperPod.image.tag`                   | Image tag for helper image                    | `2.10.0`                                   |
+| `helperPod.image.tag`                   | Image tag for helper image                    | `3.1.0`                                   |
 | `varDirectoryPath.baseDir`              | Directory to store debug info and so forth    | `/var/openebs`                            |
 | `serviceAccount.create`                 | Create a service account or not               | `true`                                    |
 | `serviceAccount.name`                   | Name for the service account                  | `true`                                    |
