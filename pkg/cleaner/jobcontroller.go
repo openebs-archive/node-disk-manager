@@ -104,7 +104,12 @@ func NewCleanupJob(bd *v1alpha1.BlockDevice, volMode VolumeMode, tolerations []v
 		// wipefs erases the filesystem signature from the block
 		// -a    wipe all magic strings
 		// -f    force erasure
-		args := fmt.Sprintf("(fdisk -o Device -l %[1]s "+
+
+		args := fmt.Sprintf(""+
+			"(pvs -o pv_name,vg_name|grep %[1]s|awk '{print $2}'"+
+			"| xargs -I {} sh -c 'dmsetup info -c -o name --noheadings|grep ^{}- "+
+			"| xargs -t -I {} dmsetup remove {} ') && "+
+			"(fdisk -o Device -l %[1]s "+
 			"| grep \"^%[1]s\" "+
 			"| xargs -I '{}' wipefs -fa '{}') "+
 			"&& wipefs -fa %[1]s ",
