@@ -45,4 +45,16 @@ spec:
             - name: METRICS_LISTEN_PORT
               value: :{{ .Values.ndmExporter.clusterExporter.metricsPort }}
             {{- end }}
+{{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 6 }}
+{{- end }}
+{{- if .Values.ndmExporter.clusterExporter.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.ndmExporter.clusterExporter.nodeSelector | indent 8 }}
+{{- end }}
+{{- if .Values.ndmExporter.clusterExporter.tolerations }}
+      tolerations:
+{{ toYaml .Values.ndmExporter.clusterExporter.tolerations | indent 8 }}
+{{- end }}
 {{- end }}

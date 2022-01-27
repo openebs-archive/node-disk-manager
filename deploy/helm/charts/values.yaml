@@ -100,6 +100,8 @@ ndmExporter:
     # If not set, service will not be created to expose metrics endpoint to serviceMonitor
     # and listen-port flag will not be set and container port will be empty.
     metricsPort: 9101
+    nodeSelector: {}
+    tolerations: []
   clusterExporter:
     name: cluster-exporter
     podLabels:
@@ -108,6 +110,8 @@ ndmExporter:
     # If not set, service will not be created to expose metrics endpoint to serviceMonitor
     # and listen-port flag will not be set and container port will be empty.
     metricsPort: 9100
+    nodeSelector: {}
+    tolerations: []
 
 helperPod:
   image:
