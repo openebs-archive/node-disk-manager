@@ -68,9 +68,9 @@ spec:
         - name: OPENEBS_IO_IMAGE_PULL_SECRETS
           value: "{{- range $index, $secret := .Values.imagePullSecrets}}{{if $index}},{{end}}{{ $secret.name }}{{- end}}"
 {{- end }}
-{{- with .Values.imagePullSecrets }}
+{{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 6 }}
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
 {{- end }}
 {{- if .Values.ndmOperator.nodeSelector }}
       nodeSelector:

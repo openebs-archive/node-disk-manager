@@ -159,9 +159,9 @@ spec:
       # kubectl label node <node-name> "openebs.io/nodegroup"="storage-node"
       #nodeSelector:
       #  "openebs.io/nodegroup": "storage-node"
-{{- with .Values.imagePullSecrets }}
+{{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 6 }}
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
 {{- end }}
 {{- if .Values.ndm.nodeSelector }}
       nodeSelector:
