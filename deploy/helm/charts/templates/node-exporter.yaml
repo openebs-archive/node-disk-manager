@@ -46,4 +46,17 @@ spec:
             - name: METRICS_LISTEN_PORT
               value: :{{ .Values.ndmExporter.nodeExporter.metricsPort }}
             {{- end }}
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
 {{- end }}
+{{- if .Values.ndmExporter.nodeExporter.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.ndmExporter.nodeExporter.nodeSelector | indent 8 }}
+{{- end }}
+{{- if .Values.ndmExporter.nodeExporter.tolerations }}
+      tolerations:
+{{ toYaml .Values.ndmExporter.nodeExporter.tolerations | indent 8 }}
+{{- end }}
+{{- end }}
+
