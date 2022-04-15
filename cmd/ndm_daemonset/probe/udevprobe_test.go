@@ -125,6 +125,12 @@ func TestFillDiskDetails(t *testing.T) {
 			Links: mockOsDiskDetails.ByPathDevLinks,
 		})
 	}
+	if len(mockOsDiskDetails.SymLinks) > 0 {
+		expectedDiskInfo.DevLinks = append(expectedDiskInfo.DevLinks, blockdevice.DevLink{
+			Kind:  libudevwrapper.SYMLINK,
+			Links: mockOsDiskDetails.SymLinks,
+		})
+	}
 
 	// The devlinks are compared separately as the ordering of devlinks can be different in some systems
 	// eg: ubuntu 20.04 in github actions

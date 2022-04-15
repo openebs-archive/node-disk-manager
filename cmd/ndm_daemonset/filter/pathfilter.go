@@ -130,7 +130,7 @@ func (pf *pathFilter) Exclude(blockDevice *blockdevice.BlockDevice) bool {
 			return false
 		}
 	}
-	if util.MatchIgnoredCase(pf.excludePaths, blockDevice.DevPath){
+	if util.MatchIgnoredCase(pf.excludePaths, blockDevice.DevPath) {
 		return false
 	}
 	for _, link := range blockDevice.DevLinks {
