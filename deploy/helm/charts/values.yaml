@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 release:
-  version: "1.8.0"
+  version: "1.9.0"
 
 imagePullSecrets:
 #  - name: "image-pull-secret"
@@ -17,7 +17,7 @@ ndm:
     repository: openebs/node-disk-manager
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.8.0
+    tag: 1.9.0
   sparse:
     path: "/var/openebs/sparse"
     size: "10737418240"
@@ -66,7 +66,7 @@ ndmOperator:
     repository: openebs/node-disk-operator
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.8.0
+    tag: 1.9.0
   podLabels:
     name: openebs-ndm-operator
   annotations: {}
@@ -91,7 +91,7 @@ ndmExporter:
     repository: openebs/node-disk-exporter
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 1.8.0
+    tag: 1.9.0
   nodeExporter:
     name: node-exporter
     podLabels:
@@ -119,7 +119,7 @@ helperPod:
     repository: openebs/linux-utils
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: 3.1.0
+    tag: 3.2.0
 
 crd:
   enableInstall: false
