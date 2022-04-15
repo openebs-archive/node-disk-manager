@@ -525,7 +525,7 @@ spec:
       serviceAccountName: openebs-maya-operator
       containers:
       - name: node-disk-manager
-        image: abhishek09dh/node-disk-manager:nd-labelV2
+        image: openebs/node-disk-manager:ci
         args:
         - -v=4
         - --feature-gates="GPTBasedUUID"
@@ -632,7 +632,7 @@ spec:
       serviceAccountName: openebs-maya-operator
       containers:
       - name: node-disk-operator
-        image: abhishek09dh/node-disk-manager:nd-labelV2
+        image: openebs/node-disk-manager:ci
         ports:
         - containerPort: 8080
           name: liveness
