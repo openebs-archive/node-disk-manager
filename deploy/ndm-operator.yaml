@@ -632,7 +632,7 @@ spec:
       serviceAccountName: openebs-maya-operator
       containers:
       - name: node-disk-operator
-        image: openebs/node-disk-manager:ci
+        image: openebs/node-disk-operator:ci
         ports:
         - containerPort: 8080
           name: liveness
