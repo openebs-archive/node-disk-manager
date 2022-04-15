@@ -325,6 +325,13 @@ func (up *udevProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevice
 		})
 	}
 
+	if len(udevDiskDetails.SymLinks) != 0 {
+		blockDevice.DevLinks = append(blockDevice.DevLinks, blockdevice.DevLink{
+			Kind:  libudevwrapper.SYMLINK,
+			Links: udevDiskDetails.SymLinks,
+		})
+	}
+
 	// filesystem info of the attached device. Only filesystem data will be filled in the struct,
 	// as the mountpoint related information will be filled in by the mount probe
 	blockDevice.FSInfo.FileSystem = udevDiskDetails.FileSystem

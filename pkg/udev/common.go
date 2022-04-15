@@ -60,6 +60,8 @@ const (
 	UDEV_DEVLINKS             = "DEVLINKS"             // udev attribute contain devlinks of a disk
 	BY_ID_LINK                = "by-id"                // by-path devlink contains this string
 	BY_PATH_LINK              = "by-path"              // by-path devlink contains this string
+	BY_UUID_LINK              = "by-uuid"              // by-uuid devlink contains the string
+	BY_PARTUUID_LINK          = "by-partuuid"          // by-partuuid devlink contains the string
 	LINK_ID_INDEX             = 4                      // this is used to get link index from dev link
 	UDEV_FS_TYPE              = "ID_FS_TYPE"           // file system type the partition
 	UDEV_FS_UUID              = "ID_FS_UUID"           // UUID of the filesystem present
@@ -71,6 +73,8 @@ const (
 	UDEV_DM_UUID              = "DM_UUID"              // udev attribute to get the device mapper uuid
 	// UDEV_DM_NAME is udev attribute to get the name of the dm device. This is used to generate the device mapper path
 	UDEV_DM_NAME = "DM_NAME"
+	// SYMLINK is used to represent any manually created device symlinks
+	SYMLINK = "symlink"
 )
 
 // UdevDiskDetails struct contain different attribute of disk.
@@ -82,6 +86,7 @@ type UdevDiskDetails struct {
 	Path           string   // Path is Path of a disk.
 	ByIdDevLinks   []string // ByIdDevLinks contains by-id devlinks
 	ByPathDevLinks []string // ByPathDevLinks contains by-path devlinks
+	SymLinks       []string // SymLinks contains device symlinks if any
 	DiskType       string   // DeviceType can be disk, partition
 	// IDType is used for uuid generation using the legacy algorithm
 	IDType     string
@@ -112,6 +117,7 @@ func (device *UdevDevice) DiskInfoFromLibudev() UdevDiskDetails {
 		Path:               device.GetPropertyValue(UDEV_DEVNAME),
 		ByIdDevLinks:       devLinks[BY_ID_LINK],
 		ByPathDevLinks:     devLinks[BY_PATH_LINK],
+		SymLinks:           devLinks[SYMLINK],
 		DiskType:           device.GetDevtype(),
 		IDType:             device.GetPropertyValue(UDEV_TYPE),
 		FileSystem:         device.GetFileSystemInfo(),
@@ -210,6 +216,7 @@ func (device *UdevDevice) GetDevLinks() map[string][]string {
 	devLinkMap := make(map[string][]string)
 	byIdLink := make([]string, 0)
 	byPathLink := make([]string, 0)
+	symLink := make([]string, 0)
 	for _, link := range strings.Split(device.GetPropertyValue(UDEV_DEVLINKS), " ") {
 		/*
 			devlink is like - /dev/disk/by-id/scsi-0Google_PersistentDisk_demo-disk
@@ -232,8 +239,12 @@ func (device *UdevDevice) GetDevLinks() map[string][]string {
 		if util.Contains(parts, BY_PATH_LINK) {
 			byPathLink = append(byPathLink, link)
 		}
+		if !util.Contains(parts, BY_UUID_LINK) && !util.Contains(parts, BY_PARTUUID_LINK) {
+			symLink = append(symLink, link)
+		}
 	}
 	devLinkMap[BY_ID_LINK] = byIdLink
 	devLinkMap[BY_PATH_LINK] = byPathLink
+	devLinkMap[SYMLINK] = symLink
 	return devLinkMap
 }

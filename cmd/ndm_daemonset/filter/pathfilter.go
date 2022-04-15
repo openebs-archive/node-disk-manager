@@ -18,6 +18,8 @@ package filter
 
 import (
 	"github.com/openebs/node-disk-manager/blockdevice"
+	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
+
 	"strings"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -100,7 +102,19 @@ func (pf *pathFilter) Include(blockDevice *blockdevice.BlockDevice) bool {
 			return true
 		}
 	}
-	return util.MatchIgnoredCase(pf.includePaths, blockDevice.DevPath)
+	if util.MatchIgnoredCase(pf.includePaths, blockDevice.DevPath) {
+		return true
+	}
+	for _, link := range blockDevice.DevLinks {
+		if link.Kind == libudevwrapper.SYMLINK {
+			for _, symlink := range link.Links {
+				if util.Contains(pf.includePaths, symlink) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // Exclude returns true if the disk path does not match any given
@@ -116,5 +130,17 @@ func (pf *pathFilter) Exclude(blockDevice *blockdevice.BlockDevice) bool {
 			return false
 		}
 	}
-	return !util.MatchIgnoredCase(pf.excludePaths, blockDevice.DevPath)
+	if util.MatchIgnoredCase(pf.excludePaths, blockDevice.DevPath){
+		return false
+	}
+	for _, link := range blockDevice.DevLinks {
+		if link.Kind == libudevwrapper.SYMLINK {
+			for _, symlink := range link.Links {
+				if util.Contains(pf.excludePaths, symlink) {
+					return false
+				}
+			}
+		}
+	}
+	return true
 }
