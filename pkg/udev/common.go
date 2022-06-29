@@ -237,9 +237,9 @@ func (device *UdevDevice) GetDevLinks() map[string][]string {
 			}
 		} else if util.Contains(parts, BY_PATH_LINK) {
 			byPathLink = append(byPathLink, link)
-		} else if !util.Contains(parts, BY_UUID_LINK) && !util.Contains(parts, BY_PARTUUID_LINK) {
-			symLink = append(symLink, link)
 		}
+		// we can add very dev link in symlink map as there is a 1:1 mapping between the two links
+		symLink = append(symLink, link)
 	}
 	devLinkMap[BY_ID_LINK] = byIdLink
 	devLinkMap[BY_PATH_LINK] = byPathLink
