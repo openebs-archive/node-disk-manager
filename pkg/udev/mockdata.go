@@ -55,6 +55,7 @@ type MockOsDiskDetails struct {
 	IdType         string
 	ByIdDevLinks   []string
 	ByPathDevLinks []string
+	SymLinks       []string
 	Dependents     bd.DependentBlockDevices
 }
 
@@ -108,6 +109,7 @@ func MockDiskDetails() (MockOsDiskDetails, error) {
 	devLinks := device.GetDevLinks()
 	diskDetails.ByIdDevLinks = devLinks[BY_ID_LINK]
 	diskDetails.ByPathDevLinks = devLinks[BY_PATH_LINK]
+	diskDetails.SymLinks = devLinks[SYMLINK]
 	return diskDetails, nil
 }
 

@@ -31,8 +31,8 @@ import (
 )
 
 const (
-	fsTypeIdentifier        = "TYPE"
-	labelIdentifier         = "LABEL"
+	fsTypeIdentifier             = "TYPE"
+	labelIdentifier              = "LABEL"
 	partitionTableUUIDIdentifier = "PTUUID"
 	partitionEntryUUIDIdentifier = "PARTUUID"
 )

@@ -85,6 +85,7 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 		Path:               diskDetails.DevNode,
 		ByIdDevLinks:       diskDetails.ByIdDevLinks,
 		ByPathDevLinks:     diskDetails.ByPathDevLinks,
+		SymLinks:           diskDetails.SymLinks,
 		PartitionTableType: diskDetails.PartTableType,
 		IDType:             diskDetails.IdType,
 	}
@@ -101,8 +102,10 @@ func TestDiskInfoFromLibudev(t *testing.T) {
 			// need to make this nil as devlinks already compared.
 			test.expectedDetails.ByIdDevLinks = nil
 			test.expectedDetails.ByPathDevLinks = nil
+			test.expectedDetails.SymLinks = nil
 			test.actualDetails.ByIdDevLinks = nil
 			test.actualDetails.ByPathDevLinks = nil
+			test.actualDetails.SymLinks = nil
 			assert.Equal(t, test.expectedDetails, test.actualDetails)
 		})
 	}
