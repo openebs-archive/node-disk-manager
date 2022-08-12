@@ -291,6 +291,16 @@ func TestGetParentBlockDevice(t *testing.T) {
 			expectedParentBlockDevice: "nvme0n1",
 			expectedOk:                true,
 		},
+		"getting parent of main virtual NVMe blockdevice": {
+			syspath:                   "/sys/devices/virtual/nvme-subsystem/nvme-subsys0/nvme0n1",
+			expectedParentBlockDevice: "nvme0n1",
+			expectedOk:                true,
+		},
+		"getting parent of partitioned virtual NVMe blockdevice": {
+			syspath:                   "/sys/devices/virtual/nvme-subsystem/nvme-subsys0/nvme0n1/nvme0n1p1",
+			expectedParentBlockDevice: "nvme0n1",
+			expectedOk:                true,
+		},
 		"getting parent of wrong disk": {
 			syspath:                   "/sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0",
 			expectedParentBlockDevice: "",
