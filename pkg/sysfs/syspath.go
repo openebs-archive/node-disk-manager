@@ -31,6 +31,7 @@ const (
 	BlockSubSystem = "block"
 	// NVMeSubSystem is the key used to represent nvme subsystem in sysfs
 	NVMeSubSystem = "nvme"
+	NVMeSubSysClass = "nvme-subsystem"
 	// sectorSize is the sector size as understood by the unix systems.
 	// It is kept as 512 bytes. all entries in /sys/class/block/sda/size
 	// are in 512 byte blocks
@@ -86,7 +87,7 @@ func (s Device) getParent() (string, bool) {
 	// nvme namespace. Length checking is to avoid index out of range in case of malformed
 	// links (extremely rare case)
 	for i, part := range parts {
-		if part == NVMeSubSystem {
+		if part == NVMeSubSystem || part == NVMeSubSysClass {
 			// check if the length is greater to avoid panic. Also need to make sure that
 			// the same device is not returned if the given device is a parent.
 			if len(parts)-1 >= i+2 && s.deviceName != parts[i+2] {

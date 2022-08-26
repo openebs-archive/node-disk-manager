@@ -240,13 +240,18 @@ func parseRootDeviceLink(file io.Reader) (string, error) {
 // syspath looks like - /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda4
 // parent disk is present after block then partition of that disk
 //
-// for blockdevices that belong to the nvme subsystem, the symlink has a different format,
-// /sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1. So we search for the nvme subsystem
-// instead of `block`. The blockdevice will be available after the NVMe instance, nvme/instance/namespace.
+// for blockdevices that belong to the nvme subsystem, the symlink has different formats
+//     /sys/devices/pci0000:00/0000:00:0e.0/nvme/nvme0/nvme0n1/nvme0n1p1.
+//     /sys/devices/virtual/nvme-subsystem/nvme-subsys0/nvme0n1/nvme0n1p1
+// So we search for the "nvme" or "nvme-subsystem" subsystem instead of `block`. The
+// blockdevice will be available after the NVMe instance,
+//     nvme/instance/namespace
+//     nvme-subsystem/instance/namespace
 // The namespace will be the blockdevice.
 func getParentBlockDevice(sysPath string) (string, bool) {
 	blockSubsystem := "block"
 	nvmeSubsystem := "nvme"
+	nvmeSubsysClass := "nvme-subsystem"
 	parts := strings.Split(sysPath, "/")
 
 	// checking for block subsystem, return the next part after subsystem only
@@ -262,7 +267,7 @@ func getParentBlockDevice(sysPath string) (string, bool) {
 	// nvme namespace. Length checking is to avoid index out of range in case of malformed
 	// links (extremely rare case)
 	for i, part := range parts {
-		if part == nvmeSubsystem &&
+		if (part == nvmeSubsystem || part == nvmeSubsysClass) &&
 			len(parts)-1 >= i+2 {
 			return parts[i+2], true
 		}

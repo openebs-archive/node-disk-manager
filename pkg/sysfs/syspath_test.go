@@ -68,6 +68,24 @@ func TestGetParent(t *testing.T) {
 			wantedDeviceName: "nvme0n1",
 			wantOk:           true,
 		},
+		"[nvme-subsystem] given blockdevice is a parent": {
+			sysfsDevice: &Device{
+				deviceName: "nvme0n1",
+				path:       "/dev/nvme0n1",
+				sysPath:    "/sys/devices/virtual/nvme-subsystem/nvme-subsys0/nvme0n1/",
+			},
+			wantedDeviceName: "",
+			wantOk:           false,
+		},
+		"[nvme-subsystem] given blockdevice is a partition": {
+			sysfsDevice: &Device{
+				deviceName: "nvme0n1p1",
+				path:       "/dev/nvme0n1p1",
+				sysPath:    "/sys/devices/virtual/nvme-subsystem/nvme-subsys0/nvme0n1/nvme0n1p1/",
+			},
+			wantedDeviceName: "nvme0n1",
+			wantOk:           true,
+		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

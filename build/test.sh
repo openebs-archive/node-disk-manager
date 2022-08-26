@@ -30,12 +30,17 @@ if [ "$ARCH" != "amd64" ]; then
   exit 0
 fi
 
+exit_val=0
 echo "" > coverage.txt
 PACKAGES=$(go list ./... | grep -v '/vendor/\|/pkg/apis/\|/pkg/client/\|integration_test')
 for d in $PACKAGES; do
-	go test -coverprofile=profile.out -covermode=atomic "$d"
+	if ! go test -coverprofile=profile.out -covermode=atomic "$d"; then
+		exit_val=1
+	fi
 	if [ -f profile.out ]; then
 		cat profile.out >> coverage.txt
 		rm profile.out
 	fi
 done
+
+exit ${exit_val}

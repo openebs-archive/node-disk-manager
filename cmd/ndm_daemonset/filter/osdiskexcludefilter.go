@@ -80,33 +80,31 @@ func newNonOsDiskFilter(ctrl *controller.Controller) *oSDiskExcludeFilter {
 
 // Start set os disk devPath in nonOsDiskFilter pointer
 func (odf *oSDiskExcludeFilter) Start() {
-	/*
-		process1 check for mentioned mountpoint in host's /proc/1/mounts file
-		host's /proc/1/mounts file mounted inside container it checks for
-		every mentioned mountpoints if it is able to get parent disk's devpath
-		it adds it in Controller struct and make isOsDiskFilterSet true
-	*/
 	for _, mountPoint := range mountPoints {
-		mountPointUtil := mount.NewMountUtil(hostMountFilePath, "", mountPoint)
-		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
-			klog.Errorf("unable to configure os disk filter for mountpoint: %s, error: %v", mountPoint, err)
-		} else {
-			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
-		}
-	}
-	/*
-		process2 check for mountpoints in /proc/self/mounts file if it is able to get
-		disk's path of it adds it in Controller struct and make isOsDiskFilterSet true
-	*/
-	for _, mountPoint := range mountPoints {
-		mountPointUtil := mount.NewMountUtil(defaultMountFilePath, "", mountPoint)
-		if devPath, err := mountPointUtil.GetDiskPath(); err != nil {
-			klog.Errorf("unable to configure os disk filter for mountpoint: %s, error: %v", mountPoint, err)
-		} else {
-			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
-		}
-	}
+		var err error
+		var devPath string
 
+		// Check for mountpoints in both:
+		//    the host's /proc/1/mounts file
+		//    the /proc/self/mounts file
+		// If it is found in either one and we are able to get the
+		// disk's devpath, add it to the Controller struct.  Otherwise
+		// log an error.
+
+		mountPointUtil := mount.NewMountUtil(hostMountFilePath, "", mountPoint)
+		if devPath, err = mountPointUtil.GetDiskPath(); err == nil {
+			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
+			continue
+		}
+
+		mountPointUtil = mount.NewMountUtil(defaultMountFilePath, "", mountPoint)
+		if devPath, err = mountPointUtil.GetDiskPath(); err == nil {
+			odf.excludeDevPaths = append(odf.excludeDevPaths, devPath)
+			continue
+		}
+
+		klog.Errorf("unable to configure os disk filter for mountpoint: %s, error: %v", mountPoint, err)
+	}
 }
 
 // Include contains nothing by default it returns false
