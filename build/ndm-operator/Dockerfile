@@ -14,7 +14,7 @@
 #
 # This Dockerfile builds ndm operator
 #
-FROM ghcr.io/openebs/ndm-build-base:20211202 as build
+FROM ghcr.io/openebs/ndm-build-base:20221210 as build
 
 ARG TARGETOS
 ARG TARGETARCH
