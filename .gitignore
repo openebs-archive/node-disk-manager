@@ -8,3 +8,4 @@ Dockerfile.ndo
 Dockerfile.exporter
 coverage.txt
 build/_output
+**/.idea

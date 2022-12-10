@@ -160,10 +160,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Minikube-Kubernetes
-        uses: manusa/actions-setup-minikube@v2.3.0
+        uses: manusa/actions-setup-minikube@v2.7.1
         with:
-          minikube version: v1.15.0
-          kubernetes version: 1.18.0
+          minikube version: 'v1.26.1'
+          kubernetes version: 'v1.25.0'
+          driver: docker
+          start args: '--memory=4096 --install-addons=false --cni=cilium --extra-config kubeadm.pod-network-cidr=192.168.0.0/16'
 
       - name: Install Dependencies
         run: make install-dep
