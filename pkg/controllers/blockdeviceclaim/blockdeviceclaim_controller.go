@@ -17,8 +17,10 @@ limitations under the License.
 package blockdeviceclaim
 
 import (
+
 	"context"
 	"fmt"
+
 	util2 "github.com/openebs/node-disk-manager/pkg/controllers/util"
 
 	"github.com/go-logr/logr"
@@ -322,9 +324,8 @@ func (r *BlockDeviceClaimReconciler) GetBlockDevice(name string) (*apis.BlockDev
 
 // getListofDevices gets the list of block devices on the node to which BlockDeviceClaim is made
 // TODO:
-//
-//	ListBlockDeviceResource in package cmd/ndm_daemonset/controller has the same functionality.
-//	Need to merge these 2 functions.
+//  ListBlockDeviceResource in package cmd/ndm_daemonset/controller has the same functionality.
+//  Need to merge these 2 functions.
 func (r *BlockDeviceClaimReconciler) getListofDevices(selector *v1.LabelSelector) (*apis.BlockDeviceList, error) {
 
 	//Initialize a deviceList object.

@@ -63,17 +63,17 @@ import (
 
 )
 
-	func main() {
-		deviceBasicSCSIInfo, err := smart.SCSIBasicDiskInfo("/dev/sda")
-		if err != nil {
-			klog.Fatal(err)
-		}
-
-		fmt.Printf("Vendor :%s \n",deviceBasicSCSIInfo.Vendor)
-		fmt.Printf("Compliance :%s \n",deviceBasicSCSIInfo.Compliance)
-		fmt.Printf("FirmwareRevision :%s \n",deviceBasicSCSIInfo.FirmwareRevision)
-		fmt.Printf("Capacity :%d \n",deviceBasicSCSIInfo.Capacity)
+func main() {
+	deviceBasicSCSIInfo, err := smart.SCSIBasicDiskInfo("/dev/sda")
+	if err != nil {
+		klog.Fatal(err)
 	}
+
+	fmt.Printf("Vendor :%s \n",deviceBasicSCSIInfo.Vendor)
+	fmt.Printf("Compliance :%s \n",deviceBasicSCSIInfo.Compliance)
+	fmt.Printf("FirmwareRevision :%s \n",deviceBasicSCSIInfo.FirmwareRevision)
+	fmt.Printf("Capacity :%d \n",deviceBasicSCSIInfo.Capacity)
+}
 
 NOTE : This document will remain in continuous updation whenever more features and
 functionalities are implemented.

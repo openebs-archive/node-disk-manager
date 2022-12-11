@@ -99,8 +99,7 @@ func StringToInt32(val string) (*int32, error) {
 // *int32 type
 //
 // NOTE:
-//
-//	This swallows the error if any
+//  This swallows the error if any
 func StrToInt32(val string) *int32 {
 	n32, _ := StringToInt32(val)
 	return n32

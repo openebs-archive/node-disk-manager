@@ -39,9 +39,9 @@ func (pe *ProbeEvent) removeBlockDeviceFromHierarchyCache(bd blockdevice.BlockDe
 
 // deleteBlockDevice marks the block device resource as inactive
 // The following cases are handled
-//  1. Device using legacy UUID
-//  2. Device using GPT UUID
-//  3. Device using partition table UUID (zfs localPV)
+//	1. Device using legacy UUID
+//	2. Device using GPT UUID
+//	3. Device using partition table UUID (zfs localPV)
 //  4. Device using the partition table / fs uuid annotation
 func (pe *ProbeEvent) deleteBlockDevice(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) error {
 
