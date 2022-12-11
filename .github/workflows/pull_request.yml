@@ -198,8 +198,8 @@ jobs:
         with:
           minikube version: 'v1.26.1'
           kubernetes version: 'v1.25.0'
-          driver: docker
-          start args: '--memory=4096 --install-addons=false --cni=cilium --extra-config kubeadm.pod-network-cidr=192.168.0.0/16'
+          driver: none
+          start args: '--install-addons=false'
 
       - name: Integration Test
         run: sudo -E env "PATH=$PATH" make integration-test
