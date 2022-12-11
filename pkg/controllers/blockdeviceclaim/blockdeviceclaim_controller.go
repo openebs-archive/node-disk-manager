@@ -28,7 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/tools/reference"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -322,8 +322,9 @@ func (r *BlockDeviceClaimReconciler) GetBlockDevice(name string) (*apis.BlockDev
 
 // getListofDevices gets the list of block devices on the node to which BlockDeviceClaim is made
 // TODO:
-//  ListBlockDeviceResource in package cmd/ndm_daemonset/controller has the same functionality.
-//  Need to merge these 2 functions.
+//
+//	ListBlockDeviceResource in package cmd/ndm_daemonset/controller has the same functionality.
+//	Need to merge these 2 functions.
 func (r *BlockDeviceClaimReconciler) getListofDevices(selector *v1.LabelSelector) (*apis.BlockDeviceList, error) {
 
 	//Initialize a deviceList object.

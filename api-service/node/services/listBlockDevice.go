@@ -26,7 +26,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Node helps in using types defined in package Node
@@ -245,7 +245,7 @@ func GetAllTypes(BL *v1alpha1.BlockDeviceList) error {
 
 // FilterPartitions gets the name of the partitions given a block device.
 // Given a disk name /dev/sdb and slice of partition names : ["/dev/sdb1", "/dev/sdb2", "/dev/sdc1"],
-//it should return ["/dev/sdb1", "/dev/sdb2"]
+// it should return ["/dev/sdb1", "/dev/sdb2"]
 func FilterPartitions(name string, pns []string) []string {
 	fpns := make([]string, 0)
 

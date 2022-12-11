@@ -17,7 +17,7 @@ limitations under the License.
 package probe
 
 import (
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"

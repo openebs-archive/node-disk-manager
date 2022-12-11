@@ -18,7 +18,7 @@ package filter
 
 import (
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (

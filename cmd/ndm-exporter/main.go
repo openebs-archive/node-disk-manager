@@ -19,7 +19,7 @@ package main
 import (
 	"github.com/openebs/node-disk-manager/cmd/ndm-exporter/cmd"
 	"github.com/openebs/node-disk-manager/pkg/logs"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func main() {

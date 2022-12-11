@@ -97,7 +97,7 @@ jobs:
       - name: Set Build Date
         id: date
         run: |
-          echo "::set-output name=DATE::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')"
+          echo "DATE=$(date -u +'%Y-%m-%dT%H:%M:%S%Z')" >> $GITHUB_OUTPUT
 
       - name: Docker meta
         id: docker_meta
@@ -185,7 +185,7 @@ jobs:
       - name: Set Build Date
         id: date
         run: |
-          echo "::set-output name=DATE::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')"
+          echo "DATE=$(date -u +'%Y-%m-%dT%H:%M:%S%Z')" >> $GITHUB_OUTPUT
 
       - name: Docker meta
         id: docker_meta
@@ -275,7 +275,7 @@ jobs:
       - name: Set Build Date
         id: date
         run: |
-          echo "::set-output name=DATE::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')"
+          echo "DATE=$(date -u +'%Y-%m-%dT%H:%M:%S%Z')" >> $GITHUB_OUTPUT
 
       - name: Docker meta
         id: docker_meta

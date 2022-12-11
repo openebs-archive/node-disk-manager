@@ -12,7 +12,6 @@ limitations under the License.
 */
 
 /*
-
 Package smart provides details about a particular disk device which includes both
 basic details such as vendor, model, serial, etc as well as smart details such as
 Raw_Read_Error_Rate, Temperature_Celsius, Spin_Up_Time, etc by parsing various disk
@@ -23,6 +22,7 @@ NOTE : For now, the implementation is only for getting the basic details (not sm
 of SCSI disks such as vendor,serial, model, firmware revision, logical sector size,etc.
 
 Usage:
+
 	import "github.com/openebs/node-disk-manager/pkg/smart"
 
 S.M.A.R.T. (Self-Monitoring, Analysis and Reporting Technology; often written as SMART) is
@@ -55,29 +55,30 @@ An example usage can be like this -
 package smartusageexample
 
 import (
+
 	"fmt"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"github.com/openebs/node-disk-manager/pkg/smart"
+
 )
 
-func main() {
-	deviceBasicSCSIInfo, err := smart.SCSIBasicDiskInfo("/dev/sda")
-	if err != nil {
-		klog.Fatal(err)
-	}
+	func main() {
+		deviceBasicSCSIInfo, err := smart.SCSIBasicDiskInfo("/dev/sda")
+		if err != nil {
+			klog.Fatal(err)
+		}
 
-	fmt.Printf("Vendor :%s \n",deviceBasicSCSIInfo.Vendor)
-	fmt.Printf("Compliance :%s \n",deviceBasicSCSIInfo.Compliance)
-	fmt.Printf("FirmwareRevision :%s \n",deviceBasicSCSIInfo.FirmwareRevision)
-	fmt.Printf("Capacity :%d \n",deviceBasicSCSIInfo.Capacity)
-}
+		fmt.Printf("Vendor :%s \n",deviceBasicSCSIInfo.Vendor)
+		fmt.Printf("Compliance :%s \n",deviceBasicSCSIInfo.Compliance)
+		fmt.Printf("FirmwareRevision :%s \n",deviceBasicSCSIInfo.FirmwareRevision)
+		fmt.Printf("Capacity :%d \n",deviceBasicSCSIInfo.Capacity)
+	}
 
 NOTE : This document will remain in continuous updation whenever more features and
 functionalities are implemented.
 
 Please refer to the design doc here -
 https://docs.google.com/document/d/1avZrFI3j1AOmWIY_43oyK9Nkj5IYT37fzIhAAbp0Bxs/edit?usp=sharing
-
 */
 package smart

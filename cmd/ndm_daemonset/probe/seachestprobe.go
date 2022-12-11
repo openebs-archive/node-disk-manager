@@ -21,7 +21,7 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/seachest"
 	"github.com/openebs/node-disk-manager/pkg/util"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // seachest contains required variables for populating diskInfo

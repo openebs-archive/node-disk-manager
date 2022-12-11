@@ -30,7 +30,7 @@ import (
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 type usedbyProbe struct {

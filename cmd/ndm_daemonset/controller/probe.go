@@ -19,7 +19,7 @@ package controller
 import (
 	"sort"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"

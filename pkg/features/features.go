@@ -30,7 +30,7 @@ import (
 
 	"github.com/openebs/node-disk-manager/pkg/util"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Feature is a typed string for a given feature

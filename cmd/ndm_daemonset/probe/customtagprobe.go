@@ -22,7 +22,7 @@ import (
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (

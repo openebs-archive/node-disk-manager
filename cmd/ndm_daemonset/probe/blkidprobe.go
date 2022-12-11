@@ -20,7 +20,7 @@ import (
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/blkid"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (

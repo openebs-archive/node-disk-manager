@@ -24,7 +24,7 @@ import (
 	"github.com/diskfs/go-diskfs/partition/gpt"
 	"github.com/openebs/node-disk-manager/pkg/blkid"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // TODO this package needs to be upstreamed to diskfs/go-diskfs

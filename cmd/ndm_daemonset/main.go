@@ -17,8 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"k8s.io/klog"
 	"os"
+
+	"k8s.io/klog/v2"
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/app/command"
 	ndmlogger "github.com/openebs/node-disk-manager/pkg/logs"

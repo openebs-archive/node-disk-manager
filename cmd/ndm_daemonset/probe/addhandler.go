@@ -26,7 +26,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/partition"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (

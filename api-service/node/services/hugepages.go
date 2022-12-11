@@ -23,7 +23,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const hugepagesPath = "/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages"

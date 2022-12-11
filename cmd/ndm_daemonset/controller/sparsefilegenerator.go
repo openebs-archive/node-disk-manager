@@ -22,7 +22,7 @@ import (
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"fmt"
 	"os"
@@ -91,7 +91,8 @@ func GetSparseFileDir() string {
 }
 
 // GetSparseFileCount returns the number of sparse files to be
-//  created by NDM. Returns 0, if invalid count is specified.
+//
+//	created by NDM. Returns 0, if invalid count is specified.
 func GetSparseFileCount() int {
 
 	sparseFileCountStr := os.Getenv(EnvSparseFileCount)
@@ -110,7 +111,8 @@ func GetSparseFileCount() int {
 }
 
 // GetSparseFileSize returns the size of the sparse file to be
-//  created by NDM. Returns 0, if invalid size is specified.
+//
+//	created by NDM. Returns 0, if invalid size is specified.
 func GetSparseFileSize() int64 {
 
 	sparseFileSizeStr := os.Getenv(EnvSparseFileSize)
