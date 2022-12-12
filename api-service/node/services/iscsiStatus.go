@@ -19,10 +19,10 @@ import (
 
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
 
-	ps "github.com/mitchellh/go-ps"
+	"github.com/mitchellh/go-ps"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const iscsiServiceName = "iscsid"

@@ -21,7 +21,7 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // NOTE: This is an internal filter used by NDM to validate the block devices.

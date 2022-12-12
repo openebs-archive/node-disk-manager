@@ -17,8 +17,10 @@ limitations under the License.
 package blockdeviceclaim
 
 import (
+
 	"context"
 	"fmt"
+
 	util2 "github.com/openebs/node-disk-manager/pkg/controllers/util"
 
 	"github.com/go-logr/logr"
@@ -28,7 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/tools/reference"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"

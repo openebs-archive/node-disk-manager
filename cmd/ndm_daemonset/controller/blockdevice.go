@@ -23,7 +23,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/client-go/util/jsonpath"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
@@ -165,7 +165,8 @@ func addBdLabels(bd *apis.BlockDevice, ctrl *Controller) error {
 // And transforms them all into a valid jsonpath expression:
 //   {.metadata.name}
 // NOTE: This code has been referenced from kubernetes kubectl github repo.
-//       Ref: https://github.com/kubernetes/kubectl/blob/caeb9274868c57d8a320014290cc7e3d1bcb9e46/pkg/cmd/get/customcolumn.go#L47
+//       Ref: https://github.com/kubernetes/kubectl/blob/caeb9274868c57d8a320014290cc7e3d1bcb9e46/pkg/cmd/get
+//      /customcolumn.go#L47
 func RelaxedJSONPathExpression(pathExpression string) (string, error) {
 	var jsonRegexp = regexp.MustCompile(`^\{\.?([^{}]+)\}$|^\.?([^{}]+)$`)
 

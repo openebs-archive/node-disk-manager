@@ -19,7 +19,7 @@ import (
 
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Name is used to find the name of the worker node NDM is deployed on

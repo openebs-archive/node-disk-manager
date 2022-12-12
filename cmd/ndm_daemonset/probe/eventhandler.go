@@ -24,7 +24,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/features"
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/util"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // EventAction action type for disk events like attach or detach events

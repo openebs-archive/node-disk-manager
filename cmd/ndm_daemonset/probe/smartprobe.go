@@ -21,7 +21,7 @@ import (
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/pkg/smart"
 	"github.com/openebs/node-disk-manager/pkg/util"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // smartProbe contains required variables for populating diskInfo

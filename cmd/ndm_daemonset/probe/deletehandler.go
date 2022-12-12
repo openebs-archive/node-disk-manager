@@ -20,7 +20,7 @@ import (
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
 	"github.com/openebs/node-disk-manager/blockdevice"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // removeBlockDeviceFromHierarchyCache removes a block device from the hierarchy.

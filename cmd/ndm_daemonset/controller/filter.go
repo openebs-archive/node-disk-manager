@@ -17,10 +17,10 @@ limitations under the License.
 package controller
 
 import (
+	"k8s.io/klog/v2"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/pkg/util"
-
-	"k8s.io/klog"
 )
 
 // Filter contains name, state and filterInterface

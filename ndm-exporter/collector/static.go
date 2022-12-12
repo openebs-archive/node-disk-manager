@@ -23,7 +23,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/metrics/static"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // StaticMetricCollector contains the metrics, concurrency handler and client to get the

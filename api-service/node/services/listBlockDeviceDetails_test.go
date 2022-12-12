@@ -19,7 +19,7 @@ import (
 
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // TestListBlockDeviceDetails tests ListBlockDeviceDetails

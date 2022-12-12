@@ -20,7 +20,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/version"
 	protos "github.com/openebs/node-disk-manager/spec/ndm"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Info helps in using types defined in package Node

@@ -28,7 +28,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/util"
 	"golang.org/x/sync/semaphore"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (

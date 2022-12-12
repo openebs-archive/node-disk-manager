@@ -23,7 +23,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/features"
 	"github.com/openebs/node-disk-manager/pkg/util"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // generateUUID creates a new UUID based on the algorithm proposed in

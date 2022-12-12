@@ -25,7 +25,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (

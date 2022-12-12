@@ -19,7 +19,7 @@ package server
 import (
 	"net/http"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Server contains the options to start a simple metrics server along with
