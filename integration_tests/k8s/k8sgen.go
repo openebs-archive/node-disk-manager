@@ -17,12 +17,12 @@ limitations under the License.
 package k8s
 
 import (
-	"github.com/ghodss/yaml"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apiextensionsV1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"sigs.k8s.io/yaml"
 )
 
 // NDMYaml is a string type that stores the path to the YAML files
