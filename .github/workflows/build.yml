@@ -381,7 +381,7 @@ jobs:
             openebs/node-disk-operator:ci
 
       - name: Setup Minikube-Kubernetes
-        uses: manusa/actions-setup-minikube@v2.7.1
+        uses: manusa/actions-setup-minikube@v2.7.2
         with:
           minikube version: 'v1.26.1'
           kubernetes version: 'v1.25.0'
