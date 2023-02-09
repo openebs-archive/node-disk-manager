@@ -147,7 +147,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push Image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./build/ndm-daemonset/Dockerfile
@@ -237,7 +237,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push Image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./build/ndm-exporter/Dockerfile
@@ -327,7 +327,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push Image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./build/ndm-operator/Dockerfile
@@ -354,12 +354,12 @@ jobs:
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           version: v0.5.1
 
       - name: Build Node Disk Manager
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./build/ndm-daemonset/Dockerfile
@@ -370,7 +370,7 @@ jobs:
             openebs/node-disk-manager:ci
 
       - name: Build Node Disk Operator
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./build/ndm-operator/Dockerfile
@@ -381,7 +381,7 @@ jobs:
             openebs/node-disk-operator:ci
 
       - name: Setup Minikube-Kubernetes
-        uses: manusa/actions-setup-minikube@v2.7.1
+        uses: manusa/actions-setup-minikube@v2.7.2
         with:
           minikube version: 'v1.26.1'
           kubernetes version: 'v1.25.0'
