@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* You have Go 1.13 or above installed on your local host/development machine.
+* You have Go 1.19 or above installed on your local host/development machine.
 * You have Docker installed on your local host/development machine. Docker is required for building NDM container images and to push them into a Kubernetes cluster for testing. 
 * You have `kubectl` installed. For running integration tests, you will require an existing single node cluster. Don't worry if you don't have access to the Kubernetes cluster, raising a PR with the NDM repository will run integration tests for your changes against a Minikube cluster.
 

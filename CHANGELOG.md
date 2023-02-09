@@ -1,3 +1,9 @@
+v2.1.0 / 2023-02-09
+========================
+* add support for nvme virtual path detection ([678](https://github.com/openebs/node-disk-manager/pull/678),[@dborman-hpe](https://github.com/dborman-hpe))
+* update go version to v1.19.3 ([681](https://github.com/openebs/node-disk-manager/pull/681),[@akhilerm](https://github.com/akhilerm))
+* update go module dependencies to use sigs.k8s.io/yaml instead of github.com/ghodss/yaml ([687](https://github.com/openebs/node-disk-manager/pull/687),[@Juneezee](https://github.com/Juneezee))
+
 v1.8.0 / 2022-01-03
 ========================
 * add device attributes and location details as blockdevice labels ([618](https://github.com/openebs/node-disk-manager/pull/618),[@Ab-hishek](https://github.com/Ab-hishek))
