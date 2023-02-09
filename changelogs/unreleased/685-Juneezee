@@ -1,0 +1,1 @@
+replace github.com/ghodss/yaml with sigs.k8s.io/yaml

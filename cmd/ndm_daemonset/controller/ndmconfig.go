@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/ghodss/yaml"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/yaml"
 )
 
 const (
