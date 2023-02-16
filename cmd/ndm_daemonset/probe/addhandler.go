@@ -329,6 +329,13 @@ func (pe *ProbeEvent) handleUnmanagedDevices(bd blockdevice.BlockDevice, bdAPILi
 	} else if !ok {
 		return false, nil
 	}
+
+	// handle if the device is used by lvm localPV
+	if ok, err := pe.deviceInUseByLVMLocalPV(bd, bdAPIList); err != nil {
+		return ok, err
+	} else if !ok {
+		return false, nil
+	}
 	return true, nil
 }
 
@@ -397,6 +404,42 @@ func (pe *ProbeEvent) deviceInUseByZFSLocalPV(bd blockdevice.BlockDevice, bdAPIL
 		return false, err
 	}
 	klog.Infof("Pushed zfs-localPV device: %s (%s) to etcd", bd.UUID, bd.DevPath)
+	return false, nil
+}
+
+// deviceInUseByLVMLocalPV check if the device is in use by lvm localPV and returns true if further processing of
+// event is required. If the device has lvm pv on it, then a blockdevice resource will be created and lvm PV tag
+// will be added on to the resource
+func (pe *ProbeEvent) deviceInUseByLVMLocalPV(bd blockdevice.BlockDevice, bdAPIList *apis.BlockDeviceList) (bool, error) {
+	if !bd.DevUse.InUse {
+		return true, nil
+	}
+
+	// not in use by lvm localpv
+	if bd.DevUse.UsedBy != blockdevice.LVMLocalPV {
+		return true, nil
+	}
+
+	klog.Infof("device: %s in use by lvm-localPV", bd.DevPath)
+
+	uuid, ok := generateUUID(bd)
+	if !ok {
+		klog.Errorf("unable to generate uuid for lvm-localPV device: %s", bd.DevPath)
+		return false, fmt.Errorf("error generating uuid for lvm-localPV disk: %s", bd.DevPath)
+	}
+
+	bd.UUID = uuid
+
+	deviceInfo := pe.Controller.NewDeviceInfoFromBlockDevice(&bd)
+	bdAPI := deviceInfo.ToDevice()
+	bdAPI.Labels[kubernetes.BlockDeviceTagLabel] = string(blockdevice.LVMLocalPV)
+
+	err := pe.Controller.CreateBlockDevice(bdAPI)
+	if err != nil {
+		klog.Errorf("unable to push %s (%s) to etcd", bd.UUID, bd.DevPath)
+		return false, err
+	}
+	klog.Infof("Pushed lvm-localPV device: %s (%s) to etcd", bd.UUID, bd.DevPath)
 	return false, nil
 }
 

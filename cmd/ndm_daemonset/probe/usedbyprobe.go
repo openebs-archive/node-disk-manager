@@ -45,6 +45,7 @@ const (
 	k8sLocalVolumePath1 = "kubernetes.io/local-volume"
 	k8sLocalVolumePath2 = "kubernetes.io~local-volume"
 	zfsFileSystemLabel  = "zfs_member"
+	lvmFileSystemLabel  = "LVM2_member"
 )
 
 var (
@@ -148,6 +149,18 @@ func (sp *usedbyProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockDevi
 			klog.V(4).Infof("device: %s Used by: %s filled by used-by probe", blockDevice.DevPath, blockDevice.DevUse.UsedBy)
 			return
 		}
+	}
+
+	// checking for lvm localPV
+	usedByProbe := newUsedByProbe(blockDevice.DevPath)
+	// check for LVM file system
+	fstype := usedByProbe.BlkidIdentifier.GetOnDiskFileSystem()
+
+	if fstype == lvmFileSystemLabel {
+		blockDevice.DevUse.InUse = true
+		blockDevice.DevUse.UsedBy = blockdevice.LVMLocalPV
+		klog.V(4).Infof("device: %s Used by: %s filled by used-by probe", blockDevice.DevPath, blockDevice.DevUse.UsedBy)
+		return
 	}
 
 	// create a device identifier for reading the spdk super block from the disk
