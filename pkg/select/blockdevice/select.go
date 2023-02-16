@@ -18,7 +18,9 @@ package blockdevice
 
 import (
 	"fmt"
+
 	apis "github.com/openebs/node-disk-manager/api/v1alpha1"
+	"github.com/openebs/node-disk-manager/blockdevice"
 )
 
 // Filter selects a single block device from a list of block devices
@@ -58,10 +60,12 @@ func (c *Config) getCandidateDevices(bdList *apis.BlockDeviceList) (*apis.BlockD
 			FilterBlockDeviceName,
 		)
 	} else {
+		if c.ClaimSpec.DeviceType != blockdevice.SparseBlockDeviceType {
+			// Unless explicitly specify DeviceType as sparse, device sparse will not be included
+			filterKeys = append(filterKeys, FilterOutSparseBlockDevices)
+		}
+
 		filterKeys = append(filterKeys,
-			// Sparse BDs can be claimed only by manual selection. Therefore, all
-			// sparse BDs will be filtered out in auto mode
-			FilterOutSparseBlockDevices,
 			FilterDeviceType,
 			FilterVolumeMode,
 			FilterNodeName,
