@@ -18,7 +18,6 @@ package mount
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -164,7 +163,7 @@ func TestGetMountAttr(t *testing.T) {
 			mountUtil := NewMountUtil(filePath, test.devPath, test.mountPoint)
 
 			// create the temp file which will be read for getting attributes
-			err := ioutil.WriteFile(filePath, test.fileContent, 0644)
+			err := os.WriteFile(filePath, test.fileContent, 0644)
 			if err != nil {
 				t.Fatal(err)
 			}

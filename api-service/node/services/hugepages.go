@@ -15,7 +15,7 @@ package services
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 
@@ -41,7 +41,7 @@ func (n *Node) SetHugepages(ctx context.Context, h *protos.Hugepages) (*protos.H
 	}
 
 	msg := []byte(strconv.Itoa(int(hugepages.Pages)))
-	err := ioutil.WriteFile(hugepagesPath, msg, 0644)
+	err := os.WriteFile(hugepagesPath, msg, 0644)
 	if err != nil {
 		klog.Errorf("Error setting huge pages: %v", err)
 		return nil, status.Errorf(codes.Internal, "Error setting hugepages")
@@ -55,7 +55,7 @@ func (n *Node) GetHugepages(ctx context.Context, null *protos.Null) (*protos.Hug
 
 	klog.Info("Getting the number of hugepages")
 
-	hugepages, err := ioutil.ReadFile(hugepagesPath)
+	hugepages, err := os.ReadFile(hugepagesPath)
 	if err != nil {
 		klog.Errorf("Error fetching number of hugepages %v", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching the number of hugepages set on the node")

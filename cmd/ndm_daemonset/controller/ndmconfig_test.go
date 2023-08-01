@@ -17,7 +17,6 @@ limitations under the License.
 package controller
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -47,7 +46,7 @@ func TestSetNDMConfig(t *testing.T) {
             },
         ]
     }`)
-	err := ioutil.WriteFile(fakeConfigFilePath, fileContent, 0644)
+	err := os.WriteFile(fakeConfigFilePath, fileContent, 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +87,7 @@ func TestSetNDMConfig(t *testing.T) {
 	expectedNDMConfig.FilterConfigs = append(expectedNDMConfig.FilterConfigs, expectedFilterConfig)
 	expectedNDMConfig.ProbeConfigs = append(expectedNDMConfig.ProbeConfigs, expectedProbeConfig)
 
-	err = ioutil.WriteFile(fakeConfigFilePath, fileContent, 0644)
+	err = os.WriteFile(fakeConfigFilePath, fileContent, 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,6 +134,6 @@ filterconfigs:
     exclude: /,/etc/hosts,/boot
 `
 
-	err := ioutil.WriteFile(fpath, []byte(data), 0644)
+	err := os.WriteFile(fpath, []byte(data), 0644)
 	assert.NoError(t, err)
 }

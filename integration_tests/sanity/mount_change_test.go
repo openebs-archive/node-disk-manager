@@ -17,7 +17,7 @@ limitations under the License.
 package sanity
 
 import (
-	"io/ioutil"
+	"os"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -78,7 +78,7 @@ func tearDown(kcli *k8s.K8sClient, disk *udev.Disk) func() {
 
 func generateMountPath(mountPath *string) func() {
 	return func() {
-		mp, err := ioutil.TempDir("", "ndm-integration-tests")
+		mp, err := os.MkdirTemp("", "ndm-integration-tests")
 		Expect(err).ToNot(HaveOccurred())
 		*mountPath = mp
 	}

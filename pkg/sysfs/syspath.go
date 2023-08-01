@@ -18,7 +18,6 @@ package sysfs
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -112,7 +111,7 @@ func (s Device) getPartitions() ([]string, bool) {
 
 	partitions := make([]string, 0)
 
-	files, err := ioutil.ReadDir(s.sysPath)
+	files, err := os.ReadDir(s.sysPath)
 	if err != nil {
 		return nil, false
 	}
@@ -135,7 +134,7 @@ func (s Device) getHolders() ([]string, bool) {
 		return nil, false
 	}
 
-	files, err := ioutil.ReadDir(holderPath)
+	files, err := os.ReadDir(holderPath)
 	if err != nil {
 		return nil, false
 	}
@@ -157,7 +156,7 @@ func (s Device) getSlaves() ([]string, bool) {
 		return nil, false
 	}
 
-	files, err := ioutil.ReadDir(slavePath)
+	files, err := os.ReadDir(slavePath)
 	if err != nil {
 		return nil, false
 	}
