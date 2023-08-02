@@ -18,14 +18,13 @@ package utils
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
 // GetYAMLString gets the yaml-string from the given YAML file
 func GetYAMLString(fileName string) (string, error) {
-	fileBytes, err := ioutil.ReadFile(filepath.Clean(fileName))
+	fileBytes, err := os.ReadFile(filepath.Clean(fileName))
 	if err != nil {
 		return "", err
 	}

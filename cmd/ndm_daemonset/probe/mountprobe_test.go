@@ -17,7 +17,6 @@ limitations under the License.
 package probe
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"syscall"
@@ -141,5 +140,5 @@ func exitFakeRoot() error {
 }
 
 func createMountsFile(dest string) error {
-	return ioutil.WriteFile(dest, []byte(sampleMountsFile), 0444)
+	return os.WriteFile(dest, []byte(sampleMountsFile), 0444)
 }

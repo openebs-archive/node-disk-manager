@@ -17,7 +17,6 @@ limitations under the License.
 package controller
 
 import (
-	"io/ioutil"
 	"strings"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
@@ -183,7 +182,7 @@ func GetSparseBlockDeviceUUID(hostname, sparseFile string) string {
 func GetActiveSparseBlockDevicesUUID(hostname string) []string {
 	sparseFileLocation := GetSparseFileDir()
 	sparseUuids := make([]string, 0)
-	files, err := ioutil.ReadDir(sparseFileLocation)
+	files, err := os.ReadDir(sparseFileLocation)
 	if err != nil {
 		klog.Error("Failed to read sparse file names : ", err)
 		return sparseUuids
