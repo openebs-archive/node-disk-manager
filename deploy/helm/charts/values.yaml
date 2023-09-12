@@ -83,6 +83,7 @@ ndmOperator:
     periodSeconds: 10
   replicas: 1
   upgradeStrategy: Recreate
+  affinity: {}
 
 ndmExporter:
   enabled: false

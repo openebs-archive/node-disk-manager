@@ -83,5 +83,8 @@ spec:
 {{- if .Values.ndmOperator.tolerations }}
       tolerations:
 {{ toYaml .Values.ndmOperator.tolerations | indent 8 }}
+{{- if .Values.ndmOperator.affinity }}
+      affinity:
+{{ toYaml .Values.ndmOperator.affinity | indent 8 }}
 {{- end }}
 {{- end }}
