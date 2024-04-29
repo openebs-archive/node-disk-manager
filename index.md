@@ -8,7 +8,7 @@ Please refer to Helm's [documentation](https://helm.sh/docs/) to get started.
 Once Helm is set up properly, add the repo as follows:
 
 ```bash
-$ helm repo add ndm https://openebs.github.io/node-disk-manager
+$ helm repo add ndm https://openebs-archive.github.io/node-disk-manager
 ```
 
 You can then run `helm search repo ndm` to see the charts.
